@@ -25,6 +25,6 @@ env KCONFIG_NOTIMESTAMP=true &>/dev/null
 cleaner &>/dev/null
 [ ! -d "/root/mn3-lite/build" ] && mkdir /root/mn3-lite/build
 cp $(pwd)/arch/arm/configs/mxconfig $(pwd)/build/.config;
-make ARCH=arm -j6 O=$(pwd)/build oldconfig;
-make ARCH=arm -S -s -j6 O=$(pwd)/build $(pwd)/$1;
+make ARCH=arm -j7 O=$(pwd)/build oldconfig;
+make ARCH=arm -S -s -j7 O=$(pwd)/build $(pwd)/$1;
 cleaner &>/dev/null
