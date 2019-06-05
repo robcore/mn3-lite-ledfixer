@@ -7375,7 +7375,6 @@ static ssize_t headphone_gain_show(struct kobject *kobj,
 {
 	return snprintf(buf, PAGE_SIZE, "%d\n",
 		snd_soc_read(sound_control_codec_ptr, TAIKO_A_CDC_RX1_VOL_CTL_B2_CTL));
-	);
 }
 
 static ssize_t headphone_gain_store(struct kobject *kobj,
@@ -7403,7 +7402,6 @@ static ssize_t speaker_gain_show(struct kobject *kobj,
 {
 	return snprintf(buf, PAGE_SIZE, "%d\n",
 		snd_soc_read(sound_control_codec_ptr, TAIKO_A_CDC_RX7_VOL_CTL_B2_CTL));
-	);
 }
 
 static ssize_t speaker_gain_store(struct kobject *kobj,
