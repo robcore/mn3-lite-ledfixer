@@ -7461,8 +7461,7 @@ static struct kobj_attribute speaker_gain_attribute =
 		speaker_gain_store);
 
 static struct kobj_attribute sound_hw_revision_attribute =
-	__ATTR(gpl_sound_control_hw_revision,
-		0444,
+	__ATTR(gpl_sound_control_hw_revision, 0444,
 		sound_control_hw_revision_show, NULL);
 
 
