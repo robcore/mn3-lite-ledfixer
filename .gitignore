@@ -106,5 +106,9 @@ out_spr/
 out_usc/
 out_vzw/
 out_tmo/
-
+build/
+*.zip
+flar2patches/
+flar2patches/*.patch
+flar2patches
 
