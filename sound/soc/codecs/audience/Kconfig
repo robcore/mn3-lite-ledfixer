@@ -24,7 +24,7 @@ config SND_SOC_ES704_TEMP
 	tristate "ES704 Slimbus interface temporally"
 
 config SND_SOC_ES515
-        tristate "eS515"
+        boolean "eS515"
         ---help---
         Valid configurations:
          * SLIMbus
@@ -38,19 +38,19 @@ if SND_SOC_ES515
 menu "eS515 Bus Interface"
 
 config SND_SOC_ES_SLIM
-	tristate "SLIMbus" if SLIMBUS
+	boolean "SLIMbus" if SLIMBUS
 
 config SND_SOC_ES_I2C
-	tristate "I2C command bus"
+	boolean "I2C command bus"
 
 config SND_SOC_ES_SPI
-	tristate "SPI command bus"
+	boolean "SPI command bus"
 
 config SND_SOC_ES_UART
-	tristate "UART command transport"
+	boolean "UART command transport"
 
 config SND_SOC_ES_I2S
-	tristate "I2S audio data bus"
+	boolean "I2S audio data bus"
 
 endmenu
 endif
