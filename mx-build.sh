@@ -30,7 +30,7 @@ export CCACHE_NLEVELS=8
 # root directory of kernel's git repo (default is this script's location)
 RDIR=$(pwd)
 
-[ -z $VARIANT ] && \
+#[ -z $VARIANT ] && \
 # device variant/carrier, possible options:
 #	can = N900W8	(Canadian, same as T-Mobile)
 #	eur = N9005	(Snapdragon International / hltexx / Europe)
@@ -41,20 +41,18 @@ RDIR=$(pwd)
 #	att = N900A	(AT&T)
 #	usc = N900R4	(US Cellular)
 #	vzw = N900V	(Verizon)
-VARIANT=tmo
-[ -z $VER ] && \
+#VARIANT=tmo
+#[ -z $VER ] && \
 # version number
-VER=Mark15
 # KERNEL_NAME should NOT contain any spaces
 KERNEL_NAME=machinexlite
 # kernel version string appended to 3.4.x-${KERNEL_NAME}-kernel-hlte-
 # (shown in Settings -> About device)
-KERNEL_VERSION=${KERNEL_NAME}-${VER}-hlte-${VARIANT}
+OLDVER=$(cat .oldversion)
 # output directory of flashable kernel
 OUT_DIR=$RDIR
 
 # output filename of flashable kernel
-OUT_NAME=$KERNEL_VERSION
 
 # should we make a TWRP flashable zip? (1 = yes, 0 = no)
 MAKE_ZIP=1
@@ -78,7 +76,7 @@ VARIANT_DEFCONFIG=mxconfig
 
 export ARCH=arm
 export CROSS_COMPILE=/opt/toolchains/arm-cortex_a15-linux-gnueabihf_5.3/bin/arm-cortex_a15-linux-gnueabihf-
-export LOCALVERSION=$KERNEL_VERSION
+
 env KCONFIG_NOTIMESTAMP=true
 
 if [ ! -f $RDIR"/arch/arm/configs/${VARIANT_DEFCONFIG}" ] ; then
@@ -93,16 +91,44 @@ fi
 
 KDIR=$RDIR/build/arch/arm/boot
 
-CLEAN_MAKE()
+handle_existing()
 {
-	make clean;
-	make distclean;
-	make mrproper;
+	echo -n "Use last version? $OLDVER will be removed [y/n/Default y] ENTER: "
+	read USEOLD
+	if [ -z "$USEOLD" ] || [ "$USEOLD" = y ]; then
+		KERNEL_VERSION=machinexlite-${OLDVER}-hltetmo
+		OUT_NAME=$KERNEL_VERSION
+		echo "Removing old zip/tar.md5 files..."
+		rm -f $OUT_DIR/$OUT_NAME.zip
+		rm -f $OUT_DIR/$OUT_NAME.tar.md5
+	elif [ "$USEOLD" = n ]; then
+		echo -n "Enter new version and hit enter: "
+		read NEWVER
+		if [ -z "$NEWVER" ]; then
+			echo "Nothing entered, using old"
+			KERNEL_VERSION=machinexlite-${OLDVER}-hltetmo
+			OUT_NAME=$KERNEL_VERSION
+			echo "Removing old zip/tar.md5 files..."
+			rm -f $OUT_DIR/$OUT_NAME.zip
+			rm -f $OUT_DIR/$OUT_NAME.tar.md5
+		else
+			KERNEL_VERSION=machinexlite-${NEWVER}-hltetmo
+			OUT_NAME=$KERNEL_VERSION
+			echo "$NEWVER" > .oldversion
+		fi
+	fi
+	echo "Kernel version is $KERNEL_VERSION"
+	echo " "
+	echo " "
+	export LOCALVERSION=$KERNEL_VERSION
 }
 
 CLEAN_BUILD()
 {
 	echo "Cleaning build..."
+	make clean;
+	make distclean;
+	make mrproper;
 	# clean up leftover junk
 	find . -type f \( -iname \*.rej \
 					-o -iname \*.orig \
@@ -111,15 +137,10 @@ CLEAN_BUILD()
 						| parallel rm -fv {};
 	cd $RDIR
 	rm -rf build
-	echo "Removing old boot.img..."
 	rm -f ${ZIP_FOLDER}/boot.img
-	echo "Removing old zip/tar.md5 files..."
-	rm -f $OUT_DIR/$OUT_NAME.zip
-	rm -f $OUT_DIR/$OUT_NAME.tar.md5
-
-	echo "Removing old scripts/mkqcdtbootimg/mkqcdtbootimg..."
-	make -C $RDIR/scripts/mkqcdtbootimg clean
-	rm -rf $RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg 2>/dev/null
+	make -C $RDIR/scripts/mkqcdtbootimg clean &>/dev/null
+	rm -rf $RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg &>/dev/null
+	echo "Cleaned"
 }
 
 BUILD_KERNEL_CONFIG()
@@ -128,13 +149,14 @@ BUILD_KERNEL_CONFIG()
 	cd $RDIR
 	mkdir -p build
 	cp $(pwd)/arch/arm/configs/mxconfig $(pwd)/build/.config
-	make ARCH=arm -C $RDIR O=build -j6 oldconfig
+	make ARCH=arm -C $RDIR O=build -j8 oldconfig
 }
 
 BUILD_KERNEL()
 {
+	handle_existing
 	echo "Starting build..."
-	make ARCH=arm -S -s -C $RDIR O=build -j6
+	make ARCH=arm -S -s -C $RDIR O=build -j8
 }
 
 BUILD_RAMDISK()
@@ -178,6 +200,9 @@ CREATE_ZIP()
 	echo "Compressing to TWRP flashable zip file..."
 	cd $RDIR/${ZIP_FOLDER}
 	zip -r -9 - * > $OUT_DIR/$OUT_NAME.zip
+	echo "Kernel $OUT_NAME.zip finished"
+	echo "Filepath: "
+	echo "$OUT_DIR/$OUT_NAME.zip"
 	cd $RDIR
 	exit 0
 }
@@ -200,7 +225,7 @@ function SHOW_HELP()
 	SCRIPT_NAME=`basename "$0"`
 
 	cat << EOF
-${KERNEL_NAME} by ${KERNEL_AUTHOR}. To configure this script for your build, edit the top of mx-build.sh before continuing.
+Machinexlite by robcore. To configure this script for your build, edit the top of mx-build.sh before continuing.
 
 usage: ./$SCRIPT_NAME [OPTION]
 
@@ -232,7 +257,7 @@ function BUILD_KERNEL_CONTINUE()
 
 function BUILD_ALL()
 {
-	CLEAN_BUILD && BUILD_KERNEL_CONFIG && BUILD_KERNEL_CONTINUE
+	CLEAN_MAKE && CLEAN_BUILD && BUILD_KERNEL_CONFIG && BUILD_KERNEL_CONTINUE
 }
 
 if [ $# = 0 ] ; then
@@ -256,11 +281,6 @@ while [[ $# > 0 ]]
 
 	     -c|--clean)
 	    	CLEAN_BUILD
-	    	break
-	    	;;
-
-	     -m|--clean_make)
-	    	CLEAN_MAKE
 	    	break
 	    	;;
 
