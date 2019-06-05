@@ -7368,7 +7368,6 @@ static struct regulator *taiko_codec_find_regulator(struct snd_soc_codec *codec,
 }
 
 struct snd_soc_codec *sound_control_codec_ptr;
-bool sound_control_override = false;
 
 static ssize_t headphone_gain_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf)
@@ -7389,11 +7388,8 @@ static ssize_t headphone_gain_store(struct kobject *kobj,
 		input = -84;
 	if (input > 40)
 		input = 40;
-	sound_control_override = true;
-	snd_soc_write(sound_control_codec_ptr, TAIKO_A_CDC_RX1_VOL_CTL_B2_CTL, input);
-	snd_soc_write(sound_control_codec_ptr, TAIKO_A_CDC_RX2_VOL_CTL_B2_CTL, input);
-	sound_control_override = false;
-
+	real_snd_soc_write(sound_control_codec_ptr, TAIKO_A_CDC_RX1_VOL_CTL_B2_CTL, input, true);
+	real_snd_soc_write(sound_control_codec_ptr, TAIKO_A_CDC_RX2_VOL_CTL_B2_CTL, input, true);
 	return count;
 }
 
@@ -7417,9 +7413,7 @@ static ssize_t speaker_gain_store(struct kobject *kobj,
 	if (input > 40)
 		input = 40;
 
-	sound_control_override = true;
-	snd_soc_write(sound_control_codec_ptr, TAIKO_A_CDC_RX7_VOL_CTL_B2_CTL, input);
-	sound_control_override = false;
+	real_snd_soc_write(sound_control_codec_ptr, TAIKO_A_CDC_RX7_VOL_CTL_B2_CTL, input, true);
 	return count;
 }
 
