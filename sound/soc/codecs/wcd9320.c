@@ -7424,12 +7424,12 @@ static ssize_t speaker_gain_store(struct kobject *kobj,
 }
 
 static struct kobj_attribute headphone_gain_attribute =
-	__ATTR(headphone_gain, 0664,
+	__ATTR(gpl_headphone_gain, 0664,
 		headphone_gain_show,
 		headphone_gain_store);
 
 static struct kobj_attribute speaker_gain_attribute =
-	__ATTR(speaker_gain, 0664,
+	__ATTR(gpl_speaker_gain, 0664,
 		speaker_gain_show,
 		speaker_gain_store);
 
@@ -7679,14 +7679,14 @@ static int taiko_codec_probe(struct snd_soc_codec *codec)
 
 	codec->ignore_pmdown_time = 1;
 
-	sound_control_kobj = kobject_create_and_add("sound_control", kernel_kobj);
-	if (sound_control_kobj == NULL) {
-		pr_warn("%s kobject create failed!\n", __func__);
-        }
+	sound_control_kobj = kobject_create_and_add("sound_control_3", kernel_kobj);
 
-	ret = sysfs_create_group(sound_control_kobj, &sound_control_attr_group);
-        if (ret) {
-		pr_warn("%s sysfs file create failed!\n", __func__);
+	if (sound_control_kobj != NULL) {
+		ret = sysfs_create_group(sound_control_kobj, &sound_control_attr_group);
+        if (ret)
+			pr_warn("%s sysfs file create failed!\n", __func__);
+	} else {
+		pr_warn("%s kobject create failed!\n", __func__);
 	}
 	return ret;
 
