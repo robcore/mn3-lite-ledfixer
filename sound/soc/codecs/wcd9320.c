@@ -7384,8 +7384,9 @@ static int show_sound_value(unsigned int inputval)
 static ssize_t headphone_gain_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf)
 {
-	return snprintf(buf, PAGE_SIZE, "%d\n",
-		show_sound_value(TAIKO_A_CDC_RX1_VOL_CTL_B2_CTL));
+	int adjustedval;
+	adjustedval = show_sound_value(TAIKO_A_CDC_RX1_VOL_CTL_B2_CTL);
+	return sprintf(buf, "%d\n", adjustedval);
 }
 
 static ssize_t headphone_gain_store(struct kobject *kobj,
@@ -7415,8 +7416,9 @@ static ssize_t headphone_gain_store(struct kobject *kobj,
 static ssize_t speaker_gain_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf)
 {
-	return snprintf(buf, PAGE_SIZE, "%d\n",
-		show_sound_value(TAIKO_A_CDC_RX7_VOL_CTL_B2_CTL));
+	int adjustedval;
+	adjustedval = show_sound_value(TAIKO_A_CDC_RX7_VOL_CTL_B2_CTL);
+	return sprintf(buf, "%d\n", adjustedval);
 }
 
 static ssize_t speaker_gain_store(struct kobject *kobj,
