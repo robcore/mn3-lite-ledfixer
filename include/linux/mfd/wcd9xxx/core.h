@@ -195,12 +195,11 @@ struct wcd9xxx {
 	const struct wcd9xxx_codec_type *codec_type;
 };
 
-extern struct snd_soc_codec *snd_engine_codec_ptr;
-extern unsigned int snd_ctrl_enabled;
+/*extern unsigned int snd_ctrl_enabled;
 extern int snd_reg_access(unsigned int reg);
 extern int snd_cache_read(unsigned int reg);
 extern void snd_cache_write(unsigned int reg, unsigned int value);
-
+*/
 int wcd9xxx_interface_reg_read(struct wcd9xxx *wcd9xxx, unsigned short reg);
 int wcd9xxx_interface_reg_write(struct wcd9xxx *wcd9xxx, unsigned short reg,
 		u8 val);
