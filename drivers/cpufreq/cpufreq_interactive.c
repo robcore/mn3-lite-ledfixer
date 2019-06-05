@@ -72,14 +72,14 @@ static struct mutex gov_lock;
 static unsigned int hispeed_freq;
 
 /* Go to hi speed when CPU load at or above this value. */
-#define DEFAULT_GO_HISPEED_LOAD 99
+#define DEFAULT_GO_HISPEED_LOAD 60
 static unsigned long go_hispeed_load = DEFAULT_GO_HISPEED_LOAD;
 
 /* Sampling down factor to be applied to min_sample_time at max freq */
 static unsigned int sampling_down_factor;
 
 /* Target load.  Lower values result in higher CPU speeds. */
-#define DEFAULT_TARGET_LOAD 90
+#define DEFAULT_TARGET_LOAD 50
 static unsigned int default_target_loads[] = {DEFAULT_TARGET_LOAD};
 static spinlock_t target_loads_lock;
 static unsigned int *target_loads = default_target_loads;
@@ -258,7 +258,7 @@ static inline cputime64_t get_cpu_idle_time(unsigned int cpu,
 
 	if (idle_time == -1ULL)
 		idle_time = get_cpu_idle_time_jiffy(cpu, wall);
-	else if (!io_is_busy)
+	else
 		idle_time += get_cpu_iowait_time_us(cpu, wall);
 
 	return idle_time;
