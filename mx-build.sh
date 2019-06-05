@@ -63,7 +63,7 @@ MAKE_ZIP=1
 MAKE_TAR=0
 
 # amount of cpu threads to use in kernel make process
-THREADS=5
+THREADS=8
 
 ############## SCARY NO-TOUCHY STUFF ###############
 
