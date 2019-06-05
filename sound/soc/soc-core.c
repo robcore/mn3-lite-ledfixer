@@ -2034,7 +2034,7 @@ EXPORT_SYMBOL_GPL(snd_soc_free_ac97_codec);
 int snd_soc_read(struct snd_soc_codec *codec, unsigned int reg)
 {
 	unsigned int ret;
-		if (codec = NULL)
+		if (codec == NULL)
 			return -ENOMEM;
         if (codec->read) {
 		ret = codec->read(codec, reg);
