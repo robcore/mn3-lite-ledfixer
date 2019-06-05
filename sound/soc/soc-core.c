@@ -2051,9 +2051,9 @@ int snd_soc_write(struct snd_soc_codec *codec,
 			   unsigned int reg, unsigned int val)
 {
 	if (!sound_overide) {
-		if (reg == TAIKO_A_CDC_RX1_VOL_CTL_B2_CTL ||
-			reg == TAIKO_A_CDC_RX2_VOL_CTL_B2_CTL ||
-			reg == TAIKO_A_CDC_RX7_VOL_CTL_B2_CTL)
+		if ((reg == 0x2E7) || (reg == 743) ||
+			(reg == 0x2B7) || (reg == 695) ||
+			(reg == 0x2BF) || (reg == 703))
 			return 0;
 	}
 	if (codec->write) {
