@@ -2050,6 +2050,12 @@ EXPORT_SYMBOL_GPL(snd_soc_read);
 int snd_soc_write(struct snd_soc_codec *codec,
 			   unsigned int reg, unsigned int val)
 {
+	if (!sound_overide) {
+		if (reg == TAIKO_A_CDC_RX1_VOL_CTL_B2_CTL ||
+			reg == TAIKO_A_CDC_RX2_VOL_CTL_B2_CTL ||
+			reg == TAIKO_A_CDC_RX7_VOL_CTL_B2_CTL)
+			return 0;
+	}
 	if (codec->write) {
 		dev_dbg(codec->dev, "write %x = %x\n", reg, val);
 		trace_snd_soc_reg_write(codec, reg, val);
