@@ -125,7 +125,10 @@ handle_existing()
 
 CLEAN_BUILD()
 {
-	echo "Cleaning build..."
+	if [ "$1" != "quiet" ]; then
+		echo "Cleaning build..."
+	fi
+
 	make clean;
 	make distclean;
 	make mrproper;
@@ -140,7 +143,10 @@ CLEAN_BUILD()
 	rm -f ${ZIP_FOLDER}/boot.img
 	make -C $RDIR/scripts/mkqcdtbootimg clean &>/dev/null
 	rm -rf $RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg &>/dev/null
-	echo "Cleaned"
+
+	if [ "$1" != "quiet" ]; then
+		echo "Cleaned"
+	fi
 }
 
 BUILD_KERNEL_CONFIG()
@@ -247,7 +253,7 @@ EOF
 
 function BUILD_RAMDISK_CONTINUE()
 {
-	BUILD_RAMDISK && BUILD_BOOT_IMG && CREATE_ZIP && CREATE_TAR
+	BUILD_RAMDISK && BUILD_BOOT_IMG && CREATE_ZIP && CREATE_TAR && CLEAN_BUILD quiet
 }
 
 function BUILD_KERNEL_CONTINUE()
