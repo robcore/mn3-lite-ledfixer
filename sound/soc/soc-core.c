@@ -2050,7 +2050,7 @@ EXPORT_SYMBOL_GPL(snd_soc_read);
 int snd_soc_write(struct snd_soc_codec *codec,
 			   unsigned int reg, unsigned int val)
 {
-	if (!sound_overide) {
+	if (!sound_control_override) {
 		if ((reg == 0x2E7) || (reg == 743) ||
 			(reg == 0x2B7) || (reg == 695) ||
 			(reg == 0x2BF) || (reg == 703))
