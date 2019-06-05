@@ -268,8 +268,6 @@ extern unsigned int snd_ctrl_enabled;
 extern int snd_reg_access(unsigned int reg);
 extern int snd_cache_read(unsigned int reg);
 extern void snd_cache_write(unsigned int reg, unsigned int value);
-struct snd_soc_codec *snd_engine_codec_ptr;
-EXPORT_SYMBOL(snd_engine_codec_ptr);
 
 #define WCD9320_RATES (SNDRV_PCM_RATE_8000 | SNDRV_PCM_RATE_16000 |\
 			SNDRV_PCM_RATE_32000 | SNDRV_PCM_RATE_48000 |\
@@ -7374,7 +7372,7 @@ static unsigned int wcd9xxx_hw_revision;
 static int show_sound_value(unsigned int inputval)
 {
 	int tempval;
-	tempval = snd_soc_read(snd_engine_codec_ptr, inputval);
+	tempval = snd_soc_read(sound_control_codec_ptr, inputval);
 	if ((tempval >= 172) && (tempval <= 255))
 		tempval -= 256;
 
@@ -7493,7 +7491,6 @@ static int taiko_codec_probe(struct snd_soc_codec *codec)
 
 	//pr_info("Taiko Sound Engine Probe\n");
 	//pr_info("Probing Codec: %s\n", codec->name);
-	//snd_engine_codec_ptr = codec;
 	sound_control_codec_ptr = codec;
 
 	codec->control_data = dev_get_drvdata(codec->dev->parent);
