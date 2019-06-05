@@ -4256,7 +4256,10 @@ unsigned int taiko_read(struct snd_soc_codec *codec,
 	unsigned int val;
 	int ret;
 
-	struct wcd9xxx *wcd9xxx = codec->control_data;
+	struct wcd9xxx *wcd9xxx;
+	if (codec == NULL)
+		return -ENOMEM;
+	wcd9xxx = codec->control_data;
 
 	if (reg == SND_SOC_NOPM)
 		return 0;
@@ -4293,7 +4296,10 @@ int taiko_write(struct snd_soc_codec *codec, unsigned int reg,
 	int ret;
 	int val;
 
-	struct wcd9xxx *wcd9xxx = codec->control_data;
+	struct wcd9xxx *wcd9xxx;
+	if (codec == NULL)
+		return -ENOMEM;
+	wcd9xxx = codec->control_data;
 
 	if (reg == SND_SOC_NOPM)
 		return 0;
@@ -7365,12 +7371,14 @@ static struct regulator *taiko_codec_find_regulator(struct snd_soc_codec *codec,
 struct snd_soc_codec *sound_control_codec_ptr;
 static unsigned int wcd9xxx_hw_revision;
 
-static int show_sound_value(int val)
+static int show_sound_value(unsigned int inputval)
 {
-	if (val > 50)
-	val -= 256;
+	int tempval;
+	tempval = snd_soc_read(snd_engine_codec_ptr, inputval);
+	if ((tempval >= 172) && (tempval <= 255))
+		tempval -= 256;
 
-	return snd_soc_read(snd_engine_codec_ptr, val);
+	return tempval;
 }
 
 static ssize_t headphone_gain_show(struct kobject *kobj,
@@ -7384,7 +7392,7 @@ static ssize_t headphone_gain_store(struct kobject *kobj,
 		struct kobj_attribute *attr, const char *buf, size_t count)
 {
 
-	int input;
+	int input, output;
 
 	sscanf(buf, "%d", &input);
 
@@ -7392,10 +7400,14 @@ static ssize_t headphone_gain_store(struct kobject *kobj,
 		input = -84;
 	if (input > 40)
 		input = 40;
-	if ((255 - (input + input)) > 255)
-		input += 256;
-	real_snd_soc_write(sound_control_codec_ptr, TAIKO_A_CDC_RX1_VOL_CTL_B2_CTL, input, true);
-	real_snd_soc_write(sound_control_codec_ptr, TAIKO_A_CDC_RX2_VOL_CTL_B2_CTL, input, true);
+
+	if (input < 0)
+		output = input + 256;
+	else
+		output = input;
+
+	real_snd_soc_write(sound_control_codec_ptr, TAIKO_A_CDC_RX1_VOL_CTL_B2_CTL, output, true);
+	real_snd_soc_write(sound_control_codec_ptr, TAIKO_A_CDC_RX2_VOL_CTL_B2_CTL, output, true);
 	return count;
 }
 
@@ -7410,7 +7422,8 @@ static ssize_t speaker_gain_store(struct kobject *kobj,
 		struct kobj_attribute *attr, const char *buf, size_t count)
 {
 
-	int input;
+	int input
+	unsigned int output;
 
 	sscanf(buf, "%d", &input);
 
@@ -7418,10 +7431,13 @@ static ssize_t speaker_gain_store(struct kobject *kobj,
 		input = -84;
 	if (input > 40)
 		input = 40;
-	if ((255 - (input + input)) > 255)
-		input += 256;
 
-	real_snd_soc_write(sound_control_codec_ptr, TAIKO_A_CDC_RX7_VOL_CTL_B2_CTL, input, true);
+	if (input < 0)
+		output = input + 256;
+	else
+		output = input;
+
+	real_snd_soc_write(sound_control_codec_ptr, TAIKO_A_CDC_RX7_VOL_CTL_B2_CTL, output, true);
 	return count;
 }
 
