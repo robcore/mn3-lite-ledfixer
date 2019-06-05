@@ -77,7 +77,7 @@ VARIANT_DEFCONFIG=mxconfig
 export ARCH=arm
 export CROSS_COMPILE=/opt/toolchains/arm-cortex_a15-linux-gnueabihf_5.3/bin/arm-cortex_a15-linux-gnueabihf-
 
-env KCONFIG_NOTIMESTAMP=true
+env KCONFIG_NOTIMESTAMP=true &>/dev/null
 
 if [ ! -f $RDIR"/arch/arm/configs/${VARIANT_DEFCONFIG}" ] ; then
 	echo "Device ${VARIANT_DEFCONFIG} not found in arm configs!"
@@ -145,20 +145,7 @@ CLEAN_BUILD()
 
 CLEAN_BUILD_QUIET()
 {
-	make clean;
-	make distclean;
-	make mrproper;
-	# clean up leftover junk
-	find . -type f \( -iname \*.rej \
-					-o -iname \*.orig \
-					-o -iname \*.bkp \
-					-o -iname \*.ko \) \
-						| parallel rm -fv {};
-	cd $RDIR
-	rm -rf build
-	rm -f ${ZIP_FOLDER}/boot.img
-	make -C $RDIR/scripts/mkqcdtbootimg clean &>/dev/null
-	rm -rf $RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg &>/dev/null
+CLEAN_BUILD &>/dev/null
 }
 
 BUILD_KERNEL_CONFIG()
@@ -181,7 +168,7 @@ BUILD_RAMDISK()
 {
 	echo "Building ramdisk structure..."
 	cd $RDIR
-	rm -rf build/ramdisk 2>/dev/null
+	rm -rf build/ramdisk &>/dev/null
 	mkdir -p build/ramdisk
 	cp -ar ${RAMDISK_FOLDER}/* build/ramdisk
 	echo "Building ramdisk.img..."

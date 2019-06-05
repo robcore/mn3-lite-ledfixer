@@ -7392,7 +7392,8 @@ static ssize_t headphone_gain_store(struct kobject *kobj,
 		struct kobj_attribute *attr, const char *buf, size_t count)
 {
 
-	int input, output;
+	int input;
+	unsigned int output;
 
 	sscanf(buf, "%d", &input);
 
@@ -7422,7 +7423,7 @@ static ssize_t speaker_gain_store(struct kobject *kobj,
 		struct kobj_attribute *attr, const char *buf, size_t count)
 {
 
-	int input
+	int input;
 	unsigned int output;
 
 	sscanf(buf, "%d", &input);
