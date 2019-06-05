@@ -4256,15 +4256,13 @@ unsigned int taiko_read(struct snd_soc_codec *codec,
 	unsigned int val;
 	int ret;
 
-	struct wcd9xxx *wcd9xxx;
-	if (codec == NULL)
-		return -ENOMEM;
-	wcd9xxx = codec->control_data;
+	struct wcd9xxx *wcd9xxx = codec->control_data;
 
 	if (reg == SND_SOC_NOPM)
 		return 0;
 
-	BUG_ON(reg > TAIKO_MAX_REGISTER);
+	if (reg > TAIKO_MAX_REGISTER)
+		return -EINVAL;
 
 	if (!taiko_volatile(codec, reg) && taiko_readable(codec, reg) &&
 		reg < codec->driver->reg_cache_size) {
@@ -4295,10 +4293,7 @@ int taiko_write(struct snd_soc_codec *codec, unsigned int reg,
 	int ret;
 	int val;
 
-	struct wcd9xxx *wcd9xxx;
-	if (codec == NULL)
-		return -1;
-	wcd9xxx = codec->control_data;
+	struct wcd9xxx *wcd9xxx = codec->control_data;
 
 	if (reg == SND_SOC_NOPM)
 		return 0;
@@ -7368,12 +7363,21 @@ static struct regulator *taiko_codec_find_regulator(struct snd_soc_codec *codec,
 }
 
 struct snd_soc_codec *sound_control_codec_ptr;
+static unsigned int wcd9xxx_hw_revision;
+
+static int show_sound_value(int val)
+{
+	if (val > 50)
+	val -= 256;
+
+	return snd_soc_read(snd_engine_codec_ptr, val);
+}
 
 static ssize_t headphone_gain_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf)
 {
 	return snprintf(buf, PAGE_SIZE, "%d\n",
-		snd_soc_read(sound_control_codec_ptr, TAIKO_A_CDC_RX1_VOL_CTL_B2_CTL));
+		show_sound_value(TAIKO_A_CDC_RX1_VOL_CTL_B2_CTL));
 }
 
 static ssize_t headphone_gain_store(struct kobject *kobj,
@@ -7388,6 +7392,8 @@ static ssize_t headphone_gain_store(struct kobject *kobj,
 		input = -84;
 	if (input > 40)
 		input = 40;
+	if ((255 - (input + input)) > 255)
+		input += 256;
 	real_snd_soc_write(sound_control_codec_ptr, TAIKO_A_CDC_RX1_VOL_CTL_B2_CTL, input, true);
 	real_snd_soc_write(sound_control_codec_ptr, TAIKO_A_CDC_RX2_VOL_CTL_B2_CTL, input, true);
 	return count;
@@ -7397,7 +7403,7 @@ static ssize_t speaker_gain_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf)
 {
 	return snprintf(buf, PAGE_SIZE, "%d\n",
-		snd_soc_read(sound_control_codec_ptr, TAIKO_A_CDC_RX7_VOL_CTL_B2_CTL));
+		show_sound_value(TAIKO_A_CDC_RX7_VOL_CTL_B2_CTL));
 }
 
 static ssize_t speaker_gain_store(struct kobject *kobj,
@@ -7412,9 +7418,17 @@ static ssize_t speaker_gain_store(struct kobject *kobj,
 		input = -84;
 	if (input > 40)
 		input = 40;
+	if ((255 - (input + input)) > 255)
+		input += 256;
 
 	real_snd_soc_write(sound_control_codec_ptr, TAIKO_A_CDC_RX7_VOL_CTL_B2_CTL, input, true);
 	return count;
+}
+
+static ssize_t sound_control_hw_revision_show (struct kobject *kobj,
+		struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "hw_revision: %u\n", wcd9xxx_hw_revision);
 }
 
 static struct kobj_attribute headphone_gain_attribute =
@@ -7427,9 +7441,16 @@ static struct kobj_attribute speaker_gain_attribute =
 		speaker_gain_show,
 		speaker_gain_store);
 
+static struct kobj_attribute sound_hw_revision_attribute =
+	__ATTR(gpl_sound_control_hw_revision,
+		0444,
+		sound_control_hw_revision_show, NULL);
+
+
 static struct attribute *sound_control_attrs[] = {
 		&headphone_gain_attribute.attr,
 		&speaker_gain_attribute.attr,
+		&sound_hw_revision_attribute.attr,
 		NULL,
 };
 
@@ -7452,8 +7473,8 @@ static int taiko_codec_probe(struct snd_soc_codec *codec)
 	struct wcd9xxx *core = dev_get_drvdata(codec->dev->parent);
 	struct wcd9xxx_core_resource *core_res;
 
-	pr_info("Taiko Sound Engine Probe\n");
-	pr_info("Probing Codec: %s\n", codec->name);
+	//pr_info("Taiko Sound Engine Probe\n");
+	//pr_info("Probing Codec: %s\n", codec->name);
 	//snd_engine_codec_ptr = codec;
 	sound_control_codec_ptr = codec;
 
@@ -7495,12 +7516,14 @@ static int taiko_codec_probe(struct snd_soc_codec *codec)
 	/* Taiko does not support dynamic switching of vdd_cp */
 	taiko->clsh_d.is_dynamic_vdd_cp = false;
 	wcd9xxx_clsh_init(&taiko->clsh_d, &taiko->resmgr);
-
-	if (TAIKO_IS_1_0(core->version))
+		
+	if (TAIKO_IS_1_0(core->version)) {
 		rco_clk_rate = TAIKO_MCLK_CLK_12P288MHZ;
-	else
+		wcd9xxx_hw_revision = 1;
+	} else {
 		rco_clk_rate = TAIKO_MCLK_CLK_9P6MHZ;
-
+		wcd9xxx_hw_revision = 2;
+	}
 #if defined(CONFIG_MACH_KLTE_KOR)
 	if (system_rev >= 13) {
 		/* init and start mbhc */

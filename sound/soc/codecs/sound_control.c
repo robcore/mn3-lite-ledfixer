@@ -114,7 +114,7 @@ static int show_sound_value(int val)
 	if (val > 50)
 	val -= 256;
 
-	return val;
+	return taiko_read(snd_engine_codec_ptr, val);
 }
 
 static int human_readable(unsigned int regval)
@@ -155,17 +155,19 @@ static ssize_t speaker_gain_store(struct kobject *kobj,
 	if (!snd_ctrl_enabled)
 		return count;
 
-	addval = val + val;
+/*	addval = val + val;
 	checksum = 255 - addval;
 	if (checksum > 255) {
 		checksum -=256;
 		val += 256;
-	}
+	} */
+	if (255 - (val + val) > 255)
+		val += 256;
 	snd_ctrl_locked = 0;
 	taiko_write(snd_engine_codec_ptr, TAIKO_A_CDC_RX7_VOL_CTL_B2_CTL, val);
 	taiko_write(snd_engine_codec_ptr, TAIKO_A_CDC_RX7_VOL_CTL_B2_CTL, val);
 	snd_ctrl_locked = 1;
-	return checksum;
+	return count;
 }
 
 static ssize_t headphone_gain_show(struct kobject *kobj,
