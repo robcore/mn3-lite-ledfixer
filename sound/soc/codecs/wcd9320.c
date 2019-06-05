@@ -4275,8 +4275,8 @@ unsigned int taiko_read(struct snd_soc_codec *codec,
 			pr_err("%s: snd_soc_cache_read from %x failed: %d\n",
 				__func__, reg, ret);
 	}
-
-	val = wcd9xxx_reg_read(&wcd9xxx->core_res, reg);
+	return wcd9xxx_reg_read(&wcd9xxx->core_res, reg);
+/*	val = wcd9xxx_reg_read(&wcd9xxx->core_res, reg);
 	if (val < 0) {
 		pr_err("%s: wcd9xxx_reg_read from %x failed: %d\n",
 			__func__, reg, val);
@@ -4285,8 +4285,8 @@ unsigned int taiko_read(struct snd_soc_codec *codec,
 			__func__, reg, val);
 	}
 	return val;
+*/
 }
-
 EXPORT_SYMBOL(taiko_read);
 
 int taiko_write(struct snd_soc_codec *codec, unsigned int reg,
@@ -4313,9 +4313,9 @@ int taiko_write(struct snd_soc_codec *codec, unsigned int reg,
 				__func__, reg, value);
 	}
 
-	if (!snd_ctrl_enabled)
+//	if (!snd_ctrl_enabled)
 		return wcd9xxx_reg_write(&wcd9xxx->core_res, reg, value);
-
+/*
 	if (!snd_reg_access(reg)) {
 		val = snd_cache_read(reg);
 		if (val < 0) {
@@ -4334,8 +4334,8 @@ int taiko_write(struct snd_soc_codec *codec, unsigned int reg,
 		val = value;
 	}
 	return wcd9xxx_reg_write(&wcd9xxx->core_res, reg, val);
+*/
 }
-
 EXPORT_SYMBOL(taiko_write);
 
 #ifdef CONFIG_SND_SOC_ES325
@@ -7367,6 +7367,86 @@ static struct regulator *taiko_codec_find_regulator(struct snd_soc_codec *codec,
 	return NULL;
 }
 
+struct snd_soc_codec *sound_control_codec_ptr;
+bool sound_overide = false;
+
+static ssize_t headphone_gain_show(struct kobject *kobj,
+		struct kobj_attribute *attr, char *buf)
+{
+	return snprintf(buf, PAGE_SIZE, "%d\n",
+		snd_soc_read(sound_control_codec_ptr, TAIKO_A_CDC_RX1_VOL_CTL_B2_CTL));
+	);
+}
+
+static ssize_t headphone_gain_store(struct kobject *kobj,
+		struct kobj_attribute *attr, const char *buf, size_t count)
+{
+
+	int input;
+
+	sscanf(buf, "%d", &input);
+
+	if (input < -84)
+		input = -84;
+	if (input > 40)
+		input = 40;
+	sound_overide = true;
+	snd_soc_write(sound_control_codec_ptr, TAIKO_A_CDC_RX1_VOL_CTL_B2_CTL, input);
+	snd_soc_write(sound_control_codec_ptr, TAIKO_A_CDC_RX2_VOL_CTL_B2_CTL, input);
+	sound_overide = false;
+
+	return count;
+}
+
+static ssize_t speaker_gain_show(struct kobject *kobj,
+		struct kobj_attribute *attr, char *buf)
+{
+	return snprintf(buf, PAGE_SIZE, "%d\n",
+		snd_soc_read(sound_control_codec_ptr, TAIKO_A_CDC_RX7_VOL_CTL_B2_CTL));
+	);
+}
+
+static ssize_t speaker_gain_store(struct kobject *kobj,
+		struct kobj_attribute *attr, const char *buf, size_t count)
+{
+
+	int input;
+
+	sscanf(buf, "%d", &input);
+
+	if (input < -84)
+		input = -84;
+	if (input > 40)
+		input = 40;
+
+	sound_overide = true;
+	snd_soc_write(sound_control_codec_ptr, TAIKO_A_CDC_RX7_VOL_CTL_B2_CTL, input);
+	sound_overide = false;
+	return count;
+}
+
+static struct kobj_attribute headphone_gain_attribute =
+	__ATTR(headphone_gain, 0664,
+		headphone_gain_show,
+		headphone_gain_store);
+
+static struct kobj_attribute speaker_gain_attribute =
+	__ATTR(speaker_gain, 0664,
+		speaker_gain_show,
+		speaker_gain_store);
+
+static struct attribute *sound_control_attrs[] = {
+		&headphone_gain_attribute.attr,
+		&speaker_gain_attribute.attr,
+		NULL,
+};
+
+static struct attribute_group sound_control_attr_group = {
+		.attrs = sound_control_attrs,
+};
+
+static struct kobject *sound_control_kobj;
+
 static int taiko_codec_probe(struct snd_soc_codec *codec)
 {
 	struct wcd9xxx *control;
@@ -7374,9 +7454,6 @@ static int taiko_codec_probe(struct snd_soc_codec *codec)
 	struct wcd9xxx_pdata *pdata;
 	struct wcd9xxx *wcd9xxx;
 	struct snd_soc_dapm_context *dapm = &codec->dapm;
-#if defined(CONFIG_SEC_JACTIVE_PROJECT)
-	extern unsigned int system_rev;
-#endif
 	int ret = 0;
 	int i, rco_clk_rate;
 	void *ptr = NULL;
@@ -7385,7 +7462,8 @@ static int taiko_codec_probe(struct snd_soc_codec *codec)
 
 	pr_info("Taiko Sound Engine Probe\n");
 	pr_info("Probing Codec: %s\n", codec->name);
-	snd_engine_codec_ptr = codec;
+	//snd_engine_codec_ptr = codec;
+	sound_control_codec_ptr = codec;
 
 	codec->control_data = dev_get_drvdata(codec->dev->parent);
 	control = codec->control_data;
@@ -7602,6 +7680,16 @@ static int taiko_codec_probe(struct snd_soc_codec *codec)
 	mutex_unlock(&dapm->codec->mutex);
 
 	codec->ignore_pmdown_time = 1;
+
+	sound_control_kobj = kobject_create_and_add("sound_control", kernel_kobj);
+	if (sound_control_kobj == NULL) {
+		pr_warn("%s kobject create failed!\n", __func__);
+        }
+
+	ret = sysfs_create_group(sound_control_kobj, &sound_control_attr_group);
+        if (ret) {
+		pr_warn("%s sysfs file create failed!\n", __func__);
+	}
 	return ret;
 
 err_irq:

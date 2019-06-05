@@ -1034,8 +1034,8 @@ struct soc_enum {
 };
 
 /* codec IO */
-unsigned int snd_soc_read(struct snd_soc_codec *codec, unsigned int reg);
-unsigned int snd_soc_write(struct snd_soc_codec *codec,
+int snd_soc_read(struct snd_soc_codec *codec, unsigned int reg);
+int snd_soc_write(struct snd_soc_codec *codec,
 			   unsigned int reg, unsigned int val);
 unsigned int snd_soc_bulk_write_raw(struct snd_soc_codec *codec,
 				    unsigned int reg, const void *data, size_t len);

@@ -2031,7 +2031,7 @@ void snd_soc_free_ac97_codec(struct snd_soc_codec *codec)
 }
 EXPORT_SYMBOL_GPL(snd_soc_free_ac97_codec);
 
-unsigned int snd_soc_read(struct snd_soc_codec *codec, unsigned int reg)
+int snd_soc_read(struct snd_soc_codec *codec, unsigned int reg)
 {
 	unsigned int ret;
 
@@ -2047,7 +2047,7 @@ unsigned int snd_soc_read(struct snd_soc_codec *codec, unsigned int reg)
 }
 EXPORT_SYMBOL_GPL(snd_soc_read);
 
-unsigned int snd_soc_write(struct snd_soc_codec *codec,
+int snd_soc_write(struct snd_soc_codec *codec,
 			   unsigned int reg, unsigned int val)
 {
 	if (codec->write) {
