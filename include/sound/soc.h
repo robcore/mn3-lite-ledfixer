@@ -1036,7 +1036,7 @@ struct soc_enum {
 /* codec IO */
 int snd_soc_read(struct snd_soc_codec *codec, unsigned int reg);
 int real_snd_soc_write(struct snd_soc_codec *codec,
-			   unsigned int reg, unsigned int val);
+			   unsigned int reg, unsigned int val, bool override);
 int snd_soc_write(struct snd_soc_codec *codec,
 			   unsigned int reg, unsigned int val);
 
