@@ -2034,7 +2034,8 @@ EXPORT_SYMBOL_GPL(snd_soc_free_ac97_codec);
 int snd_soc_read(struct snd_soc_codec *codec, unsigned int reg)
 {
 	unsigned int ret;
-
+		if (codec = NULL)
+			return -ENOMEM;
         if (codec->read) {
 		ret = codec->read(codec, reg);
 		dev_dbg(codec->dev, "read %x => %x\n", reg, ret);
@@ -2057,8 +2058,8 @@ int real_snd_soc_write(struct snd_soc_codec *codec,
 			return 0;
 	}
 	if (codec->write) {
-		pr_info("%s -- Register: %x (%u) Value: %x (%u)\n", __func__, reg, reg, val, val);
-		//trace_snd_soc_reg_write(codec, reg, val);
+		//pr_info("%s -- Register: %x (%u) Value: %x (%u)\n", __func__, reg, reg, val, val);
+		trace_snd_soc_reg_write(codec, reg, val);
 		return codec->write(codec, reg, val);
 	} else {
 		return -EIO;
@@ -3645,7 +3646,7 @@ int snd_soc_register_codec(struct device *dev,
 						      reg_size, GFP_KERNEL);
 			if (!codec->reg_def_copy) {
 				ret = -ENOMEM;
-				goto fail;
+				goto copyfail;
 			}
 		}
 	}
@@ -3681,6 +3682,7 @@ int snd_soc_register_codec(struct device *dev,
 fail:
 	kfree(codec->reg_def_copy);
 	codec->reg_def_copy = NULL;
+copyfail:
 	kfree(codec->name);
 	kfree(codec);
 	return ret;
