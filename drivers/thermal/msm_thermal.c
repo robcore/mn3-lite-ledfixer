@@ -465,9 +465,7 @@ static ssize_t vdd_rstr_en_store(struct kobject *kobj,
 		 * Even if fail to set one rail, still try to set the
 		 * others. Continue the loop
 		 */
-		if (ret)
-
-		else {
+		if (!ret) {
 			if (val)
 				en_cnt++;
 			else
