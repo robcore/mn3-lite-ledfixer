@@ -1130,9 +1130,6 @@ static int do_vdd_restriction(void)
 			if (ret) {
 				goto exit;
 			}
-
-			thresh[MSM_VDD_RESTRICTION].thresh_list[i].sensor_id,
-			temp);
 			goto exit;
 		} else if (temp > msm_thermal_info.vdd_rstr_temp_hyst_degC)
 			dis_cnt++;
