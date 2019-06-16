@@ -1310,7 +1310,7 @@ static int main_mic_delay_put(struct snd_kcontrol *kcontrol,
 static int speaker_status_get(struct snd_kcontrol *kcontrol,
 	struct snd_ctl_elem_value *ucontrol)
 {
-	pr_info("%s: speaker_status = %d\n ucontrol: %d\n", __func__, speaker_status, ucontrol->value.integer.value[0]);
+	pr_info("%s: speaker_status = %d\n", __func__, speaker_status);
 	ucontrol->value.integer.value[0] = speaker_status;
 	return 0;
 }
@@ -1319,7 +1319,7 @@ static int speaker_status_put(struct snd_kcontrol *kcontrol,
 	struct snd_ctl_elem_value *ucontrol)
 {
 	speaker_status = ucontrol->value.integer.value[0];
-	pr_info("%s: speaker_status = %d\n ucontrol: %d\n", __func__, speaker_status, ucontrol->value.integer.value[0]);
+	pr_info("%s: speaker_status = %d\n", __func__, speaker_status);
 	return 1;
 }
 #endif
