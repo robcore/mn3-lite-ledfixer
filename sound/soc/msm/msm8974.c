@@ -359,7 +359,7 @@ static void msm8974_liquid_ext_ult_spk_power_amp_enable(u32 on)
 			     EXT_CLASS_AB_DIS_DELAY + EXT_CLASS_AB_DELAY_DELTA);
 	}
 
-	pr_debug("%s: %s external ultrasound SPKR_DRV PAs.\n", __func__,
+	pr_info("%s: %s external ultrasound SPKR_DRV PAs.\n", __func__,
 			on ? "Enable" : "Disable");
 }
 
@@ -381,7 +381,7 @@ static void msm8974_liquid_ext_spk_power_amp_enable(u32 on)
 			     EXT_CLASS_D_DIS_DELAY + EXT_CLASS_D_DELAY_DELTA);
 	}
 
-	pr_debug("%s: %s external speaker PAs.\n", __func__,
+	pr_info("%s: %s external speaker PAs.\n", __func__,
 			on ? "Enable" : "Disable");
 }
 
@@ -488,7 +488,7 @@ static int msm8974_liquid_ext_spk_power_amp_on(u32 spk)
 	int rc;
 
 	if (spk & (LO_1_SPK_AMP | LO_3_SPK_AMP | LO_2_SPK_AMP | LO_4_SPK_AMP)) {
-		pr_debug("%s: External speakers are already on. spk = 0x%x\n",
+		pr_info("%s: External speakers are already on. spk = 0x%x\n",
 			 __func__, spk);
 
 		msm8974_ext_spk_pamp |= spk;
@@ -515,12 +515,12 @@ static void msm8974_fluid_ext_us_amp_on(u32 spk)
 	if (!gpio_is_valid(ext_ult_lo_amp_gpio)) {
 		pr_err("%s: ext_ult_lo_amp_gpio isn't configured\n", __func__);
 	} else if (spk & (LO_1_SPK_AMP | LO_3_SPK_AMP)) {
-		pr_debug("%s: External US amp is already on. spk = 0x%x\n",
+		pr_info("%s: External US amp is already on. spk = 0x%x\n",
 			 __func__, spk);
 		msm8974_ext_spk_pamp |= spk;
 		if ((msm8974_ext_spk_pamp & LO_1_SPK_AMP) &&
 		    (msm8974_ext_spk_pamp & LO_3_SPK_AMP))
-			pr_debug("%s: Turn on US amp. spk = 0x%x\n",
+			pr_info("%s: Turn on US amp. spk = 0x%x\n",
 				 __func__, spk);
 			gpio_direction_output(ext_ult_lo_amp_gpio, 1);
 
@@ -535,9 +535,9 @@ static void msm8974_fluid_ext_us_amp_off(u32 spk)
 	if (!gpio_is_valid(ext_ult_lo_amp_gpio)) {
 		pr_err("%s: ext_ult_lo_amp_gpio isn't configured\n", __func__);
 	} else if (spk & (LO_1_SPK_AMP | LO_3_SPK_AMP)) {
-		pr_debug("%s LO1 and LO3. spk = 0x%x", __func__, spk);
+		pr_info("%s LO1 and LO3. spk = 0x%x", __func__, spk);
 		if (!msm8974_ext_spk_pamp) {
-			pr_debug("%s: Turn off US amp. spk = 0x%x\n",
+			pr_info("%s: Turn off US amp. spk = 0x%x\n",
 				 __func__, spk);
 			gpio_direction_output(ext_ult_lo_amp_gpio, 0);
 			msm8974_ext_spk_pamp = 0;
@@ -564,7 +564,7 @@ static void msm8974_liquid_ext_spk_power_amp_off(u32 spk)
 		   LO_2_SPK_AMP |
 		   LO_4_SPK_AMP)) {
 
-		pr_debug("%s Left and right speakers case spk = 0x%08x",
+		pr_info("%s Left and right speakers case spk = 0x%08x",
 				  __func__, spk);
 		msm8974_ext_spk_pamp &= ~spk;
 		if (!msm8974_ext_spk_pamp) {
@@ -597,7 +597,7 @@ static void msm8974_ext_control(struct snd_soc_codec *codec)
 
 	mutex_lock(&dapm->codec->mutex);
 
-	pr_debug("%s: msm8974_spk_control = %d", __func__, msm8974_spk_control);
+	pr_info("%s: msm8974_spk_control = %d", __func__, msm8974_spk_control);
 	if (msm8974_spk_control == MSM8974_SPK_ON) {
 		snd_soc_dapm_enable_pin(dapm, "Lineout_1 amp");
 		snd_soc_dapm_enable_pin(dapm, "Lineout_3 amp");
@@ -617,7 +617,7 @@ static void msm8974_ext_control(struct snd_soc_codec *codec)
 static int msm8974_get_spk(struct snd_kcontrol *kcontrol,
 		       struct snd_ctl_elem_value *ucontrol)
 {
-	pr_debug("%s: msm8974_spk_control = %d", __func__, msm8974_spk_control);
+	pr_info("%s: msm8974_spk_control = %d", __func__, msm8974_spk_control);
 	ucontrol->value.integer.value[0] = msm8974_spk_control;
 	return 0;
 }
@@ -627,7 +627,7 @@ static int msm8974_set_spk(struct snd_kcontrol *kcontrol,
 {
 	struct snd_soc_codec *codec = snd_kcontrol_chip(kcontrol);
 
-	pr_debug("%s()\n", __func__);
+	pr_info("%s()\n", __func__);
 	if (msm8974_spk_control == ucontrol->value.integer.value[0])
 		return 0;
 
@@ -641,7 +641,7 @@ static int msm8974_set_spk(struct snd_kcontrol *kcontrol,
 static int msm_ext_spkramp_event(struct snd_soc_dapm_widget *w,
 			     struct snd_kcontrol *k, int event)
 {
-	pr_debug("%s()\n", __func__);
+	pr_info("%s()\n", __func__);
 
 	if (SND_SOC_DAPM_EVENT_ON(event)) {
 		if (!strncmp(w->name, "Lineout_1 amp", 14))
@@ -693,7 +693,7 @@ static int msm_ext_spkramp_ultrasound_event(struct snd_soc_dapm_widget *w,
 			     struct snd_kcontrol *k, int event)
 {
 
-	pr_debug("%s()\n", __func__);
+	pr_info("%s()\n", __func__);
 
 	if (!strncmp(w->name, "SPK_ultrasound amp", 19)) {
 		if (!gpio_is_valid(ext_ult_spk_amp_gpio)) {
@@ -720,7 +720,7 @@ static int msm_snd_enable_codec_ext_clk(struct snd_soc_codec *codec, int enable,
 					bool dapm)
 {
 	int ret = 0;
-	pr_debug("%s: enable = %d clk_users = %d\n",
+	pr_info("%s: enable = %d clk_users = %d\n",
 		__func__, enable, clk_users);
 
 	mutex_lock(&cdc_mclk_mutex);
@@ -765,7 +765,7 @@ exit:
 static int msm8974_mclk_event(struct snd_soc_dapm_widget *w,
 		struct snd_kcontrol *kcontrol, int event)
 {
-	pr_debug("%s: event = %d\n", __func__, event);
+	pr_info("%s: event = %d\n", __func__, event);
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
@@ -994,7 +994,7 @@ static int slim0_rx_sample_rate_get(struct snd_kcontrol *kcontrol,
 	}
 
 	ucontrol->value.integer.value[0] = sample_rate_val;
-	pr_debug("%s: slim0_rx_sample_rate = %d\n", __func__,
+	pr_info("%s: slim0_rx_sample_rate = %d\n", __func__,
 				slim0_rx_sample_rate);
 
 	return 0;
@@ -1003,7 +1003,7 @@ static int slim0_rx_sample_rate_get(struct snd_kcontrol *kcontrol,
 static int slim0_rx_sample_rate_put(struct snd_kcontrol *kcontrol,
 	struct snd_ctl_elem_value *ucontrol)
 {
-	pr_debug("%s: ucontrol value = %ld\n", __func__,
+	pr_info("%s: ucontrol value = %ld\n", __func__,
 			ucontrol->value.integer.value[0]);
 
 	switch (ucontrol->value.integer.value[0]) {
@@ -1039,7 +1039,7 @@ static int slim0_rx_bit_format_get(struct snd_kcontrol *kcontrol,
 		break;
 	}
 
-	pr_debug("%s: slim0_rx_bit_format = %d, ucontrol value = %ld\n",
+	pr_info("%s: slim0_rx_bit_format = %d, ucontrol value = %ld\n",
 			 __func__, slim0_rx_bit_format,
 			ucontrol->value.integer.value[0]);
 
@@ -1064,7 +1064,7 @@ static int slim0_rx_bit_format_put(struct snd_kcontrol *kcontrol,
 static int msm_slim_0_rx_ch_get(struct snd_kcontrol *kcontrol,
 	struct snd_ctl_elem_value *ucontrol)
 {
-	pr_debug("%s: msm_slim_0_rx_ch  = %d\n", __func__,
+	pr_info("%s: msm_slim_0_rx_ch  = %d\n", __func__,
 		 msm_slim_0_rx_ch);
 	ucontrol->value.integer.value[0] = msm_slim_0_rx_ch - 1;
 	return 0;
@@ -1075,7 +1075,7 @@ static int msm_slim_0_rx_ch_put(struct snd_kcontrol *kcontrol,
 {
 	msm_slim_0_rx_ch = ucontrol->value.integer.value[0] + 1;
 
-	pr_debug("%s: msm_slim_0_rx_ch = %d\n", __func__,
+	pr_info("%s: msm_slim_0_rx_ch = %d\n", __func__,
 		 msm_slim_0_rx_ch);
 	return 1;
 }
@@ -1083,7 +1083,7 @@ static int msm_slim_0_rx_ch_put(struct snd_kcontrol *kcontrol,
 static int msm_slim_0_tx_ch_get(struct snd_kcontrol *kcontrol,
 	struct snd_ctl_elem_value *ucontrol)
 {
-	pr_debug("%s: msm_slim_0_tx_ch  = %d\n", __func__,
+	pr_info("%s: msm_slim_0_tx_ch  = %d\n", __func__,
 		 msm_slim_0_tx_ch);
 	ucontrol->value.integer.value[0] = msm_slim_0_tx_ch - 1;
 	return 0;
@@ -1094,14 +1094,14 @@ static int msm_slim_0_tx_ch_put(struct snd_kcontrol *kcontrol,
 {
 	msm_slim_0_tx_ch = ucontrol->value.integer.value[0] + 1;
 
-	pr_debug("%s: msm_slim_0_tx_ch = %d\n", __func__, msm_slim_0_tx_ch);
+	pr_info("%s: msm_slim_0_tx_ch = %d\n", __func__, msm_slim_0_tx_ch);
 	return 1;
 }
 
 static int msm_btsco_rate_get(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
-	pr_debug("%s: msm_btsco_rate  = %d", __func__, msm_btsco_rate);
+	pr_info("%s: msm_btsco_rate  = %d", __func__, msm_btsco_rate);
 	ucontrol->value.integer.value[0] = msm_btsco_rate;
 	return 0;
 }
@@ -1120,7 +1120,7 @@ static int msm_btsco_rate_put(struct snd_kcontrol *kcontrol,
 		msm_btsco_rate = BTSCO_RATE_8KHZ;
 		break;
 	}
-	pr_debug("%s: msm_btsco_rate = %d\n", __func__, msm_btsco_rate);
+	pr_info("%s: msm_btsco_rate = %d\n", __func__, msm_btsco_rate);
 	return 0;
 }
 
@@ -1139,7 +1139,7 @@ static int hdmi_rx_bit_format_get(struct snd_kcontrol *kcontrol,
 		break;
 	}
 
-	pr_debug("%s: hdmi_rx_bit_format = %d, ucontrol value = %ld\n",
+	pr_info("%s: hdmi_rx_bit_format = %d, ucontrol value = %ld\n",
 			 __func__, hdmi_rx_bit_format,
 			ucontrol->value.integer.value[0]);
 
@@ -1158,7 +1158,7 @@ static int hdmi_rx_bit_format_put(struct snd_kcontrol *kcontrol,
 		hdmi_rx_bit_format = SNDRV_PCM_FORMAT_S16_LE;
 		break;
 	}
-	pr_debug("%s: hdmi_rx_bit_format = %d, ucontrol value = %ld\n",
+	pr_info("%s: hdmi_rx_bit_format = %d, ucontrol value = %ld\n",
 			 __func__, hdmi_rx_bit_format,
 			ucontrol->value.integer.value[0]);
 	return 0;
@@ -1167,7 +1167,7 @@ static int hdmi_rx_bit_format_put(struct snd_kcontrol *kcontrol,
 static int msm_hdmi_rx_ch_get(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
-	pr_debug("%s: msm_hdmi_rx_ch  = %d\n", __func__,
+	pr_info("%s: msm_hdmi_rx_ch  = %d\n", __func__,
 			msm_hdmi_rx_ch);
 	ucontrol->value.integer.value[0] = msm_hdmi_rx_ch - 2;
 
@@ -1183,7 +1183,7 @@ static int msm_hdmi_rx_ch_put(struct snd_kcontrol *kcontrol,
 			__func__);
 		msm_hdmi_rx_ch = 8;
 	}
-	pr_debug("%s: msm_hdmi_rx_ch = %d\n", __func__, msm_hdmi_rx_ch);
+	pr_info("%s: msm_hdmi_rx_ch = %d\n", __func__, msm_hdmi_rx_ch);
 
 	return 1;
 }
@@ -1209,7 +1209,7 @@ static int hdmi_rx_sample_rate_get(struct snd_kcontrol *kcontrol,
 	}
 
 	ucontrol->value.integer.value[0] = sample_rate_val;
-	pr_debug("%s: hdmi_rx_sample_rate = %d\n", __func__,
+	pr_info("%s: hdmi_rx_sample_rate = %d\n", __func__,
 				hdmi_rx_sample_rate);
 
 	return 0;
@@ -1218,7 +1218,7 @@ static int hdmi_rx_sample_rate_get(struct snd_kcontrol *kcontrol,
 static int hdmi_rx_sample_rate_put(struct snd_kcontrol *kcontrol,
 	struct snd_ctl_elem_value *ucontrol)
 {
-	pr_debug("%s: ucontrol value = %ld\n", __func__,
+	pr_info("%s: ucontrol value = %ld\n", __func__,
 			ucontrol->value.integer.value[0]);
 
 	switch (ucontrol->value.integer.value[0]) {
@@ -1233,7 +1233,7 @@ static int hdmi_rx_sample_rate_put(struct snd_kcontrol *kcontrol,
 		hdmi_rx_sample_rate = SAMPLING_RATE_48KHZ;
 	}
 
-	pr_debug("%s: hdmi_rx_sample_rate = %d\n", __func__,
+	pr_info("%s: hdmi_rx_sample_rate = %d\n", __func__,
 			hdmi_rx_sample_rate);
 
 	return 0;
@@ -1290,7 +1290,7 @@ static int msm8974_auxpcm_rate_put(struct snd_kcontrol *kcontrol,
 static int main_mic_delay_get(struct snd_kcontrol *kcontrol,
 	struct snd_ctl_elem_value *ucontrol)
 {
-	pr_debug("%s: main_mic_delay = %d\n", __func__,
+	pr_info("%s: main_mic_delay = %d\n", __func__,
 			main_mic_delay);
 	ucontrol->value.integer.value[0] = main_mic_delay;
 	return 0;
@@ -1301,7 +1301,7 @@ static int main_mic_delay_put(struct snd_kcontrol *kcontrol,
 {
 	main_mic_delay = ucontrol->value.integer.value[0];
 
-	pr_debug("%s: main_mic_delay = %d\n", __func__,
+	pr_info("%s: main_mic_delay = %d\n", __func__,
 			main_mic_delay);
 	return 1;
 }
@@ -1310,7 +1310,7 @@ static int main_mic_delay_put(struct snd_kcontrol *kcontrol,
 static int speaker_status_get(struct snd_kcontrol *kcontrol,
 	struct snd_ctl_elem_value *ucontrol)
 {
-	pr_info("%s: speaker_status = %d\n", __func__, speaker_status);
+	pr_info("%s: speaker_status = %d\n ucontrol: %d\n", __func__, speaker_status, ucontrol->value.integer.value[0]);
 	ucontrol->value.integer.value[0] = speaker_status;
 	return 0;
 }
@@ -1319,7 +1319,7 @@ static int speaker_status_put(struct snd_kcontrol *kcontrol,
 	struct snd_ctl_elem_value *ucontrol)
 {
 	speaker_status = ucontrol->value.integer.value[0];
-	pr_info("%s: speaker_status = %d\n", __func__, speaker_status);
+	pr_info("%s: speaker_status = %d\n ucontrol: %d\n", __func__, speaker_status, ucontrol->value.integer.value[0]);
 	return 1;
 }
 #endif
@@ -1327,7 +1327,7 @@ static int speaker_status_put(struct snd_kcontrol *kcontrol,
 static int msm_proxy_rx_ch_get(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
-	pr_debug("%s: msm_proxy_rx_ch = %d\n", __func__,
+	pr_info("%s: msm_proxy_rx_ch = %d\n", __func__,
 						msm_proxy_rx_ch);
 	ucontrol->value.integer.value[0] = msm_proxy_rx_ch - 1;
 	return 0;
@@ -1337,7 +1337,7 @@ static int msm_proxy_rx_ch_put(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
 	msm_proxy_rx_ch = ucontrol->value.integer.value[0] + 1;
-	pr_debug("%s: msm_proxy_rx_ch = %d\n", __func__,
+	pr_info("%s: msm_proxy_rx_ch = %d\n", __func__,
 						msm_proxy_rx_ch);
 	return 1;
 }
@@ -1382,7 +1382,7 @@ static int msm_proxy_rx_be_hw_params_fixup(struct snd_soc_pcm_runtime *rtd,
 	struct snd_interval *channels = hw_param_interval(params,
 					SNDRV_PCM_HW_PARAM_CHANNELS);
 
-	pr_debug("%s: msm_proxy_rx_ch =%d\n", __func__, msm_proxy_rx_ch);
+	pr_info("%s: msm_proxy_rx_ch =%d\n", __func__, msm_proxy_rx_ch);
 
 	if (channels->max < 2)
 		channels->min = channels->max = 2;
@@ -1436,7 +1436,7 @@ static int msm_aux_pcm_get_gpios(struct msm_auxpcm_ctrl *auxpcm_ctrl)
 	for (i = 0; i < auxpcm_ctrl->cnt; i++, pin_data++) {
 		ret = gpio_request(pin_data->gpio_no,
 				pin_data->gpio_name);
-		pr_debug("%s: gpio = %d, gpio name = %s\n"
+		pr_info("%s: gpio = %d, gpio name = %s\n"
 			"ret = %d\n", __func__,
 			pin_data->gpio_no,
 			pin_data->gpio_name,
@@ -1468,7 +1468,7 @@ static int msm_aux_pcm_free_gpios(struct msm_auxpcm_ctrl *auxpcm_ctrl)
 	pin_data = auxpcm_ctrl->pin_data;
 	for (i = 0; i < auxpcm_ctrl->cnt; i++, pin_data++) {
 		gpio_free(pin_data->gpio_no);
-		pr_debug("%s: gpio = %d, gpio_name = %s\n",
+		pr_info("%s: gpio = %d, gpio_name = %s\n",
 			__func__, pin_data->gpio_no,
 			pin_data->gpio_name);
 	}
@@ -1484,7 +1484,7 @@ static int msm_prim_auxpcm_startup(struct snd_pcm_substream *substream)
 	struct msm_auxpcm_ctrl *auxpcm_ctrl = NULL;
 	int ret = 0;
 
-	pr_debug("%s(): substream = %s, prim_auxpcm_rsc_ref counter = %d\n",
+	pr_info("%s(): substream = %s, prim_auxpcm_rsc_ref counter = %d\n",
 		__func__, substream->name, atomic_read(&prim_auxpcm_rsc_ref));
 
 	auxpcm_ctrl = pdata->pri_auxpcm_ctrl;
@@ -1520,7 +1520,7 @@ static void msm_prim_auxpcm_shutdown(struct snd_pcm_substream *substream)
 	struct msm8974_asoc_mach_data *pdata = snd_soc_card_get_drvdata(card);
 	struct msm_auxpcm_ctrl *auxpcm_ctrl = NULL;
 
-	pr_debug("%s(): substream = %s, prim_auxpcm_rsc_ref counter = %d\n",
+	pr_info("%s(): substream = %s, prim_auxpcm_rsc_ref counter = %d\n",
 		__func__, substream->name, atomic_read(&prim_auxpcm_rsc_ref));
 
 	auxpcm_ctrl = pdata->pri_auxpcm_ctrl;
@@ -1541,7 +1541,7 @@ static int msm_sec_auxpcm_startup(struct snd_pcm_substream *substream)
 	struct msm_auxpcm_ctrl *auxpcm_ctrl = NULL;
 	int ret = 0;
 
-	pr_debug("%s(): substream = %s, sec_auxpcm_rsc_ref counter = %d\n",
+	pr_info("%s(): substream = %s, sec_auxpcm_rsc_ref counter = %d\n",
 		__func__, substream->name, atomic_read(&sec_auxpcm_rsc_ref));
 
 	auxpcm_ctrl = pdata->sec_auxpcm_ctrl;
@@ -1577,7 +1577,7 @@ static void msm_sec_auxpcm_shutdown(struct snd_pcm_substream *substream)
 	struct msm8974_asoc_mach_data *pdata = snd_soc_card_get_drvdata(card);
 	struct msm_auxpcm_ctrl *auxpcm_ctrl = NULL;
 
-	pr_debug("%s(): substream = %s, sec_auxpcm_rsc_ref counter = %d\n",
+	pr_info("%s(): substream = %s, sec_auxpcm_rsc_ref counter = %d\n",
 		__func__, substream->name, atomic_read(&sec_auxpcm_rsc_ref));
 
 	auxpcm_ctrl = pdata->sec_auxpcm_ctrl;
@@ -1600,7 +1600,7 @@ static int msm_slim_0_rx_be_hw_params_fixup(struct snd_soc_pcm_runtime *rtd,
 	struct snd_interval *channels =
 	    hw_param_interval(params, SNDRV_PCM_HW_PARAM_CHANNELS);
 
-	pr_debug("%s()\n", __func__);
+	pr_info("%s()\n", __func__);
 	param_set_mask(params, SNDRV_PCM_HW_PARAM_FORMAT,
 				   slim0_rx_bit_format);
 	rate->min = rate->max = slim0_rx_sample_rate;
@@ -1622,7 +1622,7 @@ static int msm_slim_0_tx_be_hw_params_fixup(struct snd_soc_pcm_runtime *rtd,
 	struct snd_interval *channels = hw_param_interval(params,
 			SNDRV_PCM_HW_PARAM_CHANNELS);
 
-	pr_debug("%s()\n", __func__);
+	pr_info("%s()\n", __func__);
 	param_set_mask(params, SNDRV_PCM_HW_PARAM_FORMAT,
 				   slim0_tx_bit_format);
 	rate->min = rate->max = 48000;
@@ -1644,7 +1644,7 @@ static int msm_slim_4_tx_be_hw_params_fixup(struct snd_soc_pcm_runtime *rtd,
 	struct snd_interval *channels = hw_param_interval(params,
 			SNDRV_PCM_HW_PARAM_CHANNELS);
 
-	pr_debug("%s()\n", __func__);
+	pr_info("%s()\n", __func__);
 	rate->min = rate->max = 48000;
 	channels->min = channels->max = 2;
 
@@ -1662,7 +1662,7 @@ static int msm_slim_5_tx_be_hw_params_fixup(struct snd_soc_pcm_runtime *rtd,
 	struct snd_interval *channels =
 	    hw_param_interval(params, SNDRV_PCM_HW_PARAM_CHANNELS);
 
-	pr_debug("%s enter\n", __func__);
+	pr_info("%s enter\n", __func__);
 	rate->min = rate->max = 16000;
 	channels->min = channels->max = 1;
 
@@ -1684,7 +1684,7 @@ static int msm_be_hw_params_fixup(struct snd_soc_pcm_runtime *rtd,
 	struct snd_interval *rate = hw_param_interval(params,
 					SNDRV_PCM_HW_PARAM_RATE);
 
-	pr_debug("%s()\n", __func__);
+	pr_info("%s()\n", __func__);
 	rate->min = rate->max = 48000;
 
 	return 0;
@@ -1698,7 +1698,7 @@ static int msm8974_mi2s_be_hw_params_fixup(struct snd_soc_pcm_runtime *rtd,
 					SNDRV_PCM_HW_PARAM_RATE);
 	struct snd_interval *channels = hw_param_interval(params,
 						SNDRV_PCM_HW_PARAM_CHANNELS);
-	pr_debug("%s: enter\n", __func__);
+	pr_info("%s: enter\n", __func__);
 
 	rate->min = rate->max = 48000;
 
@@ -1722,7 +1722,7 @@ static int msm_be_fm_hw_params_fixup(struct snd_soc_pcm_runtime *rtd,
 	struct snd_interval *channels =
 	    hw_param_interval(params, SNDRV_PCM_HW_PARAM_CHANNELS);
 
-	pr_debug("%s()\n", __func__);
+	pr_info("%s()\n", __func__);
 	rate->min = rate->max = 48000;
 	channels->min = channels->max = 2;
 
@@ -1776,7 +1776,7 @@ static bool msm8974_swap_gnd_mic(struct snd_soc_codec *codec)
 	struct snd_soc_card *card = codec->card;
 	struct msm8974_asoc_mach_data *pdata = snd_soc_card_get_drvdata(card);
 	int value = gpio_get_value_cansleep(pdata->us_euro_gpio);
-	pr_debug("%s: swap select switch %d to %d\n", __func__, value, !value);
+	pr_info("%s: swap select switch %d to %d\n", __func__, value, !value);
 	gpio_set_value_cansleep(pdata->us_euro_gpio, !value);
 	return true;
 }
@@ -1786,7 +1786,7 @@ static int msm_afe_set_config(struct snd_soc_codec *codec)
 	int rc;
 	void *config_data;
 
-	pr_debug("%s: enter\n", __func__);
+	pr_info("%s: enter\n", __func__);
 	config_data = taiko_get_afe_config(codec, AFE_CDC_REGISTERS_CONFIG);
 	rc = afe_set_config(AFE_CDC_REGISTERS_CONFIG, config_data, 0);
 	if (rc) {
@@ -1816,11 +1816,11 @@ static int  msm8974_adsp_state_callback(struct notifier_block *nb,
 		unsigned long value, void *priv)
 {
 	if (value == SUBSYS_BEFORE_SHUTDOWN) {
-		pr_debug("%s: ADSP is about to shutdown. Clearing AFE config\n",
+		pr_info("%s: ADSP is about to shutdown. Clearing AFE config\n",
 			 __func__);
 		msm_afe_clear_config();
 	} else if (value == SUBSYS_AFTER_POWERUP) {
-		pr_debug("%s: ADSP is up\n", __func__);
+		pr_info("%s: ADSP is up\n", __func__);
 	}
 
 	return NOTIFY_OK;
@@ -1844,7 +1844,7 @@ static int msm8974_taiko_codec_up(struct snd_soc_codec *codec)
 		if (!q6core_is_adsp_ready()) {
 			pr_err("%s: ADSP Audio isn't ready\n", __func__);
 		} else {
-			pr_debug("%s: ADSP Audio is ready\n", __func__);
+			pr_info("%s: ADSP Audio is ready\n", __func__);
 			adsp_ready = 1;
 			break;
 		}
@@ -2078,7 +2078,7 @@ out:
 
 static int msm8974_snd_startup(struct snd_pcm_substream *substream)
 {
-	pr_debug("%s(): substream = %s  stream = %d\n", __func__,
+	pr_info("%s(): substream = %s  stream = %d\n", __func__,
 		 substream->name, substream->stream);
 	return 0;
 }
@@ -2163,7 +2163,7 @@ static int msm_snd_hw_params(struct snd_pcm_substream *substream,
 	unsigned int user_set_tx_ch = 0;
 
 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
-		pr_debug("%s: rx_0_ch=%d\n", __func__, msm_slim_0_rx_ch);
+		pr_info("%s: rx_0_ch=%d\n", __func__, msm_slim_0_rx_ch);
 		ret = snd_soc_dai_get_channel_map(codec_dai,
 					&tx_ch_cnt, tx_ch, &rx_ch_cnt , rx_ch);
 		if (ret < 0) {
@@ -2179,7 +2179,7 @@ static int msm_snd_hw_params(struct snd_pcm_substream *substream,
 		}
 	} else {
 
-		pr_debug("%s: %s_tx_dai_id_%d_ch=%d\n", __func__,
+		pr_info("%s: %s_tx_dai_id_%d_ch=%d\n", __func__,
 			 codec_dai->name, codec_dai->id, user_set_tx_ch);
 
 		ret = snd_soc_dai_get_channel_map(codec_dai,
@@ -2223,7 +2223,7 @@ end:
 
 static void msm8974_snd_shudown(struct snd_pcm_substream *substream)
 {
-	pr_debug("%s(): substream = %s stream = %d\n", __func__,
+	pr_info("%s(): substream = %s stream = %d\n", __func__,
 		 substream->name, substream->stream);
 
 }
@@ -2263,7 +2263,7 @@ static void msm8974_mi2s_shutdown(struct snd_pcm_substream *substream)
 
 	if (atomic_dec_return(&pri_mi2s_clk.mi2s_rsc_ref) == 0) {
 		int ret =0;
-		pr_debug("[MAX98504_DEBUG] %s: free mi2s resources\n", __func__);
+		pr_info("[MAX98504_DEBUG] %s: free mi2s resources\n", __func__);
 			if(substream->stream==0)
 				ret = afe_set_lpass_clock(AFE_PORT_ID_SECONDARY_MI2S_RX, &lpass_mi2s_disable);	
 			else if(substream->stream==1)
@@ -2286,7 +2286,7 @@ static int msm8974_configure_pri_mi2s_gpio(void)
 		rtn = gpio_request(pri_mi2s_gpio[i].gpio_no,
 				pri_mi2s_gpio[i].gpio_name);
 
-		pr_debug("%s: gpio = %d, gpio name = %s, rtn = %d\n", __func__,
+		pr_info("%s: gpio = %d, gpio name = %s, rtn = %d\n", __func__,
 		pri_mi2s_gpio[i].gpio_no, pri_mi2s_gpio[i].gpio_name, rtn);		
 		if (rtn) {
 			pr_err("%s: Failed to request gpio %d\n",
@@ -2309,7 +2309,7 @@ static int msm8974_mi2s_startup(struct snd_pcm_substream *substream)
 	struct snd_soc_dai *cpu_dai = rtd->cpu_dai;
 	struct snd_soc_dai *codec_dai = rtd->codec_dai;
 
-	pr_debug("%s: dai name %s %p\n", __func__, cpu_dai->name, cpu_dai->dev);
+	pr_info("%s: dai name %s %p\n", __func__, cpu_dai->name, cpu_dai->dev);
 
 	if (atomic_inc_return(&pri_mi2s_clk.mi2s_rsc_ref) == 1) {
 		pr_info("%s: acquire mi2s resources\n", __func__);
@@ -2370,7 +2370,7 @@ static int msm8974_slimbus_2_hw_params(struct snd_pcm_substream *substream,
 
 		num_rx_ch =  params_channels(params);
 
-		pr_debug("%s: %s rx_dai_id = %d  num_ch = %d\n", __func__,
+		pr_info("%s: %s rx_dai_id = %d  num_ch = %d\n", __func__,
 			codec_dai->name, codec_dai->id, num_rx_ch);
 
 		ret = snd_soc_dai_get_channel_map(codec_dai,
@@ -2390,7 +2390,7 @@ static int msm8974_slimbus_2_hw_params(struct snd_pcm_substream *substream,
 
 		num_tx_ch =  params_channels(params);
 
-		pr_debug("%s: %s  tx_dai_id = %d  num_ch = %d\n", __func__,
+		pr_info("%s: %s  tx_dai_id = %d  num_ch = %d\n", __func__,
 			codec_dai->name, codec_dai->id, num_tx_ch);
 
 		ret = snd_soc_dai_get_channel_map(codec_dai,
@@ -3474,11 +3474,11 @@ static int msm8974_prepare_mainmic(void)
 {
 	int ret;
 	if (mainmic_bias_gpio) {
-		pr_debug("%s : mainmic bias gpio request %d", __func__,
+		pr_info("%s : mainmic bias gpio request %d", __func__,
 			mainmic_bias_gpio);
 		ret = gpio_request(mainmic_bias_gpio, "TAIKO_MAINMIC_BIAS");
 		if (ret) {
-			pr_debug("%s: Failed to request taiko mainmic bias gpio %d error %d\n",
+			pr_info("%s: Failed to request taiko mainmic bias gpio %d error %d\n",
 				__func__, mainmic_bias_gpio, ret);
 			return ret;
 		}
@@ -3494,11 +3494,11 @@ static int msm8974_prepare_submic(void)
 {
 	int ret;
 	if (submic_bias_gpio) {
-		pr_debug("%s : submic bias gpio request %d", __func__,
+		pr_info("%s : submic bias gpio request %d", __func__,
 			submic_bias_gpio);
 		ret = gpio_request(submic_bias_gpio, "TAIKO_SUBMIC_BIAS");
 		if (ret) {
-			pr_debug("%s: Failed to request taiko submic bias gpio %d error %d\n",
+			pr_info("%s: Failed to request taiko submic bias gpio %d error %d\n",
 				__func__, submic_bias_gpio, ret);
 			return ret;
 		}
@@ -3514,11 +3514,11 @@ static int msm8974_prepare_earmic(void)
 {
 	int ret;
 	if (earmic_bias_gpio) {
-		pr_debug("%s : earmic bias gpio request %d", __func__,
+		pr_info("%s : earmic bias gpio request %d", __func__,
 			earmic_bias_gpio);
 		ret = gpio_request(earmic_bias_gpio, "TAIKO_EARMIC_BIAS");
 		if (ret) {
-			pr_debug("%s: Failed to request taiko earmic bias gpio %d error %d\n",
+			pr_info("%s: Failed to request taiko earmic bias gpio %d error %d\n",
 				__func__, earmic_bias_gpio, ret);
 			return ret;
 		}
@@ -3533,11 +3533,11 @@ static int msm8974_prepare_spkamp(void)
 {
 	int ret;
 	if (spkamp_en_gpio) {
-		pr_debug("%s : spkamp en gpio request %d", __func__,
+		pr_info("%s : spkamp en gpio request %d", __func__,
 			spkamp_en_gpio);
 		ret = gpio_request(spkamp_en_gpio, "SPKAMP_EN");
 		if (ret) {
-			pr_debug("%s: Failed to request spkamp en gpio %d error %d\n",
+			pr_info("%s: Failed to request spkamp en gpio %d error %d\n",
 				__func__, spkamp_en_gpio, ret);
 			return ret;
 		}
@@ -3551,11 +3551,11 @@ static int msm8974_prepare_micbias_to_codec(void)
 {
 	int ret;
 	if (micbias_en_msm_gpio) {
-		pr_debug("%s : micbias en msm gpio request %d", __func__,
+		pr_info("%s : micbias en msm gpio request %d", __func__,
 			micbias_en_msm_gpio);
 		ret = gpio_request(micbias_en_msm_gpio, "MICBIAS_TO_CODEC");
 		if (ret) {
-			pr_debug("%s: Failed to request taiko micbias en msm gpio %d error %d\n",
+			pr_info("%s: Failed to request taiko micbias en msm gpio %d error %d\n",
 				__func__, micbias_en_msm_gpio, ret);
 			return ret;
 		}
