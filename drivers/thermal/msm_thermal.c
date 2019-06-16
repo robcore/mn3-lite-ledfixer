@@ -265,8 +265,6 @@ static int  msm_thermal_cpufreq_callback(struct notifier_block *nfb,
 
 	switch (event) {
 	case CPUFREQ_INCOMPATIBLE:
-		policy->cpu, max_freq_req, min_freq_req);
-
 		cpufreq_verify_within_limits(policy, min_freq_req,
 			max_freq_req);
 
