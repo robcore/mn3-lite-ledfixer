@@ -413,7 +413,7 @@ show_one(scaling_min_freq, min);
 show_one(scaling_max_freq, max);
 show_one(cpu_utilization, util);
 #ifdef CONFIG_SEC_PM
-show_one(cpu_load, load_at_max);
+//show_one(cpu_load, load_at_max);
 #endif
 
 static ssize_t show_scaling_cur_freq(
@@ -670,7 +670,7 @@ static struct attribute *default_attrs[] = {
 	&affected_cpus.attr,
 	&cpu_utilization.attr,
 #ifdef CONFIG_SEC_PM
-	&cpu_load.attr,
+//	&cpu_load.attr,
 #endif
 	&related_cpus.attr,
 	&scaling_governor.attr,
