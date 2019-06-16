@@ -2051,6 +2051,8 @@ EXPORT_SYMBOL_GPL(snd_soc_read);
 int real_snd_soc_write(struct snd_soc_codec *codec,
 			   unsigned int reg, unsigned int val, bool override)
 {
+	if (codec == NULL)
+		return -ENOMEM;
 	if (!override) {
 		if ((reg == 0x2E7) || (reg == 743) ||
 			(reg == 0x2B7) || (reg == 695) ||
@@ -2070,6 +2072,8 @@ EXPORT_SYMBOL_GPL(real_snd_soc_write);
 int snd_soc_write(struct snd_soc_codec *codec,
 			   unsigned int reg, unsigned int val)
 {
+	if (codec == NULL)
+		return -ENOMEM;
 	return real_snd_soc_write(codec, reg, val, false);
 }
 EXPORT_SYMBOL_GPL(snd_soc_write);

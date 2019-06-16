@@ -1312,6 +1312,7 @@ static int speaker_status_get(struct snd_kcontrol *kcontrol,
 {
 	pr_info("%s: speaker_status = %d\n", __func__, speaker_status);
 	ucontrol->value.integer.value[0] = speaker_status;
+	
 	return 0;
 }
 
