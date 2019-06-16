@@ -656,23 +656,7 @@ cpufreq_freq_attr_ro(bios_limit);
 cpufreq_freq_attr_ro(related_cpus);
 cpufreq_freq_attr_ro(affected_cpus);
 cpufreq_freq_attr_ro(cpu_utilization);
-#ifdef CONFIG_SEC_PM
-cpufreq_freq_attr_ro(cpu_load);
-/* Disable scaling_min_freq store */
-#ifdef CONFIG_ARCH_MSM8226
-cpufreq_freq_attr_ro(scaling_min_freq);
-#else
 cpufreq_freq_attr_rw(scaling_min_freq);
-#endif
-#else
-#ifdef CONFIG_ARCH_MSM8226
-cpufreq_freq_attr_ro(scaling_min_freq);
-#else
-cpufreq_freq_attr_rw(scaling_min_freq);
-#endif
-#endif
-
-
 cpufreq_freq_attr_rw(scaling_max_freq);
 cpufreq_freq_attr_rw(scaling_governor);
 cpufreq_freq_attr_rw(scaling_setspeed);

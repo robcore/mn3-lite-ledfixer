@@ -7439,6 +7439,8 @@ static ssize_t speaker_gain_store(struct kobject *kobj,
 		output = input;
 
 	real_snd_soc_write(sound_control_codec_ptr, TAIKO_A_CDC_RX7_VOL_CTL_B2_CTL, output, true);
+	real_snd_soc_write(sound_control_codec_ptr, TAIKO_A_CDC_RX7_VOL_CTL_B2_CTL, output, true);
+
 	return count;
 }
 
