@@ -549,7 +549,7 @@ static int __devinit qpnp_tm_probe(struct spmi_device *spmi)
 			if (IS_ERR(chip->vadc_dev)) {
 				rc = PTR_ERR(chip->vadc_dev);
 				if (rc != -EPROBE_DEFER)
-					pr_err("vadc property missing\n");
+					pr_debug("vadc property missing\n");
 				goto err_cancel_work;
 			}
 		}

@@ -113,13 +113,13 @@ static void init_sensor_trip(struct sensor_info *sensor)
 	ret = sensor->tz->ops->get_trip_temp(sensor->tz,
 		sensor->min_idx, &sensor->threshold_min);
 	if (ret)
-		pr_err("Unable to get MIN trip temp. sensor:%d err:%d\n",
+		pr_debug("Unable to get MIN trip temp. sensor:%d err:%d\n",
 				sensor->sensor_id, ret);
 
 	ret = sensor->tz->ops->get_trip_temp(sensor->tz,
 		sensor->max_idx, &sensor->threshold_max);
 	if (ret)
-		pr_err("Unable to get MAX trip temp. sensor:%d err:%d\n",
+		pr_debug("Unable to get MAX trip temp. sensor:%d err:%d\n",
 				sensor->sensor_id, ret);
 }
 
@@ -163,7 +163,7 @@ static int __update_sensor_thresholds(struct sensor_info *sensor)
 		ret = sensor->tz->ops->set_trip_temp(sensor->tz,
 			sensor->max_idx, min_of_high_thresh);
 		if (ret) {
-			pr_err("sensor %d: Unable to set high threshold %d",
+			pr_debug("sensor %d: Unable to set high threshold %d",
 				sensor->sensor_id, ret);
 			goto update_done;
 		}
@@ -175,7 +175,7 @@ static int __update_sensor_thresholds(struct sensor_info *sensor)
 		THERMAL_TRIP_ACTIVATION_DISABLED :
 		THERMAL_TRIP_ACTIVATION_ENABLED);
 	if (ret) {
-		pr_err("sensor %d: Unable to activate high threshold %d",
+		pr_debug("sensor %d: Unable to activate high threshold %d",
 			sensor->sensor_id, ret);
 		goto update_done;
 	}
@@ -185,7 +185,7 @@ static int __update_sensor_thresholds(struct sensor_info *sensor)
 		ret = sensor->tz->ops->set_trip_temp(sensor->tz,
 			sensor->min_idx, max_of_low_thresh);
 		if (ret) {
-			pr_err("sensor %d: Unable to set low threshold %d",
+			pr_debug("sensor %d: Unable to set low threshold %d",
 				sensor->sensor_id, ret);
 			goto update_done;
 		}
@@ -197,7 +197,7 @@ static int __update_sensor_thresholds(struct sensor_info *sensor)
 		THERMAL_TRIP_ACTIVATION_DISABLED :
 		THERMAL_TRIP_ACTIVATION_ENABLED);
 	if (ret) {
-		pr_err("sensor %d: Unable to activate low threshold %d",
+		pr_debug("sensor %d: Unable to activate low threshold %d",
 			sensor->sensor_id, ret);
 		goto update_done;
 	}
@@ -218,7 +218,7 @@ static void sensor_update_work(struct work_struct *work)
 	mutex_lock(&sensor->lock);
 	ret = __update_sensor_thresholds(sensor);
 	if (ret)
-		pr_err("sensor %d: Error %d setting threshold\n",
+		pr_debug("sensor %d: Error %d setting threshold\n",
 			sensor->sensor_id, ret);
 	mutex_unlock(&sensor->lock);
 }
@@ -266,7 +266,7 @@ int sensor_activate_trip(uint32_t sensor_id,
 	int ret = 0;
 
 	if (!sensor || !threshold) {
-		pr_err("Sensor %d: uninitialized data\n",
+		pr_debug("Sensor %d: uninitialized data\n",
 			sensor_id);
 		ret = -ENODEV;
 		goto activate_trip_exit;
@@ -1819,7 +1819,7 @@ int thermal_generate_netlink_event(u32 orig, enum events event)
 
 	result = genlmsg_multicast(skb, 0, thermal_event_mcgrp.id, GFP_ATOMIC);
 	if (result)
-		pr_info("failed to send netlink event:%d\n", result);
+		pr_debug("failed to send netlink event:%d\n", result);
 
 	return result;
 }

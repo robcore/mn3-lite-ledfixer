@@ -80,7 +80,7 @@ static long validate_and_copy(unsigned int *cmd, unsigned long *arg,
 	}
 
 	if (query->size != sizeof(struct msm_thermal_ioctl)) {
-		pr_err("%s: Invalid input argument size\n", __func__);
+		pr_debug("%s: Invalid input argument size\n", __func__);
 		ret = -EINVAL;
 		goto validate_exit;
 	}
@@ -89,7 +89,7 @@ static long validate_and_copy(unsigned int *cmd, unsigned long *arg,
 	case MSM_THERMAL_SET_CPU_MAX_FREQUENCY:
 	case MSM_THERMAL_SET_CPU_MIN_FREQUENCY:
 		if (query->cpu_freq.cpu_num >= num_possible_cpus()) {
-			pr_err("%s: Invalid CPU number: %u\n", __func__,
+			pr_debug("%s: Invalid CPU number: %u\n", __func__,
 				query->cpu_freq.cpu_num);
 			ret = -EINVAL;
 			goto validate_exit;
@@ -150,7 +150,7 @@ int msm_thermal_ioctl_init()
 	ret = alloc_chrdev_region(&thermal_dev, 0, 1,
 		MSM_THERMAL_IOCTL_NAME);
 	if (ret < 0) {
-		pr_err("%s: Error in allocating char device region. Err:%d\n",
+		pr_debug("%s: Error in allocating char device region. Err:%d\n",
 			KBUILD_MODNAME, ret);
 		goto ioctl_init_exit;
 	}
@@ -159,7 +159,7 @@ int msm_thermal_ioctl_init()
 
 	thermal_class = class_create(THIS_MODULE, "msm_thermal");
 	if (IS_ERR(thermal_class)) {
-		pr_err("%s: Error in creating class\n",
+		pr_debug("%s: Error in creating class\n",
 			KBUILD_MODNAME);
 		ret = PTR_ERR(thermal_class);
 		goto ioctl_class_fail;
@@ -168,7 +168,7 @@ int msm_thermal_ioctl_init()
 	therm_device = device_create(thermal_class, NULL, thermal_dev, NULL,
 				MSM_THERMAL_IOCTL_NAME);
 	if (IS_ERR(therm_device)) {
-		pr_err("%s: Error in creating character device\n",
+		pr_debug("%s: Error in creating character device\n",
 			KBUILD_MODNAME);
 		ret = PTR_ERR(therm_device);
 		goto ioctl_dev_fail;
@@ -176,7 +176,7 @@ int msm_thermal_ioctl_init()
 	msm_thermal_dev = kmalloc(sizeof(struct msm_thermal_ioctl_dev),
 				GFP_KERNEL);
 	if (!msm_thermal_dev) {
-		pr_err("%s: Error allocating memory\n",
+		pr_debug("%s: Error allocating memory\n",
 			KBUILD_MODNAME);
 		ret = -ENOMEM;
 		goto ioctl_clean_all;
@@ -187,7 +187,7 @@ int msm_thermal_ioctl_init()
 	cdev_init(&msm_thermal_dev->char_dev, &msm_thermal_fops);
 	ret = cdev_add(&msm_thermal_dev->char_dev, thermal_dev, 1);
 	if (ret < 0) {
-		pr_err("%s: Error in adding character device\n",
+		pr_debug("%s: Error in adding character device\n",
 			KBUILD_MODNAME);
 		goto ioctl_clean_all;
 	}
@@ -209,7 +209,7 @@ void msm_thermal_ioctl_cleanup()
 	dev_t thermal_dev = MKDEV(msm_thermal_major, 0);
 
 	if (!msm_thermal_dev) {
-		pr_err("%s: Thermal IOCTL cleanup already done\n",
+		pr_debug("%s: Thermal IOCTL cleanup already done\n",
 			KBUILD_MODNAME);
 		return;
 	}

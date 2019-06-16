@@ -380,7 +380,7 @@ static void msm_tsens_get_temp(int sensor_hw_num, unsigned long *temp)
 	 * offset and slope for code to degc conversion. */
 	rc = tsens_get_sw_id_mapping(sensor_hw_num, &sensor_sw_id);
 	if (rc < 0) {
-		pr_err("tsens mapping index not found\n");
+		pr_debug("tsens mapping index not found\n");
 		return;
 	}
 
@@ -502,7 +502,7 @@ static int tsens_tz_activate_trip_type(struct thermal_zone_device *thermal,
 			(tm_sensor->sensor_hw_num * TSENS_SN_ADDR_OFFSET)));
 	else {
 		if (code < lo_code || code > hi_code) {
-			pr_err("%s with invalid code %x\n", __func__, code);
+			pr_debug("%s with invalid code %x\n", __func__, code);
 			return -EINVAL;
 		}
 		writel_relaxed(reg_cntl & ~mask,
@@ -540,7 +540,7 @@ static int tsens_tz_get_trip_temp(struct thermal_zone_device *thermal,
 
 	rc = tsens_get_sw_id_mapping(tm_sensor->sensor_hw_num, &sensor_sw_id);
 	if (rc < 0) {
-		pr_err("tsens mapping index not found\n");
+		pr_debug("tsens mapping index not found\n");
 		return rc;
 	}
 	*temp = tsens_tz_code_to_degc(reg, sensor_sw_id);
@@ -569,7 +569,7 @@ static int tsens_tz_set_trip_temp(struct thermal_zone_device *thermal,
 
 	rc = tsens_get_sw_id_mapping(tm_sensor->sensor_hw_num, &sensor_sw_id);
 	if (rc < 0) {
-		pr_err("tsens mapping index not found\n");
+		pr_debug("tsens mapping index not found\n");
 		return rc;
 	}
 	code_err_chk = code = tsens_tz_degc_to_code(temp, sensor_sw_id);
@@ -679,7 +679,6 @@ static void tsens_scheduler_fn(struct work_struct *work)
 					tm->sensor[i].sensor_hw_num,
 					&sensor_sw_id);
 			if (rc < 0)
-				pr_err("tsens mapping index not found\n");
 			pr_debug("sensor:%d trigger temp (%d degC)\n",
 				tm->sensor[i].sensor_hw_num,
 				tsens_tz_code_to_degc((status &
@@ -1397,7 +1396,6 @@ static int get_device_tree_data(struct platform_device *pdev)
 	else if (!strncmp(tsens_calib_mode, "fuse_map3", 9))
 		calib_type = TSENS_CALIB_FUSE_MAP_8X10;
 	else {
-		pr_err("%s: Invalid calibration property\n", __func__);
 		return -EINVAL;
 	}
 
@@ -1407,7 +1405,6 @@ static int get_device_tree_data(struct platform_device *pdev)
 			sizeof(struct tsens_tm_device_sensor),
 			GFP_KERNEL);
 	if (tmdev == NULL) {
-		pr_err("%s: kzalloc() failed.\n", __func__);
 		return -ENOMEM;
 	}
 
@@ -1446,7 +1443,6 @@ static int get_device_tree_data(struct platform_device *pdev)
 
 	tmdev->tsens_irq = platform_get_irq(pdev, 0);
 	if (tmdev->tsens_irq < 0) {
-		pr_err("Invalid get irq\n");
 		rc = tmdev->tsens_irq;
 		goto fail_tmdev;
 	}
@@ -1455,7 +1451,7 @@ static int get_device_tree_data(struct platform_device *pdev)
 	tmdev->res_tsens_mem = platform_get_resource_byname(pdev,
 					IORESOURCE_MEM, "tsens_physical");
 	if (!tmdev->res_tsens_mem) {
-		pr_err("Could not get tsens physical address resource\n");
+		pr_debug("Could not get tsens physical address resource\n");
 		rc = -EINVAL;
 		goto fail_tmdev;
 	}
@@ -1466,14 +1462,14 @@ static int get_device_tree_data(struct platform_device *pdev)
 	res_mem = request_mem_region(tmdev->res_tsens_mem->start,
 				tmdev->tsens_len, tmdev->res_tsens_mem->name);
 	if (!res_mem) {
-		pr_err("Request tsens physical memory region failed\n");
+		pr_debug("Request tsens physical memory region failed\n");
 		rc = -EINVAL;
 		goto fail_tmdev;
 	}
 
 	tmdev->tsens_addr = ioremap(res_mem->start, tmdev->tsens_len);
 	if (!tmdev->tsens_addr) {
-		pr_err("Failed to IO map TSENS registers.\n");
+		pr_debug("Failed to IO map TSENS registers.\n");
 		rc = -EINVAL;
 		goto fail_unmap_tsens_region;
 	}
@@ -1482,7 +1478,7 @@ static int get_device_tree_data(struct platform_device *pdev)
 	tmdev->res_calib_mem = platform_get_resource_byname(pdev,
 				IORESOURCE_MEM, "tsens_eeprom_physical");
 	if (!tmdev->res_calib_mem) {
-		pr_err("Could not get qfprom physical address resource\n");
+		pr_debug("Could not get qfprom physical address resource\n");
 		rc = -EINVAL;
 		goto fail_unmap_tsens;
 	}
@@ -1493,7 +1489,7 @@ static int get_device_tree_data(struct platform_device *pdev)
 	res_mem = request_mem_region(tmdev->res_calib_mem->start,
 				tmdev->calib_len, tmdev->res_calib_mem->name);
 	if (!res_mem) {
-		pr_err("Request calibration memory region failed\n");
+		pr_debug("Request calibration memory region failed\n");
 		rc = -EINVAL;
 		goto fail_unmap_tsens;
 	}
@@ -1501,7 +1497,7 @@ static int get_device_tree_data(struct platform_device *pdev)
 	tmdev->tsens_calib_addr = ioremap(res_mem->start,
 						tmdev->calib_len);
 	if (!tmdev->tsens_calib_addr) {
-		pr_err("Failed to IO map EEPROM registers.\n");
+		pr_debug("Failed to IO map EEPROM registers.\n");
 		rc = -EINVAL;
 		goto fail_unmap_calib_region;
 	}
@@ -1529,14 +1525,14 @@ static int __devinit tsens_tm_probe(struct platform_device *pdev)
 	int rc;
 
 	if (tmdev) {
-		pr_err("TSENS device already in use\n");
+		pr_debug("TSENS device already in use\n");
 		return -EBUSY;
 	}
 
 	if (pdev->dev.of_node) {
 		rc = get_device_tree_data(pdev);
 		if (rc) {
-			pr_err("Error reading TSENS DT\n");
+			pr_debug("Error reading TSENS DT\n");
 			return rc;
 		}
 	} else
@@ -1551,7 +1547,7 @@ static int __devinit tsens_tm_probe(struct platform_device *pdev)
 
 	rc = tsens_calib_sensors();
 	if (rc < 0) {
-		pr_err("Calibration failed\n");
+		pr_debug("Calibration failed\n");
 		goto fail;
 	}
 
@@ -1586,7 +1582,7 @@ static int __devinit _tsens_register_thermal(void)
 	int rc, i;
 
 	if (!tmdev) {
-		pr_err("%s: TSENS early init not done\n", __func__);
+		pr_debug("%s: TSENS early init not done\n", __func__);
 		return -ENODEV;
 	}
 
@@ -1601,7 +1597,7 @@ static int __devinit _tsens_register_thermal(void)
 				TSENS_TRIP_NUM, &tmdev->sensor[i],
 				&tsens_thermal_zone_ops, 0, 0, 0, 0);
 		if (IS_ERR(tmdev->sensor[i].tz_dev)) {
-			pr_err("%s: thermal_zone_device_register() failed.\n",
+			pr_debug("%s: thermal_zone_device_register() failed.\n",
 			__func__);
 			rc = -ENODEV;
 			goto fail;
@@ -1613,7 +1609,7 @@ static int __devinit _tsens_register_thermal(void)
 	rc = request_irq(tmdev->tsens_irq, tsens_isr,
 		IRQF_TRIGGER_RISING, "tsens_interrupt", tmdev);
 	if (rc < 0) {
-		pr_err("%s: request_irq FAIL: %d\n", __func__, rc);
+		pr_debug("%s: request_irq FAIL: %d\n", __func__, rc);
 		for (i = 0; i < tmdev->tsens_num_sensor; i++)
 			thermal_zone_device_unregister(tmdev->sensor[i].tz_dev);
 		goto fail;

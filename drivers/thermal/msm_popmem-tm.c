@@ -156,7 +156,7 @@ static int __devinit pop_mem_tm_probe(struct platform_device *pdev)
 	numcontrollers = get_num_populated_chipselects();
 
 	if (pdev->id >= numcontrollers) {
-		pr_err("%s: memory controller %d does not exist", __func__,
+		pr_debug("%s: memory controller %d does not exist", __func__,
 			pdev->id);
 		rc = -ENODEV;
 		goto fail;
@@ -165,7 +165,7 @@ static int __devinit pop_mem_tm_probe(struct platform_device *pdev)
 	controller_mem = platform_get_resource_byname(pdev,
 						  IORESOURCE_MEM, "physbase");
 	if (!controller_mem) {
-		pr_err("%s: could not get resources for controller %d",
+		pr_debug("%s: could not get resources for controller %d",
 			__func__, pdev->id);
 		rc = -EFAULT;
 		goto fail;
@@ -176,7 +176,7 @@ static int __devinit pop_mem_tm_probe(struct platform_device *pdev)
 	res_mem = request_mem_region(controller_mem->start, len,
 				     controller_mem->name);
 	if (!res_mem) {
-		pr_err("%s: Could not request memory region: "
+		pr_debug("%s: Could not request memory region: "
 			"start=%p, len=%d\n", __func__,
 			(void *) controller_mem->start, len);
 		rc = -EBUSY;
@@ -186,7 +186,7 @@ static int __devinit pop_mem_tm_probe(struct platform_device *pdev)
 
 	base = ioremap(res_mem->start, len);
 	if (!base) {
-		pr_err("%s: Could not ioremap: start=%p, len=%d\n",
+		pr_debug("%s: Could not ioremap: start=%p, len=%d\n",
 			 __func__, (void *) controller_mem->start, len);
 		rc = -EBUSY;
 		goto fail;
@@ -195,7 +195,7 @@ static int __devinit pop_mem_tm_probe(struct platform_device *pdev)
 
 	tmdev = kzalloc(sizeof(*tmdev), GFP_KERNEL);
 	if (tmdev == NULL) {
-		pr_err("%s: kzalloc() failed.\n", __func__);
+		pr_debug("%s: kzalloc() failed.\n", __func__);
 		rc = -ENOMEM;
 		goto fail;
 	}
@@ -214,14 +214,12 @@ static int __devinit pop_mem_tm_probe(struct platform_device *pdev)
 						     0, 0, 0, 0);
 
 	if (tmdev->tz_dev == NULL) {
-		pr_err("%s: thermal_zone_device_register() failed.\n",
+		pr_debug("%s: thermal_zone_device_register() failed.\n",
 			__func__);
 		goto fail;
 	}
 
 	platform_set_drvdata(pdev, tmdev);
-
-	pr_notice("%s: device %d probed successfully\n", __func__, pdev->id);
 
 	return rc;
 

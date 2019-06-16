@@ -96,7 +96,7 @@ static inline int pm8xxx_tm_read_ctrl(struct pm8xxx_tm_chip *chip, u8 *reg)
 	rc = pm8xxx_readb(chip->dev->parent,
 			  chip->cdata.reg_addr_temp_alarm_ctrl, reg);
 	if (rc)
-		pr_err("%s: pm8xxx_readb(0x%03X) failed, rc=%d\n",
+		pr_debug("%s: pm8xxx_readb(0x%03X) failed, rc=%d\n",
 			chip->cdata.tm_name,
 			chip->cdata.reg_addr_temp_alarm_ctrl, rc);
 
@@ -110,7 +110,7 @@ static inline int pm8xxx_tm_write_ctrl(struct pm8xxx_tm_chip *chip, u8 reg)
 	rc = pm8xxx_writeb(chip->dev->parent,
 			   chip->cdata.reg_addr_temp_alarm_ctrl, reg);
 	if (rc)
-		pr_err("%s: pm8xxx_writeb(0x%03X)=0x%02X failed, rc=%d\n",
+		pr_debug("%s: pm8xxx_writeb(0x%03X)=0x%02X failed, rc=%d\n",
 		       chip->cdata.tm_name,
 		       chip->cdata.reg_addr_temp_alarm_ctrl, reg, rc);
 
@@ -124,7 +124,7 @@ static inline int pm8xxx_tm_write_pwm(struct pm8xxx_tm_chip *chip, u8 reg)
 	rc = pm8xxx_writeb(chip->dev->parent,
 			   chip->cdata.reg_addr_temp_alarm_pwm, reg);
 	if (rc)
-		pr_err("%s: pm8xxx_writeb(0x%03X)=0x%02X failed, rc=%d\n",
+		pr_debug("%s: pm8xxx_writeb(0x%03X)=0x%02X failed, rc=%d\n",
 			chip->cdata.tm_name,
 			chip->cdata.reg_addr_temp_alarm_pwm, reg, rc);
 
@@ -251,7 +251,7 @@ static int pm8xxx_tz_get_temp_pm8058_adc(struct thermal_zone_device *thermal,
 
 	rc = adc_channel_request_conv(chip->adc_handle, &wait);
 	if (rc < 0) {
-		pr_err("%s: adc_channel_request_conv() failed, rc = %d\n",
+		pr_debug("%s: adc_channel_request_conv() failed, rc = %d\n",
 			__func__, rc);
 		return rc;
 	}
@@ -260,7 +260,7 @@ static int pm8xxx_tz_get_temp_pm8058_adc(struct thermal_zone_device *thermal,
 
 	rc = adc_channel_read_result(chip->adc_handle, &adc_result);
 	if (rc < 0) {
-		pr_err("%s: adc_channel_read_result() failed, rc = %d\n",
+		pr_debug("%s: adc_channel_read_result() failed, rc = %d\n",
 			__func__, rc);
 		return rc;
 	}
@@ -287,7 +287,7 @@ static int pm8xxx_tz_get_temp_pm8xxx_adc(struct thermal_zone_device *thermal,
 
 	rc = pm8xxx_adc_read(chip->cdata.adc_channel, &result);
 	if (rc < 0) {
-		pr_err("%s: adc_channel_read_result() failed, rc = %d\n",
+		pr_debug("%s: adc_channel_read_result() failed, rc = %d\n",
 			chip->cdata.tm_name, rc);
 		return rc;
 	}
@@ -541,7 +541,7 @@ static int pm8xxx_init_adc(struct pm8xxx_tm_chip *chip, bool enable)
 			rc = adc_channel_open(chip->cdata.adc_channel,
 						&(chip->adc_handle));
 			if (rc < 0)
-				pr_err("adc_channel_open() failed.\n");
+				pr_debug("adc_channel_open() failed.\n");
 		} else {
 			adc_channel_close(chip->adc_handle);
 		}
@@ -559,13 +559,13 @@ static int __devinit pm8xxx_tm_probe(struct platform_device *pdev)
 	int rc = 0;
 
 	if (!cdata) {
-		pr_err("missing core data\n");
+		pr_debug("missing core data\n");
 		return -EINVAL;
 	}
 
 	chip = kzalloc(sizeof(struct pm8xxx_tm_chip), GFP_KERNEL);
 	if (chip == NULL) {
-		pr_err("kzalloc() failed.\n");
+		pr_debug("kzalloc() failed.\n");
 		return -ENOMEM;
 	}
 
@@ -577,7 +577,7 @@ static int __devinit pm8xxx_tm_probe(struct platform_device *pdev)
 	if (res) {
 		chip->tempstat_irq = res->start;
 	} else {
-		pr_err("temp stat IRQ not specified\n");
+		pr_debug("temp stat IRQ not specified\n");
 		goto err_free_chip;
 	}
 
@@ -586,13 +586,13 @@ static int __devinit pm8xxx_tm_probe(struct platform_device *pdev)
 	if (res) {
 		chip->overtemp_irq = res->start;
 	} else {
-		pr_err("over temp IRQ not specified\n");
+		pr_debug("over temp IRQ not specified\n");
 		goto err_free_chip;
 	}
 
 	rc = pm8xxx_init_adc(chip, true);
 	if (rc < 0) {
-		pr_err("Unable to initialize adc\n");
+		pr_debug("Unable to initialize adc\n");
 		goto err_free_chip;
 	}
 
@@ -608,7 +608,7 @@ static int __devinit pm8xxx_tm_probe(struct platform_device *pdev)
 			TRIP_NUM, chip, tz_ops, 0, 0, 0, 0);
 
 	if (chip->tz_dev == NULL) {
-		pr_err("thermal_zone_device_register() failed.\n");
+		pr_debug("thermal_zone_device_register() failed.\n");
 		rc = -ENODEV;
 		goto err_fail_adc;
 	}
@@ -635,20 +635,20 @@ static int __devinit pm8xxx_tm_probe(struct platform_device *pdev)
 	rc = request_irq(chip->tempstat_irq, pm8xxx_tm_isr, IRQF_TRIGGER_RISING,
 		chip->cdata.irq_name_temp_stat, chip);
 	if (rc < 0) {
-		pr_err("request_irq(%d) failed: %d\n", chip->tempstat_irq, rc);
+		pr_debug("request_irq(%d) failed: %d\n", chip->tempstat_irq, rc);
 		goto err_cancel_work;
 	}
 
 	rc = request_irq(chip->overtemp_irq, pm8xxx_tm_isr, IRQF_TRIGGER_RISING,
 		chip->cdata.irq_name_over_temp, chip);
 	if (rc < 0) {
-		pr_err("request_irq(%d) failed: %d\n", chip->overtemp_irq, rc);
+		pr_debug("request_irq(%d) failed: %d\n", chip->overtemp_irq, rc);
 		goto err_free_irq_tempstat;
 	}
 
 	platform_set_drvdata(pdev, chip);
 
-	pr_info("OK\n");
+	pr_debug("OK\n");
 
 	return 0;
 
