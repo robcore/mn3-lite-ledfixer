@@ -186,14 +186,14 @@ static int sec_therm_get_adc_data(struct sec_therm_info *info)
 		rc = qpnp_vadc_read(NULL, MSM_THERM_CH , &results);
 
 		if (rc) {
-			pr_err("error reading AMUX %d, rc = %d\n",
+			pr_debug("error reading AMUX %d, rc = %d\n",
 						MSM_THERM_CH, rc);
 			goto err;
 		}
 		adc_data = results.adc_code;
 
 		if (i == 0) {
-			pr_err("reading MSM_THERM_CH [rc = %d] [adc_code = %d]\n",
+			pr_debug("reading MSM_THERM_CH [rc = %d] [adc_code = %d]\n",
 									rc,results.adc_code);
 		}
 
@@ -233,13 +233,13 @@ static int sec_therm_get_adc_data_flash_led(struct sec_therm_info *info)
 		rc = qpnp_vadc_read(NULL, FLASH_THERM_CH, &results);
 
 		if (rc) {
-			pr_err("error reading AMUX %d, rc = %d\n",
+			pr_debug("error reading AMUX %d, rc = %d\n",
 						LR_MUX9_PU2_AMUX_THM5, rc);
 			goto err;
 		}
 		adc_data = results.adc_code;
 
-		pr_err("reading LR_MUX9_PU2_AMUX_THM5 [rc = %d] [adc_code = %d]\n",
+		pr_debug("reading LR_MUX9_PU2_AMUX_THM5 [rc = %d] [adc_code = %d]\n",
 									rc,results.adc_code);
 		if (i != 0) {
 			if (adc_data > adc_max)
@@ -563,7 +563,7 @@ static struct platform_driver sec_thermistor_driver = {
 
 static int __init sec_therm_init(void)
 {
-	pr_info("func:%s\n", __func__);
+	pr_debug("func:%s\n", __func__);
 	#if defined (SSRM_TEST)
 	tempTest=333;
 	#endif
