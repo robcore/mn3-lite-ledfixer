@@ -93,10 +93,10 @@ KDIR=$RDIR/build/arch/arm/boot
 
 handle_existing()
 {
-	echo -n "Use last version? $OLDVER will be removed [y/n/Default y] ENTER: "
+	echo -n "Use last version? Mark$OLDVER will be removed [y/n/Default y] ENTER: "
 	read USEOLD
 	if [ -z "$USEOLD" ] || [ "$USEOLD" = y ]; then
-		KERNEL_VERSION=machinexlite-${OLDVER}-hltetmo
+		KERNEL_VERSION=machinexlite-Mark${OLDVER}-hltetmo
 		OUT_NAME=$KERNEL_VERSION
 		echo "Removing old zip/tar.md5 files..."
 		rm -f $OUT_DIR/$OUT_NAME.zip
@@ -106,7 +106,7 @@ handle_existing()
 		read NEWVER
 		if [ -z "$NEWVER" ]; then
 			echo "Nothing entered, using old"
-			KERNEL_VERSION=machinexlite-${OLDVER}-hltetmo
+			KERNEL_VERSION=machinexlite-Mark${OLDVER}-hltetmo
 			OUT_NAME=$KERNEL_VERSION
 			echo "Removing old zip/tar.md5 files..."
 			rm -f $OUT_DIR/$OUT_NAME.zip
