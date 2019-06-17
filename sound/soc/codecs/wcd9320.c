@@ -268,6 +268,7 @@ extern unsigned int snd_ctrl_enabled;
 extern int snd_reg_access(unsigned int reg);
 extern int snd_cache_read(unsigned int reg);
 extern void snd_cache_write(unsigned int reg, unsigned int value);
+struct snd_soc_codec *sound_control_codec_ptr;
 
 #define WCD9320_RATES (SNDRV_PCM_RATE_8000 | SNDRV_PCM_RATE_16000 |\
 			SNDRV_PCM_RATE_32000 | SNDRV_PCM_RATE_48000 |\
@@ -4379,6 +4380,15 @@ static void taiko_shutdown(struct snd_pcm_substream *substream,
 	}
 }
 
+static void update_sound_controls(void)
+{
+	if (sound_control_codec_ptr != NULL) {
+		real_snd_soc_write(sound_control_codec_ptr, 0x2E7, snd_soc_read(sound_control_codec_ptr, 0x2E7), true);
+		real_snd_soc_write(sound_control_codec_ptr, 0x2B7, snd_soc_read(sound_control_codec_ptr, 0x2E7), true);
+		real_snd_soc_write(sound_control_codec_ptr, 0x2BF, snd_soc_read(sound_control_codec_ptr, 0x2E7), true);
+	}
+}
+
 static int taiko_prepare(struct snd_pcm_substream *substream,
 		struct snd_soc_dai *dai)
 {
@@ -4387,6 +4397,8 @@ static int taiko_prepare(struct snd_pcm_substream *substream,
 	struct snd_soc_codec *codec = dai->codec;
 	struct taiko_priv *taiko_p = snd_soc_codec_get_drvdata(codec);
 	int found_hs_pa = 0;
+
+	update_sound_controls();
 
 	if (substream->stream)
 		return 0;
@@ -7367,7 +7379,6 @@ static struct regulator *taiko_codec_find_regulator(struct snd_soc_codec *codec,
 	return NULL;
 }
 
-struct snd_soc_codec *sound_control_codec_ptr;
 static unsigned int wcd9xxx_hw_revision;
 
 static int show_sound_value(unsigned int inputval)
