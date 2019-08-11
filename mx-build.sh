@@ -112,7 +112,7 @@ handle_existing()
 			rm -f $OUT_DIR/$OUT_NAME.zip
 			rm -f $OUT_DIR/$OUT_NAME.tar.md5
 		else
-			KERNEL_VERSION=machinexlite-${NEWVER}-hltetmo
+			KERNEL_VERSION=machinexlite-Mark${NEWVER}-hltetmo
 			OUT_NAME=$KERNEL_VERSION
 			echo "$NEWVER" > .oldversion
 		fi
