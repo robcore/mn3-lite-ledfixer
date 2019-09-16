@@ -31,11 +31,11 @@
 #endif
 
 #if defined(CONFIG_MACH_FLTESKT)
-#define SIOP_INPUT_LIMIT_CURRENT 1001
+#define SIOP_INPUT_LIMIT_CURRENT 2100
 #else
-#define SIOP_INPUT_LIMIT_CURRENT 1200
+#define SIOP_INPUT_LIMIT_CURRENT 2100
 #endif
-#define SIOP_CHARGING_LIMIT_CURRENT 1000
+#define SIOP_CHARGING_LIMIT_CURRENT 2100
 #define SLOW_CHARGING_CURRENT_STANDARD 400
 
 struct max77803_charger_data {
@@ -575,15 +575,15 @@ static void max77803_recovery_work(struct work_struct *work)
 		(chgin_dtls == 0x3) && (chg_dtls != 0x8) && (byp_dtls == 0x0))) {
 		pr_info("%s: try to recovery, cnt(%d)\n", __func__,
 				(chg_data->soft_reg_recovery_cnt + 1));
-		if (chg_data->siop_level < 100 &&
-			chg_data->cable_type == POWER_SUPPLY_TYPE_MAINS) {
-			pr_info("%s : LCD on status and recover current\n", __func__);
-			max77803_set_input_current(chg_data,
-					SIOP_INPUT_LIMIT_CURRENT);
-		} else {
+		//if (chg_data->siop_level < 100 &&
+		//	chg_data->cable_type == POWER_SUPPLY_TYPE_MAINS) {
+		//	pr_info("%s : LCD on status and recover current\n", __func__);
+			//max77803_set_input_current(chg_data,
+			//		SIOP_INPUT_LIMIT_CURRENT);
+		//} else //{
 			max77803_set_input_current(chg_data,
 				chg_data->charging_current_max);
-		}
+		//}
 	} else {
 		pr_info("%s: fail to recovery, cnt(%d)\n", __func__,
 				(chg_data->soft_reg_recovery_cnt + 1));
@@ -977,8 +977,8 @@ static int sec_chg_set_property(struct power_supply *psy,
 					case POWER_SUPPLY_TYPE_USB_ACA:
 					case POWER_SUPPLY_TYPE_CARDOCK:
 					case POWER_SUPPLY_TYPE_OTG:	/* These are USB connections, apply custom USB current for all of them */
-									charger->charging_current_max = 1200;
-									charger->charging_current     = 1000;
+									charger->charging_current_max = 2100;
+									charger->charging_current     = 1200;
 									break;
 					case POWER_SUPPLY_TYPE_MAINS:	/* These are AC connections, apply custom AC current for all of them */
 									charger->charging_current_max = 2100;
@@ -991,10 +991,13 @@ static int sec_chg_set_property(struct power_supply *psy,
 //#endif // CONFIG_FORCE_FAST_CHARGE
 			/* decrease the charging current according to siop level */
 			set_charging_current =
-				charger->charging_current * charger->siop_level / 100;
+				charger->charging_current; // * charger->siop_level / 100;
 			if (set_charging_current > 0 &&
 					set_charging_current < usb_charging_current)
 				set_charging_current = usb_charging_current;
+			if (set_charging_current > usb_charging_current &&
+					set_charging_current < 2100)
+				set_charging_current = 2100;
 
 				set_charging_current_max =
 						charger->charging_current_max;
@@ -1005,12 +1008,12 @@ static int sec_chg_set_property(struct power_supply *psy,
 				max77803_check_cvprm(charger, 0x1D);
 #endif
 
-			if (charger->siop_level < 100 &&
-				val->intval == POWER_SUPPLY_TYPE_MAINS) {
-				set_charging_current_max = SIOP_INPUT_LIMIT_CURRENT;
-				if (set_charging_current > SIOP_CHARGING_LIMIT_CURRENT)
-					set_charging_current = SIOP_CHARGING_LIMIT_CURRENT;
-			}
+			//if (charger->siop_level < 100 &&
+				//val->intval == POWER_SUPPLY_TYPE_MAINS) {
+				//set_charging_current_max = SIOP_INPUT_LIMIT_CURRENT;
+			//	if (set_charging_current > SIOP_CHARGING_LIMIT_CURRENT)
+			//		set_charging_current = SIOP_CHARGING_LIMIT_CURRENT;
+			//}
 		}
 		max77803_set_charger_state(charger, charger->is_charging);
 		/* if battery full, only disable charging  */
