@@ -390,7 +390,6 @@ out:
 	return err;
 }
 
-
 /**
  * cpufreq_per_cpu_attr_read() / show_##file_name() -
  * print out cpufreq information
@@ -1246,7 +1245,6 @@ static int cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif)
 	retval = __cpufreq_remove_dev(dev, sif);
 	return retval;
 }
-
 
 static void handle_update(struct work_struct *work)
 {
