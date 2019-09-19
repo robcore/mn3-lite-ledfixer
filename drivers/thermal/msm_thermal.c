@@ -79,7 +79,6 @@ static int limit_idx_high;
 static int max_tsens_num;
 static struct cpufreq_frequency_table *table;
 static uint32_t usefreq;
-static int freq_table_get;
 static bool vdd_rstr_enabled;
 static bool vdd_rstr_nodes_called;
 static bool vdd_rstr_probed;
@@ -287,9 +286,8 @@ static int check_freq_table(void)
 
 	table = cpufreq_frequency_get_table(0);
 	if (!table) {
-		return -EINVAL;
+		ret = -EINVAL;
 	}
-	freq_table_get = 1;
 
 	return ret;
 }
@@ -299,10 +297,8 @@ static void update_cpu_freq(int cpu)
 	int ret = 0;
 
 	if (cpu_online(cpu)) {
-		ret = cpufreq_update_policy(cpu);
-		if (ret)
-			pr_debug("Unable to update policy for cpu:%d. err:%d\n",
-				cpu, ret);
+		if (cpufreq_update_policy(cpu))
+			pr_debug("Unable to update policy for cpu:%d\n", cpu);
 	}
 }
 
@@ -311,17 +307,13 @@ static int update_cpu_min_freq_all(uint32_t min)
 	uint32_t cpu = 0;
 	int ret = 0;
 
-	if (!freq_table_get) {
-		ret = check_freq_table();
-		if (ret) {
-			pr_debug("Fail to get freq table. err:%d\n", ret);
-			return ret;
-		}
-	}
+	ret = check_freq_table();
+	if (ret)
+		return ret;
+
 	/* If min is larger than allowed max */
 	min = min(min, table[limit_idx_high].frequency);
 
-	pr_debug("Requesting min freq:%u for all CPU's\n", min);
 	if (freq_mitigation_task) {
 		min_freq_limit = min;
 		complete(&freq_mitigation_complete);
@@ -452,7 +444,7 @@ static ssize_t vdd_rstr_en_store(struct kobject *kobj,
 		goto done_vdd_rstr_en;
 
 	for (i = 0; i < rails_cnt; i++) {
-		if (rails[i].freq_req == 1 && freq_table_get)
+		if (rails[i].freq_req == 1 && !check_freq_table())
 			ret = vdd_restriction_apply_freq(&rails[i],
 					(val) ? 0 : -1);
 		else
@@ -541,7 +533,7 @@ static ssize_t vdd_rstr_reg_level_store(struct kobject *kobj,
 	}
 
 	if (val != reg->curr_level) {
-		if (reg->freq_req == 1 && freq_table_get)
+		if (reg->freq_req == 1 && !check_freq_table())
 			update_cpu_min_freq_all(reg->levels[val]);
 		else {
 			ret = vdd_restriction_apply_voltage(reg, val);
@@ -722,6 +714,7 @@ fail:
 }
 
 /* 1:enable, 0:disable */
+#if 0
 static int vdd_restriction_apply_all(int en)
 {
 	int i = 0;
@@ -761,6 +754,7 @@ static int vdd_restriction_apply_all(int en)
 		return -EFAULT;
 	return ret;
 }
+#endif
 
 static int msm_thermal_get_freq_table(void)
 {
@@ -781,7 +775,7 @@ static int msm_thermal_get_freq_table(void)
 	limit_idx_low = 0;
 //#endif
 	limit_idx_high = limit_idx = i - 1;
-	BUG_ON(limit_idx_high <= 0 || limit_idx_high <= limit_idx_low);
+	BUG_ON(limit_idx_high <= 0);
 fail:
 	return ret;
 }
@@ -1101,6 +1095,7 @@ do_ocr_exit:
 	return ret;
 }
 
+#if 0
 static int do_vdd_restriction(void)
 {
 	long temp = 0;
@@ -1142,7 +1137,7 @@ exit:
 	mutex_unlock(&vdd_rstr_mutex);
 	return ret;
 }
-
+#endif
 static int do_psm(void)
 {
 	long temp = 0;
@@ -1247,11 +1242,13 @@ static void __ref check_temp(struct work_struct *work)
 			limit_init = 1;
 	}
 
-	do_core_control(temp);
+#if 0
 	do_vdd_restriction();
+#endif
 	do_psm();
 	do_ocr();
 	do_freq_control(temp);
+	do_core_control(temp);
 
 reschedule:
 	if (polling_enabled)
@@ -2123,7 +2120,7 @@ static int vdd_restriction_reg_init(struct platform_device *pdev)
 			 * Restrict frequency by default until we have made
 			 * our first temp reading
 			 */
-			if (freq_table_get)
+			if (!check_freq_table())
 				ret = vdd_restriction_apply_freq(&rails[i], 0);
 
 		} else {
