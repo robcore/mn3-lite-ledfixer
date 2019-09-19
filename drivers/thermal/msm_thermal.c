@@ -402,12 +402,10 @@ static int psm_set_mode_all(int mode)
 	int fail_cnt = 0;
 	int ret = 0;
 
-
 	for (i = 0; i < psm_rails_cnt; i++) {
 		if (psm_rails[i].mode != mode) {
 			ret = rpm_regulator_set_mode(psm_rails[i].reg, mode);
 			if (ret) {
-
 				fail_cnt++;
 			} else
 				psm_rails[i].mode = mode;
