@@ -1,6 +1,6 @@
 #!/bin/bash
-export PATH=/opt/toolchains/arm-cortex_a15-linux-gnueabihf_5.3/bin:$PATH
-
+#export PATH=/opt/toolchains/arm-cortex_a15-linux-gnueabihf_5.3/bin:$PATH
+export PATH=/opt/toolchains/arm-cortex-linux-gnueabi-linaro_4.9.4-2015.06/bin:$PATH
 RDIR=$(pwd)
 [ -z $VARIANT ] && \
 # device variant/carrier, possible options:
