@@ -730,6 +730,7 @@ power_attr(wake_unlock);
 #ifdef CONFIG_CPU_FREQ_LIMIT_USERSPACE
 static int cpufreq_max_limit_val = -1;
 static int cpufreq_min_limit_val = -1;
+static int fake_cpufreq_min_limit_val = -1;
 struct cpufreq_limit_handle *cpufreq_max_hd;
 struct cpufreq_limit_handle *cpufreq_min_hd;
 DEFINE_MUTEX(cpufreq_limit_mutex);
@@ -819,7 +820,7 @@ static ssize_t cpufreq_min_limit_show(struct kobject *kobj,
 					struct kobj_attribute *attr,
 					char *buf)
 {
-	return sprintf(buf, "%d\n", cpufreq_min_limit_val);
+	return sprintf(buf, "%d\n", fake_cpufreq_min_limit_val);
 }
 
 static ssize_t cpufreq_min_limit_store(struct kobject *kobj,
@@ -849,7 +850,7 @@ static ssize_t cpufreq_min_limit_store(struct kobject *kobj,
 	}
 
 	cpufreq_min_hd ?
-		(cpufreq_min_limit_val = val) : (cpufreq_min_limit_val = -1);
+		(fake_cpufreq_min_limit_val = val) : (fake_cpufreq_min_limit_val = -1);
 
 	mutex_unlock(&cpufreq_limit_mutex);
 	ret = n;
