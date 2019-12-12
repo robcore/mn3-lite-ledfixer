@@ -157,14 +157,14 @@ BUILD_KERNEL_CONFIG()
 	cd $RDIR
 	mkdir -p build
 	cp $(pwd)/arch/arm/configs/mxconfig $(pwd)/build/.config
-	make ARCH=arm -C $RDIR O=build -j7 oldconfig
+	make ARCH=arm -C $RDIR O=build -j5 oldconfig
 }
 
 BUILD_KERNEL()
 {
 	handle_existing
 	echo "Starting build..."
-	make ARCH=arm -S -s -C $RDIR O=build -j7
+	make ARCH=arm -S -s -C $RDIR O=build -j5
 }
 
 BUILD_RAMDISK()
