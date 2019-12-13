@@ -45,6 +45,7 @@
 #include "mdnie_lite_tuning_data_hlte.h"
 #define DPRINT(x...)
 #define MAX_LUT_SIZE	256
+static struct mipi_samsung_driver_data *mdnie_msd;
 
 /*#define MDNIE_LITE_TUN_DATA_DEBUG*/
 
