@@ -76,6 +76,7 @@ RAMDISK_FOLDER=${FILE_PREFIX}.ramdisk
 ZIP_FOLDER=${FILE_PREFIX}.zip
 DEFCONFIG=mxconfig
 VARIANT_DEFCONFIG=mxconfig
+QUICKDATE="$(date | awk '{print $2$3}')"
 
 export ARCH=arm
 export CROSS_COMPILE=/opt/toolchains/arm-cortex_a15-linux-gnueabihf_5.3/bin/arm-cortex_a15-linux-gnueabihf-
@@ -165,6 +166,7 @@ BUILD_KERNEL()
 	handle_existing
 	echo "Starting build..."
 	make ARCH=arm -S -s -C $RDIR O=build -j5
+	cp "build/.config" "config.$QUICKDATE"
 }
 
 BUILD_RAMDISK()
