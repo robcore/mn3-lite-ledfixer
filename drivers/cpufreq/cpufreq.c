@@ -662,9 +662,6 @@ static struct attribute *default_attrs[] = {
 	&scaling_max_freq.attr,
 	&affected_cpus.attr,
 	&cpu_utilization.attr,
-#ifdef CONFIG_SEC_PM
-	&cpu_load.attr,
-#endif
 	&related_cpus.attr,
 	&scaling_governor.attr,
 	&scaling_driver.attr,
