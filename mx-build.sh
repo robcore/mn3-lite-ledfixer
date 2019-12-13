@@ -31,7 +31,7 @@ export USE_CCACHE="1"
 export CCACHE_NLEVELS="8"
 
 # root directory of kernel's git repo (default is this script's location)
-RDIR="$(pwd)"
+RDIR="/root/mn3-lite"
 
 #[ -z $VARIANT ] && \
 # device variant/carrier, possible options:
@@ -69,11 +69,9 @@ THREADS=8
 ############## SCARY NO-TOUCHY STUFF ###############
 
 # Used as the prefix for the ramdisk and zip folders. Also used to prefix the defconfig files in arch/arm/configs/.
-FILE_PREFIX="mx"
 KERNEL_AUTHOR="robcore"
-
-RAMDISKFOLDER="$FILE_PREFIX.ramdisk"
-ZIPFOLDER="$FILE_PREFIX.zip"
+RAMDISKFOLDER="mx.ramdisk"
+ZIPFOLDER="mx.zip"
 DEFCONFIG="mxconfig"
 VARIANT_DEFCONFIG="mxconfig"
 QUICKDATE="$(date | awk '{print $2$3}')"
