@@ -28,7 +28,7 @@
 #include "mdss_dsi.h"
 #include "mdss_samsung_dsi_panel.h"
 #include "mdss_fb.h"
-
+#include <linux/sysfs_helpers.h>
 #if defined(CONFIG_MDNIE_LITE_TUNING)
 #include "mdnie_lite_tuning.h"
 #endif
@@ -1992,13 +1992,18 @@ static ssize_t mipi_samsung_disp_partial_disp_store(struct device *dev,
 }
 #endif
 
+static unsigned int force_hbm;
 #if defined(FORCE_500CD)
 static ssize_t mipi_samsung_force_500cd_show(struct device *dev,
 		struct device_attribute *attr, char *buf)
 {
-	pr_info("Node for make brightness as 500Cd \n");
+	int rc;
 
-	return 0;
+	rc = snprintf((char *)buf, PAGE_SIZE, "%d\n",
+					force_hbm);
+	pr_info("%d\n", *buf);
+
+	return rc;
 }
 
 static ssize_t mipi_samsung_force_500cd_store(struct device *dev,
@@ -2008,16 +2013,23 @@ static ssize_t mipi_samsung_force_500cd_store(struct device *dev,
 	sscanf(buf, "%d " , &input);
 	pr_info("%s: input = %d\n", __func__, input);
 
+	sanitize_min_max(input, 0, 1);
+
+	if (input == 1) {
+		force_hbm = 1;
+	} else if (input == 0) {
+		force_hbm = 0;
+	}
 
 	if (msd.dstat.on) {
-		if(input) {
-			pr_info("Force 500Cd Enable\n");
+		if (input) {
 			mipi_samsung_disp_send_cmd(PANEl_FORCE_500CD, true);
-			pr_info("Finish to make 500Cd \n");
+			pr_info("Force 500Cd Enable\n");
+			force_hbm = 1;
 		} else {
-			pr_info("Force 500Cd Disable\n");
 			mipi_samsung_disp_send_cmd(PANEL_BRIGHT_CTRL, true);
-			pr_info("Finish to Disable 500Cd \n");
+			pr_info("Force 500Cd Disable\n");
+			force_hbm = 0;
 		}
 	} else {
 		pr_info("%s : LCD is off state\n", __func__);
@@ -3091,14 +3103,13 @@ static int mdss_dsi_panel_on(struct mdss_panel_data *pdata)
 	mipi_samsung_disp_send_cmd(PANEL_DISPLAY_ON, true);
 #endif
 
-	pr_info("mdss_dsi_panel_on--\n");
+	pr_info("mdss_dsi_panel_on\n");
 
-#if defined(CONFIG_DUAL_LCD)
-	mipi_samsung_disp_send_cmd(PANEL_BRIGHT_CTRL, true);
-#else
 	msd.dstat.bright_level = msd.dstat.recent_bright_level;
-	mipi_samsung_disp_send_cmd(PANEL_BRIGHT_CTRL, true);
-#endif
+	if (force_hbm == 1)
+		mipi_samsung_disp_send_cmd(PANEl_FORCE_500CD, true);
+	else
+		mipi_samsung_disp_send_cmd(PANEL_BRIGHT_CTRL, true);
 
 #if defined(CONFIG_DUAL_LCD)
 	msd.lcd_panel_cmds = 0;
