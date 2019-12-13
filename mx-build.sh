@@ -157,7 +157,7 @@ BUILD_KERNEL_CONFIG()
 	echo "Creating kernel config..."
 	cd "$RDIR"
 	mkdir -p build
-	cp "$(pwd)/arch/arm/configs/mxconfig" "$(pwd)/build/.config"
+	cp "$RDIR/arch/arm/configs/mxconfig" "$RDIR/build/.config"
 	make ARCH="arm" -C "$RDIR" O="build" -j5 oldconfig
 }
 
