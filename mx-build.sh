@@ -26,12 +26,12 @@ export CROSS_COMPILE=/opt/toolchains/arm-cortex-linux-gnueabi-linaro_4.9.4-2015.
 # ./dl-build.sh
 #
 ###################### CONFIG ######################
-export CCACHE_DIR=~/.ccache
-export USE_CCACHE=1
-export CCACHE_NLEVELS=8
+export CCACHE_DIR="~/.ccache"
+export USE_CCACHE="1"
+export CCACHE_NLEVELS="8"
 
 # root directory of kernel's git repo (default is this script's location)
-RDIR=$(pwd)
+RDIR="$(pwd)"
 
 #[ -z $VARIANT ] && \
 # device variant/carrier, possible options:
@@ -48,12 +48,12 @@ RDIR=$(pwd)
 #[ -z $VER ] && \
 # version number
 # KERNEL_NAME should NOT contain any spaces
-KERNEL_NAME=machinexlite
+KERNEL_NAME="machinexlite"
 # kernel version string appended to 3.4.x-${KERNEL_NAME}-kernel-hlte-
 # (shown in Settings -> About device)
-OLDVER=$(cat .oldversion)
+OLDVER="$(cat .oldversion)"
 # output directory of flashable kernel
-OUT_DIR=$RDIR
+OUT_DIR="$RDIR"
 
 # output filename of flashable kernel
 
@@ -69,62 +69,64 @@ THREADS=8
 ############## SCARY NO-TOUCHY STUFF ###############
 
 # Used as the prefix for the ramdisk and zip folders. Also used to prefix the defconfig files in arch/arm/configs/.
-FILE_PREFIX=mx
-KERNEL_AUTHOR=robcore
+FILE_PREFIX="mx"
+KERNEL_AUTHOR="robcore"
 
-RAMDISK_FOLDER=${FILE_PREFIX}.ramdisk
-ZIP_FOLDER=${FILE_PREFIX}.zip
-DEFCONFIG=mxconfig
-VARIANT_DEFCONFIG=mxconfig
+RAMDISKFOLDER="$FILE_PREFIX.ramdisk"
+ZIPFOLDER="$FILE_PREFIX.zip"
+DEFCONFIG="mxconfig"
+VARIANT_DEFCONFIG="mxconfig"
 QUICKDATE="$(date | awk '{print $2$3}')"
 
-export ARCH=arm
-export CROSS_COMPILE=/opt/toolchains/arm-cortex_a15-linux-gnueabihf_5.3/bin/arm-cortex_a15-linux-gnueabihf-
+export ARCH="arm"
+export CROSS_COMPILE="/opt/toolchains/arm-cortex_a15-linux-gnueabihf_5.3/bin/arm-cortex_a15-linux-gnueabihf-"
 
 env KCONFIG_NOTIMESTAMP=true &>/dev/null
 
-if [ ! -f $RDIR"/arch/arm/configs/${VARIANT_DEFCONFIG}" ] ; then
-	echo "Device ${VARIANT_DEFCONFIG} not found in arm configs!"
+if [ ! -f "$RDIR/arch/arm/configs/$VARIANT_DEFCONFIG" ]
+then
+	echo "Device $VARIANT_DEFCONFIG not found in arm configs!"
 	exit -1
 fi
 
-if [ ! -d $RDIR/${RAMDISK_FOLDER} ] ; then
-	echo "${RAMDISK_FOLDER} not found!"
+if [ ! -d "$RDIR/$RAMDISKFOLDER" ]
+then
+	echo "$RAMDISKFOLDER not found!"
 	exit -1
 fi
 
-KDIR=$RDIR/build/arch/arm/boot
+KDIR="$RDIR/build/arch/arm/boot"
 
 handle_existing()
 {
 	echo -n "Use last version? Mark$OLDVER will be removed [y/n/Default y] ENTER: "
 	read USEOLD
 	if [ -z "$USEOLD" ] || [ "$USEOLD" = y ]; then
-		KERNEL_VERSION=machinexlite-Mark${OLDVER}-hltetmo
-		OUT_NAME=$KERNEL_VERSION
+		KERNEL_VERSION="machinexlite-Mark$OLDVER-hltetmo"
+		OUT_NAME="$KERNEL_VERSION"
 		echo "Removing old zip/tar.md5 files..."
-		rm -f $OUT_DIR/$OUT_NAME.zip
-		rm -f $OUT_DIR/$OUT_NAME.tar.md5
+		rm -f "$OUT_DIR/$OUT_NAME.zip"
+		rm -f "$OUT_DIR/$OUT_NAME.tar.md5"
 	elif [ "$USEOLD" = n ]; then
 		echo -n "Enter new version and hit enter: "
 		read NEWVER
 		if [ -z "$NEWVER" ]; then
 			echo "Nothing entered, using old"
-			KERNEL_VERSION=machinexlite-Mark${OLDVER}-hltetmo
-			OUT_NAME=$KERNEL_VERSION
-			echo "Removing old zip/tar.md5 files..."
-			rm -f $OUT_DIR/$OUT_NAME.zip
-			rm -f $OUT_DIR/$OUT_NAME.tar.md5
+			KERNEL_VERSION="machinexlite-Mark$OLDVER-hltetmo"
+			OUT_NAME="$KERNEL_VERSION"
+			echo "Removing ld zip/tar.md5 files..."
+			rm -f "$OUT_DIR/$OUT_NAME.zip"
+			rm -f "$OUT_DIR/$OUT_NAME.tar.md5"
 		else
-			KERNEL_VERSION=machinexlite-Mark${NEWVER}-hltetmo
-			OUT_NAME=$KERNEL_VERSION
+			KERNEL_VERSION="machinexlite-Mark${NEWVER}-hltetmo"
+			OUT_NAME="$KERNEL_VERSION"
 			echo "$NEWVER" > .oldversion
 		fi
 	fi
 	echo "Kernel version is $KERNEL_VERSION"
 	echo " "
 	echo " "
-	export LOCALVERSION=$KERNEL_VERSION
+	export LOCALVERSION="$KERNEL_VERSION"
 }
 
 CLEAN_BUILD()
@@ -139,11 +141,11 @@ CLEAN_BUILD()
 					-o -iname \*.bkp \
 					-o -iname \*.ko \) \
 						| parallel rm -fv {};
-	cd $RDIR
+	cd "$RDIR"
 	rm -rf build
-	rm -f ${ZIP_FOLDER}/boot.img
-	make -C $RDIR/scripts/mkqcdtbootimg clean &>/dev/null
-	rm -rf $RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg &>/dev/null
+	rm -f "$ZIPFOLDER/boot.img"
+	make -C "$RDIR/scripts/mkqcdtbootimg" clean
+	rm -rf "$RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg" &>/dev/null
 	echo "Cleaned"
 }
 
@@ -155,65 +157,66 @@ CLEAN_BUILD &>/dev/null
 BUILD_KERNEL_CONFIG()
 {
 	echo "Creating kernel config..."
-	cd $RDIR
+	cd "$RDIR"
 	mkdir -p build
-	cp $(pwd)/arch/arm/configs/mxconfig $(pwd)/build/.config
-	make ARCH=arm -C $RDIR O=build -j5 oldconfig
+	cp "$(pwd)/arch/arm/configs/mxconfig" "$(pwd)/build/.config"
+	make ARCH="arm" -C "$RDIR" O="build" -j5 oldconfig
 }
 
 BUILD_KERNEL()
 {
 	handle_existing
 	echo "Starting build..."
-	make ARCH=arm -S -s -C $RDIR O=build -j5
+	make ARCH="arm" -S -s -C "$RDIR" O="build" -j5
 	cp "build/.config" "config.$QUICKDATE"
 }
 
 BUILD_RAMDISK()
 {
 	echo "Building ramdisk structure..."
-	cd $RDIR
+	cd "$RDIR"
 	rm -rf build/ramdisk &>/dev/null
 	mkdir -p build/ramdisk
-	cp -ar ${RAMDISK_FOLDER}/* build/ramdisk
+	cp -ar "$RAMDISKFOLDER/*" "build/ramdisk"
 	echo "Building ramdisk.img..."
-	cd $RDIR/build/ramdisk
+	cd "$RDIR/build/ramdisk"
 	mkdir -pm 755 dev proc sys system
 	mkdir -pm 771 data
-	find | fakeroot cpio -o -H newc | gzip -9 > $KDIR/ramdisk.cpio.gz
-	cd $RDIR
+	find | fakeroot cpio -o -H newc | gzip -9 > "$KDIR/ramdisk.cpio.gz"
+	cd "$RDIR"
 }
 
 BUILD_BOOT_IMG()
 {
 	echo "Generating boot.img..."
 
-	if [ ! -f $RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg ] ; then
-		make -C $RDIR/scripts/mkqcdtbootimg
+	if [ ! -f "$RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg" ]
+	then
+		make -C "$RDIR/scripts/mkqcdtbootimg"
 	fi
 
-	$RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg --kernel $KDIR/zImage \
-		--ramdisk $KDIR/ramdisk.cpio.gz \
-		--dt_dir $KDIR \
+	$RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg --kernel "$KDIR/zImage" \
+		--ramdisk "$KDIR/ramdisk.cpio.gz" \
+		--dt_dir "$KDIR" \
 		--cmdline "console=null androidboot.hardware=qcom user_debug=23 msm_rtb.filter=0x37 ehci-hcd.park=3" \
-		--base 0x00000000 \
-		--pagesize 2048 \
-		--ramdisk_offset 0x02000000 \
-		--tags_offset 0x01e00000 \
-		--output $RDIR/${ZIP_FOLDER}/boot.img
+		--base "0x00000000" \
+		--pagesize "2048" \
+		--ramdisk_offset "0x02000000" \
+		--tags_offset "0x01e00000" \
+		--output "$RDIR/$ZIPFOLDER/boot.img"
+
+	echo -n "SEANDROIDENFORCE" >> "$RDIR/$ZIPFOLDER/boot.img"
 }
 
 CREATE_ZIP()
 {
-	if [ $MAKE_ZIP != 1 ]; then return; fi
-
 	echo "Compressing to TWRP flashable zip file..."
-	cd $RDIR/${ZIP_FOLDER}
-	zip -r -9 - * > $OUT_DIR/$OUT_NAME.zip
+	cd "$RDIR/$ZIPFOLDER"
+	zip -r -9 - * > "$OUT_DIR/$OUT_NAME.zip"
 	echo "Kernel $OUT_NAME.zip finished"
 	echo "Filepath: "
 	echo "$OUT_DIR/$OUT_NAME.zip"
-	cd $RDIR
+	cd "$RDIR"
 	exit 0
 }
 
@@ -222,7 +225,7 @@ CREATE_TAR()
 	if [ $MAKE_TAR != 1 ]; then return; fi
 
 	echo "Compressing to Odin flashable tar.md5 file..."
-	cd $RDIR/${ZIP_FOLDER}
+	cd $RDIR/${ZIPFOLDER}
 	tar -H ustar -c boot.img > $OUT_DIR/$OUT_NAME.tar
 	cd $OUT_DIR
 	md5sum -t $OUT_NAME.tar >> $OUT_NAME.tar
