@@ -173,10 +173,9 @@ BUILD_RAMDISK()
 {
 	echo "Building ramdisk structure..."
 	cd "$RDIR"
-	rm -rf build/ramdisk &>/dev/null
-	mkdir -p build/ramdisk
-	cp -ar "$RAMDISKFOLDER/*" "build/ramdisk"
-	echo "Building ramdisk.img..."
+	rm -rf "$RDIR/build/ramdisk" &>/dev/null
+	cp -par "$RDIR/$RAMDISKFOLDER" "$RDIR/build/ramdisk" || exit 1
+	echo "Building ramdisk img"
 	cd "$RDIR/build/ramdisk"
 	mkdir -pm 755 dev proc sys system
 	mkdir -pm 771 data
