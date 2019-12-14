@@ -2282,7 +2282,7 @@ new_workload:
 		slice = slice * cfqd->cfq_slice[0] / cfqd->cfq_slice[1];
 	} else
 		/* sync workload slice is at least 2 * cfq_slice_idle */
-		slice = max(slice, 0);
+		slice = max(slice, 2 * cfqd->cfq_slice_idle);
 
 	slice = max_t(unsigned, slice, CFQ_MIN_TT);
 	cfq_log(cfqd, "workload slice:%d", slice);
@@ -2480,7 +2480,7 @@ static inline bool cfq_slice_used_soon(struct cfq_data *cfqd,
 	/* the queue hasn't finished any request, can't estimate */
 	if (cfq_cfqq_slice_new(cfqq))
 		return true;
-	if (time_after(jiffies,
+	if (time_after(jiffies + cfqd->cfq_slice_idle * cfqq->dispatched,
 		cfqq->slice_end))
 		return true;
 
@@ -2961,9 +2961,9 @@ cfq_update_io_thinktime(struct cfq_data *cfqd, struct cfq_queue *cfqq,
 			struct cfq_io_cq *cic)
 {
 	if (cfq_cfqq_sync(cfqq)) {
-		__cfq_update_io_thinktime(&cic->ttime, 0);
+		__cfq_update_io_thinktime(&cic->ttime, cfqd->cfq_slice_idle);
 		__cfq_update_io_thinktime(&cfqq->service_tree->ttime,
-		0);
+			cfqd->cfq_slice_idle);
 	}
 #ifdef CONFIG_CFQ_GROUP_IOSCHED
 	__cfq_update_io_thinktime(&cfqq->cfqg->ttime, cfqd->cfq_group_idle);
@@ -3018,7 +3018,7 @@ cfq_update_idle_window(struct cfq_data *cfqd, struct cfq_queue *cfqq,
 		 (!cfq_cfqq_deep(cfqq) && CFQQ_SEEKY(cfqq)))
 		enable_idle = 0;
 	else if (sample_valid(cic->ttime.ttime_samples)) {
-		if (cic->ttime.ttime_mean > 0)
+		if (cic->ttime.ttime_mean > cfqd->cfq_slice_idle)
 			enable_idle = 0;
 		else
 			enable_idle = 1;
@@ -3345,7 +3345,7 @@ static void cfq_completed_request(struct request_queue *q, struct request *rq)
 		 * the queue.
 		 */
 		if (cfq_should_wait_busy(cfqd, cfqq)) {
-			unsigned long extend_sl = 0;
+			unsigned long extend_sl = cfqd->cfq_slice_idle;
 			if (!cfqd->cfq_slice_idle)
 				extend_sl = cfqd->cfq_group_idle;
 			cfqq->slice_end = jiffies + extend_sl;
@@ -3900,8 +3900,9 @@ static int __init cfq_init(void)
 	 */
 	if (!cfq_slice_async)
 		cfq_slice_async = 1;
+	if (!cfq_slice_idle)
+		cfq_slice_idle = 1;
 
-	cfq_slice_idle = 0;
 #ifdef CONFIG_CFQ_GROUP_IOSCHED
 	if (!cfq_group_idle)
 		cfq_group_idle = 1;
