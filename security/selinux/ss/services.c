@@ -734,9 +734,7 @@ out:
 	kfree(o);
 	kfree(n);
 	kfree(t);
-
-	//if (!selinux_enforcing)
-		return 0;
+	return 0;
 
 }
 
@@ -1357,12 +1355,7 @@ out:
 	kfree(s);
 	kfree(t);
 	kfree(n);
-#ifdef CONFIG_ALWAYS_ENFORCE
-        selinux_enforcing = 1;
-#endif
-	if (!selinux_enforcing)
-		return 0;
-	return -EACCES;
+	return 0;
 }
 
 static void filename_compute_type(struct policydb *p, struct context *newcontext,
@@ -1626,11 +1619,6 @@ static inline int convert_context_handle_invalid_context(struct context *context
 {
 	char *s;
 	u32 len;
-#ifdef CONFIG_ALWAYS_ENFORCE
-        selinux_enforcing = 1;
-#endif
-	if (selinux_enforcing)
-		return -EINVAL;
 
 	if (!context_struct_to_string(context, &s, &len)) {
 		printk(KERN_WARNING "SELinux:  Context %s would be invalid if enforcing\n", s);
