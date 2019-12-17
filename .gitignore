@@ -112,3 +112,4 @@ flar2patches/
 flar2patches/*.patch
 flar2patches
 scripts/mkqcdtbootimg/mkqcdtbootimg
+config.*
