@@ -71,7 +71,7 @@ warnandfail() {
 	echo -n "MX ERROR on Line ${BASH_LINENO[0]}"
 	echo "!!!"
 	local ISTRING
-	ISTRING="$@"
+	ISTRING="$1"
 	if [ -n "$ISTRING" ]
 	then
 		echo "$ISTRING"
