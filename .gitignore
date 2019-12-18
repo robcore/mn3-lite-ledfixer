@@ -113,3 +113,4 @@ flar2patches/*.patch
 flar2patches
 scripts/mkqcdtbootimg/mkqcdtbootimg
 config.*
+magiskbackup
