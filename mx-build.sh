@@ -212,10 +212,10 @@ MAGISKBOOTIMG() {
 MAGISK_ZIP() {
 	echo "Compressing magisk kernel to TWRP flashable zip file..."
 	cd "$ZIPFOLDER" || warnandfail "Failed to cd to $ZIPFOLDER"
-	zip -r -9 - * > "$RDIR/$OUT_NAME-magisk.zip"
-	echo "Kernel $OUT_NAME-magisk.zip finished"
+	zip -r -9 - * > "$RDIR/$OUT_NAME_magisk.zip"
+	echo "Kernel $OUT_NAME_magisk.zip finished"
 	echo "Filepath: "
-	echo "$RDIR/$OUT_NAME-magisk.zip"
+	echo "$RDIR/$OUT_NAME_magisk.zip"
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR"
 }
 
