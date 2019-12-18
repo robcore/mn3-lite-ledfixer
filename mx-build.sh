@@ -26,7 +26,7 @@ export CROSS_COMPILE=/opt/toolchains/arm-cortex-linux-gnueabi-linaro_4.9.4-2015.
 # ./dl-build.sh
 #
 ###################### CONFIG ######################
-export CCACHE_DIR="~/.ccache"
+export CCACHE_DIR="$HOME/.ccache"
 export USE_CCACHE="1"
 export CCACHE_NLEVELS="8"
 
