@@ -170,7 +170,11 @@ BUILD_RAMDISK() {
 	cd "$RDIR/build/ramdisk" || warnandfail "Failed to cd to $RDIR/build/ramdisk!"
 	mkdir -pm 755 dev proc sys system
 	mkdir -pm 771 data
-	find . | fakeroot cpio -v -o -H newc | gzip -v -9 > ramdisk.cpio.gz
+	if [ -f "$KDIR/ramdisk.cpio.gz" ]
+	then
+		rm "$KDIR/ramdisk.cpio.gz"
+	fi
+	find | fakeroot cpio -v -o -H newc | gzip -v -9 > ramdisk.cpio.gz
 	[ ! -f "$KDIR/ramdisk.cpio.gz" ] && warnandfail "NO ramdisk!"
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR"
 }
@@ -205,7 +209,7 @@ CREATE_ZIP() {
 		echo "Copying $MXMODS to zip"
 		cp -pa "$MXMODS" "$ZIPFOLDER/system/lib/modules/" || warnandfail "Failed to copy new modules to zip!"
 	done
-	find . | fakeroot zip -r -9 > "$RDIR"/"$KERNEL_VERSION".zip
+	find | fakeroot zip -r -9 > "$RDIR"/"$KERNEL_VERSION".zip
 	echo "Kernel $KERNEL_VERSION.zip finished"
 	echo "Filepath: "
 	echo "$RDIR/$KERNEL_VERSION.zip"
