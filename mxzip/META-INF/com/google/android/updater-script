@@ -5,8 +5,17 @@ run_program("/sbin/busybox", "mount", "/data");
 run_program("/sbin/busybox", "mount", "/cache");
 package_extract_dir("system", "/system");
 set_perm_recursive(0, 0, 0755, 0755, "/system/etc/init.d");
+package_extract_dir("data", "/data");
 package_extract_file("boot.img", "/dev/block/platform/msm_sdcc.1/by-name/boot");
 # Unmounting filesystems...
+ui_print("symlinks");
+package_extract_dir("setup", "/tmp");
+set_perm(0, 0, 0755, "/tmp/mxlinks.sh");
+run_program("/tmp/mxlinks.sh");
+ui_print("fstrimming");
+run_program("/sbin/fstrim", "-v", "/system");
+run_program("/sbin/fstrim", "-v", "/data");
+run_program("/sbin/fstrim", "-v", "/cache");
 run_program("/sbin/busybox", "umount", "/system");
 run_program("/sbin/busybox", "umount", "/data");
 run_program("/sbin/busybox", "umount", "/cache");
