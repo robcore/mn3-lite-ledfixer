@@ -48,7 +48,6 @@ RDIR="/root/mn3-lite"
 #[ -z $VER ] && \
 # version number
 # KERNEL_NAME should NOT contain any spaces
-KERNEL_NAME="machinexlite"
 # kernel version string appended to 3.4.x-${KERNEL_NAME}-kernel-hlte-
 # (shown in Settings -> About device)
 OLDVER="$(cat .oldversion)"
@@ -56,7 +55,6 @@ OLDVER="$(cat .oldversion)"
 ############## SCARY NO-TOUCHY STUFF ###############
 
 # Used as the prefix for the ramdisk and zip folders. Also used to prefix the defconfig files in arch/arm/configs/.
-KERNEL_AUTHOR="robcore"
 RAMDISKFOLDER="$RDIR/mx.ramdisk"
 ZIPFOLDER="$RDIR/mx.zip"
 DEFCONFIG="$RDIR/arch/arm/configs/mxconfig"
@@ -94,33 +92,41 @@ fi
 KDIR="$RDIR/build/arch/arm/boot"
 
 handle_existing() {
-	echo -n "Use last version? Mark$OLDVER will be removed [y/n/Default y] ENTER: "
-	read USEOLD
-	if [ -z "$USEOLD" ] || [ "$USEOLD" = y ]; then
-		KERNEL_VERSION="machinexlite-Mark$OLDVER-hltetmo"
-		OUT_NAME="$KERNEL_VERSION"
+	echo -n "Use last version? Mark${OLDVER} will be removed [y/n/Default y] ENTER: "
+	read -rs USEOLD
+	if [ -z "$USEOLD" ]
+	then
+		warnandfail "You MUST choose a version for the kernel"
+	elif [ "$USEOLD" = y ]
+	then
+		KERNEL_VERSION="machinexlite-Mark${OLDVER}-hltetmo"
+		KERNEL_VERSION_MAGISK="machinexlite-Mark${OLDVER}-hltetmo-magisk"
 		echo "Removing old zip/tar.md5 files..."
-		rm -f "$RDIR/$OUT_NAME.zip"
-		rm -f "$RDIR/$OUT_NAME.tar.md5"
-	elif [ "$USEOLD" = n ]; then
+		rm -f "$RDIR/$KERNEL_VERSION.zip"
+		rm -f "$RDIR/$KERNEL_VERSION_MAGISK.zip"
+	elif [ "$USEOLD" = n ]
+	then
 		echo -n "Enter new version and hit enter: "
-		read NEWVER
-		if [ -z "$NEWVER" ]; then
+		read -rs NEWVER
+		if [ -z "$NEWVER" ]
+		then
 			echo "Nothing entered, using old"
-			KERNEL_VERSION="machinexlite-Mark$OLDVER-hltetmo"
-			OUT_NAME="$KERNEL_VERSION"
+			KERNEL_VERSION="machinexlite-Mark${OLDVER}-hltetmo"
+			KERNEL_VERSION_MAGISK="machinexlite-Mark${OLDVER}-hltetmo-magisk"
 			echo "Removing ld zip/tar.md5 files..."
-			rm -f "$RDIR/$OUT_NAME.zip" &> /dev/null
-			rm -f "$RDIR/$OUT_NAME.tar.md5" &> /dev/null
+			rm -f "$RDIR/$KERNEL_VERSION.zip" &> /dev/null
+			rm -f "$RDIR/$KERNEL_VERSION_MAGISK.zip" &> /dev/null
 		else
 			KERNEL_VERSION="machinexlite-Mark${NEWVER}-hltetmo"
-			OUT_NAME="$KERNEL_VERSION"
+			KERNEL_VERSION_MAGISK="machinexlite-Mark${NEWVER}-hltetmo-magisk"
 			echo "$NEWVER" > .oldversion
 		fi
 	fi
-	echo "Kernel version is $KERNEL_VERSION"
-	echo " "
-	echo " "
+	echo "Kernel versions are:"
+	echo "$KERNEL_VERSION"
+	echo "and"
+	echo "$KERNEL_VERSION_MAGISK"
+	echo "--------------------------------"
 	export LOCALVERSION="$KERNEL_VERSION"
 }
 
@@ -179,18 +185,17 @@ MAGISKRAMDISK() {
 	cp -pa "$RDIR/build/magiskramdisk/init" "$RDIR/build/magiskramdisk/.build" || warnandfail "Failed to copy init to magisk backup!"
 	rm "$RDIR/build/magiskramdisk/init" &> /dev/null
 	cp -pa "$RDIR/magiskinit" "$RDIR/build/magiskramdisk/init" || warnandfail "Failed to copy magisk init to ramdisk init!"
+	echo "Creating magisk-style /data/${NEWSHAW}boot.img"
+	mv "$ZIPFOLDER/boot.img" "$RDIR/build/magiskramdisk/data/${NEWSHAW}boot.img" || warnandfail "Failed to move magisk-style boot.img to /data/${NEWSHAW}boot.img!"
 	echo "Removing stock ramdisk.cpio.gz"
 	rm "$KDIR/ramdisk.cpio.gz" || warnandfail "magiskramdisk error! $KDIR/ramdisk.cpio.gz does not exist! Something is wrong!"
-	find | fakeroot cpio -o -H newc | gzip -9 > "$KDIR/ramdisk.cpio.gz"
+	find . | fakeroot cpio -o -H newc | gzip -9 > "$KDIR/ramdisk.cpio.gz"
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR"
 
 }
 
 MAGISKBOOTIMG() {
-	echo "Removing stock boot.img"
 	echo "Generating Magisk boot.img..."
-	rm "$ZIPFOLDER/boot.img" || warnandfail "magiskbootimg error! $ZIPFOLDER/boot.img does not exist! Something is wrong!"
-
 	if [ ! -f "$RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg" ]
 	then
 		make -C "$RDIR/scripts/mkqcdtbootimg" || warnandfail "Failed to make dtb tool!"
@@ -212,10 +217,10 @@ MAGISKBOOTIMG() {
 MAGISK_ZIP() {
 	echo "Compressing magisk kernel to TWRP flashable zip file..."
 	cd "$ZIPFOLDER" || warnandfail "Failed to cd to $ZIPFOLDER"
-	zip -r -9 - * > "$RDIR/$OUT_NAME_magisk.zip"
-	echo "Kernel $OUT_NAME_magisk.zip finished"
+	zip -r -9 -- *glob* > "$RDIR/$KERNEL_VERSION_MAGISK.zip"
+	echo "Kernel $KERNEL_VERSION_MAGISK.zip finished"
 	echo "Filepath: "
-	echo "$RDIR/$OUT_NAME_magisk.zip"
+	echo "$RDIR/$KERNEL_VERSION_MAGISK.zip"
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR"
 }
 
@@ -228,7 +233,7 @@ BUILD_RAMDISK() {
 	cd "$RDIR/build/ramdisk" || warnandfail "Failed to cd to $RDIR/build/ramdisk!"
 	mkdir -pm 755 dev proc sys system
 	mkdir -pm 771 data
-	find | fakeroot cpio -o -H newc | gzip -9 > "$KDIR/ramdisk.cpio.gz"
+	find . | fakeroot cpio -o -H newc | gzip -9 > "$KDIR/ramdisk.cpio.gz"
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR"
 }
 
@@ -256,10 +261,10 @@ BUILD_BOOT_IMG() {
 CREATE_ZIP() {
 	echo "Compressing to TWRP flashable zip file..."
 	cd "$ZIPFOLDER" || warnandfail "Failed to cd to $ZIPFOLDER"
-	zip -r -9 - * > "$RDIR/$OUT_NAME.zip"
-	echo "Kernel $OUT_NAME.zip finished"
+	zip -r -9 -- *glob* > "$RDIR/$KERNEL_VERSION.zip"
+	echo "Kernel $KERNEL_VERSION.zip finished"
 	echo "Filepath: "
-	echo "$RDIR/$OUT_NAME.zip"
+	echo "$RDIR/$KERNEL_VERSION.zip"
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR"
 }
 
@@ -269,10 +274,10 @@ CREATE_ZIP() {
 #
 #	echo "Compressing to Odin flashable tar.md5 file..."
 #	cd $RDIR/${ZIPFOLDER}
-#	tar -H ustar -c boot.img > $RDIR/$OUT_NAME.tar
+#	tar -H ustar -c boot.img > $RDIR/$KERNEL_VERSION.tar
 #	cd $RDIR
-#	md5sum -t $OUT_NAME.tar >> $OUT_NAME.tar
-#	mv $OUT_NAME.tar $OUT_NAME.tar.md5
+#	md5sum -t $KERNEL_VERSION.tar >> $KERNEL_VERSION.tar
+#	mv $KERNEL_VERSION.tar $KERNEL_VERSION.tar.md5
 #	cd $RDIR
 #}
 
