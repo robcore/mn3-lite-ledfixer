@@ -161,7 +161,6 @@ BUILD_KERNEL_CONFIG() {
 }
 
 BUILD_KERNEL() {
-	handle_existing
 	echo "Starting build..."
 	make ARCH="arm" -S -s -C "$RDIR" O="${RDIR}/build" -j5 || warnandfail "Kernel Build failed!"
 	cp "build/.config" "config.$QUICKDATE"
@@ -320,7 +319,7 @@ BUILD_KERNEL_CONTINUE() {
 }
 
 BUILD_ALL() {
-	CLEAN_BUILD && BUILD_KERNEL_CONFIG && BUILD_KERNEL_CONTINUE && CLEAN_BUILD && exit 0
+	CLEAN_BUILD && handle_existing && BUILD_KERNEL_CONFIG && BUILD_KERNEL_CONTINUE && CLEAN_BUILD && exit 0
 }
 
 if [ $# = 0 ] ; then
