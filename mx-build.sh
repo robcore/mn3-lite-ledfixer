@@ -205,8 +205,7 @@ CREATE_ZIP() {
 		echo "Copying $MXMODS to zip"
 		cp -pa "$MXMODS" "$ZIPFOLDER/system/lib/modules/" || warnandfail "Failed to copy new modules to zip!"
 	done
-	find . | fakeroot cpio -v -o -H newc | gzip -v -9 > ramdisk.cpio.gz
-	find . | fakeroot zip -r -9 > $RDIR/$KERNEL_VERSION.zip || warnandfail "Failed to zip!"
+	find . | fakeroot zip -r -9 > "$RDIR"/"$KERNEL_VERSION".zip
 	echo "Kernel $KERNEL_VERSION.zip finished"
 	echo "Filepath: "
 	echo "$RDIR/$KERNEL_VERSION.zip"
