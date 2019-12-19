@@ -55,9 +55,9 @@ OLDVER="$(cat .oldversion)"
 ############## SCARY NO-TOUCHY STUFF ###############
 
 # Used as the prefix for the ramdisk and zip folders. Also used to prefix the defconfig files in arch/arm/configs/.
-RAMDISKFOLDER="$RDIR/mx.ramdisk"
-ZIPFOLDER="$RDIR/mx.zip"
-DEFCONFIG="$RDIR/arch/arm/configs/mxconfig"
+RAMDISKFOLDER="${RDIR}/mx.ramdisk"
+ZIPFOLDER="${RDIR}/mx.zip"
+DEFCONFIG="${RDIR}/arch/arm/configs/mxconfig"
 QUICKDATE="$(date | awk '{print $2$3}')"
 
 export ARCH="arm"
@@ -89,7 +89,7 @@ then
 	exit 1
 fi
 
-KDIR="$RDIR/build/arch/arm/boot"
+KDIR="${RDIR}/build/arch/arm/boot"
 
 handle_existing() {
 	echo -n "Use last version? Mark${OLDVER} will be removed [y/n/Default y] ENTER: "
@@ -102,8 +102,8 @@ handle_existing() {
 		KERNEL_VERSION="machinexlite-Mark${OLDVER}-hltetmo"
 		KERNEL_VERSION_MAGISK="machinexlite-Mark${OLDVER}-hltetmo-magisk"
 		echo "Removing old zip/tar.md5 files..."
-		rm -f "$RDIR/$KERNEL_VERSION.zip"
-		rm -f "$RDIR/$KERNEL_VERSION_MAGISK.zip"
+		rm -f "${RDIR}/$KERNEL_VERSION.zip"
+		rm -f "${RDIR}/$KERNEL_VERSION_MAGISK.zip"
 	elif [ "$USEOLD" = n ]
 	then
 		echo -n "Enter new version and hit enter: "
@@ -114,8 +114,8 @@ handle_existing() {
 			KERNEL_VERSION="machinexlite-Mark${OLDVER}-hltetmo"
 			KERNEL_VERSION_MAGISK="machinexlite-Mark${OLDVER}-hltetmo-magisk"
 			echo "Removing ld zip/tar.md5 files..."
-			rm -f "$RDIR/$KERNEL_VERSION.zip" &> /dev/null
-			rm -f "$RDIR/$KERNEL_VERSION_MAGISK.zip" &> /dev/null
+			rm -f "${RDIR}/$KERNEL_VERSION.zip" &> /dev/null
+			rm -f "${RDIR}/$KERNEL_VERSION_MAGISK.zip" &> /dev/null
 		else
 			KERNEL_VERSION="machinexlite-Mark${NEWVER}-hltetmo"
 			KERNEL_VERSION_MAGISK="machinexlite-Mark${NEWVER}-hltetmo-magisk"
@@ -142,25 +142,25 @@ CLEAN_BUILD() {
 					-o -iname \*.ko \) \
 						| parallel rm -fv {};
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
-	rm -rf "$RDIR/build" &>/dev/null
+	rm -rf "${RDIR}/build" &>/dev/null
 	rm "$ZIPFOLDER/boot.img" &>/dev/null
-	make -C "$RDIR/scripts/mkqcdtbootimg" clean &>/dev/null
-	rm -rf "$RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg" &>/dev/null
+	make -C "${RDIR}/scripts/mkqcdtbootimg" clean &>/dev/null
+	rm -rf "${RDIR}/scripts/mkqcdtbootimg/mkqcdtbootimg" &>/dev/null
 	echo "Cleaned"
 }
 
 BUILD_KERNEL_CONFIG() {
 	echo "Creating kernel config..."
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
-	mkdir -p "$RDIR/build" || warnandfail "Failed to make $RDIR/build directory!"
-	cp "$RDIR/arch/arm/configs/mxconfig" "$RDIR/build/.config" || warnandfail "Config Copy Error!"
-	make ARCH="arm" -C "$RDIR" O="$RDIR/build" -j5 oldconfig || warnandfail "make oldconfig Failed!"
+	mkdir -p "${RDIR}/build" || warnandfail "Failed to make $RDIR/build directory!"
+	cp "${RDIR}/arch/arm/configs/mxconfig" "${RDIR}/build/.config" || warnandfail "Config Copy Error!"
+	make ARCH="arm" -C "$RDIR" O="${RDIR}/build" -j5 oldconfig || warnandfail "make oldconfig Failed!"
 }
 
 BUILD_KERNEL() {
 	handle_existing
 	echo "Starting build..."
-	make ARCH="arm" -S -s -C "$RDIR" O="$RDIR/build" -j5 || warnandfail "Kernel Build failed!"
+	make ARCH="arm" -S -s -C "$RDIR" O="${RDIR}/build" -j5 || warnandfail "Kernel Build failed!"
 	cp "build/.config" "config.$QUICKDATE"
 }
 
@@ -168,25 +168,26 @@ MAGISKRAMDISK() {
 
 	echo "Building magiskramdisk structure..."
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR"
-	rm -rf "$RDIR/build/magiskramdisk" &>/dev/null
-	cp -par "$RAMDISKFOLDER" "$RDIR/build/magiskramdisk" || warnandfail "Failed to create $RDIR/build/magiskramdisk!"
+	rm -rf "${RDIR}/build/magiskramdisk" &>/dev/null
+	cp -par "$RAMDISKFOLDER" "${RDIR}/build/magiskramdisk" || warnandfail "Failed to create $RDIR/build/magiskramdisk!"
 	echo "Building magiskramdisk img"
-	cd "$RDIR/build/magiskramdisk" || warnandfail "Failed to cd to $RDIR/build/magiskramdisk!"
+	cd "${RDIR}/build/magiskramdisk" || warnandfail "Failed to cd to $RDIR/build/magiskramdisk!"
 	mkdir -pm 755 dev proc sys system
 	mkdir -pm 771 data
-	cp -par "$RDIR/magiskbackup" "$RDIR/build/magiskramdisk/.build"
+	cp -par "${RDIR}/magiskbackup" "${RDIR}/build/magiskramdisk/.build"
 	local NEWSHAW
 	NEWSHAW="$(sha1sum $ZIPFOLDER/boot.img)"
 	[ -z "$NEWSHAW" ] && warnandfail "Failed to create sha1sum for magisk boot!"
 	echo "Creating magisk backup with sha=$NEWSHAW"
-	echo -n 'SHA1=' >> "$RDIR/build/magiskramdisk/.build/.magisk"
-	echo "$NEWSHAW" >> "$RDIR/build/magiskramdisk/.build/.magisk"
+	echo -n 'SHA1=' >> "${RDIR}/build/magiskramdisk/.build/.magisk"
+	echo "$NEWSHAW" >> "${RDIR}/build/magiskramdisk/.build/.magisk"
 	echo "Replacing init"
-	cp -pa "$RDIR/build/magiskramdisk/init" "$RDIR/build/magiskramdisk/.build" || warnandfail "Failed to copy init to magisk backup!"
-	rm "$RDIR/build/magiskramdisk/init" &> /dev/null
-	cp -pa "$RDIR/magiskinit" "$RDIR/build/magiskramdisk/init" || warnandfail "Failed to copy magisk init to ramdisk init!"
+	cp -pa "${RDIR}/build/magiskramdisk/init" "${RDIR}/build/magiskramdisk/.build" || warnandfail "Failed to copy init to magisk backup!"
+	rm "${RDIR}/build/magiskramdisk/init" &> /dev/null
+	cp -pa "${RDIR}/magiskinit" "${RDIR}/build/magiskramdisk/init" || warnandfail "Failed to copy magisk init to ramdisk init!"
 	echo "Creating magisk-style /data/${NEWSHAW}boot.img"
-	mv "$ZIPFOLDER/boot.img" "$RDIR/build/magiskramdisk/data/${NEWSHAW}boot.img" || warnandfail "Failed to move magisk-style boot.img to /data/${NEWSHAW}boot.img!"
+	mv "$ZIPFOLDER/boot.img" "${RDIR}/build/magiskramdisk/data/stock_boot_${NEWSHAW}.img" || warnandfail "Failed to move magisk-style boot.img to /data/${NEWSHAW}boot.img!"
+	gzip -9 "${RDIR}/build/magiskramdisk/data/stock_boot_${NEWSHAW}.img"
 	echo "Removing stock ramdisk.cpio.gz"
 	rm "$KDIR/ramdisk.cpio.gz" || warnandfail "magiskramdisk error! $KDIR/ramdisk.cpio.gz does not exist! Something is wrong!"
 	find . | fakeroot cpio -o -H newc | gzip -9 > "$KDIR/ramdisk.cpio.gz"
@@ -196,9 +197,9 @@ MAGISKRAMDISK() {
 
 MAGISKBOOTIMG() {
 	echo "Generating Magisk boot.img..."
-	if [ ! -f "$RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg" ]
+	if [ ! -f "${RDIR}/scripts/mkqcdtbootimg/mkqcdtbootimg" ]
 	then
-		make -C "$RDIR/scripts/mkqcdtbootimg" || warnandfail "Failed to make dtb tool!"
+		make -C "${RDIR}/scripts/mkqcdtbootimg" || warnandfail "Failed to make dtb tool!"
 	fi
 
 	$RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg --kernel "$KDIR/zImage" \
@@ -217,20 +218,20 @@ MAGISKBOOTIMG() {
 MAGISK_ZIP() {
 	echo "Compressing magisk kernel to TWRP flashable zip file..."
 	cd "$ZIPFOLDER" || warnandfail "Failed to cd to $ZIPFOLDER"
-	zip -r -9 -- *glob* > "$RDIR/$KERNEL_VERSION_MAGISK.zip"
+	zip -r -9 -- *glob* > "${RDIR}/$KERNEL_VERSION_MAGISK.zip"
 	echo "Kernel $KERNEL_VERSION_MAGISK.zip finished"
 	echo "Filepath: "
-	echo "$RDIR/$KERNEL_VERSION_MAGISK.zip"
+	echo "${RDIR}/$KERNEL_VERSION_MAGISK.zip"
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR"
 }
 
 BUILD_RAMDISK() {
 	echo "Building ramdisk structure..."
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR"
-	rm -rf "$RDIR/build/ramdisk" &>/dev/null
-	cp -par "$RAMDISKFOLDER" "$RDIR/build/ramdisk" || warnandfail "Failed to create $RDIR/build/ramdisk!"
+	rm -rf "${RDIR}/build/ramdisk" &>/dev/null
+	cp -par "$RAMDISKFOLDER" "${RDIR}/build/ramdisk" || warnandfail "Failed to create $RDIR/build/ramdisk!"
 	echo "Building ramdisk img"
-	cd "$RDIR/build/ramdisk" || warnandfail "Failed to cd to $RDIR/build/ramdisk!"
+	cd "${RDIR}/build/ramdisk" || warnandfail "Failed to cd to $RDIR/build/ramdisk!"
 	mkdir -pm 755 dev proc sys system
 	mkdir -pm 771 data
 	find . | fakeroot cpio -o -H newc | gzip -9 > "$KDIR/ramdisk.cpio.gz"
@@ -240,9 +241,9 @@ BUILD_RAMDISK() {
 BUILD_BOOT_IMG() {
 	echo "Generating boot.img..."
 
-	if [ ! -f "$RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg" ]
+	if [ ! -f "${RDIR}/scripts/mkqcdtbootimg/mkqcdtbootimg" ]
 	then
-		make -C "$RDIR/scripts/mkqcdtbootimg" || warnandfail "Failed to make dtb tool!"
+		make -C "${RDIR}/scripts/mkqcdtbootimg" || warnandfail "Failed to make dtb tool!"
 	fi
 
 	$RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg --kernel "$KDIR/zImage" \
@@ -261,10 +262,10 @@ BUILD_BOOT_IMG() {
 CREATE_ZIP() {
 	echo "Compressing to TWRP flashable zip file..."
 	cd "$ZIPFOLDER" || warnandfail "Failed to cd to $ZIPFOLDER"
-	zip -r -9 -- *glob* > "$RDIR/$KERNEL_VERSION.zip"
+	zip -r -9 -- *glob* > "${RDIR}/$KERNEL_VERSION.zip"
 	echo "Kernel $KERNEL_VERSION.zip finished"
 	echo "Filepath: "
-	echo "$RDIR/$KERNEL_VERSION.zip"
+	echo "${RDIR}/$KERNEL_VERSION.zip"
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR"
 }
 
