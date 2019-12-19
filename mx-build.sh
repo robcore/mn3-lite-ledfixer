@@ -102,8 +102,8 @@ handle_existing() {
 		KERNEL_VERSION="machinexlite-Mark${OLDVER}-hltetmo"
 		KERNEL_VERSION_MAGISK="machinexlite-Mark${OLDVER}-hltetmo-magisk"
 		echo "Removing old zip/tar.md5 files..."
-		rm -f "${RDIR}/$KERNEL_VERSION.zip"
-		rm -f "${RDIR}/$KERNEL_VERSION_MAGISK.zip"
+		rm -f "${RDIR}/${KERNEL_VERSION}.zip"
+		rm -f "${RDIR}/${KERNEL_VERSION_MAGISK}.zip"
 	elif [ "$USEOLD" = n ]
 	then
 		echo -n "Enter new version and hit enter: "
@@ -114,8 +114,8 @@ handle_existing() {
 			KERNEL_VERSION="machinexlite-Mark${OLDVER}-hltetmo"
 			KERNEL_VERSION_MAGISK="machinexlite-Mark${OLDVER}-hltetmo-magisk"
 			echo "Removing ld zip/tar.md5 files..."
-			rm -f "${RDIR}/$KERNEL_VERSION.zip" &> /dev/null
-			rm -f "${RDIR}/$KERNEL_VERSION_MAGISK.zip" &> /dev/null
+			rm -f "${RDIR}/${KERNEL_VERSION}.zip" &> /dev/null
+			rm -f "${RDIR}/${KERNEL_VERSION_MAGISK}.zip" &> /dev/null
 		else
 			KERNEL_VERSION="machinexlite-Mark${NEWVER}-hltetmo"
 			KERNEL_VERSION_MAGISK="machinexlite-Mark${NEWVER}-hltetmo-magisk"
@@ -142,7 +142,7 @@ CLEAN_BUILD() {
 						| parallel rm -fv {};
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
 	rm -rf "${RDIR}/build" &>/dev/null
-	rm "$ZIPFOLDER/boot.img" &>/dev/null
+	rm -f "${ZIPFOLDER}/boot.img" &>/dev/null
 	make -C "${RDIR}/scripts/mkqcdtbootimg" clean &>/dev/null
 	rm -rf "${RDIR}/scripts/mkqcdtbootimg/mkqcdtbootimg" &>/dev/null
 	echo "Cleaned"
@@ -179,7 +179,7 @@ MAGISKRAMDISK() {
 	mkdir -pm 771 data
 	cp -par "${RDIR}/magiskbackup" "${RDIR}/build/magiskramdisk/.build"
 	local NEWSHAW
-	NEWSHAW="$(sha1sum $ZIPFOLDER/boot.img)"
+	NEWSHAW="$(sha1sum ${ZIPFOLDER}/boot.img)"
 	[ -z "$NEWSHAW" ] && warnandfail "Failed to create sha1sum for magisk boot!"
 	echo "Creating magisk backup with sha=$NEWSHAW"
 	echo -n 'SHA1=' >> "${RDIR}/build/magiskramdisk/.build/.magisk"
@@ -189,8 +189,9 @@ MAGISKRAMDISK() {
 	rm "${RDIR}/build/magiskramdisk/init" &> /dev/null
 	cp -pa "${RDIR}/magiskinit" "${RDIR}/build/magiskramdisk/init" || warnandfail "Failed to copy magisk init to ramdisk init!"
 	echo "Creating magisk-style /data/${NEWSHAW}boot.img"
-	mv "$ZIPFOLDER/boot.img" "${RDIR}/build/magiskramdisk/data/stock_boot_${NEWSHAW}.img" || warnandfail "Failed to move magisk-style boot.img to /data/${NEWSHAW}boot.img!"
-	gzip -9 "${RDIR}/build/magiskramdisk/data/stock_boot_${NEWSHAW}.img"
+	mkdir -pm 771 "${ZIPFOLDER}/data"
+	mv "${ZIPFOLDER}/boot.img" "${ZIPFOLDER}/data/stock_boot_${NEWSHAW}.img" || warnandfail "Failed to move magisk-style boot.img to ${ZIPFOLDER}/data/${NEWSHAW}boot.img!"
+	gzip -9 "${ZIPFOLDER}/data/stock_boot_${NEWSHAW}.img"
 	echo "Removing stock ramdisk.cpio.gz"
 	rm "$KDIR/ramdisk.cpio.gz" || warnandfail "magiskramdisk error! $KDIR/ramdisk.cpio.gz does not exist! Something is wrong!"
 	find | fakeroot cpio -o -H newc | gzip -9 > "$KDIR/ramdisk.cpio.gz"
@@ -213,19 +214,21 @@ MAGISKBOOTIMG() {
 		--pagesize "2048" \
 		--ramdisk_offset "0x02000000" \
 		--tags_offset "0x01e00000" \
-		--output "$ZIPFOLDER/boot.img"
+		--output "${ZIPFOLDER}/boot.img"
 
-	echo -n "SEANDROIDENFORCE" >> "$ZIPFOLDER/boot.img"
+	echo -n "SEANDROIDENFORCE" >> "${ZIPFOLDER}/boot.img"
 }
 
 MAGISK_ZIP() {
 	echo "Compressing magisk kernel to TWRP flashable zip file..."
 	cd "$ZIPFOLDER" || warnandfail "Failed to cd to $ZIPFOLDER"
-	zip -r -9 - > "${RDIR}/$KERNEL_VERSION_MAGISK.zip"
+	zip -r -9 - > "${RDIR}/${KERNEL_VERSION_MAGISK}.zip"
 	echo "Kernel $KERNEL_VERSION_MAGISK.zip finished"
 	echo "Filepath: "
-	echo "${RDIR}/$KERNEL_VERSION_MAGISK.zip"
+	echo "${RDIR}/${KERNEL_VERSION_MAGISK}.zip"
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR"
+	rm -rf "${ZIPFOLDER}/data"
+	rm -f "${ZIPFOLDER}/boot.img"
 }
 
 BUILD_RAMDISK() {
@@ -257,18 +260,18 @@ BUILD_BOOT_IMG() {
 		--pagesize "2048" \
 		--ramdisk_offset "0x02000000" \
 		--tags_offset "0x01e00000" \
-		--output "$ZIPFOLDER/boot.img"
+		--output "${ZIPFOLDER}/boot.img"
 
-	echo -n "SEANDROIDENFORCE" >> "$ZIPFOLDER/boot.img"
+	echo -n "SEANDROIDENFORCE" >> "${ZIPFOLDER}/boot.img"
 }
 
 CREATE_ZIP() {
 	echo "Compressing to TWRP flashable zip file..."
 	cd "$ZIPFOLDER" || warnandfail "Failed to cd to $ZIPFOLDER"
-	zip -r -9 - > "${RDIR}/$KERNEL_VERSION.zip"
+	zip -r -9 - > "${RDIR}/${KERNEL_VERSION}.zip"
 	echo "Kernel $KERNEL_VERSION.zip finished"
 	echo "Filepath: "
-	echo "${RDIR}/$KERNEL_VERSION.zip"
+	echo "${RDIR}/${KERNEL_VERSION}.zip"
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR"
 }
 
@@ -278,7 +281,7 @@ CREATE_ZIP() {
 #
 #	echo "Compressing to Odin flashable tar.md5 file..."
 #	cd $RDIR/${ZIPFOLDER}
-#	tar -H ustar -c boot.img > $RDIR/$KERNEL_VERSION.tar
+#	tar -H ustar -c boot.img > $RDIR/${KERNEL_VERSION}.tar
 #	cd $RDIR
 #	md5sum -t $KERNEL_VERSION.tar >> $KERNEL_VERSION.tar
 #	mv $KERNEL_VERSION.tar $KERNEL_VERSION.tar.md5
