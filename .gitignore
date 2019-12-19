@@ -65,7 +65,6 @@ include/linux/version.h
 include/generated
 arch/*/include/generated
 build/
-mx.ramdisk/
 mx.zip/
 
 # stgit generated dirs
