@@ -93,7 +93,7 @@ KDIR="${RDIR}/build/arch/arm/boot"
 
 handle_existing() {
 	echo -n "Use last version? Mark${OLDVER} will be removed [y/n/Default y] ENTER: "
-	read -rs USEOLD
+	read -r USEOLD
 	if [ -z "$USEOLD" ]
 	then
 		warnandfail "You MUST choose a version for the kernel"
@@ -107,7 +107,7 @@ handle_existing() {
 	elif [ "$USEOLD" = n ]
 	then
 		echo -n "Enter new version and hit enter: "
-		read -rs NEWVER
+		read -r NEWVER
 		if [ -z "$NEWVER" ]
 		then
 			echo "Nothing entered, using old"
