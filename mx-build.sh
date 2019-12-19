@@ -127,7 +127,6 @@ handle_existing() {
 	echo "and"
 	echo "$KERNEL_VERSION_MAGISK"
 	echo "--------------------------------"
-	export LOCALVERSION="$KERNEL_VERSION"
 }
 
 CLEAN_BUILD() {
@@ -152,7 +151,11 @@ CLEAN_BUILD() {
 BUILD_KERNEL_CONFIG() {
 	echo "Creating kernel config..."
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
-	mkdir -p "${RDIR}/build" || warnandfail "Failed to make $RDIR/build directory!"
+	mkdir -p "${RDIR}/build" || warnandfail "Failed to make ${RDIR}/build directory!"
+	sed -i '/CONFIG_LOCALVERSION/d' "${RDIR}/arch/arm/configs/mxconfig"
+	echo -n 'CONFIG_LOCALVERSION="' >> "${RDIR}/arch/arm/configs/mxconfig"
+	echo -n "$KERNEL_VERSION" >> "${RDIR}/arch/arm/configs/mxconfig"
+	echo '"' >> "${RDIR}/arch/arm/configs/mxconfig"
 	cp "${RDIR}/arch/arm/configs/mxconfig" "${RDIR}/build/.config" || warnandfail "Config Copy Error!"
 	make ARCH="arm" -C "$RDIR" O="${RDIR}/build" -j5 oldconfig || warnandfail "make oldconfig Failed!"
 }
