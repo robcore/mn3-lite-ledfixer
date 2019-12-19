@@ -185,7 +185,7 @@ ssize_t pwm_value_store(struct device *dev, struct device_attribute *attr, const
 	if (!sscanf(buf, "%u", &newpval))
 		return -EINVAL;
 
-	sanitize_min_max(newpval);
+	sanitize_min_max(newpval, 0, 100);
 	pwm_value = newpval;
 
 	return count;
