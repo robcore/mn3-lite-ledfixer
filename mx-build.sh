@@ -118,7 +118,7 @@ handle_existing() {
 			echo "$NEWVER" > .oldversion
 		fi
 	fi
-	echo "Kernel version is: KERNEL_VERSION"
+	echo "Kernel version is: $KERNEL_VERSION"
 	echo "--------------------------------"
 }
 
