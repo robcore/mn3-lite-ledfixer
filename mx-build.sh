@@ -1,7 +1,7 @@
 #!/bin/bash
-#export PATH=/opt/toolchains/arm-cortex_a15-linux-gnueabihf_5.3/bin:$PATH
-export PATH=/opt/toolchains/arm-cortex-linux-gnueabi-linaro_4.9.4-2015.06/bin:$PATH
-export CROSS_COMPILE=/opt/toolchains/arm-cortex-linux-gnueabi-linaro_4.9.4-2015.06/bin/arm-cortex-linux-gnueabi-
+export PATH=/opt/toolchains/arm-cortex_a15-linux-gnueabihf_5.3/bin:$PATH
+#export PATH=/opt/toolchains/arm-cortex-linux-gnueabi-linaro_4.9.4-2015.06/bin:$PATH
+#export CROSS_COMPILE=/opt/toolchains/arm-cortex-linux-gnueabi-linaro_4.9.4-2015.06/bin/arm-cortex-linux-gnueabi-
 
 # kernel build script for Samsung Galaxy Note 3.
 #
@@ -55,12 +55,13 @@ OLDVER="$(cat .oldversion)"
 ############## SCARY NO-TOUCHY STUFF ###############
 
 # Used as the prefix for the ramdisk and zip folders. Also used to prefix the defconfig files in arch/arm/configs/.
-RAMDISKFOLDER="${RDIR}/mxramdisk"
-ZIPFOLDER="${RDIR}/mxzip"
-DEFCONFIG="${RDIR}/arch/arm/configs/mxconfig"
+RAMDISKFOLDER="$RDIR/mxramdisk"
+ZIPFOLDER="$RDIR/mxzip"
+DEFCONFIG="$RDIR/arch/arm/configs/mxconfig"
 QUICKDATE="$(date | awk '{print $2$3}')"
 
 export ARCH="arm"
+export PATH="/opt/toolchains/arm-cortex_a15-linux-gnueabihf_5.3/bin:$PATH"
 export CROSS_COMPILE="/opt/toolchains/arm-cortex_a15-linux-gnueabihf_5.3/bin/arm-cortex_a15-linux-gnueabihf-"
 
 env KCONFIG_NOTIMESTAMP=true &>/dev/null
@@ -89,21 +90,19 @@ then
 	exit 1
 fi
 
-KDIR="${RDIR}/build/arch/arm/boot"
+KDIR="$RDIR/build/arch/arm/boot"
 
 handle_existing() {
-	echo -n "Use last version? Mark${OLDVER} will be removed [y/n/Default y] ENTER: "
+	echo -n "Use last version? Mark$OLDVER will be removed [y/n/Default y] ENTER: "
 	read -r USEOLD
 	if [ -z "$USEOLD" ]
 	then
 		warnandfail "You MUST choose a version for the kernel"
 	elif [ "$USEOLD" = y ]
 	then
-		KERNEL_VERSION="machinexlite-Mark${OLDVER}-hltetmo"
-		KERNEL_VERSION_MAGISK="machinexlite-Mark${OLDVER}-hltetmo-magisk"
-		echo "Removing old zip/tar.md5 files..."
-		rm -f "${RDIR}/${KERNEL_VERSION}.zip"
-		rm -f "${RDIR}/${KERNEL_VERSION_MAGISK}.zip"
+		KERNEL_VERSION="machinexlite-Mark$OLDVER-hltetmo"
+		echo "Removing old zip files..."
+		rm -f "$RDIR/$KERNEL_VERSION.zip"
 	elif [ "$USEOLD" = n ]
 	then
 		echo -n "Enter new version and hit enter: "
@@ -111,21 +110,15 @@ handle_existing() {
 		if [ -z "$NEWVER" ]
 		then
 			echo "Nothing entered, using old"
-			KERNEL_VERSION="machinexlite-Mark${OLDVER}-hltetmo"
-			KERNEL_VERSION_MAGISK="machinexlite-Mark${OLDVER}-hltetmo-magisk"
-			echo "Removing ld zip/tar.md5 files..."
-			rm -f "${RDIR}/${KERNEL_VERSION}.zip" &> /dev/null
-			rm -f "${RDIR}/${KERNEL_VERSION_MAGISK}.zip" &> /dev/null
+			KERNEL_VERSION="machinexlite-Mark$OLDVER-hltetmo"
+			echo "Removing ld zip files..."
+			rm -f "$RDIR/$KERNEL_VERSION.zip" &> /dev/null
 		else
-			KERNEL_VERSION="machinexlite-Mark${NEWVER}-hltetmo"
-			KERNEL_VERSION_MAGISK="machinexlite-Mark${NEWVER}-hltetmo-magisk"
+			KERNEL_VERSION="machinexlite-Mark$NEWVER-hltetmo"
 			echo "$NEWVER" > .oldversion
 		fi
 	fi
-	echo "Kernel versions are:"
-	echo "$KERNEL_VERSION"
-	echo "and"
-	echo "$KERNEL_VERSION_MAGISK"
+	echo "Kernel version is: KERNEL_VERSION"
 	echo "--------------------------------"
 }
 
@@ -141,116 +134,53 @@ CLEAN_BUILD() {
 					-o -iname \*.ko \) \
 						| parallel rm -fv {};
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
-	rm -rf "${RDIR}/build" &>/dev/null
-	rm -f "${ZIPFOLDER}/boot.img" &>/dev/null
-	make -C "${RDIR}/scripts/mkqcdtbootimg" clean &>/dev/null
-	rm -rf "${RDIR}/scripts/mkqcdtbootimg/mkqcdtbootimg" &>/dev/null
+	rm -rf "$RDIR/build" &>/dev/null
+	rm -f "$ZIPFOLDER/boot.img" &>/dev/null
+	make -C "$RDIR/scripts/mkqcdtbootimg" clean &>/dev/null
+	rm -rf "$RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg" &>/dev/null
 	echo "Cleaned"
 }
 
 BUILD_KERNEL_CONFIG() {
 	echo "Creating kernel config..."
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
-	mkdir -p "${RDIR}/build" || warnandfail "Failed to make ${RDIR}/build directory!"
-	sed -i '/CONFIG_LOCALVERSION/d' "${RDIR}/arch/arm/configs/mxconfig"
-	echo -n 'CONFIG_LOCALVERSION="' >> "${RDIR}/arch/arm/configs/mxconfig"
-	echo -n "$KERNEL_VERSION" >> "${RDIR}/arch/arm/configs/mxconfig"
-	echo '"' >> "${RDIR}/arch/arm/configs/mxconfig"
-	echo 'CONFIG_LOCALVERSION_AUTO=y' >> "${RDIR}/arch/arm/configs/mxconfig"
-	cp "${RDIR}/arch/arm/configs/mxconfig" "${RDIR}/build/.config" || warnandfail "Config Copy Error!"
-	make ARCH="arm" -C "$RDIR" O="${RDIR}/build" -j5 oldconfig || warnandfail "make oldconfig Failed!"
+	mkdir -p "$RDIR/build" || warnandfail "Failed to make $RDIR/build directory!"
+	sed -i '/CONFIG_LOCALVERSION/d' "$RDIR/arch/arm/configs/mxconfig"
+	echo -n 'CONFIG_LOCALVERSION="' >> "$RDIR/arch/arm/configs/mxconfig"
+	echo -n "$KERNEL_VERSION" >> "$RDIR/arch/arm/configs/mxconfig"
+	echo '"' >> "$RDIR/arch/arm/configs/mxconfig"
+	echo 'CONFIG_LOCALVERSION_AUTO=y' >> "$RDIR/arch/arm/configs/mxconfig"
+	cp "$RDIR/arch/arm/configs/mxconfig" "$RDIR/build/.config" || warnandfail "Config Copy Error!"
+	make ARCH="arm" -C "$RDIR" O="$RDIR/build" -j5 oldconfig || warnandfail "make oldconfig Failed!"
 }
 
 BUILD_KERNEL() {
 	echo "Starting build..."
-	make ARCH="arm" -S -s -C "$RDIR" O="${RDIR}/build" -j5 || warnandfail "Kernel Build failed!"
+	make ARCH="arm" -S -s -C "$RDIR" O="$RDIR/build" -j5 || warnandfail "Kernel Build failed!"
 	cp "build/.config" "config.$QUICKDATE"
-}
-
-MAGISKRAMDISK() {
-
-	echo "Building magiskramdisk structure..."
-	cd "$RDIR" || warnandfail "Failed to cd to $RDIR"
-	rm -rf "${RDIR}/build/magiskramdisk" &>/dev/null
-	cp -par "$RAMDISKFOLDER" "${RDIR}/build/magiskramdisk" || warnandfail "Failed to create $RDIR/build/magiskramdisk!"
-	echo "Building magiskramdisk img"
-	cd "${RDIR}/build/magiskramdisk" || warnandfail "Failed to cd to $RDIR/build/magiskramdisk!"
-	mkdir -pm 755 dev proc sys system
-	mkdir -pm 771 data
-	cp -par "${RDIR}/magiskbackup" "${RDIR}/build/magiskramdisk/.build"
-	local NEWSHAW
-	NEWSHAW="$(sha1sum ${ZIPFOLDER}/boot.img | awk '{ print $1}')"
-	[ -z "$NEWSHAW" ] && warnandfail "Failed to create sha1sum for magisk boot!"
-	echo "Creating magisk backup with sha=$NEWSHAW"
-	echo -n 'SHA1=' >> "${RDIR}/build/magiskramdisk/.build/.magisk"
-	echo "$NEWSHAW" >> "${RDIR}/build/magiskramdisk/.build/.magisk"
-	echo "Replacing init"
-	cp -pa "${RDIR}/build/magiskramdisk/init" "${RDIR}/build/magiskramdisk/.build" || warnandfail "Failed to copy init to magisk backup!"
-	rm "${RDIR}/build/magiskramdisk/init" &> /dev/null
-	cp -pa "${RDIR}/magiskinit" "${RDIR}/build/magiskramdisk/init" || warnandfail "Failed to copy magisk init to ramdisk init!"
-	echo "Creating magisk-style /data/${NEWSHAW}boot.img"Creating magisk-style /data/ea30e05c76bee01c54f21e9b21047eb9e59e23a3  /root/mn3-lite/mxzip/boot.img boot.img
-
-	mkdir -pm 771 "${ZIPFOLDER}/data"
-	mv "${ZIPFOLDER}/boot.img" "${ZIPFOLDER}/data/stock_boot_${NEWSHAW}.img" || warnandfail "Failed to move magisk-style boot.img to ${ZIPFOLDER}/data/${NEWSHAW}boot.img!"
-	gzip -9 "${ZIPFOLDER}/data/stock_boot_${NEWSHAW}.img"
-	echo "Removing stock ramdisk.cpio.gz"
-	rm "$KDIR/ramdisk.cpio.gz" || warnandfail "magiskramdisk error! $KDIR/ramdisk.cpio.gz does not exist! Something is wrong!"
-	find | fakeroot cpio -o -H newc | gzip -9 > "$KDIR/ramdisk.cpio.gz"
-	cd "$RDIR" || warnandfail "Failed to cd to $RDIR"
-
-}
-
-MAGISKBOOTIMG() {
-	echo "Generating Magisk boot.img..."
-	if [ ! -f "${RDIR}/scripts/mkqcdtbootimg/mkqcdtbootimg" ]
-	then
-		make -C "${RDIR}/scripts/mkqcdtbootimg" || warnandfail "Failed to make dtb tool!"
-	fi
-
-	$RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg --kernel "$KDIR/zImage" \
-		--ramdisk "$KDIR/ramdisk.cpio.gz" \
-		--dt_dir "$KDIR" \
-		--cmdline "console=null androidboot.hardware=qcom user_debug=23 msm_rtb.filter=0x37 ehci-hcd.park=3" \
-		--base "0x00000000" \
-		--pagesize "2048" \
-		--ramdisk_offset "0x02000000" \
-		--tags_offset "0x01e00000" \
-		--output "${ZIPFOLDER}/boot.img"
-
-	echo -n "SEANDROIDENFORCE" >> "${ZIPFOLDER}/boot.img"
-}
-
-MAGISK_ZIP() {
-	echo "Compressing magisk kernel to TWRP flashable zip file..."
-	cd "$ZIPFOLDER" || warnandfail "Failed to cd to $ZIPFOLDER"
-	zip -r -9 - * > "${RDIR}/${KERNEL_VERSION_MAGISK}.zip"
-	echo "Kernel $KERNEL_VERSION_MAGISK.zip finished"
-	echo "Filepath: "
-	echo "${RDIR}/${KERNEL_VERSION_MAGISK}.zip"
-	cd "$RDIR" || warnandfail "Failed to cd to $RDIR"
-	rm -rf "${ZIPFOLDER}/data"
-	rm -f "${ZIPFOLDER}/boot.img"
 }
 
 BUILD_RAMDISK() {
 	echo "Building ramdisk structure..."
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR"
-	rm -rf "${RDIR}/build/ramdisk" &>/dev/null
-	cp -par "$RAMDISKFOLDER" "${RDIR}/build/ramdisk" || warnandfail "Failed to create $RDIR/build/ramdisk!"
+	rm -rf "$RDIR/build/ramdisk" &>/dev/null
+	mkdir -p "$RDIR/build/ramdisk"
+	cp -par "$RAMDISKFOLDER/*" "$RDIR/build/ramdisk" || warnandfail "Failed to create $RDIR/build/ramdisk!"
 	echo "Building ramdisk img"
-	cd "${RDIR}/build/ramdisk" || warnandfail "Failed to cd to $RDIR/build/ramdisk!"
+	cd "$RDIR/build/ramdisk" || warnandfail "Failed to cd to $RDIR/build/ramdisk!"
 	mkdir -pm 755 dev proc sys system
 	mkdir -pm 771 data
-	find | fakeroot cpio -o -H newc | gzip -9 > "$KDIR/ramdisk.cpio.gz"
+	find | fakeroot cpio -v -o -H newc | gzip -v -9 > "$KDIR/ramdisk.cpio.gz"
+	[ ! -f "$KDIR/ramdisk.cpio.gz" ] && warnandfail "NO ramdisk!"
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR"
 }
 
 BUILD_BOOT_IMG() {
 	echo "Generating boot.img..."
-
-	if [ ! -f "${RDIR}/scripts/mkqcdtbootimg/mkqcdtbootimg" ]
+	rm -f "$ZIPFOLDER/boot.img"
+	if [ ! -f "$RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg" ]
 	then
-		make -C "${RDIR}/scripts/mkqcdtbootimg" || warnandfail "Failed to make dtb tool!"
+		make -C "$RDIR/scripts/mkqcdtbootimg" || warnandfail "Failed to make dtb tool!"
 	fi
 
 	$RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg --kernel "$KDIR/zImage" \
@@ -261,18 +191,20 @@ BUILD_BOOT_IMG() {
 		--pagesize "2048" \
 		--ramdisk_offset "0x02000000" \
 		--tags_offset "0x01e00000" \
-		--output "${ZIPFOLDER}/boot.img"
+		--output "$ZIPFOLDER/boot.img"
 
-	echo -n "SEANDROIDENFORCE" >> "${ZIPFOLDER}/boot.img"
+	echo -n "SEANDROIDENFORCE" >> "$ZIPFOLDER/boot.img"
 }
 
 CREATE_ZIP() {
 	echo "Compressing to TWRP flashable zip file..."
 	cd "$ZIPFOLDER" || warnandfail "Failed to cd to $ZIPFOLDER"
-	zip -r -9 - * > "${RDIR}/${KERNEL_VERSION}.zip"
+	rm -f "$ZIPFOLDER/system/lib/modules/*"
+	cp "$KDIR/*.ko" "$ZIPFOLDER/system/lib/modules/" || warnandfail "Failed to copy new modules to zip!"
+	zip -r -9 - * > "$RDIR/$KERNEL_VERSION.zip" || warnandfail "Failed to zip!"
 	echo "Kernel $KERNEL_VERSION.zip finished"
 	echo "Filepath: "
-	echo "${RDIR}/${KERNEL_VERSION}.zip"
+	echo "$RDIR/$KERNEL_VERSION.zip"
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR"
 }
 
@@ -281,8 +213,8 @@ CREATE_ZIP() {
 #	if [ $MAKE_TAR != 1 ]; then return; fi
 #
 #	echo "Compressing to Odin flashable tar.md5 file..."
-#	cd $RDIR/${ZIPFOLDER}
-#	tar -H ustar -c boot.img > $RDIR/${KERNEL_VERSION}.tar
+#	cd $RDIR/$ZIPFOLDER
+#	tar -H ustar -c boot.img > $RDIR/$KERNEL_VERSION.tar
 #	cd $RDIR
 #	md5sum -t $KERNEL_VERSION.tar >> $KERNEL_VERSION.tar
 #	mv $KERNEL_VERSION.tar $KERNEL_VERSION.tar.md5
@@ -311,10 +243,6 @@ EOF
 	exit 1
 }
 
-BUILD_MAGISK_CONTINUE() {
-	MAGISKRAMDISK && MAGISKBOOTIMG && MAGISK_ZIP
-}
-
 BUILD_RAMDISK_CONTINUE() {
 	BUILD_RAMDISK && BUILD_BOOT_IMG && CREATE_ZIP
 }
@@ -324,7 +252,7 @@ BUILD_KERNEL_CONTINUE() {
 }
 
 BUILD_ALL() {
-	CLEAN_BUILD && handle_existing && BUILD_KERNEL_CONFIG && BUILD_KERNEL_CONTINUE && BUILD_MAGISK_CONTINUE && CLEAN_BUILD && exit 0
+	CLEAN_BUILD && handle_existing && BUILD_KERNEL_CONFIG && BUILD_KERNEL_CONTINUE && CLEAN_BUILD && exit 0
 }
 
 if [ $# = 0 ] ; then
