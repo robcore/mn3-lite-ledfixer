@@ -324,7 +324,7 @@ static void vibetonz_start(void)
 		DbgOut((KERN_ERR
 		"tspdrv: create sysfs fail: pwm_default\n"));
 
-	ret = device_create_file(timed_output_vt.dev, &dev_attr_pwm_threshold);
+	ret = device_create_file(timed_output_vt.dev, &dev_attr_pwm_strength);
 
 	if (ret)
 		DbgOut((KERN_ERR
