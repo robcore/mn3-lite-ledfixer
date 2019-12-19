@@ -156,6 +156,7 @@ BUILD_KERNEL_CONFIG() {
 	echo -n 'CONFIG_LOCALVERSION="' >> "${RDIR}/arch/arm/configs/mxconfig"
 	echo -n "$KERNEL_VERSION" >> "${RDIR}/arch/arm/configs/mxconfig"
 	echo '"' >> "${RDIR}/arch/arm/configs/mxconfig"
+	echo 'CONFIG_LOCALVERSION_AUTO=y' >> "${RDIR}/arch/arm/configs/mxconfig"
 	cp "${RDIR}/arch/arm/configs/mxconfig" "${RDIR}/build/.config" || warnandfail "Config Copy Error!"
 	make ARCH="arm" -C "$RDIR" O="${RDIR}/build" -j5 oldconfig || warnandfail "make oldconfig Failed!"
 }
