@@ -121,6 +121,32 @@ static int vibrator_work;
 
 struct vibrator_platform_data vibrator_drvdata;
 
+/*
+ * msm8974_sec tspdrv vibration strength control
+ * (/sys/class/timed_output/vibrator/pwm_*)
+ *
+ * sysfs pwm_value
+ *    range   : PWM_MIN - PWM_MAX (0 - 100)
+ * sysfs pwm_max
+ *    returns : PWM_MAX (100)
+ * sysfs pwm_min
+ *    returns : PWM_MIN (0)
+ * sysfs pwm_default
+ *    returns : PWM_DEFAULT (60)
+ * sysfs pwm_threshold
+ *    returns : PWM_THRESHOLD (80)
+ *
+ * Author : Park Ju Hyung <qkrwngud825@gmail.com>
+ * Modified by : Jean-Pierre Rasquin <yank555.lu@gmail.com>
+ * Modified by : James Christopher Adduono <jc@adduono.com>
+ */
+
+#define MAX_STRENGTH 140
+#define PWM_MAX 100U
+#define PWM_MIN 0U
+static unsigned int pwm_value = 100;
+static unsigned int pwm_strength;
+
 static int set_vibetonz(int timeout)
 {
 	int8_t strength;
@@ -134,18 +160,66 @@ static int set_vibetonz(int timeout)
 	} else {
 		DbgOut((KERN_INFO "tspdrv: ENABLE\n"));
 		if (vibrator_drvdata.vib_model == HAPTIC_PWM) {
-			strength = 126;
-			/* 90% duty cycle */
+			strength = (int8_t) ((100 * pwm_value) / 100);
 			ImmVibeSPI_ForceOut_SetSamples(0, 8, 1, &strength);
 		} else { /* HAPTIC_MOTOR */
 		DbgOut((KERN_INFO "tspdrv: ampenable\n"));
 			ImmVibeSPI_ForceOut_AmpEnable(0);
 		}
 	}
-
+	pwm_strength=strength;
 	vibrator_value = timeout;
 	return 0;
 }
+
+static ssize_t pwm_value_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", pwm_value);
+}
+
+ssize_t pwm_value_store(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
+{
+	unsigned int newpval;
+
+	if (!sscanf(buf, "%u", &newpval))
+		return -EINVAL;
+
+	sanitize_min_max(newpval);
+	pwm_value = newpval;
+
+	return count;
+}
+
+
+
+static ssize_t pwm_strength_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", pwm_strength);
+}
+
+static ssize_t pwm_max_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	unsigned int pmax = 100;
+	return sprintf(buf, "%u\n", PWM_MAX);
+}
+
+static ssize_t pwm_min_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	unsigned int pmin = 0;
+	return sprintf(buf, "%u\n", PWM_MIN);
+}
+
+static ssize_t pwm_default_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	unsigned int pdef = 100;
+	return sprintf(buf, "%u\n", pdef);
+}
+
+static DEVICE_ATTR(pwm_value, 0644, pwm_value_show, pwm_value_store);
+static DEVICE_ATTR(pwm_strength, 0440, pwm_strength_show, NULL);
+static DEVICE_ATTR(pwm_max, 0440, pwm_max_show, NULL);
+static DEVICE_ATTR(pwm_min, 0440, pwm_min_show, NULL);
+static DEVICE_ATTR(pwm_default, 0440, pwm_default_show, NULL);
 
 static void _set_vibetonz_work(struct work_struct *unused)
 {
@@ -219,9 +293,41 @@ static void vibetonz_start(void)
 
 	ret = timed_output_dev_register(&timed_output_vt);
 
-	if (ret)
+	if (ret) {
 		DbgOut((KERN_ERR
 		"tspdrv: timed_output_dev_register is fail\n"));
+		return;
+	}
+
+	ret = device_create_file(timed_output_vt.dev, &dev_attr_pwm_value);
+
+	if (ret)
+		DbgOut((KERN_ERR
+		"tspdrv: create sysfs fail: pwm_value\n"));
+
+	ret = device_create_file(timed_output_vt.dev, &dev_attr_pwm_max);
+
+	if (ret)
+		DbgOut((KERN_ERR
+		"tspdrv: create sysfs fail: pwm_max\n"));
+
+	ret = device_create_file(timed_output_vt.dev, &dev_attr_pwm_min);
+
+	if (ret)
+		DbgOut((KERN_ERR
+		"tspdrv: create sysfs fail: pwm_min\n"));
+
+	ret = device_create_file(timed_output_vt.dev, &dev_attr_pwm_default);
+
+	if (ret)
+		DbgOut((KERN_ERR
+		"tspdrv: create sysfs fail: pwm_default\n"));
+
+	ret = device_create_file(timed_output_vt.dev, &dev_attr_pwm_threshold);
+
+	if (ret)
+		DbgOut((KERN_ERR
+		"tspdrv: create sysfs fail: pwm_threshold\n"));
 }
 
 /* File IO */
