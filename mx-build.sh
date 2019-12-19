@@ -193,7 +193,7 @@ MAGISKRAMDISK() {
 	gzip -9 "${RDIR}/build/magiskramdisk/data/stock_boot_${NEWSHAW}.img"
 	echo "Removing stock ramdisk.cpio.gz"
 	rm "$KDIR/ramdisk.cpio.gz" || warnandfail "magiskramdisk error! $KDIR/ramdisk.cpio.gz does not exist! Something is wrong!"
-	find . | fakeroot cpio -o -H newc | gzip -9 > "$KDIR/ramdisk.cpio.gz"
+	find | fakeroot cpio -o -H newc | gzip -9 > "$KDIR/ramdisk.cpio.gz"
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR"
 
 }
@@ -221,7 +221,7 @@ MAGISKBOOTIMG() {
 MAGISK_ZIP() {
 	echo "Compressing magisk kernel to TWRP flashable zip file..."
 	cd "$ZIPFOLDER" || warnandfail "Failed to cd to $ZIPFOLDER"
-	zip -r -9 -- *glob* > "${RDIR}/$KERNEL_VERSION_MAGISK.zip"
+	zip -r -9 - > "${RDIR}/$KERNEL_VERSION_MAGISK.zip"
 	echo "Kernel $KERNEL_VERSION_MAGISK.zip finished"
 	echo "Filepath: "
 	echo "${RDIR}/$KERNEL_VERSION_MAGISK.zip"
@@ -237,7 +237,7 @@ BUILD_RAMDISK() {
 	cd "${RDIR}/build/ramdisk" || warnandfail "Failed to cd to $RDIR/build/ramdisk!"
 	mkdir -pm 755 dev proc sys system
 	mkdir -pm 771 data
-	find . | fakeroot cpio -o -H newc | gzip -9 > "$KDIR/ramdisk.cpio.gz"
+	find | fakeroot cpio -o -H newc | gzip -9 > "$KDIR/ramdisk.cpio.gz"
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR"
 }
 
@@ -265,7 +265,7 @@ BUILD_BOOT_IMG() {
 CREATE_ZIP() {
 	echo "Compressing to TWRP flashable zip file..."
 	cd "$ZIPFOLDER" || warnandfail "Failed to cd to $ZIPFOLDER"
-	zip -r -9 -- *glob* > "${RDIR}/$KERNEL_VERSION.zip"
+	zip -r -9 - > "${RDIR}/$KERNEL_VERSION.zip"
 	echo "Kernel $KERNEL_VERSION.zip finished"
 	echo "Filepath: "
 	echo "${RDIR}/$KERNEL_VERSION.zip"
