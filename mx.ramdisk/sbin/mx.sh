@@ -46,8 +46,11 @@ chmod 755 "/sbin/zip"
 
 
 #busybox ln -sf $(pwd)/sbin/uci $(pwd)/res/synapse/uci
-busybox ln -sf /init /sbin/ueventd
-busybox ln -sf /init /sbin/watchdogd
+
+ln -Tsf /init /root/ueventd
+ln -Tsf /init /root/watchdogd
+ln -Tsf /init /sbin/ueventd
+ln -Tsf /init /sbin/watchdogd
 
 #if [ -e /system/robcore ]; then
 #	if [ -e /cache/recovery/openrecoveryscript ]; then
