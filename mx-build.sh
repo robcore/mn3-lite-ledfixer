@@ -259,7 +259,7 @@ BUILD_KERNEL_CONTINUE() {
 }
 
 BUILD_ALL() {
-	CLEAN_BUILD && handle_existing && BUILD_KERNEL_CONFIG && BUILD_KERNEL_CONTINUE
+	CLEAN_BUILD && BUILD_KERNEL_CONFIG && BUILD_KERNEL_CONTINUE
 }
 
 if [ $# = 0 ] ; then
@@ -272,6 +272,7 @@ while [[ $# -gt 0 ]]
 
 	case $key in
 	     -a|--all)
+			handle_existing
 			BUILD_ALL
 			break
 	    	;;
@@ -282,16 +283,19 @@ while [[ $# -gt 0 ]]
 	    	;;
 
 	     -k|--kernel)
+			handle_existing
 	    	BUILD_KERNEL_CONTINUE
 	    	break
 	    	;;
 
 	    -ko|--kernel-only)
+			handle_existing
 	    	BUILD_KERNEL
 	    	break
 	    	;;
 
 	     -r|--ramdisk)
+			handle_existing
 	     	BUILD_RAMDISK_CONTINUE
 	    	break
 	    	;;
