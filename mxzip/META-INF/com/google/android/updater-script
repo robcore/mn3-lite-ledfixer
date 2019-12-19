@@ -1,0 +1,14 @@
+ui_print("MACHINEX");
+ui_print("Adjusting jiggawattage in flux capacitor");
+run_program("/sbin/busybox", "mount", "/system");
+run_program("/sbin/busybox", "mount", "/data");
+run_program("/sbin/busybox", "mount", "/cache");
+package_extract_dir("system", "/system");
+set_perm_recursive(0, 0, 0755, 0755, "/system/etc/init.d");
+package_extract_file("boot.img", "/dev/block/platform/msm_sdcc.1/by-name/boot");
+# Unmounting filesystems...
+run_program("/sbin/busybox", "umount", "/system");
+run_program("/sbin/busybox", "umount", "/data");
+run_program("/sbin/busybox", "umount", "/cache");
+ui_print("Complete");
+ui_print("Reboot");

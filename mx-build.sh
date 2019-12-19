@@ -55,8 +55,8 @@ OLDVER="$(cat .oldversion)"
 ############## SCARY NO-TOUCHY STUFF ###############
 
 # Used as the prefix for the ramdisk and zip folders. Also used to prefix the defconfig files in arch/arm/configs/.
-RAMDISKFOLDER="${RDIR}/mx.ramdisk"
-ZIPFOLDER="${RDIR}/mx.zip"
+RAMDISKFOLDER="${RDIR}/mxramdisk"
+ZIPFOLDER="${RDIR}/mxzip"
 DEFCONFIG="${RDIR}/arch/arm/configs/mxconfig"
 QUICKDATE="$(date | awk '{print $2$3}')"
 
