@@ -179,7 +179,7 @@ MAGISKRAMDISK() {
 	mkdir -pm 771 data
 	cp -par "${RDIR}/magiskbackup" "${RDIR}/build/magiskramdisk/.build"
 	local NEWSHAW
-	NEWSHAW="$(sha1sum ${ZIPFOLDER}/boot.img)"
+	NEWSHAW="$(sha1sum ${ZIPFOLDER}/boot.img | awk '{ print $1}')"
 	[ -z "$NEWSHAW" ] && warnandfail "Failed to create sha1sum for magisk boot!"
 	echo "Creating magisk backup with sha=$NEWSHAW"
 	echo -n 'SHA1=' >> "${RDIR}/build/magiskramdisk/.build/.magisk"
@@ -188,7 +188,8 @@ MAGISKRAMDISK() {
 	cp -pa "${RDIR}/build/magiskramdisk/init" "${RDIR}/build/magiskramdisk/.build" || warnandfail "Failed to copy init to magisk backup!"
 	rm "${RDIR}/build/magiskramdisk/init" &> /dev/null
 	cp -pa "${RDIR}/magiskinit" "${RDIR}/build/magiskramdisk/init" || warnandfail "Failed to copy magisk init to ramdisk init!"
-	echo "Creating magisk-style /data/${NEWSHAW}boot.img"
+	echo "Creating magisk-style /data/${NEWSHAW}boot.img"Creating magisk-style /data/ea30e05c76bee01c54f21e9b21047eb9e59e23a3  /root/mn3-lite/mxzip/boot.img boot.img
+
 	mkdir -pm 771 "${ZIPFOLDER}/data"
 	mv "${ZIPFOLDER}/boot.img" "${ZIPFOLDER}/data/stock_boot_${NEWSHAW}.img" || warnandfail "Failed to move magisk-style boot.img to ${ZIPFOLDER}/data/${NEWSHAW}boot.img!"
 	gzip -9 "${ZIPFOLDER}/data/stock_boot_${NEWSHAW}.img"
@@ -222,7 +223,7 @@ MAGISKBOOTIMG() {
 MAGISK_ZIP() {
 	echo "Compressing magisk kernel to TWRP flashable zip file..."
 	cd "$ZIPFOLDER" || warnandfail "Failed to cd to $ZIPFOLDER"
-	zip -r -9 - > "${RDIR}/${KERNEL_VERSION_MAGISK}.zip"
+	zip -r -9 - * > "${RDIR}/${KERNEL_VERSION_MAGISK}.zip"
 	echo "Kernel $KERNEL_VERSION_MAGISK.zip finished"
 	echo "Filepath: "
 	echo "${RDIR}/${KERNEL_VERSION_MAGISK}.zip"
@@ -268,7 +269,7 @@ BUILD_BOOT_IMG() {
 CREATE_ZIP() {
 	echo "Compressing to TWRP flashable zip file..."
 	cd "$ZIPFOLDER" || warnandfail "Failed to cd to $ZIPFOLDER"
-	zip -r -9 - > "${RDIR}/${KERNEL_VERSION}.zip"
+	zip -r -9 - * > "${RDIR}/${KERNEL_VERSION}.zip"
 	echo "Kernel $KERNEL_VERSION.zip finished"
 	echo "Filepath: "
 	echo "${RDIR}/${KERNEL_VERSION}.zip"
