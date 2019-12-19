@@ -1845,7 +1845,7 @@ CONFIG_WLAN=y
 # CONFIG_BCM4343 is not set
 # CONFIG_BCM4334 is not set
 # CONFIG_BCM4335 is not set
-CONFIG_BCM4339=m
+CONFIG_BCM4339=y
 # CONFIG_BCM4354 is not set
 # CONFIG_BCM43241 is not set
 CONFIG_BCMDHD_FW_PATH="/system/etc/wifi/bcmdhd_sta.bin"

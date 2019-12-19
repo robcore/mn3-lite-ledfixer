@@ -31,7 +31,7 @@ export USE_CCACHE="1"
 export CCACHE_NLEVELS="8"
 
 # root directory of kernel's git repo (default is this script's location)
-RDIR="/root/mn3-lite"
+RDIR="/root/mn3lite"
 
 #[ -z $VARIANT ] && \
 # device variant/carrier, possible options:
@@ -111,7 +111,7 @@ handle_existing() {
 		then
 			echo "Nothing entered, using old"
 			KERNEL_VERSION="machinexlite-Mark$OLDVER-hltetmo"
-			echo "Removing ld zip files..."
+			echo "Removing old zip files..."
 			rm -f "$RDIR/$KERNEL_VERSION.zip" &> /dev/null
 		else
 			KERNEL_VERSION="machinexlite-Mark$NEWVER-hltetmo"
@@ -165,7 +165,7 @@ BUILD_RAMDISK() {
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR"
 	rm -rf "$RDIR/build/ramdisk" &>/dev/null
 	mkdir -p "$RDIR/build/ramdisk"
-	cp -par "$RAMDISKFOLDER/*" "$RDIR/build/ramdisk" || warnandfail "Failed to create $RDIR/build/ramdisk!"
+	cp -par "$RAMDISKFOLDER"/* "$RDIR/build/ramdisk" || warnandfail "Failed to create $RDIR/build/ramdisk!"
 	echo "Building ramdisk img"
 	cd "$RDIR/build/ramdisk" || warnandfail "Failed to cd to $RDIR/build/ramdisk!"
 	mkdir -pm 755 dev proc sys system
@@ -199,13 +199,14 @@ BUILD_BOOT_IMG() {
 CREATE_ZIP() {
 	echo "Compressing to TWRP flashable zip file..."
 	cd "$ZIPFOLDER" || warnandfail "Failed to cd to $ZIPFOLDER"
-	rm -f "$ZIPFOLDER/system/lib/modules/*"
-	for MXMODS in "$(find "$RDIR/build/" -iname '*.ko')"
+	rm -f "$ZIPFOLDER"/system/lib/modules/*
+	for MXMODS in $(find "$RDIR/build/" -iname '*.ko')
 	do
-		echo "$MXMODS"
+		echo "Copying $MXMODS to zip"
 		cp -pa "$MXMODS" "$ZIPFOLDER/system/lib/modules/" || warnandfail "Failed to copy new modules to zip!"
 	done
-	zip -r -9 - * > "$RDIR/$KERNEL_VERSION.zip" || warnandfail "Failed to zip!"
+	zip -r foo.zip foo
+	zip -r -9 "$RDIR/$KERNEL_VERSION.zip" "$ZIPFOLDER"/* || warnandfail "Failed to zip!"
 	echo "Kernel $KERNEL_VERSION.zip finished"
 	echo "Filepath: "
 	echo "$RDIR/$KERNEL_VERSION.zip"
