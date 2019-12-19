@@ -256,7 +256,7 @@ BUILD_KERNEL_CONTINUE() {
 }
 
 BUILD_ALL() {
-	CLEAN_BUILD && handle_existing && BUILD_KERNEL_CONFIG && BUILD_KERNEL_CONTINUE && CLEAN_BUILD && exit 0
+	CLEAN_BUILD && handle_existing && BUILD_KERNEL_CONFIG && BUILD_KERNEL_CONTINUE
 }
 
 if [ $# = 0 ] ; then
