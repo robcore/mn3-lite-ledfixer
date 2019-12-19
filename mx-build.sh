@@ -164,8 +164,7 @@ BUILD_RAMDISK() {
 	echo "Building ramdisk structure..."
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR"
 	rm -rf "$RDIR/build/ramdisk" &>/dev/null
-	mkdir -p "$RDIR/build/ramdisk"
-	cp -par "$RAMDISKFOLDER"/* "$RDIR/build/ramdisk" || warnandfail "Failed to create $RDIR/build/ramdisk!"
+	cp -par "$RAMDISKFOLDER" "$RDIR/build/ramdisk" || warnandfail "Failed to create $RDIR/build/ramdisk!"
 	echo "Building ramdisk img"
 	cd "$RDIR/build/ramdisk" || warnandfail "Failed to cd to $RDIR/build/ramdisk!"
 	mkdir -pm 755 dev proc sys system
@@ -174,7 +173,7 @@ BUILD_RAMDISK() {
 	then
 		rm "$KDIR/ramdisk.cpio.gz"
 	fi
-	find | fakeroot cpio -v -o -H newc | gzip -v -9 > ramdisk.cpio.gz
+	find | fakeroot cpio -v -o -H newc | gzip -v -9 > "$KDIR/ramdisk.cpio.gz"
 	[ ! -f "$KDIR/ramdisk.cpio.gz" ] && warnandfail "NO ramdisk!"
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR"
 }
