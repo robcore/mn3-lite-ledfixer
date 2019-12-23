@@ -200,7 +200,7 @@ BUILD_SINGLE_CONFIG() {
 
 BUILD_SINGLE_DRIVER() {
 	echo "Building Single Driver..."
-	make ARCH="arm" -S -s -j5 O="$RDIR/build/$1" 
+	make ARCH="arm" -C "$RDIR" -S -s -j5 O="$RDIR/build/" "$1"
 }
 
 BUILD_KERNEL_CONFIG() {

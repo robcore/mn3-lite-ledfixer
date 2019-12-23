@@ -7507,7 +7507,7 @@ static int taiko_codec_probe(struct snd_soc_codec *codec)
 	sound_control_normalize = 1;
 	codec->control_data = dev_get_drvdata(codec->dev->parent);
 	control = codec->control_data;
-	sound_control_codec_ptr = &control->core-res;
+	sound_control_codec_ptr = codec->control_data;
 
 	wcd9xxx_ssr_register(control, taiko_device_down,
 			     taiko_post_reset_cb, (void *)codec);
