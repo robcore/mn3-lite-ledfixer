@@ -7410,7 +7410,7 @@ static ssize_t speaker_gain_store(struct kobject *kobj,
 	int spkinput;
 	unsigned int spkoutput;
 
-	sscanf(buf, "%d", &input);
+	sscanf(buf, "%d", &spkinput);
 
 	if (spkinput < -84)
 		spkinput = -84;
@@ -7418,9 +7418,9 @@ static ssize_t speaker_gain_store(struct kobject *kobj,
 		spkinput = 40;
 
 	if (spkinput < 0)
-		spkoutput = input + 256;
+		spkoutput = spkinput + 256;
 	else
-		spkoutput = input;
+		spkoutput = spkinput;
 	sound_control_override = 1;
 	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX7_VOL_CTL_B2_CTL, spkoutput);
 	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX7_VOL_CTL_B2_CTL, spkoutput);
