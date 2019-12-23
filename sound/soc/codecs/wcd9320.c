@@ -7335,98 +7335,16 @@ static struct regulator *taiko_codec_find_regulator(struct snd_soc_codec *codec,
 	return NULL;
 }
 
-static unsigned int wcd9xxx_hw_revision;
-
 unsigned int sound_control_override;
+static unsigned int wcd9xxx_hw_revision;
 static int show_sound_value(unsigned int inputval)
 {
 	int tempval;
-	tempval = wcd9xxx_reg_read(sound_control_codec_ptr, inputval);
+	tempval = wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, inputval);
 	if ((tempval >= 172) && (tempval <= 255))
 		tempval -= 256;
 
 	return tempval;
-}
-
-static ssize_t normalized_headphone_gain_show(struct kobject *kobj,
-		struct kobj_attribute *attr, char *buf)
-{
-	int leftval;
-	int rightval;
-	leftval = show_sound_value(TAIKO_A_CDC_RX1_VOL_CTL_B2_CTL);
-	rightval = show_sound_value(TAIKO_A_CDC_RX2_VOL_CTL_B2_CTL);
-	return sprintf(buf, "%d %d\n", leftval, rightval);
-}
-
-static ssize_t normalized_headphone_gain_store(struct kobject *kobj,
-		struct kobj_attribute *attr, const char *buf, size_t count)
-{
-
-	int leftinput;
-	unsigned int leftoutput;
-	int rightinput;
-	unsigned int rightoutput;
-
-	sscanf(buf, "%d %d", &leftinput, &rightinput);
-
-	if (leftinput < -84)
-		leftinput = -84;
-	if (leftinput > 40)
-		leftinput = 40;
-
-	if (rightinput < -84)
-		rightinput = -84;
-	if (rightinput > 40)
-		rightinput = 40;
-
-	if (leftinput < 0)
-		leftoutput = (leftinput + 256);
-	else
-		leftoutput = leftinput;
-
-	if (rightinput < 0)
-		rightoutput = (rightinput + 256);
-	else
-		rightoutput = rightinput;
-
-	sound_control_override = 1;
-	wcd9xxx_reg_write(sound_control_codec_ptr, TAIKO_A_CDC_RX1_VOL_CTL_B2_CTL, leftoutput);
-	wcd9xxx_reg_write(sound_control_codec_ptr, TAIKO_A_CDC_RX2_VOL_CTL_B2_CTL, rightoutput);
-	sound_control_override = 0;
-	return count;
-}
-
-static ssize_t normalized_speaker_gain_show(struct kobject *kobj,
-		struct kobj_attribute *attr, char *buf)
-{
-	int spkval;
-	spkval = show_sound_value(TAIKO_A_CDC_RX7_VOL_CTL_B2_CTL);
-	return sprintf(buf, "%d\n", spkval);
-}
-
-static ssize_t normalized_speaker_gain_store(struct kobject *kobj,
-		struct kobj_attribute *attr, const char *buf, size_t count)
-{
-
-	int spkinput;
-	unsigned int spkoutput;
-
-	sscanf(buf, "%d", &spkinput);
-
-	if (spkinput < -84)
-		spkinput = -84;
-	if (spkinput > 40)
-		spkinput = 40;
-
-	if (spkinput < 0)
-		spkoutput = spkinput + 256;
-	else
-		spkoutput = spkinput;
-	sound_control_override = 1;
-	wcd9xxx_reg_write(sound_control_codec_ptr, TAIKO_A_CDC_RX7_VOL_CTL_B2_CTL, spkoutput);
-	sound_control_override = 0;
-
-	return count;
 }
 
 static ssize_t headphone_gain_show(struct kobject *kobj,
@@ -7434,8 +7352,8 @@ static ssize_t headphone_gain_show(struct kobject *kobj,
 {
 	int leftval;
 	int rightval;
-	leftval = wcd9xxx_reg_read(sound_control_codec_ptr, TAIKO_A_CDC_RX1_VOL_CTL_B2_CTL);
-	rightval = wcd9xxx_reg_read(sound_control_codec_ptr, TAIKO_A_CDC_RX2_VOL_CTL_B2_CTL);
+	leftval = show_sound_value(TAIKO_A_CDC_RX1_VOL_CTL_B2_CTL);
+	rightval = show_sound_value(TAIKO_A_CDC_RX2_VOL_CTL_B2_CTL);
 	return sprintf(buf, "%d %d\n", leftval, rightval);
 }
 
@@ -7471,8 +7389,8 @@ static ssize_t headphone_gain_store(struct kobject *kobj,
 		rightoutput = rightinput;
 
 	sound_control_override = 1;
-	wcd9xxx_reg_write(sound_control_codec_ptr, TAIKO_A_CDC_RX1_VOL_CTL_B2_CTL, leftoutput);
-	wcd9xxx_reg_write(sound_control_codec_ptr, TAIKO_A_CDC_RX2_VOL_CTL_B2_CTL, rightoutput);
+	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX1_VOL_CTL_B2_CTL, leftoutput);
+	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX2_VOL_CTL_B2_CTL, rightoutput);
 	sound_control_override = 0;
 	return count;
 }
@@ -7481,7 +7399,7 @@ static ssize_t speaker_gain_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf)
 {
 	int spkval;
-	spkval = wcd9xxx_reg_read(sound_control_codec_ptr, TAIKO_A_CDC_RX7_VOL_CTL_B2_CTL);
+	spkval = show_sound_value(TAIKO_A_CDC_RX7_VOL_CTL_B2_CTL);
 	return sprintf(buf, "%d\n", spkval);
 }
 
@@ -7499,54 +7417,43 @@ static ssize_t speaker_gain_store(struct kobject *kobj,
 	if (spkinput > 40)
 		spkinput = 40;
 
-	spkoutput = spkinput;
-
+	if (spkinput < 0)
+		spkoutput = spkinput + 256;
+	else
+		spkoutput = spkinput;
 	sound_control_override = 1;
-	wcd9xxx_reg_write(sound_control_codec_ptr, TAIKO_A_CDC_RX7_VOL_CTL_B2_CTL, spkoutput);
+	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX7_VOL_CTL_B2_CTL, spkoutput);
+	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX7_VOL_CTL_B2_CTL, spkoutput);
 	sound_control_override = 0;
 
 	return count;
 }
 
-/*
 static ssize_t sound_control_hw_revision_show (struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf)
 {
 	return sprintf(buf, "hw_revision: %u\n", wcd9xxx_hw_revision);
 }
-*/
-
-static struct kobj_attribute normalized_headphone_gain_attribute =
-	__ATTR(normalized_headphone_gain, 0644,
-		normalized_headphone_gain_show,
-		normalized_headphone_gain_store);
-
-static struct kobj_attribute normalized_speaker_gain_attribute =
-	__ATTR(normalized_speaker_gain, 0644,
-		normalized_speaker_gain_show,
-		normalized_speaker_gain_store);
 
 static struct kobj_attribute headphone_gain_attribute =
-	__ATTR(headphone_gain, 0644,
+	__ATTR(gpl_headphone_gain, 0644,
 		headphone_gain_show,
 		headphone_gain_store);
 
 static struct kobj_attribute speaker_gain_attribute =
-	__ATTR(speaker_gain, 0644,
+	__ATTR(gpl_speaker_gain, 0644,
 		speaker_gain_show,
 		speaker_gain_store);
-/*
+
 static struct kobj_attribute sound_hw_revision_attribute =
-	__ATTR(sound_control_hw_revision, 0444,
+	__ATTR(gpl_sound_control_hw_revision, 0444,
 		sound_control_hw_revision_show, NULL);
-*/
+
 
 static struct attribute *sound_control_attrs[] = {
 		&headphone_gain_attribute.attr,
 		&speaker_gain_attribute.attr,
-		&normalized_&headphone_gain_attribute.attr,
-		&normalized_&speaker_gain_attribute.attr,
-		//&sound_hw_revision_attribute.attr,
+		&sound_hw_revision_attribute.attr,
 		NULL,
 };
 
@@ -7574,8 +7481,7 @@ static int taiko_codec_probe(struct snd_soc_codec *codec)
 	sound_control_override = 0;
 	codec->control_data = dev_get_drvdata(codec->dev->parent);
 	control = codec->control_data;
-
-	sound_control_codec_ptr = &control->core_res;
+	sound_control_codec_ptr = codec->control_data;
 
 	wcd9xxx_ssr_register(control, taiko_device_down,
 			     taiko_post_reset_cb, (void *)codec);
@@ -7792,7 +7698,7 @@ static int taiko_codec_probe(struct snd_soc_codec *codec)
 
 	codec->ignore_pmdown_time = 1;
 
-	sound_control_kobj = kobject_create_and_add("sound_control", kernel_kobj);
+	sound_control_kobj = kobject_create_and_add("sound_control_3", kernel_kobj);
 
 	if (sound_control_kobj) {
 		ret = sysfs_create_group(sound_control_kobj, &sound_control_attr_group);
