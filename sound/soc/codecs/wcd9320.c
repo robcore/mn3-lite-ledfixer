@@ -4288,7 +4288,7 @@ static int taiko_write(struct snd_soc_codec *codec, unsigned int reg,
 	if (reg == SND_SOC_NOPM)
 		return 0;
 
-	if (reg > TAIKO_MAX_REGISTER) {
+	if (reg > TAIKO_MAX_REGISTER)
 		return -EINVAL;
 
 	if (codec == NULL)
