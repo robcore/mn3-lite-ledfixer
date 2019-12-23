@@ -118,6 +118,7 @@ int wcd9xxx_reg_read(
 }
 EXPORT_SYMBOL(wcd9xxx_reg_read);
 
+extern unsigned int sound_control_override;
 static int wcd9xxx_write(struct wcd9xxx *wcd9xxx, unsigned short reg,
 			int bytes, void *src, bool interface_reg) {
 	int i;
