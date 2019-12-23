@@ -2047,7 +2047,7 @@ int snd_soc_read(struct snd_soc_codec *codec, unsigned int reg)
 EXPORT_SYMBOL_GPL(snd_soc_read);
 
 int snd_soc_write(struct snd_soc_codec *codec,
-			   unsigned int reg, unsigned int val, bool override)
+			   unsigned int reg, unsigned int val)
 {
 	if (codec && codec->write) {
 		//pr_info("%s -- Register: %x (%u) Value: %x (%u)\n", __func__, reg, reg, val, val);
