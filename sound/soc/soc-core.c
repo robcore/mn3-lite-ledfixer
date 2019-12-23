@@ -2034,9 +2034,7 @@ EXPORT_SYMBOL_GPL(snd_soc_free_ac97_codec);
 int snd_soc_read(struct snd_soc_codec *codec, unsigned int reg)
 {
 	unsigned int ret;
-		if (codec == NULL)
-			return -ENOMEM;
-        if (codec->read) {
+        if (codec && codec->read) {
 		ret = codec->read(codec, reg);
 		dev_dbg(codec->dev, "read %x => %x\n", reg, ret);
 		trace_snd_soc_reg_read(codec, reg, ret);
@@ -2048,33 +2046,16 @@ int snd_soc_read(struct snd_soc_codec *codec, unsigned int reg)
 }
 EXPORT_SYMBOL_GPL(snd_soc_read);
 
-int real_snd_soc_write(struct snd_soc_codec *codec,
+int snd_soc_write(struct snd_soc_codec *codec,
 			   unsigned int reg, unsigned int val, bool override)
 {
-	if (codec == NULL)
-		return -ENOMEM;
-	if (!override) {
-		if ((reg == 0x2E7) || (reg == 743) ||
-			(reg == 0x2B7) || (reg == 695) ||
-			(reg == 0x2BF) || (reg == 703))
-			return 0;
-	}
-	if (codec->write) {
+	if (codec && codec->write) {
 		//pr_info("%s -- Register: %x (%u) Value: %x (%u)\n", __func__, reg, reg, val, val);
 		trace_snd_soc_reg_write(codec, reg, val);
 		return codec->write(codec, reg, val);
-	} else {
+    } else {
 		return -EIO;
 	}
-}
-EXPORT_SYMBOL_GPL(real_snd_soc_write);
-
-int snd_soc_write(struct snd_soc_codec *codec,
-			   unsigned int reg, unsigned int val)
-{
-	if (codec == NULL)
-		return -ENOMEM;
-	return real_snd_soc_write(codec, reg, val, false);
 }
 EXPORT_SYMBOL_GPL(snd_soc_write);
 
@@ -3685,8 +3666,8 @@ int snd_soc_register_codec(struct device *dev,
 
 fail:
 	kfree(codec->reg_def_copy);
-	codec->reg_def_copy = NULL;
 copyfail:
+	codec->reg_def_copy = NULL;
 	kfree(codec->name);
 	kfree(codec);
 	return ret;

@@ -264,11 +264,7 @@ module_param_cb(spkr_drv_wrnd, &spkr_drv_wrnd_param_ops, &spkr_drv_wrnd, 0644);
 MODULE_PARM_DESC(spkr_drv_wrnd,
 	       "Run software workaround to avoid leakage on the speaker drive");
 
-extern unsigned int snd_ctrl_enabled;
-extern int snd_reg_access(unsigned int reg);
-extern int snd_cache_read(unsigned int reg);
-extern void snd_cache_write(unsigned int reg, unsigned int value);
-struct snd_soc_codec *sound_control_codec_ptr;
+static struct wcd9xxx *sound_control_codec_ptr;
 
 #define WCD9320_RATES (SNDRV_PCM_RATE_8000 | SNDRV_PCM_RATE_16000 |\
 			SNDRV_PCM_RATE_32000 | SNDRV_PCM_RATE_48000 |\
@@ -4158,33 +4154,33 @@ static int taiko_readable(struct snd_soc_codec *ssc, unsigned int reg)
 	return taiko_reg_readable[reg];
 }
 
-static bool taiko_is_digital_gain_register(unsigned int reg)
+static unsigned int taiko_is_digital_gain_register(unsigned int reg)
 {
-	bool rtn = false;
 	switch (reg) {
-	case TAIKO_A_CDC_RX1_VOL_CTL_B2_CTL:
-	case TAIKO_A_CDC_RX2_VOL_CTL_B2_CTL:
-	case TAIKO_A_CDC_RX3_VOL_CTL_B2_CTL:
-	case TAIKO_A_CDC_RX4_VOL_CTL_B2_CTL:
-	case TAIKO_A_CDC_RX5_VOL_CTL_B2_CTL:
-	case TAIKO_A_CDC_RX6_VOL_CTL_B2_CTL:
-	case TAIKO_A_CDC_RX7_VOL_CTL_B2_CTL:
-	case TAIKO_A_CDC_TX1_VOL_CTL_GAIN:
-	case TAIKO_A_CDC_TX2_VOL_CTL_GAIN:
-	case TAIKO_A_CDC_TX3_VOL_CTL_GAIN:
-	case TAIKO_A_CDC_TX4_VOL_CTL_GAIN:
-	case TAIKO_A_CDC_TX5_VOL_CTL_GAIN:
-	case TAIKO_A_CDC_TX6_VOL_CTL_GAIN:
-	case TAIKO_A_CDC_TX7_VOL_CTL_GAIN:
-	case TAIKO_A_CDC_TX8_VOL_CTL_GAIN:
-	case TAIKO_A_CDC_TX9_VOL_CTL_GAIN:
-	case TAIKO_A_CDC_TX10_VOL_CTL_GAIN:
-		rtn = true;
-		break;
-	default:
-		break;
+		case TAIKO_A_CDC_RX1_VOL_CTL_B2_CTL:
+		case TAIKO_A_CDC_RX2_VOL_CTL_B2_CTL:
+		case TAIKO_A_CDC_RX3_VOL_CTL_B2_CTL:
+		case TAIKO_A_CDC_RX4_VOL_CTL_B2_CTL:
+		case TAIKO_A_CDC_RX5_VOL_CTL_B2_CTL:
+		case TAIKO_A_CDC_RX6_VOL_CTL_B2_CTL:
+		case TAIKO_A_CDC_RX7_VOL_CTL_B2_CTL:
+		case TAIKO_A_CDC_TX1_VOL_CTL_GAIN:
+		case TAIKO_A_CDC_TX2_VOL_CTL_GAIN:
+		case TAIKO_A_CDC_TX3_VOL_CTL_GAIN:
+		case TAIKO_A_CDC_TX4_VOL_CTL_GAIN:
+		case TAIKO_A_CDC_TX5_VOL_CTL_GAIN:
+		case TAIKO_A_CDC_TX6_VOL_CTL_GAIN:
+		case TAIKO_A_CDC_TX7_VOL_CTL_GAIN:
+		case TAIKO_A_CDC_TX8_VOL_CTL_GAIN:
+		case TAIKO_A_CDC_TX9_VOL_CTL_GAIN:
+		case TAIKO_A_CDC_TX10_VOL_CTL_GAIN:
+			return 1;
+			break;
+		default:
+			break;
 	}
-	return rtn;
+
+	return 0;
 }
 
 static int taiko_volatile(struct snd_soc_codec *ssc, unsigned int reg)
@@ -4250,16 +4246,13 @@ static int taiko_volatile(struct snd_soc_codec *ssc, unsigned int reg)
 }
 
 
-unsigned int taiko_read(struct snd_soc_codec *codec,
+static unsigned int taiko_read(struct snd_soc_codec *codec,
 				unsigned int reg)
 {
 	unsigned int val;
 	int ret;
 
 	struct wcd9xxx *wcd9xxx;
-	if (codec == NULL)
-		return -ENOMEM;
-	wcd9xxx = codec->control_data;
 
 	if (reg == SND_SOC_NOPM)
 		return 0;
@@ -4267,77 +4260,51 @@ unsigned int taiko_read(struct snd_soc_codec *codec,
 	if (reg > TAIKO_MAX_REGISTER)
 		return -EINVAL;
 
+	if (codec == NULL)
+		return -ENOMEM;
+
+	wcd9xxx = codec->control_data;
+
 	if (!taiko_volatile(codec, reg) && taiko_readable(codec, reg) &&
 		reg < codec->driver->reg_cache_size) {
 		ret = snd_soc_cache_read(codec, reg, &val);
 		if (ret >= 0) {
 			return val;
-		} else
-			pr_err("%s: snd_soc_cache_read from %x failed: %d\n",
+		}
+	pr_err("%s: snd_soc_cache_read from %x failed: %d\n",
 				__func__, reg, ret);
 	}
-	return wcd9xxx_reg_read(&wcd9xxx->core_res, reg);
-/*	val = wcd9xxx_reg_read(&wcd9xxx->core_res, reg);
-	if (val < 0) {
-		pr_err("%s: wcd9xxx_reg_read from %x failed: %d\n",
-			__func__, reg, val);
-		val = wcd9xxx_reg_read_safe(&wcd9xxx->core_res, reg);
-		pr_info("%s: wcd9xxx_reg_read from %x : %d\n",
-			__func__, reg, val);
-	}
-	return val;
-*/
-}
-EXPORT_SYMBOL(taiko_read);
 
-int taiko_write(struct snd_soc_codec *codec, unsigned int reg,
+	val = wcd9xxx_reg_read(&wcd9xxx->core_res, reg);
+	return val;
+}
+
+static int taiko_write(struct snd_soc_codec *codec, unsigned int reg,
 	unsigned int value)
 {
 	int ret;
-	int val;
-
 	struct wcd9xxx *wcd9xxx;
-	if (codec == NULL)
-		return -ENOMEM;
-	wcd9xxx = codec->control_data;
 
 	if (reg == SND_SOC_NOPM)
 		return 0;
 
-	if (reg > TAIKO_MAX_REGISTER)
-		reg = TAIKO_MAX_REGISTER;
+	if (reg > TAIKO_MAX_REGISTER) {
+		return -EINVAL;
+
+	if (codec == NULL)
+		return -ENOMEM;
+
+	wcd9xxx = codec->control_data;
 
 	if (!taiko_volatile(codec, reg)) {
 		ret = snd_soc_cache_write(codec, reg, value);
 		if (ret != 0)
-			pr_err("%s : snd_soc_cache_write to %x failed: %d\n",
-				__func__, reg, value);
+			pr_err("%s: Cache write to %x failed: %d\n",
+				__func__, reg, ret);
 	}
 
-//	if (!snd_ctrl_enabled)
-		return wcd9xxx_reg_write(&wcd9xxx->core_res, reg, value);
-/*
-	if (!snd_reg_access(reg)) {
-		val = snd_cache_read(reg);
-		if (val < 0) {
-			pr_err("%s : snd_cache_read %x failed",
-				__func__, reg);
-			val = wcd9xxx_reg_read_safe(&wcd9xxx->core_res, reg);
-
-			if (val < 0) {
-				pr_err("%s : wcd9xxx_reg_read %x failed",
-				__func__, reg);
-				val = wcd9xxx_reg_read(&wcd9xxx->core_res, reg);
-			}
-		}
-	} else {
-		snd_cache_write(reg, value);
-		val = value;
-	}
-	return wcd9xxx_reg_write(&wcd9xxx->core_res, reg, val);
-*/
+	return wcd9xxx_reg_write(&wcd9xxx->core_res, reg, value);
 }
-EXPORT_SYMBOL(taiko_write);
 
 #ifdef CONFIG_SND_SOC_ES325
 static int taiko_startup(struct snd_pcm_substream *substream,
@@ -4380,15 +4347,6 @@ static void taiko_shutdown(struct snd_pcm_substream *substream,
 	}
 }
 
-static void update_sound_controls(void)
-{
-	if (sound_control_codec_ptr != NULL) {
-		real_snd_soc_write(sound_control_codec_ptr, 0x2E7, snd_soc_read(sound_control_codec_ptr, 0x2E7), true);
-		real_snd_soc_write(sound_control_codec_ptr, 0x2B7, snd_soc_read(sound_control_codec_ptr, 0x2E7), true);
-		real_snd_soc_write(sound_control_codec_ptr, 0x2BF, snd_soc_read(sound_control_codec_ptr, 0x2E7), true);
-	}
-}
-
 static int taiko_prepare(struct snd_pcm_substream *substream,
 		struct snd_soc_dai *dai)
 {
@@ -4397,8 +4355,6 @@ static int taiko_prepare(struct snd_pcm_substream *substream,
 	struct snd_soc_codec *codec = dai->codec;
 	struct taiko_priv *taiko_p = snd_soc_codec_get_drvdata(codec);
 	int found_hs_pa = 0;
-
-	update_sound_controls();
 
 	if (substream->stream)
 		return 0;
@@ -7379,12 +7335,12 @@ static struct regulator *taiko_codec_find_regulator(struct snd_soc_codec *codec,
 	return NULL;
 }
 
+unsigned int sound_control_override;
 static unsigned int wcd9xxx_hw_revision;
-
 static int show_sound_value(unsigned int inputval)
 {
 	int tempval;
-	tempval = snd_soc_read(sound_control_codec_ptr, inputval);
+	tempval = wcd9xxx_reg_read(sound_control_codec_ptr, inputval);
 	if ((tempval >= 172) && (tempval <= 255))
 		tempval -= 256;
 
@@ -7394,64 +7350,81 @@ static int show_sound_value(unsigned int inputval)
 static ssize_t headphone_gain_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf)
 {
-	int adjustedval;
-	adjustedval = show_sound_value(TAIKO_A_CDC_RX1_VOL_CTL_B2_CTL);
-	return sprintf(buf, "%d\n", adjustedval);
+	int leftval;
+	int rightval;
+	leftval = show_sound_value(TAIKO_A_CDC_RX1_VOL_CTL_B2_CTL);
+	rightval = show_sound_value(TAIKO_A_CDC_RX2_VOL_CTL_B2_CTL);
+	return sprintf(buf, "%d %d\n", leftval, rightval);
 }
 
 static ssize_t headphone_gain_store(struct kobject *kobj,
 		struct kobj_attribute *attr, const char *buf, size_t count)
 {
 
-	int input;
-	unsigned int output;
+	int leftinput;
+	unsigned int leftoutput;
+	int rightinput;
+	unsigned int rightoutput;
 
-	sscanf(buf, "%d", &input);
+	sscanf(buf, "%d %d", &leftinput, &rightinput);
 
-	if (input < -84)
-		input = -84;
-	if (input > 40)
-		input = 40;
+	if (leftinput < -84)
+		leftinput = -84;
+	if (leftinput > 40)
+		leftinput = 40;
 
-	if (input < 0)
-		output = input + 256;
+	if (rightinput < -84)
+		rightinput = -84;
+	if (rightinput > 40)
+		rightinput = 40;
+
+	if (leftinput < 0)
+		leftoutput = (leftinput + 256);
 	else
-		output = input;
+		leftoutput = leftinput;
 
-	real_snd_soc_write(sound_control_codec_ptr, TAIKO_A_CDC_RX1_VOL_CTL_B2_CTL, output, true);
-	real_snd_soc_write(sound_control_codec_ptr, TAIKO_A_CDC_RX2_VOL_CTL_B2_CTL, output, true);
+	if (rightinput < 0)
+		rightoutput = (rightinput + 256);
+	else
+		rightoutput = rightinput;
+
+	sound_control_override = 1;
+	wcd9xxx_reg_write(sound_control_codec_ptr, TAIKO_A_CDC_RX1_VOL_CTL_B2_CTL, leftoutput);
+	wcd9xxx_reg_write(sound_control_codec_ptr, TAIKO_A_CDC_RX2_VOL_CTL_B2_CTL, rightoutput);
+	sound_control_override = 0;
 	return count;
 }
 
 static ssize_t speaker_gain_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf)
 {
-	int adjustedval;
-	adjustedval = show_sound_value(TAIKO_A_CDC_RX7_VOL_CTL_B2_CTL);
-	return sprintf(buf, "%d\n", adjustedval);
+	int spkval;
+	spkval = show_sound_value(TAIKO_A_CDC_RX7_VOL_CTL_B2_CTL);
+	return sprintf(buf, "%d\n", spkval);
 }
 
 static ssize_t speaker_gain_store(struct kobject *kobj,
 		struct kobj_attribute *attr, const char *buf, size_t count)
 {
 
-	int input;
-	unsigned int output;
+	int spkinput;
+	unsigned int spkoutput;
 
 	sscanf(buf, "%d", &input);
 
-	if (input < -84)
-		input = -84;
-	if (input > 40)
-		input = 40;
+	if (spkinput < -84)
+		spkinput = -84;
+	if (spkinput > 40)
+		spkinput = 40;
 
-	if (input < 0)
-		output = input + 256;
+	if (spkinput < 0)
+		spkoutput = input + 256;
 	else
-		output = input;
-
-	real_snd_soc_write(sound_control_codec_ptr, TAIKO_A_CDC_RX7_VOL_CTL_B2_CTL, output, true);
-	real_snd_soc_write(sound_control_codec_ptr, TAIKO_A_CDC_RX7_VOL_CTL_B2_CTL, output, true);
+		spkoutput = input;
+	sound_control_override = 1;
+	wcd9xxx_reg_write(sound_control_codec_ptr, TAIKO_A_CDC_RX7_VOL_CTL_B2_CTL, spkoutput);
+	wcd9xxx_reg_write(sound_control_codec_ptr, TAIKO_A_CDC_RX7_VOL_CTL_B2_CTL, spkoutput);
+	sound_control_override = 0;
 
 	return count;
 }
@@ -7463,12 +7436,12 @@ static ssize_t sound_control_hw_revision_show (struct kobject *kobj,
 }
 
 static struct kobj_attribute headphone_gain_attribute =
-	__ATTR(gpl_headphone_gain, 0664,
+	__ATTR(gpl_headphone_gain, 0644,
 		headphone_gain_show,
 		headphone_gain_store);
 
 static struct kobj_attribute speaker_gain_attribute =
-	__ATTR(gpl_speaker_gain, 0664,
+	__ATTR(gpl_speaker_gain, 0644,
 		speaker_gain_show,
 		speaker_gain_store);
 
@@ -7505,10 +7478,10 @@ static int taiko_codec_probe(struct snd_soc_codec *codec)
 
 	//pr_info("Taiko Sound Engine Probe\n");
 	//pr_info("Probing Codec: %s\n", codec->name);
-	sound_control_codec_ptr = codec;
-
+	sound_control_override = 0;
 	codec->control_data = dev_get_drvdata(codec->dev->parent);
 	control = codec->control_data;
+	sound_control_codec_ptr = codec->control_data;
 
 	wcd9xxx_ssr_register(control, taiko_device_down,
 			     taiko_post_reset_cb, (void *)codec);
@@ -7727,7 +7700,7 @@ static int taiko_codec_probe(struct snd_soc_codec *codec)
 
 	sound_control_kobj = kobject_create_and_add("sound_control_3", kernel_kobj);
 
-	if (sound_control_kobj != NULL) {
+	if (sound_control_kobj) {
 		ret = sysfs_create_group(sound_control_kobj, &sound_control_attr_group);
         if (ret)
 			pr_warn("%s sysfs file create failed!\n", __func__);
