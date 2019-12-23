@@ -274,6 +274,17 @@ CREATE_ZIP() {
 	echo "Kernel $KERNEL_VERSION.zip finished"
 	echo "Filepath: "
 	echo "$RDIR/$KERNEL_VERSION.zip"
+	if [ ! -f "$RDIR/$KERNEL_VERSION.zip" ]
+	then
+		warnandfail "$RDIR/$KERNEL_VERSION.zip does not exist!"
+	fi
+	if [ -s "$RDIR/$KERNEL_VERSION.zip" ]
+	then
+		echo "Uploading $KERNEL_VERSION.zip to Google Drive"
+		/bin/bash /root/google-drive-upload/upload.sh "$RDIR/$KERNEL_VERSION.zip"
+	else
+		warnandfail "$RDIR/$KERNEL_VERSION.zip is 0 bytes, something is wrong!"
+	fi
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR"
 }
 
