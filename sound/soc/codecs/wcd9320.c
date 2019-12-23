@@ -7340,7 +7340,7 @@ static unsigned int wcd9xxx_hw_revision;
 static int show_sound_value(unsigned int inputval)
 {
 	int tempval;
-	tempval = wcd9xxx_reg_read(sound_control_codec_ptr, inputval);
+	tempval = wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, inputval);
 	if ((tempval >= 172) && (tempval <= 255))
 		tempval -= 256;
 
@@ -7389,8 +7389,8 @@ static ssize_t headphone_gain_store(struct kobject *kobj,
 		rightoutput = rightinput;
 
 	sound_control_override = 1;
-	wcd9xxx_reg_write(sound_control_codec_ptr, TAIKO_A_CDC_RX1_VOL_CTL_B2_CTL, leftoutput);
-	wcd9xxx_reg_write(sound_control_codec_ptr, TAIKO_A_CDC_RX2_VOL_CTL_B2_CTL, rightoutput);
+	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX1_VOL_CTL_B2_CTL, leftoutput);
+	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX2_VOL_CTL_B2_CTL, rightoutput);
 	sound_control_override = 0;
 	return count;
 }
@@ -7422,8 +7422,8 @@ static ssize_t speaker_gain_store(struct kobject *kobj,
 	else
 		spkoutput = input;
 	sound_control_override = 1;
-	wcd9xxx_reg_write(sound_control_codec_ptr, TAIKO_A_CDC_RX7_VOL_CTL_B2_CTL, spkoutput);
-	wcd9xxx_reg_write(sound_control_codec_ptr, TAIKO_A_CDC_RX7_VOL_CTL_B2_CTL, spkoutput);
+	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX7_VOL_CTL_B2_CTL, spkoutput);
+	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX7_VOL_CTL_B2_CTL, spkoutput);
 	sound_control_override = 0;
 
 	return count;
