@@ -184,6 +184,25 @@ CLEAN_BUILD() {
 	echo "Cleaned"
 }
 
+BUILD_SINGLE_CONFIG() {
+	echo "Creating kernel config..."
+	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
+	KERNEL_VERSION="buildingsingledriver"
+	mkdir -p "$RDIR/build" || warnandfail "Failed to make $RDIR/build directory!"
+	sed -i '/CONFIG_LOCALVERSION/d' "$RDIR/arch/arm/configs/mxconfig"
+	echo -n 'CONFIG_LOCALVERSION="' >> "$RDIR/arch/arm/configs/mxconfig"
+	echo -n "$KERNEL_VERSION" >> "$RDIR/arch/arm/configs/mxconfig"
+	echo '"' >> "$RDIR/arch/arm/configs/mxconfig"
+	echo 'CONFIG_LOCALVERSION_AUTO=y' >> "$RDIR/arch/arm/configs/mxconfig"
+	cp "$RDIR/arch/arm/configs/mxconfig" "$RDIR/build/.config" || warnandfail "Config Copy Error!"
+	make ARCH="arm" -C "$RDIR" O="$RDIR/build" -j5 oldconfig || warnandfail "make oldconfig Failed!"
+}
+
+BUILD_SINGLE_DRIVER() {
+	echo "Building Single Driver..."
+	make ARCH="arm" -S -s -j5 O="$RDIR/build/$1" 
+}
+
 BUILD_KERNEL_CONFIG() {
 	echo "Creating kernel config..."
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
@@ -278,7 +297,8 @@ Machinexlite by robcore. To configure this script for your build, edit the top o
 usage: ./mx-build.sh [OPTION]
 
 Common options:
-  -a|--all		Do a complete build (starting at the beginning)
+  -a|--all			Do a complete build (starting at the beginning)
+  -b|--bsd			Build single driver (/path/to/folder/ | /path/to/file.o)
   -c|--clean		Remove everything this build script has done
   -m|--clean_make	Perform make proper|clean|distclean in one sweep
   -k|--kernel		Try the build again starting at compiling the kernel
@@ -305,6 +325,12 @@ BUILD_ALL() {
 	CLEAN_BUILD && BUILD_KERNEL_CONFIG && BUILD_KERNEL_CONTINUE
 }
 
+BSDWRAPPER() {
+	[ -z "$1" ] && warnandfail "Build Single Driver: Missing /path/to/folder/ or /path/to/file.o"
+	CLEAN_BUILD && BUILD_SINGLE_CONFIG && BUILD_SINGLE_DRIVER "$1"
+	CLEAN_BUILD
+}
+
 if [ $# = 0 ] ; then
 	SHOW_HELP
 fi
@@ -312,11 +338,17 @@ fi
 while [[ $# -gt 0 ]]
 	do
 	key="$1"
+	extrargs="$2"
 
 	case $key in
 	     -a|--all)
 			handle_existing
 			BUILD_ALL
+			break
+	    	;;
+
+	     -b|--bsd)
+			BSDWRAPPER "$extrargs"
 			break
 	    	;;
 
