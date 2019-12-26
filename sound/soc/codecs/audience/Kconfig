@@ -38,19 +38,19 @@ if SND_SOC_ES515
 menu "eS515 Bus Interface"
 
 config SND_SOC_ES_SLIM
-	boolean "SLIMbus" if SLIMBUS
+	tristate "SLIMbus" if SLIMBUS
 
 config SND_SOC_ES_I2C
-	boolean "I2C command bus"
+	tristate "I2C command bus"
 
 config SND_SOC_ES_SPI
-	boolean "SPI command bus"
+	tristate "SPI command bus"
 
 config SND_SOC_ES_UART
-	boolean "UART command transport"
+	tristate "UART command transport"
 
 config SND_SOC_ES_I2S
-	boolean "I2S audio data bus"
+	tristate "I2S audio data bus"
 
 endmenu
 endif
