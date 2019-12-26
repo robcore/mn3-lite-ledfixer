@@ -270,44 +270,49 @@ static int sysmon_probe(struct platform_device *pdev)
 	struct sysmon_subsys *ss;
 	int ret;
 
-	if (pdev->id < 0 || pdev->id >= SYSMON_NUM_SS)
-		return -ENODEV;
+	if (pdev->id < 0 || pdev->id >= SYSMON_NUM_SS) {
+		ret = -ENODEV;
+		goto earlyfail;
+	}
 
 	ss = &subsys[pdev->id];
 	mutex_init(&ss->lock);
 
-	switch (ss->transport) {
-	case TRANSPORT_SMD:
-		if (pdev->id >= SMD_NUM_TYPE)
-			return -EINVAL;
+	if (ss->transport == TRANSPORT_SMD) {
+		if (pdev->id >= SMD_NUM_TYPE) {
+			ret = -EINVAL;
+			goto latefail;
+		}
 
 		ret = smd_named_open_on_edge("sys_mon", pdev->id, &ss->chan, ss,
 					     sysmon_smd_notify);
 		if (ret) {
 			pr_err("SMD open failed\n");
-			mutex_destroy(&ss->lock);
-			return ret;
+			goto latefail;
 		}
 
 		smd_disable_read_intr(ss->chan);
-		break;
-	case TRANSPORT_HSIC:
-		if (pdev->id < SMD_NUM_TYPE)
-			return -EINVAL;
-
+	} else if (ss->transport == TRANSPORT_HSIC) {
+		if (pdev->id < SMD_NUM_TYPE) {
+			ret = -EINVAL;
+			goto latefail;
+		}
 		ret = hsic_sysmon_open(HSIC_SYSMON_DEV_EXT_MODEM);
 		if (ret) {
 			pr_err("HSIC open failed\n");
-			mutex_destroy(&ss->lock);
-			return ret;
+			goto latefail;
 		}
-		break;
-	default:
-		return -EINVAL;
+	} else {
+		goto latefail;
 	}
 	ss->dev = &pdev->dev;
 
 	return 0;
+
+latefail:
+	mutex_destroy(&ss->lock);
+earlyfail:
+	return ret;
 }
 
 static int __devexit sysmon_remove(struct platform_device *pdev)
