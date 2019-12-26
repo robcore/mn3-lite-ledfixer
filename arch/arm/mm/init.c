@@ -465,9 +465,6 @@ void __init arm_memblock_init(struct meminfo *mi, struct machine_desc *mdesc)
 	for (i = 0; i < mi->nr_banks; i++)
 		memblock_add(mi->bank[i].start, mi->bank[i].size);
 
-#ifdef CONFIG_TIMA_RKP_30
-	memblock_reserve(__pa(_text), PAGE_SIZE);
-#endif /*CONFIG_TIMA_RKP_30*/
 	/* Register the kernel text, kernel data and initrd with memblock. */
 #ifdef CONFIG_XIP_KERNEL
 	memblock_reserve(__pa(_sdata), _end - _sdata);
@@ -503,7 +500,7 @@ void __init arm_memblock_init(struct meminfo *mi, struct machine_desc *mdesc)
 	if (mdesc->reserve)
 		mdesc->reserve();
 
-#if 1 //def CONFIG_SEC_DEBUG
+#ifdef CONFIG_SEC_DEBUG
 #ifndef CONFIG_SECURE_MPU_LOCK
 	/* Debugging code for ext4 panic issue during eMBMS service(H KT)
 	   This will be backed out later */
