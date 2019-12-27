@@ -32,6 +32,7 @@ config CRYPTO_FIPS
 
 config CRYPTO_FIPS_INTEG_COPY_ADDRESS
 	hex "FIPS integrity check zImage offset"
+	depends on CRYPTO_FIPS
 		default 0x8A008000
         help
           This options sets the offset from stext address where
