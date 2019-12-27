@@ -31,7 +31,7 @@ static struct frontswap_ops frontswap_ops __read_mostly;
  * has not been registered, so is preferred to the slower alternative: a
  * function call that checks a non-global.
  */
-bool frontswap_enabled __read_mostly;
+bool frontswap_enabled=true;
 EXPORT_SYMBOL(frontswap_enabled);
 
 /*
