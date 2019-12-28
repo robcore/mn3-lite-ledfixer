@@ -127,7 +127,6 @@ handle_yes_existing() {
 
 CLEAN_BUILD() {
 	echo -ne "Cleaning build...\r"; \
-	echo "Cleaning build..."
 	make clean &>/dev/null
 	make distclean &>/dev/null
 	make mrproper &>/dev/null
