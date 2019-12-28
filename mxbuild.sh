@@ -160,6 +160,10 @@ BUILD_MENUCONFIG() {
 	echo '"' >> "$RDIR/arch/arm/configs/mxconfig"
 	echo 'CONFIG_LOCALVERSION_AUTO=y' >> "$RDIR/arch/arm/configs/mxconfig"
 	cp "$RDIR/arch/arm/configs/mxconfig" "$RDIR/build/.config" || warnandfail "Config Copy Error!"
+	export KERNELVERSION="$KERNEL_VERSION"
+	export ARCH="arm"
+	export SUBARCH="arm"
+	export CROSS_COMPILE="$TOOLCHAIN"
 	make ARCH="arm" SUBARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -C "$RDIR" O="$RDIR/build" menuconfig
 }
 BUILD_SINGLE_CONFIG() {
@@ -173,6 +177,10 @@ BUILD_SINGLE_CONFIG() {
 	echo '"' >> "$RDIR/arch/arm/configs/mxconfig"
 	echo 'CONFIG_LOCALVERSION_AUTO=y' >> "$RDIR/arch/arm/configs/mxconfig"
 	cp "$RDIR/arch/arm/configs/mxconfig" "$RDIR/build/.config" || warnandfail "Config Copy Error!"
+	export KERNELVERSION="$KERNEL_VERSION"
+	export ARCH="arm"
+	export SUBARCH="arm"
+	export CROSS_COMPILE="$TOOLCHAIN"
 	make ARCH="arm" SUBARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -C "$RDIR" O="$RDIR/build" -j5 oldconfig || warnandfail "make oldconfig Failed!"
 }
 
@@ -191,6 +199,10 @@ BUILD_KERNEL_CONFIG() {
 	echo '"' >> "$RDIR/arch/arm/configs/mxconfig"
 	echo 'CONFIG_LOCALVERSION_AUTO=y' >> "$RDIR/arch/arm/configs/mxconfig"
 	cp "$RDIR/arch/arm/configs/mxconfig" "$RDIR/build/.config" || warnandfail "Config Copy Error!"
+	export KERNELVERSION="$KERNEL_VERSION"
+	export ARCH="arm"
+	export SUBARCH="arm"
+	export CROSS_COMPILE="$TOOLCHAIN"
 	make ARCH="arm" SUBARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -C "$RDIR" O="$RDIR/build" -j5 oldconfig || warnandfail "make oldconfig Failed!"
 }
 
