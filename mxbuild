@@ -1,60 +1,11 @@
 #!/bin/bash
-#export PATH=/opt/toolchains/arm-cortex_a15-linux-gnueabihf_5.3/bin:$PATH
-#export PATH=/opt/toolchains/arm-cortex-linux-gnueabi-linaro_4.9.4-2015.06/bin:$PATH
-#export CROSS_COMPILE=/opt/toolchains/arm-cortex-linux-gnueabi-linaro_4.9.4-2015.06/bin/arm-cortex-linux-gnueabi-
 
-# kernel build script for Samsung Galaxy Note 3.
-#
-# Originally written by jcadduono @ xda
-#
-# Updated by frequentc @ xda
-# - Modified to support command line arguments
-# - Made script more generic and customizable
-# - Other minor changes
-#
-# Updated by robcore
-# -really just specific stuff for my needs
-
-################### BEFORE STARTING ################
-#
-# download a working toolchain and extract it somewhere and configure this file
-# to point to the toolchain's root directory.
-# I highly recommend Christopher83's Linaro GCC 4.9.x Cortex-A15 toolchain.
-# Download it here: http://forum.xda-developers.com/showthread.php?t=2098133
-#
-# once you've set up the config section how you like it, you can simply run
-# ./dl-build.sh
-#
-###################### CONFIG ######################
 export CCACHE_DIR="$HOME/.ccache"
 export USE_CCACHE="1"
 export CCACHE_NLEVELS="8"
 
-# root directory of kernel's git repo (default is this script's location)
 RDIR="/root/mn3lite"
-
-#[ -z $VARIANT ] && \
-# device variant/carrier, possible options:
-#	can = N900W8	(Canadian, same as T-Mobile)
-#	eur = N9005	(Snapdragon International / hltexx / Europe)
-#	spr = N900P	(Sprint)
-#	tmo = N900T	(T-Mobile, same as Canadian)
-#	kor = N900K/L/S	(Unified Korean / KT Corporation, LG Telecom, South Korea Telecom)
-# not currently possible options (missing cm12.1 support!):
-#	att = N900A	(AT&T)
-#	usc = N900R4	(US Cellular)
-#	vzw = N900V	(Verizon)
-#VARIANT=tmo
-#[ -z $VER ] && \
-# version number
-# KERNEL_NAME should NOT contain any spaces
-# kernel version string appended to 3.4.x-${KERNEL_NAME}-kernel-hlte-
-# (shown in Settings -> About device)
 OLDVER="$(cat .oldversion)"
-
-############## SCARY NO-TOUCHY STUFF ###############
-
-# Used as the prefix for the ramdisk and zip folders. Also used to prefix the defconfig files in arch/arm/configs/.
 RAMDISKFOLDER="$RDIR/mxramdisk"
 ZIPFOLDER="$RDIR/mxzip"
 DEFCONFIG="$RDIR/arch/arm/configs/mxconfig"
@@ -244,32 +195,34 @@ BUILD_RAMDISK() {
 	cd "$RDIR/build/ramdisk" || warnandfail "Failed to cd to $RDIR/build/ramdisk!"
 	mkdir -pm 755 dev proc sys system
 	mkdir -pm 771 data
-	if [ -f "$KDIR/ramdisk.cpio.gz" ]
+	if [ -f "$KDIR/ramdisk.cpio.lzo" ]
 	then
-		rm "$KDIR/ramdisk.cpio.gz"
+		rm "$KDIR/ramdisk.cpio.lzo"
 	fi
-	find | fakeroot cpio -v -o -H newc | gzip -v -9 > "$KDIR/ramdisk.cpio.gz"
-	[ ! -f "$KDIR/ramdisk.cpio.gz" ] && warnandfail "NO ramdisk!"
+	find | fakeroot cpio -v -H newc -o | lzop -9 > "$KDIR/ramdisk.cpio.lzo"
+	[ ! -f "$KDIR/ramdisk.cpio.lzo" ] && warnandfail "NO ramdisk!"
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR"
 }
 
 BUILD_BOOT_IMG() {
 	echo "Generating boot.img..."
 	rm -f "$ZIPFOLDER/boot.img"
-	if [ ! -f "$RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg" ]
-	then
-		make -C "$RDIR/scripts/mkqcdtbootimg" || warnandfail "Failed to make dtb tool!"
-	fi
 
-	$RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg --kernel "$KDIR/zImage" \
-		--ramdisk "$KDIR/ramdisk.cpio.gz" \
-		--dt_dir "$KDIR" \
-		--cmdline "console=null androidboot.hardware=qcom user_debug=23 msm_rtb.filter=0x37 ehci-hcd.park=3" \
-		--base "0x00000000" \
-		--pagesize "2048" \
-		--ramdisk_offset "0x02000000" \
-		--tags_offset "0x01e00000" \
-		--output "$ZIPFOLDER/boot.img"
+	gcc -w -s -pipe -O2 -o "$RDIR"/tools/dtbtool/dtbtool "$RDIR"/tools/dtbtool/dtbtool.c
+	tools/dtbtool/dtbtool -s 2048 -o "$RDIR"/arch/arm/boot/dt.img -p "$RDIR"/scripts/dtc/ "$RDIR"/arch/arm/boot/
+	gcc -w -s -pipe -O2 -Itools/libmincrypt -o "$RDIR"/tools/mkbootimg/mkbootimg "$RDIR"/tools/libmincrypt/*.c "$RDIR"/tools/mkbootimg/mkbootimg.c
+
+	"$RDIR"/tools/mkbootimg/mkbootimg --kernel "$KDIR"/arch/arm/boot/zImage \
+		--dt "$KDIR"/arch/arm/boot/dt.img \
+		--ramdisk "$KDIR"/ramdisk.cpio.lzo \
+		--cmdline 'console=null androidboot.hardware=qcom user_debug=23 msm_rtb.filter=0x37 ehci-hcd.park=3' \
+		--base 0x00000000 \
+		--pagesize 2048 \
+		--kernel_offset 0x00008000
+		--ramdisk_offset 0x02000000 \
+		--tags_offset 0x01e00000 \
+		--second_offset 0x00f00000 \
+		-o "$ZIPFOLDER/boot.img"
 
 	echo -n "SEANDROIDENFORCE" >> "$ZIPFOLDER/boot.img"
 }
@@ -280,8 +233,11 @@ CREATE_ZIP() {
 	rm -f "$ZIPFOLDER"/system/lib/modules/*
 	for MXMODS in $(find "$RDIR/build/" -iname '*.ko')
 	do
-		echo "Copying $MXMODS to zip"
-		cp -pa "$MXMODS" "$ZIPFOLDER/system/lib/modules/" || warnandfail "Failed to copy new modules to zip!"
+		if [ -f "$MXMODS" ]
+		then
+			echo "Copying $MXMODS to zip"
+			cp -pa "$MXMODS" "$ZIPFOLDER/system/lib/modules/" || warnandfail "Failed to copy new modules to zip!"
+		fi
 	done
 	zip -r -9 - * > "$RDIR/$KERNEL_VERSION.zip"
 	echo "Kernel $KERNEL_VERSION.zip finished"
