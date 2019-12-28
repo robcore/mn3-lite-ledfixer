@@ -184,6 +184,19 @@ CLEAN_BUILD() {
 	echo "Cleaned"
 }
 
+BUILD_MENUCONFIG() {
+	echo "Creating kernel config..."
+	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
+	KERNEL_VERSION="dummyconfigbuild"
+	mkdir -p "$RDIR/build" || warnandfail "Failed to make $RDIR/build directory!"
+	sed -i '/CONFIG_LOCALVERSION/d' "$RDIR/arch/arm/configs/mxconfig"
+	echo -n 'CONFIG_LOCALVERSION="' >> "$RDIR/arch/arm/configs/mxconfig"
+	echo -n "$KERNEL_VERSION" >> "$RDIR/arch/arm/configs/mxconfig"
+	echo '"' >> "$RDIR/arch/arm/configs/mxconfig"
+	echo 'CONFIG_LOCALVERSION_AUTO=y' >> "$RDIR/arch/arm/configs/mxconfig"
+	cp "$RDIR/arch/arm/configs/mxconfig" "$RDIR/build/.config" || warnandfail "Config Copy Error!"
+	make ARCH="arm" SUBARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -C "$RDIR" O="$RDIR/build" menuconfig
+}
 BUILD_SINGLE_CONFIG() {
 	echo "Creating kernel config..."
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
@@ -343,6 +356,10 @@ BSDWRAPPER() {
 	CLEAN_BUILD
 }
 
+BUILD_MC() {
+	BUILD_MENUCONFIG
+}
+
 if [ $# = 0 ] ; then
 	SHOW_HELP
 fi
@@ -368,6 +385,11 @@ while [[ $# -gt 0 ]]
 	    	CLEAN_BUILD
 	    	break
 	    	;;
+
+		 -m|--menu)
+			BUILD_MC
+			break
+			;;
 
 	     -k|--kernel)
 			handle_existing
