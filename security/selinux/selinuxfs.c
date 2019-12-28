@@ -130,84 +130,18 @@ static unsigned long sel_last_ino = SEL_INO_NEXT - 1;
 #define SEL_INO_MASK			0x00ffffff
 
 #define TMPBUFLEN	12
+static int fake_selinux_enforcing = 1;
 static ssize_t sel_read_enforce(struct file *filp, char __user *buf,
 				size_t count, loff_t *ppos)
 {
 	char tmpbuf[TMPBUFLEN];
 	ssize_t length;
 
-	length = scnprintf(tmpbuf, TMPBUFLEN, "%d", selinux_enforcing);
+	length = scnprintf(tmpbuf, TMPBUFLEN, "%d", fake_selinux_enforcing);
 	return simple_read_from_buffer(buf, count, ppos, tmpbuf, length);
 }
 
-#ifdef CONFIG_SECURITY_SELINUX_DEVELOP
-static ssize_t sel_write_enforce(struct file *file, const char __user *buf,
-				 size_t count, loff_t *ppos)
-
-{
-	char *page = NULL;
-	ssize_t length;
-	int new_value;
-
-	length = -ENOMEM;
-	if (count >= PAGE_SIZE)
-		goto out;
-
-	/* No partial writes. */
-	length = EINVAL;
-	if (*ppos != 0)
-		goto out;
-
-	length = -ENOMEM;
-	page = (char *)get_zeroed_page(GFP_KERNEL);
-	if (!page)
-		goto out;
-
-	length = -EFAULT;
-	if (copy_from_user(page, buf, count))
-		goto out;
-
-	length = -EINVAL;
-	if (sscanf(page, "%d", &new_value) != 1)
-		goto out;
-#ifdef CONFIG_ALWAYS_ENFORCE
-	// If build is user build and enforce option is set, selinux is always enforcing
-	new_value = 1;
-	length = task_has_security(current, SECURITY__SETENFORCE);
-	audit_log(current->audit_context, GFP_KERNEL, AUDIT_MAC_STATUS,
-                        "config_always_enforce - true; enforcing=%d old_enforcing=%d auid=%u ses=%u",
-                        new_value, selinux_enforcing,
-                        audit_get_loginuid(current),
-                        audit_get_sessionid(current));
-	selinux_enforcing = new_value;
-	avc_ss_reset(0);
-	selnl_notify_setenforce(new_value);
-        selinux_status_update_setenforce(new_value);
-#else
-	if (new_value != selinux_enforcing) {
-		length = task_has_security(current, SECURITY__SETENFORCE);
-		if (length)
-			goto out;
-		audit_log(current->audit_context, GFP_KERNEL, AUDIT_MAC_STATUS,
-			"enforcing=%d old_enforcing=%d auid=%u ses=%u",
-			new_value, selinux_enforcing,
-			audit_get_loginuid(current),
-			audit_get_sessionid(current));
-		selinux_enforcing = new_value;
-		if (selinux_enforcing)
-			avc_ss_reset(0);
-		selnl_notify_setenforce(selinux_enforcing);
-		selinux_status_update_setenforce(selinux_enforcing);
-	}
-#endif
-	length = count;
-out:
-	free_page((unsigned long) page);
-	return length;
-}
-#else
 #define sel_write_enforce NULL
-#endif
 
 static const struct file_operations sel_enforce_ops = {
 	.read		= sel_read_enforce,
@@ -1250,6 +1184,7 @@ static int sel_make_bools(void)
 		kfree(bool_pending_names[i]);
 	kfree(bool_pending_names);
 	kfree(bool_pending_values);
+	bool_num = 0;
 	bool_pending_names = NULL;
 	bool_pending_values = NULL;
 
@@ -1941,12 +1876,6 @@ static struct kobject *selinuxfs_kobj;
 static int __init init_sel_fs(void)
 {
 	int err;
-
-#ifdef CONFIG_ALWAYS_ENFORCE
-	selinux_enabled = 1;
-#endif
-	if (!selinux_enabled)
-		return 0;
 
 	selinuxfs_kobj = kobject_create_and_add("selinux", fs_kobj);
 	if (!selinuxfs_kobj)
