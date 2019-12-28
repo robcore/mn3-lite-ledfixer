@@ -129,9 +129,9 @@ CLEAN_BUILD() {
 						| parallel rm -fv {};
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
 	rm -rf "$RDIR/build" &>/dev/null
-	rm -f "$ZIPFOLDER/boot.img" &>/dev/null
-	rm -f "$RDIR"/tools/dtbtool/dtbtool &>/dev/null
-	rm -f "$RDIR"/tools/mkbootimg/mkbootimg &>/dev/null
+	rm "$ZIPFOLDER/boot.img" &>/dev/null
+	rm "$RDIR"/tools/dtbtool/dtbtool &>/dev/null
+	rm "$RDIR"/tools/mkbootimg/mkbootimg &>/dev/null
 	echo "Cleaned"
 }
 
