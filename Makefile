@@ -377,7 +377,8 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -Werror-implicit-function-declaration \
 		   -Wno-unused-function -Wno-unused-label \
 		   -Wno-format-security -Wno-sizeof-pointer-memaccess \
-		   -Wno-sizeof-array-argument \
+		   -Wno-sizeof-array-argument -Wno-discarded-array-qualifiers \
+		   -Wno-logical-not-parentheses \
 		   -fno-delete-null-pointer-checks
 KBUILD_AFLAGS_KERNEL :=
 KBUILD_CFLAGS_KERNEL :=
