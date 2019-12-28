@@ -195,9 +195,10 @@ BUILD_KERNEL_CONFIG() {
 }
 
 BUILD_KERNEL() {
+	echo "Backing up .config to config.$QUICKDATE"
+	cp "build/.config" "config.$QUICKDATE"
 	echo "Starting build..."
 	make ARCH="arm" SUBARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -S -s -C "$RDIR" O="$RDIR/build" -j5 || warnandfail "Kernel Build failed!"
-	cp "build/.config" "config.$QUICKDATE"
 }
 
 BUILD_RAMDISK() {
