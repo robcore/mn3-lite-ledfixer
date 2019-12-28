@@ -225,6 +225,7 @@ BUILD_BOOT_IMG() {
 		-o "$ZIPFOLDER/boot.img"
 
 	echo -n "SEANDROIDENFORCE" >> "$ZIPFOLDER/boot.img"
+	dd if=/dev/zero bs=$((11534336-$(stat -c %s $ZIPFOLDER/boot.img))) count=1 >> $ZIPFOLDER/boot.img
 }
 
 CREATE_ZIP() {
