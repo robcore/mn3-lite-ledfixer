@@ -1,6 +1,0 @@
-obj-$(CONFIG_GPU_UNIFIED_SYSFS) := gpu_sysfs.o
-
-# Common files.
-gpu_sysfs-y :=	gpu_sysfs_main.o
-gpu_sysfs-y :=  gpu_sysfs_util.o
-gpu_sysfs-y +=	gpu_sysfs_target_kgsl.o
