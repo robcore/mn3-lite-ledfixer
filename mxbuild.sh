@@ -116,6 +116,15 @@ handle_existing() {
 	echo "--------------------------------"
 }
 
+handle_yes_existing() {
+	echo "Using last version. Mark$OLDVER will be removed."
+	KERNEL_VERSION="machinexlite-Mark$OLDVER-hltetmo"
+	echo "Removing old zip files..."
+	rm -f "$RDIR/$KERNEL_VERSION.zip"
+	echo "Kernel version is: $KERNEL_VERSION"
+	echo "--------------------------------"
+}
+
 CLEAN_BUILD() {
 	echo "Cleaning build..."
 	make clean &>/dev/null
@@ -329,6 +338,12 @@ while [[ $# -gt 0 ]]
 	case $key in
 	     -a|--all)
 			handle_existing
+			BUILD_ALL
+			break
+	    	;;
+
+	     -y|--allyesrebuild)
+			handle_yes_existing
 			BUILD_ALL
 			break
 	    	;;
