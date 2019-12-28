@@ -86,7 +86,7 @@ static int is_container_app(void) {
 	uid_t uid = current_uid();
 	int userid = uid / PER_USER_RANGE;
 
-	if ((uid == 0) || (userid >= 100)) {
+	if ((uid == 0) || (userid >= 100))
 		return 1;
 	return 0;
 }
