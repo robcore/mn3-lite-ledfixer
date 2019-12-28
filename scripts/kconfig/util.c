@@ -137,3 +137,4 @@ const char *str_get(struct gstr *gs)
 {
 	return gs->s;
 }
+
