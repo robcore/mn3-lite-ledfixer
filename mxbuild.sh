@@ -126,10 +126,13 @@ handle_yes_existing() {
 }
 
 CLEAN_BUILD() {
-	echo -ne "Cleaning build...\r"; \
+	echo -ne "Cleaning build   \r"; \
 	make clean &>/dev/null
+	echo -ne "Cleaning build.  \r"; \
 	make distclean &>/dev/null
+	echo -ne "Cleaning build.. \r"; \
 	make mrproper &>/dev/null
+	echo -ne "Cleaning build...\r"; \
 	# clean up leftover junk
 	find . -type f \( -iname \*.rej \
 					-o -iname \*.orig \
@@ -141,6 +144,7 @@ CLEAN_BUILD() {
 	rm "$ZIPFOLDER/boot.img" &>/dev/null
 	rm "$RDIR"/tools/dtbtool/dtbtool &>/dev/null
 	rm "$RDIR"/tools/mkbootimg/mkbootimg &>/dev/null
+	echo -ne "                 \r"; \
 	echo -ne "Cleaned\r"; \
 	echo -ne "\n"
 }
