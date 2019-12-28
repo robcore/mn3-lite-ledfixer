@@ -216,7 +216,7 @@ BUILD_KERNEL() {
 	echo "Snapshot of current environment variables:"
 	env
 	echo "Starting build..."
-	make ARCH="arm" SUBARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -S -s -C "$RDIR" O="$RDIR/build" -j5 || warnandfail "Kernel Build failed!"
+	ccache make ARCH="arm" SUBARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -S -s -C "$RDIR" O="$RDIR/build" -j5 || warnandfail "Kernel Build failed!"
 }
 
 BUILD_RAMDISK() {
