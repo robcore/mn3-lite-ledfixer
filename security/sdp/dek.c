@@ -76,39 +76,18 @@ EXPORT_SYMBOL(dek_is_sdp_uid);
 static int is_system_server(void) {
 	uid_t uid = current_uid();
 
-	switch(uid) {
-#if 0
-	case 0: //root
-		DEK_LOGD("allowing root to access SDP device files\n");
-#endif
-	case 1000:
+	if ((uid == 0) || (uid == 1000)) 
 		return 1;
-	default:
-		break;
-	}
-
 	return 0;
 }
 
 // is_conatiner_app(current.uid);
 static int is_container_app(void) {
 	uid_t uid = current_uid();
+	int userid = uid / PER_USER_RANGE;
 
-	switch(uid) {
-#if 0
-	case 0: //root
-		DEK_LOGD("allowing root to access SDP device files\n");
+	if ((uid == 0) || (userid >= 100)) {
 		return 1;
-#endif
-	default:
-	{
-		int userid = uid / PER_USER_RANGE;
-
-		if(userid >= 100)
-			return 1;
-	}
-	}
-
 	return 0;
 }
 
