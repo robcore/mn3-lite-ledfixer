@@ -88,3 +88,6 @@ T: priolt:		0:	1
 
 C: unlock:		1: 	0
 W: unlocked:		1: 	0
+
+
+

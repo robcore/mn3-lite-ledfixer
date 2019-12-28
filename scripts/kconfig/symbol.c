@@ -136,7 +136,7 @@ static struct property *sym_get_range_prop(struct symbol *sym)
 	return NULL;
 }
 
-static long sym_get_range_val(struct symbol *sym, int base)
+static int sym_get_range_val(struct symbol *sym, int base)
 {
 	sym_calc_value(sym);
 	switch (sym->type) {
@@ -155,7 +155,7 @@ static long sym_get_range_val(struct symbol *sym, int base)
 static void sym_validate_range(struct symbol *sym)
 {
 	struct property *prop;
-	long base, val, val2;
+	int base, val, val2;
 	char str[64];
 
 	switch (sym->type) {
@@ -179,9 +179,9 @@ static void sym_validate_range(struct symbol *sym)
 			return;
 	}
 	if (sym->type == S_INT)
-		sprintf(str, "%ld", val2);
+		sprintf(str, "%d", val2);
 	else
-		sprintf(str, "0x%lx", val2);
+		sprintf(str, "0x%x", val2);
 	sym->curr.val = strdup(str);
 }
 
@@ -583,7 +583,7 @@ bool sym_string_valid(struct symbol *sym, const char *str)
 bool sym_string_within_range(struct symbol *sym, const char *str)
 {
 	struct property *prop;
-	long val;
+	int val;
 
 	switch (sym->type) {
 	case S_STRING:
@@ -1054,8 +1054,6 @@ static void sym_check_print_recursive(struct symbol *last_sym)
 		if (stack->sym == last_sym)
 			fprintf(stderr, "%s:%d:error: recursive dependency detected!\n",
 				prop->file->name, prop->lineno);
-			fprintf(stderr, "For a resolution refer to Documentation/kbuild/kconfig-language.txt\n");
-			fprintf(stderr, "subsection \"Kconfig recursive dependency limitations\"\n");
 		if (stack->expr) {
 			fprintf(stderr, "%s:%d:\tsymbol %s %s value contains %s\n",
 				prop->file->name, prop->lineno,
