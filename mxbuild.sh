@@ -126,6 +126,7 @@ handle_yes_existing() {
 }
 
 CLEAN_BUILD() {
+	echo -ne "Cleaning build...\r"; \
 	echo "Cleaning build..."
 	make clean &>/dev/null
 	make distclean &>/dev/null
@@ -141,7 +142,8 @@ CLEAN_BUILD() {
 	rm "$ZIPFOLDER/boot.img" &>/dev/null
 	rm "$RDIR"/tools/dtbtool/dtbtool &>/dev/null
 	rm "$RDIR"/tools/mkbootimg/mkbootimg &>/dev/null
-	echo "Cleaned"
+	echo -ne "Cleaned\r"; \
+	echo -ne "\n"
 }
 
 BUILD_MENUCONFIG() {
