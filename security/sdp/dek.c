@@ -77,7 +77,10 @@ static int is_system_server(void) {
 	uid_t uid = current_uid();
 
 	switch(uid) {
-	case 0:
+#if 0
+	case 0: //root
+		DEK_LOGD("allowing root to access SDP device files\n");
+#endif
 	case 1000:
 		return 1;
 	default:
@@ -90,14 +93,21 @@ static int is_system_server(void) {
 // is_conatiner_app(current.uid);
 static int is_container_app(void) {
 	uid_t uid = current_uid();
-	int userid;
 
-	if (uid == 0)
+	switch(uid) {
+#if 0
+	case 0: //root
+		DEK_LOGD("allowing root to access SDP device files\n");
 		return 1;
+#endif
+	default:
+	{
+		int userid = uid / PER_USER_RANGE;
 
-	userid = (uid / PER_USER_RANGE);
-	if(userid >= 100)
-		return 1;
+		if(userid >= 100)
+			return 1;
+	}
+	}
 
 	return 0;
 }

@@ -734,8 +734,13 @@ out:
 	kfree(o);
 	kfree(n);
 	kfree(t);
-	return 0;
 
+#ifdef CONFIG_ALWAYS_ENFORCE
+	selinux_enforcing = 1;
+#endif
+	if (!selinux_enforcing)
+		return 0;
+	return -EPERM;
 }
 
 int security_validate_transition(u32 oldsid, u32 newsid, u32 tasksid,
@@ -1016,11 +1021,9 @@ static int context_struct_to_string(struct context *context, char **scontext, u3
 
 	if (context->len) {
 		*scontext_len = context->len;
-		if (scontext) {
-			*scontext = kstrdup(context->str, GFP_ATOMIC);
-			if (!(*scontext))
-				return -ENOMEM;
-		}
+		*scontext = kstrdup(context->str, GFP_ATOMIC);
+		if (!(*scontext))
+			return -ENOMEM;
 		return 0;
 	}
 
@@ -1355,7 +1358,12 @@ out:
 	kfree(s);
 	kfree(t);
 	kfree(n);
-	return 0;
+#ifdef CONFIG_ALWAYS_ENFORCE
+        selinux_enforcing = 1;
+#endif
+	if (!selinux_enforcing)
+		return 0;
+	return -EACCES;
 }
 
 static void filename_compute_type(struct policydb *p, struct context *newcontext,
@@ -1619,9 +1627,16 @@ static inline int convert_context_handle_invalid_context(struct context *context
 {
 	char *s;
 	u32 len;
+#ifdef CONFIG_ALWAYS_ENFORCE
+        selinux_enforcing = 1;
+#endif
+	if (selinux_enforcing)
+		return -EINVAL;
 
-	if (!context_struct_to_string(context, &s, &len))
+	if (!context_struct_to_string(context, &s, &len)) {
+		printk(KERN_WARNING "SELinux:  Context %s would be invalid if enforcing\n", s);
 		kfree(s);
+	}
 	return 0;
 }
 
@@ -2406,7 +2421,7 @@ int security_set_bools(int len, int *values)
 		goto out;
 
 	for (i = 0; i < len; i++) {
-		if ((!!values[i]) != policydb.bool_val_to_struct[i]->state) {
+		if (!!values[i] != policydb.bool_val_to_struct[i]->state) {
 			audit_log(current->audit_context, GFP_ATOMIC,
 				AUDIT_MAC_CONFIG_CHANGE,
 				"bool=%s val=%d old_val=%d auid=%u ses=%u",

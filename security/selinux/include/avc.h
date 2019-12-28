@@ -19,7 +19,11 @@
 #include "av_permissions.h"
 #include "security.h"
 
+#ifdef CONFIG_SECURITY_SELINUX_DEVELOP
 extern int selinux_enforcing;
+#else
+#define selinux_enforcing 1
+#endif
 
 /*
  * An entry in the AVC.
@@ -79,7 +83,7 @@ int avc_audit(u32 ssid, u32 tsid,
 	       int result,
 	      struct common_audit_data *a, unsigned flags);
 
-#define AVC_STRICT 0 /* Ignore permissive mode. */
+#define AVC_STRICT 1 /* Ignore permissive mode. */
 int avc_has_perm_noaudit(u32 ssid, u32 tsid,
 			 u16 tclass, u32 requested,
 			 unsigned flags,
