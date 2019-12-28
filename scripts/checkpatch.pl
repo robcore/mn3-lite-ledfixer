@@ -2790,13 +2790,13 @@ sub process {
 					    ($op eq '>' &&
 					     $ca =~ /<\S+\@\S+$/))
 					{
-					    	$ok = 1;
+						$ok = 1;
 					}
 
 					# Ignore ?:
 					if (($opv eq ':O' && $ca =~ /\?$/) ||
 					    ($op eq '?' && $cc =~ /^:/)) {
-					    	$ok = 1;
+						$ok = 1;
 					}
 
 					if ($ok == 0) {

@@ -309,8 +309,8 @@ static void singfunc(char * filename, char * line)
                 }
         }
 	for (i = 0; i < idx; i++) {
-        	if (strcmp(vec[i], FUNCTION))
-        		continue;
+		if (strcmp(vec[i], FUNCTION))
+			continue;
 		consume_symbol(vec[i + 1]);
 	}
 	vec[idx++] = filename;

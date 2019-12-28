@@ -207,7 +207,7 @@ while 1:
             fcmd.close()
 
     except Exception,ex:
-    	sys.stderr.write(str(ex))
+	sys.stderr.write(str(ex))
         sys.stderr.write("\nSyntax error in line %d\n" %(linenr))
         if not test:
             fd.close()
@@ -216,5 +216,3 @@ while 1:
 # Normal exit pass
 print "Pass"
 sys.exit(0)
-
-
