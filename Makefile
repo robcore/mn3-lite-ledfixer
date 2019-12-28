@@ -373,7 +373,7 @@ KBUILD_CPPFLAGS := -D__KERNEL__
 KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -Wno-unused-variable -Wno-maybe-uninitialized \
 		   -fno-strict-aliasing -fno-common \
-		   -Wno-switch-bool -std=gnu89
+		   -Wno-switch-bool -std=gnu89 \
 		   -Werror-implicit-function-declaration \
 		   -Wno-unused-function -Wno-unused-label \
 		   -Wno-format-security \
