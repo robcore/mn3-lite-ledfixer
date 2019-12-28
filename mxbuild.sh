@@ -5,7 +5,7 @@ export USE_CCACHE="1"
 export CCACHE_NLEVELS="8"
 
 RDIR="/root/mn3lite"
-OLDVER="$(cat .oldversion)"
+OLDVER="$(cat $RDIR/.oldversion)"
 RAMDISKFOLDER="$RDIR/mxramdisk"
 ZIPFOLDER="$RDIR/mxzip"
 DEFCONFIG="$RDIR/arch/arm/configs/mxconfig"
@@ -130,8 +130,8 @@ CLEAN_BUILD() {
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
 	rm -rf "$RDIR/build" &>/dev/null
 	rm -f "$ZIPFOLDER/boot.img" &>/dev/null
-	make -C "$RDIR/scripts/mkqcdtbootimg" clean &>/dev/null
-	rm -rf "$RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg" &>/dev/null
+	rm -f "$RDIR"/tools/dtbtool/dtbtool &>/dev/null
+	rm -f "$RDIR"/tools/mkbootimg/mkbootimg &>/dev/null
 	echo "Cleaned"
 }
 
@@ -209,7 +209,7 @@ BUILD_BOOT_IMG() {
 	rm -f "$ZIPFOLDER/boot.img"
 
 	gcc -w -s -pipe -O2 -o "$RDIR"/tools/dtbtool/dtbtool "$RDIR"/tools/dtbtool/dtbtool.c
-	tools/dtbtool/dtbtool -s 2048 -o "$RDIR"/arch/arm/boot/dt.img -p "$RDIR"/scripts/dtc/ "$RDIR"/arch/arm/boot/
+	"$RDIR"/tools/dtbtool/dtbtool -s 2048 -o "$RDIR"/arch/arm/boot/dt.img -p "$RDIR"/scripts/dtc/ "$RDIR"/arch/arm/boot/
 	gcc -w -s -pipe -O2 -Itools/libmincrypt -o "$RDIR"/tools/mkbootimg/mkbootimg "$RDIR"/tools/libmincrypt/*.c "$RDIR"/tools/mkbootimg/mkbootimg.c
 
 	"$RDIR"/tools/mkbootimg/mkbootimg --kernel "$KDIR"/arch/arm/boot/zImage \
