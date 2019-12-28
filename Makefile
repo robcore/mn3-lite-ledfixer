@@ -363,7 +363,7 @@ KERNEL_FLAGS	= -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -Werror-implicit-function-declaration \
 		   -Wno-format-security \
 		   -fno-delete-null-pointer-checks \
-		   -mtune=cortex-a15 -march=armv7-a -mfpu=neon-vfpv4 -ffast-math \
+		   -mtune=cortex-a15 -mfpu=neon-vfpv4 -ffast-math \
 		   -mvectorize-with-neon-quad -munaligned-access -mcpu=cortex-a15 \
 		   -std=gnu89
 MODFLAGS	= -DMODULE -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
@@ -371,7 +371,7 @@ MODFLAGS	= -DMODULE -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -Werror-implicit-function-declaration \
 		   -Wno-format-security \
 		   -fno-delete-null-pointer-checks \
-		   -mtune=cortex-a15 -march=armv7-a -mfpu=neon-vfpv4 -ffast-math \
+		   -mtune=cortex-a15 -mfpu=neon-vfpv4 -ffast-math \
 		   -mvectorize-with-neon-quad -munaligned-access -mcpu=cortex-a15 \
 		   -std=gnu89
 CFLAGS_MODULE   = $(MODFLAGS)
@@ -396,7 +396,7 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -Werror-implicit-function-declaration \
 		   -Wno-format-security \
 		   -fno-delete-null-pointer-checks \
-		   -mtune=cortex-a15 -march=armv7-a -mfpu=neon-vfpv4 -ffast-math \
+		   -mtune=cortex-a15 -mfpu=neon-vfpv4 -ffast-math \
 		   -mvectorize-with-neon-quad -munaligned-access -mcpu=cortex-a15 \
 		   -std=gnu89
 KBUILD_AFLAGS_KERNEL := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
@@ -404,7 +404,7 @@ KBUILD_AFLAGS_KERNEL := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -Werror-implicit-function-declaration \
 		   -Wno-format-security \
 		   -fno-delete-null-pointer-checks \
-		   -mtune=cortex-a15 -march=armv7-a -mfpu=neon-vfpv4 -ffast-math \
+		   -mtune=cortex-a15 -mfpu=neon-vfpv4 -ffast-math \
 		   -mvectorize-with-neon-quad -munaligned-access -mcpu=cortex-a15 \
 		   -std=gnu89
 KBUILD_CFLAGS_KERNEL := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
@@ -412,7 +412,7 @@ KBUILD_CFLAGS_KERNEL := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -Werror-implicit-function-declaration \
 		   -Wno-format-security \
 		   -fno-delete-null-pointer-checks \
-		   -mtune=cortex-a15 -march=armv7-a -mfpu=neon-vfpv4 -ffast-math \
+		   -mtune=cortex-a15 -mfpu=neon-vfpv4 -ffast-math \
 		   -mvectorize-with-neon-quad -munaligned-access -mcpu=cortex-a15 \
 		   -std=gnu89
 KBUILD_AFLAGS   := -D__ASSEMBLY__
