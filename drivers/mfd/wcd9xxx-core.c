@@ -111,17 +111,16 @@ static int __wcd9xxx_reg_read(
 
 int wcd9xxx_reg_read(
 	struct wcd9xxx_core_resource *core_res,
-	unsigned short reg)
-{
+	unsigned short reg) {
 	struct wcd9xxx *wcd9xxx = (struct wcd9xxx *) core_res->parent;
 	return __wcd9xxx_reg_read(wcd9xxx, reg);
 
 }
 EXPORT_SYMBOL(wcd9xxx_reg_read);
 
+extern unsigned int sound_control_override;
 static int wcd9xxx_write(struct wcd9xxx *wcd9xxx, unsigned short reg,
-			int bytes, void *src, bool interface_reg)
-{
+			int bytes, void *src, bool interface_reg) {
 	int i;
 
 	if (bytes <= 0) {
@@ -129,17 +128,28 @@ static int wcd9xxx_write(struct wcd9xxx *wcd9xxx, unsigned short reg,
 		return -EINVAL;
 	}
 
+	if (sound_control_override == 0) {
+		switch (reg) {
+			case 0x2B7:
+			case 0x2BF:
+			case 0x2E7:
+				return 0;
+			default:
+				break;
+		}
+	}
+
+/*
 	for (i = 0; i < bytes; i++)
 		dev_dbg(wcd9xxx->dev, "Write %02x to 0x%x\n", ((u8 *)src)[i],
 			reg + i);
-
+*/
 	return wcd9xxx->write_dev(wcd9xxx, reg, bytes, src, interface_reg);
 }
 
 static int __wcd9xxx_reg_write(
 	struct wcd9xxx *wcd9xxx,
-	unsigned short reg, u8 val)
-{
+	unsigned short reg, u8 val) {
 	int ret;
 
 	mutex_lock(&wcd9xxx->io_lock);
@@ -151,8 +161,7 @@ static int __wcd9xxx_reg_write(
 
 int wcd9xxx_reg_write(
 	struct wcd9xxx_core_resource *core_res,
-	unsigned short reg, u8 val)
-{
+	unsigned short reg, u8 val) {
 	struct wcd9xxx *wcd9xxx = (struct wcd9xxx *) core_res->parent;
 	return __wcd9xxx_reg_write(wcd9xxx, reg, val);
 }
