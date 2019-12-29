@@ -128,11 +128,10 @@ handle_yes_existing() {
 CLEAN_BUILD() {
 	echo -ne "Cleaning build   \r"; \
 	make clean &>/dev/null
-	echo -ne "Cleaning build.  \r"; \
 	make distclean &>/dev/null
-	echo -ne "Cleaning build.. \r"; \
+	echo -ne "Cleaning build.  \r"; \
 	make mrproper &>/dev/null
-	echo -ne "Cleaning build...\r"; \
+	echo -ne "Cleaning build.. \r"; \
 	# clean up leftover junk
 	find . -type f \( -iname \*.rej \
 					-o -iname \*.orig \
@@ -142,6 +141,9 @@ CLEAN_BUILD() {
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
 	rm -rf "$RDIR/build" &>/dev/null
 	rm "$ZIPFOLDER"/boot.img &>/dev/null
+	echo -ne "Cleaning build...\r"; \
+	make -C "$RDIR/scripts/mkqcdtbootimg" clean &>/dev/null
+	rm -rf "$RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg" &>/dev/null
 	echo -ne "                 \r"; \
 	echo -ne "Cleaned\r"; \
 	echo -ne "\n"
@@ -237,26 +239,23 @@ BUILD_RAMDISK() {
 
 BUILD_BOOT_IMG() {
 	echo "Generating boot.img..."
-	rm -f "$ZIPFOLDER"/boot.img
+	rm -f "$ZIPFOLDER/boot.img"
+	if [ ! -f "$RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg" ]
+	then
+		make -C "$RDIR/scripts/mkqcdtbootimg" || warnandfail "Failed to make dtb tool!"
+	fi
 
-	#gcc -w -s -pipe -O2 -o "$RDIR"/tools/dtbtool/dtbtool "$RDIR"/tools/dtbtool/dtbtool.c || warnandfail "Failed to compile dtbtool!"
-	#gcc -w -s -pipe -O2 -Itools/libmincrypt -o "$RDIR"/tools/mkbootimg/mkbootimg "$RDIR"/tools/libmincrypt/*.c "$RDIR"/tools/mkbootimg/mkbootimg.c || warnandfail "Failed to compile mkbootimg!"
-
-	export PATH="$PATH:$RDIR/tools/samcrap"
-	"$RDIR"/tools/samcrap/dtbTool -v -s 2048 -p "$RDIR"/scripts/dtc/ "$KDIR"/arch/arm/boot/ -o "$KDIR"/arch/arm/boot/dt.img || warnandfail "Failed to create dtb img!"
-	"$RDIR"/tools/samcrap/mkbootimg --kernel "$KDIR"/arch/arm/boot/zImage \
-		--dt "$KDIR"/arch/arm/boot/dt.img \
-		--ramdisk "$KDIR"/ramdisk.cpio.lzo \
+	$RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg --kernel "$KDIR/zImage" \
+		--ramdisk "$KDIR/ramdisk.cpio.lzo" \
+		--dt_dir "$KDIR" \
 		--cmdline "console=null androidboot.hardware=qcom user_debug=23 msm_rtb.filter=0x37 ehci-hcd.park=3" \
-		--base 0x00000000 \
-		--pagesize 2048 \
-		--kernel_offset 0x00008000
-		--ramdisk_offset 0x02000000 \
-		--tags_offset 0x01e00000 \
-		--output "$ZIPFOLDER"/boot.img
+		--base "0x00000000" \
+		--pagesize "2048" \
+		--ramdisk_offset "0x02000000" \
+		--tags_offset "0x01e00000" \
+		--output "$ZIPFOLDER/boot.img"
 
-	echo -n "SEANDROIDENFORCE" >> "$ZIPFOLDER"/boot.img
-	dd if=/dev/zero bs=$((11534336-$(stat -c %s $ZIPFOLDER/boot.img))) count=1 >> $ZIPFOLDER/boot.img
+	echo -n "SEANDROIDENFORCE" >> "$ZIPFOLDER/boot.img"
 }
 
 CREATE_ZIP() {
