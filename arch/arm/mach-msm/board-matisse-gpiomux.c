@@ -1603,7 +1603,7 @@ static struct msm_gpiomux_config irled_i2c_scl_config[] __initdata = {
 };
 #endif
 
-extern int system_rev;
+extern unsigned int system_rev;
 
 void __init msm8226_init_gpiomux(void)
 {

@@ -1587,7 +1587,7 @@ static void msm_gpiomux_sdc3_install(void)
 static void msm_gpiomux_sdc3_install(void) {}
 #endif /* CONFIG_MMC_MSM_SDC3_SUPPORT */
 
-extern int system_rev;
+extern unsigned int system_rev;
 
 #if defined (CONFIG_MACH_MILLETLTE_OPEN) || defined (CONFIG_MACH_MILLETLTE_KOR)
 static struct msm_gpiomux_config millet_nc_gpio_cfgs[] __initdata = {

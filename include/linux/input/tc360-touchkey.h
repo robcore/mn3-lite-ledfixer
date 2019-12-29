@@ -31,7 +31,7 @@ extern int poweroff_charging;
 
 extern struct class *sec_class;
 extern int touch_is_pressed;
-extern int system_rev;
+extern unsigned int system_rev;
 
 struct tc300k_platform_data {
 	u8	enable;

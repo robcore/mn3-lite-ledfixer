@@ -1069,7 +1069,7 @@ static void msm_gpiomux_sdc3_install(void)
 static void msm_gpiomux_sdc3_install(void) {}
 #endif /* CONFIG_MMC_MSM_SDC3_SUPPORT */
 
-extern int system_rev;
+extern unsigned int system_rev;
 
 #if defined(CONFIG_MACH_DEGASLTE_SPR) || defined(CONFIG_MACH_DEGASLTE_VZW)
 static struct msm_gpiomux_config degaslte_spr_nc_gpios[] __initdata = {

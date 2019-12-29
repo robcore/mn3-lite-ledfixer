@@ -2147,7 +2147,7 @@ EXPORT_SYMBOL(synaptics_rmi4_force_calibration);
  * otherwise we forced run the update during UMS update..
  */
 
-extern int system_rev;
+extern unsigned int system_rev;
 static bool synaptics_skip_firmware_update(struct synaptics_rmi4_data *rmi4_data,
 		const struct firmware *fw_entry)
 {

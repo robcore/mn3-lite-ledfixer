@@ -27,7 +27,7 @@
 #define CYTTSP4_I2C_IRQ_GPIO 17
 
 #if defined(CONFIG_MACH_AFYONLTE_TMO) || defined(CONFIG_MACH_AFYONLTE_CAN) || (CONFIG_MACH_AFYONLTE_MTR)
-extern int system_rev;
+extern unsigned int system_rev;
 #endif
 
 

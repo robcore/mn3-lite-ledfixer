@@ -1069,7 +1069,7 @@ static struct msm_gpiomux_config msm_ta_nchg_configs[] = {
 };
 
 
-extern int system_rev;
+extern unsigned int system_rev;
 
 /*NC GPIOs configuration*/
 static struct msm_gpiomux_config afyon_nc_gpio_cfgs[] __initdata = {

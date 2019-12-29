@@ -48,7 +48,7 @@
 extern int spmi_ext_register_writel_extra(u8 sid, u16 ad, u8 *buf, int len);
 extern int spmi_ext_register_readl_extra(u8 sid, u16 ad, u8 *buf, int len);
 
-extern int system_rev;
+extern unsigned int system_rev;
 static int bcd_scan = 0;		// L Cable check
 
 #define INT_MASK1				0xFC

@@ -879,7 +879,7 @@ static void msm_gpiomux_sdc3_install(void)
 static void msm_gpiomux_sdc3_install(void) {}
 #endif /* CONFIG_MMC_MSM_SDC3_SUPPORT */
 
-extern int system_rev;
+extern unsigned int system_rev;
 
 void __init msm8226_init_gpiomux(void)
 {
