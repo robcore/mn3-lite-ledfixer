@@ -721,11 +721,13 @@ int scsi_verify_blk_ioctl(struct block_device *bd, unsigned int cmd)
 		break;
 	}
 
-	/* In particular, rule out all resets and host-specific ioctls.  */
-	printk_ratelimited(KERN_WARNING
-			   "%s: sending ioctl %x to a partition!\n", current->comm, cmd);
+	if (capable(CAP_SYS_RAWIO))
+		return 0;
 
-	return capable(CAP_SYS_RAWIO) ? 0 : -ENOIOCTLCMD;
+	/* In particular, rule out all resets and host-specific ioctls.  */
+	pr_debug("%s: sending ioctl %x to a partition!\n", current->comm, cmd);
+
+	return -ENOIOCTLCMD;
 }
 EXPORT_SYMBOL(scsi_verify_blk_ioctl);
 
