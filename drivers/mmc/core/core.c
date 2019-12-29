@@ -2493,7 +2493,7 @@ int mmc_erase(struct mmc_card *card, unsigned int from, unsigned int nr,
 
 	if (to <= from)
 		return -EINVAL;
-		
+
 		/* to set the address in 16k (32sectors) */
 	if(arg == MMC_TRIM_ARG) {
 		if ((from % 32) != 0)
@@ -3716,6 +3716,7 @@ int mmc_pm_notify(struct notifier_block *notify_block,
 	switch (mode) {
 	case PM_HIBERNATION_PREPARE:
 	case PM_SUSPEND_PREPARE:
+
 		if (host->card && mmc_card_mmc(host->card)) {
 			mmc_claim_host(host);
 			err = mmc_stop_bkops(host->card);
