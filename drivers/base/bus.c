@@ -245,13 +245,15 @@ static ssize_t store_drivers_probe(struct bus_type *bus,
 				   const char *buf, size_t count)
 {
 	struct device *dev;
+	int err = -EINVAL;
 
 	dev = bus_find_device_by_name(bus, NULL, buf);
 	if (!dev)
 		return -ENODEV;
-	if (bus_rescan_devices_helper(dev, NULL) != 0)
-		return -EINVAL;
-	return count;
+	if (bus_rescan_devices_helper(dev, NULL) == 0)
+		err = count;
+	put_device(dev);
+	return err;
 }
 #endif
 
@@ -296,6 +298,8 @@ int bus_for_each_dev(struct bus_type *bus, struct device *start,
 
 	if (!bus)
 		return -EINVAL;
+	if (!bus->p)
+		return -EINVAL;
 
 	klist_iter_init_node(&bus->p->klist_devices, &i,
 			     (start ? &start->p->knode_bus : NULL));
@@ -330,6 +334,9 @@ struct device *bus_find_device(struct bus_type *bus,
 
 	if (!bus)
 		return NULL;
+	if (!bus->p)
+		return NULL;
+
 
 	klist_iter_init_node(&bus->p->klist_devices, &i,
 			     (start ? &start->p->knode_bus : NULL));
