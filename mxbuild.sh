@@ -254,7 +254,13 @@ BUILD_BOOT_IMG() {
 		--ramdisk_offset "0x02000000" \
 		--tags_offset "0x01e00000" \
 		--output "$ZIPFOLDER/boot.img"
-
+	if [ "$?" -eq 0 ]
+	then
+		echo "mkqcdtbootimg appears to have succeeded in building an image"
+	else
+		warnandfail "mkqcdtbootimg appears to have failed in building an image!"
+	fi
+	[ -f "$ZIPFOLDER/boot.img" ] || warnandfail "$ZIPFOLDER/boot.img does not exist!"
 	echo -n "SEANDROIDENFORCE" >> "$ZIPFOLDER/boot.img"
 }
 
