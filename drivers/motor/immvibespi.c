@@ -378,6 +378,9 @@ int vib_config_pwm_device(void)
 #ifdef CONFIG_TACTILE_ASSIST
 static bool g_bOutputDataBufferEmpty = 1;
 #endif
+static int8_t nforce_strength;
+module_param(
+module_param_named(nforce, nforce_strength, int8_t, 0444);
 static int32_t ImmVibeSPI_ForceOut_SetSamples(u_int8_t nActuatorIndex,
 						u_int16_t nOutputSignalBitDepth,
 						u_int16_t nBufferSizeInBytes,
@@ -433,7 +436,8 @@ static int32_t ImmVibeSPI_ForceOut_SetSamples(u_int8_t nActuatorIndex,
 		if (nforce > 0)
 			nforce = 127 - nforce;
 		/* Map force from [-127, 127] to [0, PWM_DUTY_MAX] */
-		/* printk(KERN_DEBUG "[tspdrv]nForce===%d\n", nforce); */
+		pr_info("ImmVibeSPI_ForceOut_SetSamples: nforce: %d\n", nforce);
+		nforce_strength=nforce;
 		if (pre_nforce != nforce) {
 			if (vibrator_drvdata.is_pmic_vib_pwm){ 
 				//PMIC  PWM
