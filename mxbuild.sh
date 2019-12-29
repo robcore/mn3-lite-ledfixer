@@ -241,9 +241,9 @@ BUILD_BOOT_IMG() {
 	echo "Generating boot.img..."
 	rm -f "$ZIPFOLDER/boot.img"
 
-	gcc -w -s -pipe -O2 -o "$RDIR"/tools/dtbtool/dtbtool "$RDIR"/tools/dtbtool/dtbtool.c
-	"$RDIR"/tools/dtbtool/dtbtool -s 2048 -o "$RDIR"/arch/arm/boot/dt.img -p "$RDIR"/scripts/dtc/ "$RDIR"/arch/arm/boot/
-	gcc -w -s -pipe -O2 -Itools/libmincrypt -o "$RDIR"/tools/mkbootimg/mkbootimg "$RDIR"/tools/libmincrypt/*.c "$RDIR"/tools/mkbootimg/mkbootimg.c
+	gcc -w -s -pipe -O2 -o "$RDIR"/tools/dtbtool/dtbtool "$RDIR"/tools/dtbtool/dtbtool.c || warnandfail "Failed to compile dtbtool!"
+	"$RDIR"/tools/dtbtool/dtbtool -s 2048 -o "$RDIR"/arch/arm/boot/dt.img -p "$RDIR"/scripts/dtc/ "$RDIR"/arch/arm/boot/ || warnandfail "Failed to create dtb img!"
+	gcc -w -s -pipe -O2 -Itools/libmincrypt -o "$RDIR"/tools/mkbootimg/mkbootimg "$RDIR"/tools/libmincrypt/*.c "$RDIR"/tools/mkbootimg/mkbootimg.c || warnandfail "Failed to compile mkbootimg!"
 
 	"$RDIR"/tools/mkbootimg/mkbootimg --kernel "$KDIR"/arch/arm/boot/zImage \
 		--dt "$KDIR"/arch/arm/boot/dt.img \
