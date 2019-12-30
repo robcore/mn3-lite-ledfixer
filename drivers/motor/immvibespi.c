@@ -39,7 +39,7 @@
 
 static bool g_bampenabled;
 
-module_param_named(nforce, g_nforce_32, int32_t, 0444);
+module_param_named(nforce, g_nforce_32, int, 0444);
 struct pm_gpio vib_pwm = {
 				.direction = PM_GPIO_DIR_OUT,
 				.output_buffer = 0,
