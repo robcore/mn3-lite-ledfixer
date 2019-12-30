@@ -164,7 +164,7 @@ BUILD_MENUCONFIG() {
 	echo -n "$MX_KERNEL_VERSION" > "$RDIR/localversion"
 	chmod 644 "$RDIR/localversion"
 	cp "$DEFCONFIG" "$RDIR/build/.config" || warnandfail "Config Copy Error!"
-	make ARCH="arm" SUBARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -C "$RDIR" O="$RDIR/build" menuconfig
+	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -C "$RDIR" O="$RDIR/build" menuconfig
 }
 BUILD_SINGLE_CONFIG() {
 	echo "Creating kernel config..."
@@ -174,12 +174,12 @@ BUILD_SINGLE_CONFIG() {
 	echo -n "$MX_KERNEL_VERSION" > "$RDIR/localversion"
 	chmod 644 "$RDIR/localversion"
 	cp "$DEFCONFIG" "$RDIR/build/.config" || warnandfail "Config Copy Error!"
-	make ARCH="arm" SUBARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -C "$RDIR" O="$RDIR/build" -j5 oldconfig || warnandfail "make oldconfig Failed!"
+	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -C "$RDIR" O="$RDIR/build" -j5 oldconfig || warnandfail "make oldconfig Failed!"
 }
 
 BUILD_SINGLE_DRIVER() {
 	echo "Building Single Driver..."
-	make ARCH="arm" SUBARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -C "$RDIR" -S -s -j5 O="$RDIR/build/" "$1"
+	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -C "$RDIR" -S -s -j5 O="$RDIR/build/" "$1"
 }
 
 BUILD_KERNEL_CONFIG() {
@@ -189,7 +189,7 @@ BUILD_KERNEL_CONFIG() {
 	echo -n "$MX_KERNEL_VERSION" > "$RDIR/localversion"
 	chmod 644 "$RDIR/localversion"
 	cp "$DEFCONFIG" "$RDIR/build/.config" || warnandfail "Config Copy Error!"
-	make ARCH="arm" SUBARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -C "$RDIR" O="$RDIR/build" -j5 oldconfig || warnandfail "make oldconfig Failed!"
+	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -C "$RDIR" O="$RDIR/build" -j5 oldconfig || warnandfail "make oldconfig Failed!"
 }
 
 BUILD_KERNEL() {
@@ -198,7 +198,7 @@ BUILD_KERNEL() {
 	echo "Snapshot of current environment variables:"
 	env
 	echo "Starting build..."
-	make ARCH="arm" SUBARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -S -s -C "$RDIR" O="$RDIR/build" -j5 || warnandfail "Kernel Build failed!"
+	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -S -s -C "$RDIR" O="$RDIR/build" -j5 || warnandfail "Kernel Build failed!"
 }
 
 BUILD_RAMDISK() {
