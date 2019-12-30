@@ -391,7 +391,7 @@ static int __init seclog_late_init(void)
 	 * we can use a more appropriate name. (But the purpose of
 	 * last_kmsg and this file are almost the same, so the name isn't
 	 * that odd) */
-	entry = create_proc_entry("last_kmsg", S_IFREG | S_IRUGO, NULL);
+	entry = create_proc_entry("last_kmsg", 0444, NULL);
 	if (!entry) {
 		pr_err("%s: failed to create proc entry. ram console may be"\
 			"present.\n", __func__);
