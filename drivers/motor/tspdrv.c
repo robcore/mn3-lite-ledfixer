@@ -501,46 +501,6 @@ static void max77803_haptic_power_onoff(int onoff)
 #endif
 
 
-#if defined(CONFIG_MOTOR_DRV_DRV2603)
-void drv2603_gpio_en(bool en)
-{
-	if (en) {
-		gpio_direction_output(vibrator_drvdata.drv2603_en_gpio, 1);
-	} else {
-		gpio_direction_output(vibrator_drvdata.drv2603_en_gpio, 0);
-	}
-}
-static int32_t drv2603_gpio_init(void)
-{
-	int ret;
-	ret = gpio_request(vibrator_drvdata.drv2603_en_gpio, "vib enable");
-	if (ret < 0) {
-		printk(KERN_ERR "vib enable gpio_request is failed\n");
-		return 1;
-	}
-	return 0;
-}
-#endif
-#if defined(CONFIG_MOTOR_DRV_MAX77888)
-void max77888_gpio_en(bool en)
-{
-	if (en) {
-		gpio_direction_output(vibrator_drvdata.max77888_en_gpio, 1);
-	} else {
-		gpio_direction_output(vibrator_drvdata.max77888_en_gpio, 0);
-	}
-}
-static int32_t max77888_gpio_init(void)
-{
-	int ret;
-	ret = gpio_request(vibrator_drvdata.max77888_en_gpio, "vib enable");
-	if (ret < 0) {
-		printk(KERN_ERR "vib enable gpio_request is failed\n");
-		return 1;
-	}
-	return 0;
-}
-#endif
 static __devinit int tspdrv_probe(struct platform_device *pdev)
 {
 	int ret, i, rc;   /* initialized below */
@@ -556,22 +516,12 @@ static __devinit int tspdrv_probe(struct platform_device *pdev)
 	if(rc)
 		return rc;
 
-#if defined(CONFIG_MACH_HLTEDCM) || defined(CONFIG_MACH_HLTEKDI) || defined(CONFIG_MACH_JS01LTEDCM)
-	virt_mmss_gp1_base = ioremap(MSM_MMSS_GP3_BASE,0x28);
-#elif defined(CONFIG_SEC_BERLUTI_PROJECT) || defined(CONFIG_MACH_S3VE3G_EUR)
-	virt_mmss_gp1_base = ioremap(MSM_MMSS_GP0_BASE,0x28);
-#else
 	virt_mmss_gp1_base = ioremap(MSM_MMSS_GP1_BASE,0x28);
-#endif
 
 	if (!virt_mmss_gp1_base)
 		panic("tspdrv : Unable to ioremap MSM_MMSS_GP1 memory!");
 			
-#if defined(CONFIG_MOTOR_DRV_MAX77803) || defined(CONFIG_MOTOR_DRV_MAX77804K) || defined(CONFIG_MOTOR_DRV_MAX77828)
 	vibrator_drvdata.power_onoff = max77803_haptic_power_onoff;
-#else
-	vibrator_drvdata.power_onoff = NULL;
-#endif
 	vibrator_drvdata.pwm_dev = NULL;
 
 #ifdef IMPLEMENT_AS_CHAR_DRIVER
@@ -818,7 +768,7 @@ static ssize_t write(struct file *file, const char *buf, size_t count,
 	g_nforcelog[g_nforcelog_index++] = g_cSPIBuffer[0];
 	if (g_nforcelog_index >= FORCE_LOG_BUFFER_SIZE) {
 		for (i = 0; i < FORCE_LOG_BUFFER_SIZE; i++) {
-			printk(KERN_INFO "%d\t%d\n", g_ntime, g_nforcelog[i]);
+			pr_debug("%d\t%d\n", g_ntime, g_nforcelog[i]);
 			g_ntime += TIME_INCREMENT;
 		}
 		g_nforcelog_index = 0;
@@ -857,7 +807,7 @@ static long ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 #ifdef QA_TEST
 		if (g_nforcelog_index) {
 			for (i = 0; i < g_nforcelog_index; i++) {
-				printk(KERN_INFO "%d\t%d\n"
+				pr_debug("%d\t%d\n"
 					   , g_ntime, g_nforcelog[i]);
 				g_ntime += TIME_INCREMENT;
 			}

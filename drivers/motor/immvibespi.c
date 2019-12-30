@@ -38,8 +38,8 @@
 #define PWM_DEVICE	1
 
 static bool g_bampenabled;
-
-module_param_named(nforce, g_nforce_32, int, 0444);
+static int32_t motor_hijack = 100;
+module_param(motor_hijack, int, 0644);
 struct pm_gpio vib_pwm = {
 				.direction = PM_GPIO_DIR_OUT,
 				.output_buffer = 0,
@@ -64,16 +64,28 @@ int32_t vibe_set_pwm_freq(int LnForce)
 	HWIO_OUTM(GP_M_REG, HWIO_GP_MD_REG_M_VAL_BMSK,
 		g_nlra_gp_clk_m << HWIO_GP_MD_REG_M_VAL_SHFT);
 
-	if (LnForce > 0){
-		g_nforce_32 = g_nlra_gp_clk_n - (((LnForce * g_nlra_gp_clk_pwm_mul) >> 8));
-		g_nforce_32 = g_nforce_32 * motor_strength /100;
-		if(g_nforce_32 < motor_min_strength)
-			g_nforce_32 = motor_min_strength;
-	}
-	else{
-		g_nforce_32 = ((LnForce * g_nlra_gp_clk_pwm_mul) >> 8) + g_nlra_gp_clk_d;
-		if(g_nlra_gp_clk_n - g_nforce_32 > g_nlra_gp_clk_n * motor_strength /100)
-			g_nforce_32 = g_nlra_gp_clk_n - g_nlra_gp_clk_n * motor_strength /100;
+	if (motor_hijack != 100) {
+		if (LnForce > 0) {
+			g_nforce_32 = g_nlra_gp_clk_n - (((LnForce * g_nlra_gp_clk_pwm_mul) >> 8));
+			g_nforce_32 = g_nforce_32 * motor_hijack / 100;
+			if (g_nforce_32 < motor_min_strength)
+				g_nforce_32 = motor_min_strength;
+		} else {
+			g_nforce_32 = ((LnForce * g_nlra_gp_clk_pwm_mul) >> 8) + g_nlra_gp_clk_d;
+			if (g_nlra_gp_clk_n - g_nforce_32 > g_nlra_gp_clk_n * motor_hijack / 100)
+				g_nforce_32 = g_nlra_gp_clk_n - g_nlra_gp_clk_n * motor_hijack / 100;
+		}
+	} else {
+		if (LnForce > 0) {
+			g_nforce_32 = g_nlra_gp_clk_n - (((LnForce * g_nlra_gp_clk_pwm_mul) >> 8));
+			g_nforce_32 = g_nforce_32 * motor_strength / 100;
+			if (g_nforce_32 < motor_min_strength)
+				g_nforce_32 = motor_min_strength;
+		} else {
+			g_nforce_32 = ((LnForce * g_nlra_gp_clk_pwm_mul) >> 8) + g_nlra_gp_clk_d;
+			if (g_nlra_gp_clk_n - g_nforce_32 > g_nlra_gp_clk_n * motor_strength / 100)
+				g_nforce_32 = g_nlra_gp_clk_n - g_nlra_gp_clk_n * motor_strength / 100;
+		}
 	}
 	// D value
 	HWIO_OUTM(GP_D_REG, HWIO_GP_MD_REG_D_VAL_BMSK,
@@ -119,43 +131,21 @@ static int32_t ImmVibeSPI_ForceOut_AmpDisable(u_int8_t nActuatorIndex)
 		if (vibrator_drvdata.power_onoff)
 			vibrator_drvdata.power_onoff(0);
 		if (vibrator_drvdata.vib_model == HAPTIC_PWM) {
-			if(vibrator_drvdata.is_pmic_vib_pwm){  //PMIC PWM 
+			if (vibrator_drvdata.is_pmic_vib_pwm){  //PMIC PWM 
 				gpio_set_value(vibrator_drvdata.vib_pwm_gpio, \
 				VIBRATION_OFF);
-				if(vibrator_drvdata.pwm_dev != NULL) //Disable the PWM device.
+				if (vibrator_drvdata.pwm_dev != NULL) //Disable the PWM device.
 					pwm_disable(vibrator_drvdata.pwm_dev);
-			} else{	//AP PWM
-#if defined(CONFIG_MACH_S3VE3G_EUR) || defined(CONFIG_MACH_VICTOR3GDSDTV_LTN)
-				gpio_tlmm_config(GPIO_CFG(vibrator_drvdata.vib_pwm_gpio,\
-				0, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, \
-				GPIO_CFG_2MA),GPIO_CFG_ENABLE);
-				gpio_set_value(vibrator_drvdata.vib_pwm_gpio, \
-				    VIBRATION_OFF);
-#else
+			} else {	//AP PWM
 				gpio_tlmm_config(GPIO_CFG(vibrator_drvdata.vib_pwm_gpio,\
 				0, GPIO_CFG_OUTPUT, GPIO_CFG_PULL_DOWN, \
 				GPIO_CFG_2MA),GPIO_CFG_ENABLE);
 				gpio_set_value(vibrator_drvdata.vib_pwm_gpio, \
 				    VIBRATION_OFF);
-#endif
 			}
 		}
-		printk(KERN_DEBUG "tspdrv: %s\n", __func__);
-#if defined(CONFIG_MOTOR_DRV_MAX77803)
+		pr_debug("tspdrv: %s\n", __func__);
 		max77803_vibtonz_en(0);
-#elif defined(CONFIG_MOTOR_DRV_MAX77804K)
-		max77804k_vibtonz_en(0);
-#elif defined(CONFIG_MOTOR_DRV_MAX77828)
-		max77828_vibtonz_en(0);
-#elif defined(CONFIG_MOTOR_DRV_MAX77888)
-		max77888_gpio_en(0);
-		max77888_vibtonz_en(0);
-#elif defined(CONFIG_MOTOR_DRV_DRV2603)
-		drv2603_gpio_en(0);
-#elif defined(CONFIG_MOTOR_ISA1000)
-		gpio_direction_output(vibrator_drvdata.vib_en_gpio,VIBRATION_OFF);
-		gpio_set_value(vibrator_drvdata.vib_en_gpio,VIBRATION_OFF);
-#endif
 	}
 
 	return VIBE_S_SUCCESS;
@@ -171,7 +161,7 @@ static int32_t ImmVibeSPI_ForceOut_AmpEnable(u_int8_t nActuatorIndex)
 		if (vibrator_drvdata.power_onoff)
 			vibrator_drvdata.power_onoff(1);
 		if (vibrator_drvdata.vib_model == HAPTIC_PWM) {
-			if(vibrator_drvdata.is_pmic_vib_pwm){ //PMIC PWM
+			if (vibrator_drvdata.is_pmic_vib_pwm){ //PMIC PWM
 				gpio_set_value(vibrator_drvdata.vib_pwm_gpio, \
 					VIBRATION_ON);
 			} else {	//AP PWM
@@ -197,7 +187,7 @@ static int32_t ImmVibeSPI_ForceOut_AmpEnable(u_int8_t nActuatorIndex)
 #endif
 			}
 		}
-		printk(KERN_DEBUG "tspdrv: %s\n", __func__);
+		pr_debug("tspdrv: %s\n", __func__);
 #if defined(CONFIG_MOTOR_DRV_MAX77803)
 		max77803_vibtonz_en(1);
 #elif defined(CONFIG_MOTOR_DRV_MAX77804K)
@@ -277,7 +267,7 @@ static int32_t ImmVibeSPI_ForceOut_Initialize(void)
 		if (drv2603_gpio_init())
 			goto err2;
 #elif defined(CONFIG_MOTOR_DRV_MAX77888)
-		if(max77888_gpio_init())
+		if (max77888_gpio_init())
 			goto err2;
 #endif
 	}
@@ -309,7 +299,7 @@ static int32_t ImmVibeSPI_ForceOut_Terminate(void)
 int vib_config_pwm_device(void)
 {
 	int ret = 0;
-	if(vibrator_drvdata.pwm_dev == NULL){
+	if (vibrator_drvdata.pwm_dev == NULL){
 	//u32	pwm_period_us, duty_us;
 #if defined(CONFIG_MACH_HLTEDCM) || defined(CONFIG_MACH_HLTEKDI) || \
 	defined(CONFIG_MACH_JS01LTEDCM) || defined(CONFIG_MACH_JS01LTESBM)
@@ -411,12 +401,12 @@ static int32_t ImmVibeSPI_ForceOut_SetSamples(u_int8_t nActuatorIndex,
 		if (nforce > 0)
 			nforce = 127 - nforce;
 		/* Map force from [-127, 127] to [0, PWM_DUTY_MAX] */
-		pr_info("ImmVibeSPI_ForceOut_SetSamples: nforce: %d\n", nforce);
+		//pr_info("ImmVibeSPI_ForceOut_SetSamples: nforce: %d\n", nforce);
 		if (pre_nforce != nforce) {
 			if (vibrator_drvdata.is_pmic_vib_pwm){ 
 				//PMIC  PWM
 				ret = vib_config_pwm_device();
-				if(ret < 0)
+				if (ret < 0)
 					return ret;				
 			}else {
 				//AP PWM
