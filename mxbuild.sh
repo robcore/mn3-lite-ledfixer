@@ -149,6 +149,12 @@ CLEAN_BUILD() {
 	echo -ne "\n"
 }
 
+configit() {
+
+git add -u && git add . && git add -A && git commit -a -m 'Config updated by build script'
+
+}
+
 BUILD_MENUCONFIG() {
 	echo "Creating kernel config..."
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
@@ -159,6 +165,7 @@ BUILD_MENUCONFIG() {
 	echo -n "$KERNEL_VERSION" >> "$RDIR/arch/arm/configs/mxconfig"
 	echo '"' >> "$RDIR/arch/arm/configs/mxconfig"
 	echo 'CONFIG_LOCALVERSION_AUTO=y' >> "$RDIR/arch/arm/configs/mxconfig"
+	configit
 	cp "$RDIR/arch/arm/configs/mxconfig" "$RDIR/build/.config" || warnandfail "Config Copy Error!"
 	export KERNELVERSION="$KERNEL_VERSION"
 	export ARCH="arm"
@@ -176,6 +183,7 @@ BUILD_SINGLE_CONFIG() {
 	echo -n "$KERNEL_VERSION" >> "$RDIR/arch/arm/configs/mxconfig"
 	echo '"' >> "$RDIR/arch/arm/configs/mxconfig"
 	echo 'CONFIG_LOCALVERSION_AUTO=y' >> "$RDIR/arch/arm/configs/mxconfig"
+	configit
 	cp "$RDIR/arch/arm/configs/mxconfig" "$RDIR/build/.config" || warnandfail "Config Copy Error!"
 	export KERNELVERSION="$KERNEL_VERSION"
 	export ARCH="arm"
@@ -198,6 +206,7 @@ BUILD_KERNEL_CONFIG() {
 	echo -n "$KERNEL_VERSION" >> "$RDIR/arch/arm/configs/mxconfig"
 	echo '"' >> "$RDIR/arch/arm/configs/mxconfig"
 	echo 'CONFIG_LOCALVERSION_AUTO=y' >> "$RDIR/arch/arm/configs/mxconfig"
+	configit
 	cp "$RDIR/arch/arm/configs/mxconfig" "$RDIR/build/.config" || warnandfail "Config Copy Error!"
 	export KERNELVERSION="$KERNEL_VERSION"
 	export ARCH="arm"
