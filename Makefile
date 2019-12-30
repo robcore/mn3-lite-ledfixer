@@ -373,12 +373,9 @@ KBUILD_CPPFLAGS := -D__KERNEL__
 KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -Wno-unused-variable -Wno-maybe-uninitialized \
 		   -fno-strict-aliasing -fno-common \
-		   -Wno-switch-bool -std=gnu89 \
-		   -Werror-implicit-function-declaration \
+		   -std=gnu89 -fno-unsafe-math-optimizations \
 		   -Wno-unused-function -Wno-unused-label \
-		   -Wno-format-security -Wno-sizeof-pointer-memaccess \
-		   -Wno-sizeof-array-argument -Wno-discarded-array-qualifiers \
-		   -Wno-logical-not-parentheses \
+		   -Wno-format-security \
 		   -fno-delete-null-pointer-checks
 KBUILD_AFLAGS_KERNEL :=
 KBUILD_CFLAGS_KERNEL :=
