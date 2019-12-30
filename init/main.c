@@ -68,6 +68,8 @@
 #include <linux/shmem_fs.h>
 #include <linux/slab.h>
 #include <linux/perf_event.h>
+#include <linux/random.h>
+#include <linux/s_funcs.h>
 #ifdef CONFIG_TIMA_RKP_COHERENT_TT
 #include <linux/memblock.h>
 #endif
@@ -388,8 +390,15 @@ static inline void smp_prepare_cpus(unsigned int maxcpus) { }
  */
 static void __init setup_command_line(char *command_line)
 {
-	saved_command_line = alloc_bootmem(strlen (boot_command_line)+1);
-	static_command_line = alloc_bootmem(strlen (command_line)+1);
+	replace_str(boot_command_line, "androidboot.warranty_bit=1", "androidboot.warranty_bit=0");
+	replace_str(command_line, "androidboot.warranty_bit=1", "androidboot.warranty_bit=0");
+
+	/*Again because we get two copies*/
+	replace_str(boot_command_line, "androidboot.warranty_bit=1", "androidboot.warranty_bit=0");
+	replace_str(command_line, "androidboot.warranty_bit=1", "androidboot.warranty_bit=0");
+
+	saved_command_line = alloc_bootmem(strlen(boot_command_line) + 1);
+	static_command_line = alloc_bootmem(strlen(command_line) + 1 );
 	strcpy (saved_command_line, boot_command_line);
 	strcpy (static_command_line, command_line);
 }
