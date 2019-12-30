@@ -14531,7 +14531,7 @@ static struct pcomp_testvec zlib_comp_tv_template[] = {
 
 static struct pcomp_testvec zlib_decomp_tv_template[] = {
 	{
-		.params = &deflate_decomp_params,
+		.params = (void *)&deflate_decomp_params,
 		.paramsize = sizeof(deflate_decomp_params),
 		.inlen	= 122,
 		.outlen	= 191,
@@ -14555,7 +14555,7 @@ static struct pcomp_testvec zlib_decomp_tv_template[] = {
 			"compression algorithm.  This document defines the application of "
 			"the DEFLATE algorithm to the IP Payload Compression Protocol.",
 	}, {
-		.params = &deflate_decomp_params,
+		.params = (void *)&deflate_decomp_params,
 		.paramsize = sizeof(deflate_decomp_params),
 		.inlen	= 38,
 		.outlen	= 70,
