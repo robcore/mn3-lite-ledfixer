@@ -14491,7 +14491,7 @@ static const struct {
 
 static struct pcomp_testvec zlib_comp_tv_template[] = {
 	{
-		.params = &deflate_comp_params,
+		.params = (void *)&deflate_decomp_params,
 		.paramsize = sizeof(deflate_comp_params),
 		.inlen	= 70,
 		.outlen	= 38,
@@ -14503,7 +14503,7 @@ static struct pcomp_testvec zlib_comp_tv_template[] = {
 			  "\x48\x55\x28\xce\x4f\x2b\x29\x07"
 			  "\x71\xbc\x08\x2b\x01\x00",
 	}, {
-		.params = &deflate_comp_params,
+		.params = (void *)&deflate_decomp_params,
 		.paramsize = sizeof(deflate_comp_params),
 		.inlen	= 191,
 		.outlen	= 122,
