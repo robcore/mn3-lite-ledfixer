@@ -66,7 +66,7 @@ int32_t vibe_set_pwm_freq(int LnForce)
 		g_nlra_gp_clk_m << HWIO_GP_MD_REG_M_VAL_SHFT);
 
 	if (motor_hijack > PWM_DUTY_MAX)
-		motor_lojack = PWM_DUTY_MAX);
+		motor_lojack = PWM_DUTY_MAX;
 	else
 		motor_lojack = motor_hijack;
 
