@@ -5,7 +5,8 @@ export USE_CCACHE="1"
 export CCACHE_NLEVELS="8"
 
 RDIR="/root/mn3lite"
-OLDVER="$(cat $RDIR/.oldversion)"
+OLDVERFILE="$RDIR/.oldversion"
+OLDVER="$(cat $OLDVERFILE)"
 RAMDISKFOLDER="$RDIR/mxramdisk"
 ZIPFOLDER="$RDIR/mxzip"
 DEFCONFIG="$RDIR/arch/arm/configs/mxconfig"
@@ -94,9 +95,9 @@ handle_existing() {
 		warnandfail "You MUST choose a version for the kernel"
 	elif [ "$USEOLD" = y ]
 	then
-		KERNEL_VERSION="machinexlite-Mark$OLDVER-hltetmo"
+		MX_KERNEL_VERSION="machinexlite-Mark$OLDVER-hltetmo"
 		echo "Removing old zip files..."
-		rm -f "$RDIR/$KERNEL_VERSION.zip"
+		rm -f "$RDIR/$MX_KERNEL_VERSION.zip"
 	elif [ "$USEOLD" = n ]
 	then
 		echo -n "Enter new version and hit enter: "
@@ -104,24 +105,24 @@ handle_existing() {
 		if [ -z "$NEWVER" ]
 		then
 			echo "Nothing entered, using old"
-			KERNEL_VERSION="machinexlite-Mark$OLDVER-hltetmo"
+			MX_KERNEL_VERSION="machinexlite-Mark$OLDVER-hltetmo"
 			echo "Removing old zip files..."
-			rm -f "$RDIR/$KERNEL_VERSION.zip" &> /dev/null
+			rm -f "$RDIR/$MX_KERNEL_VERSION.zip" &> /dev/null
 		else
-			KERNEL_VERSION="machinexlite-Mark$NEWVER-hltetmo"
-			echo "$NEWVER" > .oldversion
+			MX_KERNEL_VERSION="machinexlite-Mark$NEWVER-hltetmo"
+			echo -n "$NEWVER" > "$OLDVERFILE"
 		fi
 	fi
-	echo "Kernel version is: $KERNEL_VERSION"
+	echo "Kernel version is: $MX_KERNEL_VERSION"
 	echo "--------------------------------"
 }
 
 handle_yes_existing() {
 	echo "Using last version. Mark$OLDVER will be removed."
-	KERNEL_VERSION="machinexlite-Mark$OLDVER-hltetmo"
+	MX_KERNEL_VERSION="machinexlite-Mark$OLDVER-hltetmo"
 	echo "Removing old zip files..."
-	rm -f "$RDIR/$KERNEL_VERSION.zip"
-	echo "Kernel version is: $KERNEL_VERSION"
+	rm -f "$RDIR/$MX_KERNEL_VERSION.zip"
+	echo "Kernel version is: $MX_KERNEL_VERSION"
 	echo "--------------------------------"
 }
 
@@ -158,37 +159,21 @@ git add -u && git add . && git add -A && git commit -a -m 'Config updated by bui
 BUILD_MENUCONFIG() {
 	echo "Creating kernel config..."
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
-	KERNEL_VERSION="dummyconfigbuild"
+	MX_KERNEL_VERSION="dummyconfigbuild"
 	mkdir -p "$RDIR/build" || warnandfail "Failed to make $RDIR/build directory!"
-	sed -i '/CONFIG_LOCALVERSION/d' "$RDIR/arch/arm/configs/mxconfig"
-	echo -n 'CONFIG_LOCALVERSION="' >> "$RDIR/arch/arm/configs/mxconfig"
-	echo -n "$KERNEL_VERSION" >> "$RDIR/arch/arm/configs/mxconfig"
-	echo '"' >> "$RDIR/arch/arm/configs/mxconfig"
-	echo 'CONFIG_LOCALVERSION_AUTO=y' >> "$RDIR/arch/arm/configs/mxconfig"
-	configit
-	cp "$RDIR/arch/arm/configs/mxconfig" "$RDIR/build/.config" || warnandfail "Config Copy Error!"
-	export KERNELVERSION="$KERNEL_VERSION"
-	export ARCH="arm"
-	export SUBARCH="arm"
-	export CROSS_COMPILE="$TOOLCHAIN"
+	echo -n "$MX_KERNEL_VERSION" > "$RDIR/localversion"
+	chmod 644 "$RDIR/localversion"
+	cp "$DEFCONFIG" "$RDIR/build/.config" || warnandfail "Config Copy Error!"
 	make ARCH="arm" SUBARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -C "$RDIR" O="$RDIR/build" menuconfig
 }
 BUILD_SINGLE_CONFIG() {
 	echo "Creating kernel config..."
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
-	KERNEL_VERSION="buildingsingledriver"
+	MX_KERNEL_VERSION="buildingsingledriver"
 	mkdir -p "$RDIR/build" || warnandfail "Failed to make $RDIR/build directory!"
-	sed -i '/CONFIG_LOCALVERSION/d' "$RDIR/arch/arm/configs/mxconfig"
-	echo -n 'CONFIG_LOCALVERSION="' >> "$RDIR/arch/arm/configs/mxconfig"
-	echo -n "$KERNEL_VERSION" >> "$RDIR/arch/arm/configs/mxconfig"
-	echo '"' >> "$RDIR/arch/arm/configs/mxconfig"
-	echo 'CONFIG_LOCALVERSION_AUTO=y' >> "$RDIR/arch/arm/configs/mxconfig"
-	configit
-	cp "$RDIR/arch/arm/configs/mxconfig" "$RDIR/build/.config" || warnandfail "Config Copy Error!"
-	export KERNELVERSION="$KERNEL_VERSION"
-	export ARCH="arm"
-	export SUBARCH="arm"
-	export CROSS_COMPILE="$TOOLCHAIN"
+	echo -n "$MX_KERNEL_VERSION" > "$RDIR/localversion"
+	chmod 644 "$RDIR/localversion"
+	cp "$DEFCONFIG" "$RDIR/build/.config" || warnandfail "Config Copy Error!"
 	make ARCH="arm" SUBARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -C "$RDIR" O="$RDIR/build" -j5 oldconfig || warnandfail "make oldconfig Failed!"
 }
 
@@ -201,27 +186,15 @@ BUILD_KERNEL_CONFIG() {
 	echo "Creating kernel config..."
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
 	mkdir -p "$RDIR/build" || warnandfail "Failed to make $RDIR/build directory!"
-	sed -i '/CONFIG_LOCALVERSION/d' "$RDIR/arch/arm/configs/mxconfig"
-	echo -n 'CONFIG_LOCALVERSION="' >> "$RDIR/arch/arm/configs/mxconfig"
-	echo -n "$KERNEL_VERSION" >> "$RDIR/arch/arm/configs/mxconfig"
-	echo '"' >> "$RDIR/arch/arm/configs/mxconfig"
-	echo 'CONFIG_LOCALVERSION_AUTO=y' >> "$RDIR/arch/arm/configs/mxconfig"
-	configit
-	cp "$RDIR/arch/arm/configs/mxconfig" "$RDIR/build/.config" || warnandfail "Config Copy Error!"
-	export KERNELVERSION="$KERNEL_VERSION"
-	export ARCH="arm"
-	export SUBARCH="arm"
-	export CROSS_COMPILE="$TOOLCHAIN"
+	echo -n "$MX_KERNEL_VERSION" > "$RDIR/localversion"
+	chmod 644 "$RDIR/localversion"
+	cp "$DEFCONFIG" "$RDIR/build/.config" || warnandfail "Config Copy Error!"
 	make ARCH="arm" SUBARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -C "$RDIR" O="$RDIR/build" -j5 oldconfig || warnandfail "make oldconfig Failed!"
 }
 
 BUILD_KERNEL() {
 	echo "Backing up .config to config.$QUICKDATE"
 	cp "build/.config" "config.$QUICKDATE"
-	export KERNELVERSION="$KERNEL_VERSION"
-	export ARCH="arm"
-	export SUBARCH="arm"
-	export CROSS_COMPILE="$TOOLCHAIN"
 	echo "Snapshot of current environment variables:"
 	env
 	echo "Starting build..."
@@ -286,20 +259,20 @@ CREATE_ZIP() {
 			cp -pa "$MXMODS" "$ZIPFOLDER/system/lib/modules/" || warnandfail "Failed to copy new modules to zip!"
 		fi
 	done
-	zip -r -9 - * > "$RDIR/$KERNEL_VERSION.zip"
-	echo "Kernel $KERNEL_VERSION.zip finished"
+	zip -r -9 - * > "$RDIR/$MX_KERNEL_VERSION.zip"
+	echo "Kernel $MX_KERNEL_VERSION.zip finished"
 	echo "Filepath: "
-	echo "$RDIR/$KERNEL_VERSION.zip"
-	if [ ! -f "$RDIR/$KERNEL_VERSION.zip" ]
+	echo "$RDIR/$MX_KERNEL_VERSION.zip"
+	if [ ! -f "$RDIR/$MX_KERNEL_VERSION.zip" ]
 	then
-		warnandfail "$RDIR/$KERNEL_VERSION.zip does not exist!"
+		warnandfail "$RDIR/$MX_KERNEL_VERSION.zip does not exist!"
 	fi
-	if [ -s "$RDIR/$KERNEL_VERSION.zip" ]
+	if [ -s "$RDIR/$MX_KERNEL_VERSION.zip" ]
 	then
-		echo "Uploading $KERNEL_VERSION.zip to Google Drive"
-		/bin/bash /root/google-drive-upload/upload.sh "$RDIR/$KERNEL_VERSION.zip"
+		echo "Uploading $MX_KERNEL_VERSION.zip to Google Drive"
+		/bin/bash /root/google-drive-upload/upload.sh "$RDIR/$MX_KERNEL_VERSION.zip"
 	else
-		warnandfail "$RDIR/$KERNEL_VERSION.zip is 0 bytes, something is wrong!"
+		warnandfail "$RDIR/$MX_KERNEL_VERSION.zip is 0 bytes, something is wrong!"
 	fi
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR"
 }
@@ -310,10 +283,10 @@ CREATE_ZIP() {
 #
 #	echo "Compressing to Odin flashable tar.md5 file..."
 #	cd $RDIR/$ZIPFOLDER
-#	tar -H ustar -c boot.img > $RDIR/$KERNEL_VERSION.tar
+#	tar -H ustar -c boot.img > $RDIR/$MX_KERNEL_VERSION.tar
 #	cd $RDIR
-#	md5sum -t $KERNEL_VERSION.tar >> $KERNEL_VERSION.tar
-#	mv $KERNEL_VERSION.tar $KERNEL_VERSION.tar.md5
+#	md5sum -t $MX_KERNEL_VERSION.tar >> $MX_KERNEL_VERSION.tar
+#	mv $MX_KERNEL_VERSION.tar $MX_KERNEL_VERSION.tar.md5
 #	cd $RDIR
 #}
 
