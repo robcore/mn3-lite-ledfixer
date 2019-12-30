@@ -228,12 +228,13 @@ BUILD_RAMDISK() {
 	cd "$RDIR/build/ramdisk" || warnandfail "Failed to cd to $RDIR/build/ramdisk!"
 	mkdir -pm 755 dev proc sys system
 	mkdir -pm 771 data
-	if [ -f "$KDIR/ramdisk.cpio.lzo" ]
+	if [ -f "$KDIR/ramdisk.cpio.gz" ]
 	then
-		rm "$KDIR/ramdisk.cpio.lzo"
+		rm "$KDIR/ramdisk.cpio.gz"
 	fi
-	find | fakeroot cpio -v -H newc -o | lzop -9 > "$KDIR/ramdisk.cpio.lzo"
-	[ ! -f "$KDIR/ramdisk.cpio.lzo" ] && warnandfail "NO ramdisk!"
+#	find | fakeroot cpio -v -H newc -o | lzop -9 > "$KDIR/ramdisk.cpio.gz"
+	find | fakeroot cpio -v -o -H newc | gzip -v -9 > "$KDIR/ramdisk.cpio.gz"
+	[ ! -f "$KDIR/ramdisk.cpio.gz" ] && warnandfail "NO ramdisk!"
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR"
 }
 
@@ -246,7 +247,7 @@ BUILD_BOOT_IMG() {
 	fi
 
 	$RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg --kernel "$KDIR/zImage" \
-		--ramdisk "$KDIR/ramdisk.cpio.lzo" \
+		--ramdisk "$KDIR/ramdisk.cpio.gz" \
 		--dt_dir "$KDIR" \
 		--cmdline "console=null androidboot.hardware=qcom user_debug=23 msm_rtb.filter=0x37 ehci-hcd.park=3" \
 		--base "0x00000000" \
