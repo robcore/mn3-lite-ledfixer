@@ -53,6 +53,7 @@ struct pm_gpio vib_pwm = {
 
 int32_t vibe_set_pwm_freq(int LnForce)
 {
+	int32_t motor_lojack;
 	/* Put the MND counter in reset mode for programming */
 	HWIO_OUTM(GP1_CFG_RCGR, HWIO_GP_SRC_SEL_VAL_BMSK, 
 				0 << HWIO_GP_SRC_SEL_VAL_SHFT); //SRC_SEL = 000(cxo)
@@ -64,16 +65,21 @@ int32_t vibe_set_pwm_freq(int LnForce)
 	HWIO_OUTM(GP_M_REG, HWIO_GP_MD_REG_M_VAL_BMSK,
 		g_nlra_gp_clk_m << HWIO_GP_MD_REG_M_VAL_SHFT);
 
-	if (motor_hijack != 100) {
+	if (motor_hijack > PWM_DUTY_MAX)
+		motor_lojack = PWM_DUTY_MAX);
+	else
+		motor_lojack = motor_hijack;
+
+	if (motor_lojack != 100) {
 		if (LnForce > 0) {
 			g_nforce_32 = g_nlra_gp_clk_n - (((LnForce * g_nlra_gp_clk_pwm_mul) >> 8));
-			g_nforce_32 = g_nforce_32 * motor_hijack / 100;
+			g_nforce_32 = g_nforce_32 * motor_lojack / 100;
 			if (g_nforce_32 < motor_min_strength)
 				g_nforce_32 = motor_min_strength;
 		} else {
 			g_nforce_32 = ((LnForce * g_nlra_gp_clk_pwm_mul) >> 8) + g_nlra_gp_clk_d;
-			if (g_nlra_gp_clk_n - g_nforce_32 > g_nlra_gp_clk_n * motor_hijack / 100)
-				g_nforce_32 = g_nlra_gp_clk_n - g_nlra_gp_clk_n * motor_hijack / 100;
+			if (g_nlra_gp_clk_n - g_nforce_32 > g_nlra_gp_clk_n * motor_lojack / 100)
+				g_nforce_32 = g_nlra_gp_clk_n - g_nlra_gp_clk_n * motor_lojack / 100;
 		}
 	} else {
 		if (LnForce > 0) {
