@@ -50,6 +50,7 @@
 #include <linux/regulator/krait-regulator.h>
 #include <linux/mfd/pm8xxx/pwm.h>
 #include "../staging/android/timed_output.h"
+#include <linux/sysfs_helpers.h>
 
 #include "tspdrv.h"
 #include <linux/vibrator.h>

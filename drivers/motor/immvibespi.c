@@ -39,6 +39,7 @@
 
 static bool g_bampenabled;
 
+module_param_named(nforce, g_nforce_32, int32_t, 0444);
 struct pm_gpio vib_pwm = {
 				.direction = PM_GPIO_DIR_OUT,
 				.output_buffer = 0,
@@ -50,54 +51,30 @@ struct pm_gpio vib_pwm = {
 				.inv_int_pol = 0,
 			};
 
-int32_t vibe_set_pwm_freq(int nForce)
+int32_t vibe_set_pwm_freq(int LnForce)
 {
 	/* Put the MND counter in reset mode for programming */
 	HWIO_OUTM(GP1_CFG_RCGR, HWIO_GP_SRC_SEL_VAL_BMSK, 
 				0 << HWIO_GP_SRC_SEL_VAL_SHFT); //SRC_SEL = 000(cxo)
-#if defined(CONFIG_SEC_BERLUTI_PROJECT) || defined(CONFIG_MACH_S3VE3G_EUR)
-	HWIO_OUTM(GP1_CFG_RCGR, HWIO_GP_SRC_DIV_VAL_BMSK,
-				23 << HWIO_GP_SRC_DIV_VAL_SHFT); //SRC_DIV = 10111 (Div 12)
-#else
 	HWIO_OUTM(GP1_CFG_RCGR, HWIO_GP_SRC_DIV_VAL_BMSK,
 				31 << HWIO_GP_SRC_DIV_VAL_SHFT); //SRC_DIV = 11111 (Div 16)
-#endif
 	HWIO_OUTM(GP1_CFG_RCGR, HWIO_GP_MODE_VAL_BMSK, 
 				2 << HWIO_GP_MODE_VAL_SHFT); //Mode Select 10
 	//M value
 	HWIO_OUTM(GP_M_REG, HWIO_GP_MD_REG_M_VAL_BMSK,
 		g_nlra_gp_clk_m << HWIO_GP_MD_REG_M_VAL_SHFT);
 
-#if defined(CONFIG_MACH_LT03EUR) || defined(CONFIG_MACH_LT03SKT)\
-	|| defined(CONFIG_MACH_LT03KTT)	|| defined(CONFIG_MACH_LT03LGT) || defined(CONFIG_MACH_PICASSO_LTE)
-
-	if (nForce > 0){
-		g_nforce_32 = g_nlra_gp_clk_n - (((nForce * g_nlra_gp_clk_pwm_mul) >> 8));
-		if(g_nforce_32 < motor_min_strength)
-			g_nforce_32 = motor_min_strength;
-		else
-			g_nforce_32 = (g_nforce_32 - motor_min_strength) \
-				* (g_nlra_gp_clk_n * motor_strength / 100 - motor_min_strength) \
-				/ (g_nlra_gp_clk_n - motor_min_strength) + motor_min_strength;
-	}
-	else{
-		g_nforce_32 = ((nForce * g_nlra_gp_clk_pwm_mul) >> 8) + g_nlra_gp_clk_d;
-		if(g_nlra_gp_clk_n - g_nforce_32 > g_nlra_gp_clk_n * motor_strength /100)
-			g_nforce_32 = g_nlra_gp_clk_n - g_nlra_gp_clk_n * motor_strength /100;
-	}
-#else
-	if (nForce > 0){
-		g_nforce_32 = g_nlra_gp_clk_n - (((nForce * g_nlra_gp_clk_pwm_mul) >> 8));
+	if (LnForce > 0){
+		g_nforce_32 = g_nlra_gp_clk_n - (((LnForce * g_nlra_gp_clk_pwm_mul) >> 8));
 		g_nforce_32 = g_nforce_32 * motor_strength /100;
 		if(g_nforce_32 < motor_min_strength)
 			g_nforce_32 = motor_min_strength;
 	}
 	else{
-		g_nforce_32 = ((nForce * g_nlra_gp_clk_pwm_mul) >> 8) + g_nlra_gp_clk_d;
+		g_nforce_32 = ((LnForce * g_nlra_gp_clk_pwm_mul) >> 8) + g_nlra_gp_clk_d;
 		if(g_nlra_gp_clk_n - g_nforce_32 > g_nlra_gp_clk_n * motor_strength /100)
 			g_nforce_32 = g_nlra_gp_clk_n - g_nlra_gp_clk_n * motor_strength /100;
 	}
-#endif
 	// D value
 	HWIO_OUTM(GP_D_REG, HWIO_GP_MD_REG_D_VAL_BMSK,
 	 (~((int16_t)g_nforce_32 << 1)) << HWIO_GP_MD_REG_D_VAL_SHFT);
@@ -378,9 +355,7 @@ int vib_config_pwm_device(void)
 #ifdef CONFIG_TACTILE_ASSIST
 static bool g_bOutputDataBufferEmpty = 1;
 #endif
-static int8_t nforce_strength;
-module_param(
-module_param_named(nforce, nforce_strength, int8_t, 0444);
+
 static int32_t ImmVibeSPI_ForceOut_SetSamples(u_int8_t nActuatorIndex,
 						u_int16_t nOutputSignalBitDepth,
 						u_int16_t nBufferSizeInBytes,
@@ -437,7 +412,6 @@ static int32_t ImmVibeSPI_ForceOut_SetSamples(u_int8_t nActuatorIndex,
 			nforce = 127 - nforce;
 		/* Map force from [-127, 127] to [0, PWM_DUTY_MAX] */
 		pr_info("ImmVibeSPI_ForceOut_SetSamples: nforce: %d\n", nforce);
-		nforce_strength=nforce;
 		if (pre_nforce != nforce) {
 			if (vibrator_drvdata.is_pmic_vib_pwm){ 
 				//PMIC  PWM
