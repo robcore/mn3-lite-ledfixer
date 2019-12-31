@@ -17,7 +17,9 @@ KDIR="$RDIR/build/arch/arm/boot"
 TOOLCHAIN="/opt/toolchains/arm-cortex_a15-linux-gnueabihf_5.3/bin/arm-cortex_a15-linux-gnueabihf-"
 
 _quote() {
+
 	echo $1 | sed 's/[]\/()$*.^|[]/\\&/g'
+
 }
 
 # This function looks for a string, and inserts a specified string after it inside a given file
@@ -33,28 +35,35 @@ pc_insert() {
 # This function looks for a string, and replace it with a different string inside a given file
 # $1: the line to locate, $2: the line to replace with, $3: Config file where to insert
 pc_replace() {
+
 	local PATTERN;
 	local CONTENT;
 	PATTERN=$(_quote "$1")
 	CONTENT=$(_quote "$2")
 	sed -i "s/$PATTERN/$CONTENT/" $3
+
 }
 
 # This function will append a given string at the end of a given file
 # $1 The line to append at the end, $2: Config file where to append
 pc_append() {
+
 	echo "$1" >> $2
+
 }
 
 # This function will delete a line containing a given string inside a given file
 # $1 The line to locate, $2: Config file where to delete
 pc_delete() {
+
 	local PATTERN;
 	PATTERN=$(_quote "$1")
 	sed -i "/$PATTERN/d" $2
+
 }
 
 warnandfail() {
+
 	echo -n "MX ERROR on Line ${BASH_LINENO[0]}"
 	echo "!!!"
 	local ISTRING
@@ -64,6 +73,7 @@ warnandfail() {
 		echo "$ISTRING"
 	fi
 	exit 1
+
 }
 
 if [ ! -f "$MXCONFIG" ]
@@ -79,6 +89,7 @@ then
 fi
 
 shortprog() {
+
 echo -ne "#####               (25%)\r"; \
 sleep 0.4; \
 echo -ne "##########          (50%)\r"; \
@@ -88,6 +99,7 @@ sleep 0.4; \
 echo -ne "####################(100%)\r"; \
 echo -ne "                          \r"; \
 #echo -ne "\n"
+
 }
 
 longprog() {
@@ -156,6 +168,7 @@ echo "This was only a test"
 }
 
 handle_existing() {
+
 	if [ -z "$OLDVER" ]
 	then
 		warnandfail "FATAL ERROR! Failed to read version from .oldversion"
@@ -198,18 +211,22 @@ handle_existing() {
 	fi
 	echo "Kernel version is: $MX_KERNEL_VERSION"
 	echo "--------------------------------"
+
 }
 
 handle_yes_existing() {
+
 	echo "Using last version. Mark$OLDVER will be removed."
 	MX_KERNEL_VERSION="machinexlite-Mark$OLDVER-hltetmo"
 	echo "Removing old zip files..."
 	rm -f "$RDIR/$MX_KERNEL_VERSION.zip"
 	echo "Kernel version is: $MX_KERNEL_VERSION"
 	echo "--------------------------------"
+
 }
 
 CLEAN_BUILD() {
+
 	echo -ne "Cleaning build   \r"; \
 	make clean &>/dev/null
 	make distclean &>/dev/null
@@ -231,6 +248,7 @@ CLEAN_BUILD() {
 	echo -ne "                 \r"; \
 	echo -ne "Cleaned\r"; \
 	echo -ne "\n"
+
 }
 
 configit() {
@@ -240,46 +258,58 @@ git add -u && git add . && git add -A && git commit -a -m 'Config updated by bui
 }
 
 BUILD_MENUCONFIG() {
+
 	echo "Creating kernel config..."
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
 	MX_KERNEL_VERSION="dummyconfigbuild"
 	mkdir -p "$RDIR/build" || warnandfail "Failed to make $RDIR/build directory!"
 	cp "$MXCONFIG" "$RDIR/build/.config" || warnandfail "Config Copy Error!"
 	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -C "$RDIR" O="$RDIR/build" menuconfig
+
 }
+
 BUILD_SINGLE_CONFIG() {
+
 	echo "Creating kernel config..."
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
 	MX_KERNEL_VERSION="buildingsingledriver"
 	mkdir -p "$RDIR/build" || warnandfail "Failed to make $RDIR/build directory!"
 	cp "$MXCONFIG" "$RDIR/build/.config" || warnandfail "Config Copy Error!"
 	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -C "$RDIR" O="$RDIR/build" -j "$CORECOUNT" oldconfig || warnandfail "make oldconfig Failed!"
+
 }
 
 BUILD_SINGLE_DRIVER() {
+
 	echo "Building Single Driver..."
 	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -C "$RDIR" -S -s -j "$CORECOUNT" O="$RDIR/build/" "$1"
+
 }
 
 BUILD_KERNEL_CONFIG() {
+
 	echo "Creating kernel config..."
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
 	mkdir -p "$RDIR/build" || warnandfail "Failed to make $RDIR/build directory!"
 	configit
 	cp "$MXCONFIG" "$RDIR/build/.config" || warnandfail "Config Copy Error!"
 	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -C "$RDIR" O="$RDIR/build" -j "$CORECOUNT" oldconfig || warnandfail "make oldconfig Failed!"
+
 }
 
 BUILD_KERNEL() {
+
 	echo "Backing up .config to config.$QUICKDATE"
 	cp "build/.config" "config.$QUICKDATE"
 	echo "Snapshot of current environment variables:"
 	env
 	echo "Starting build..."
 	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -S -s -C "$RDIR" O="$RDIR/build" -j "$CORECOUNT" || warnandfail "Kernel Build failed!"
+
 }
 
 BUILD_RAMDISK() {
+
 	echo "Building ramdisk structure..."
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR"
 	rm -rf "$RDIR/build/ramdisk" &>/dev/null
@@ -296,9 +326,11 @@ BUILD_RAMDISK() {
 	find | fakeroot cpio -v -o -H newc | gzip -v -9 > "$KDIR/ramdisk.cpio.gz"
 	[ ! -f "$KDIR/ramdisk.cpio.gz" ] && warnandfail "NO ramdisk!"
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR"
+
 }
 
 BUILD_BOOT_IMG() {
+
 	echo "Generating boot.img..."
 	rm -f "$ZIPFOLDER/boot.img"
 	if [ ! -f "$RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg" ]
@@ -323,9 +355,11 @@ BUILD_BOOT_IMG() {
 	fi
 	[ -f "$ZIPFOLDER/boot.img" ] || warnandfail "$ZIPFOLDER/boot.img does not exist!"
 	echo -n "SEANDROIDENFORCE" >> "$ZIPFOLDER/boot.img"
+
 }
 
 CREATE_ZIP() {
+
 	echo "Compressing to TWRP flashable zip file..."
 	cd "$ZIPFOLDER" || warnandfail "Failed to cd to $ZIPFOLDER"
 	rm -f "$ZIPFOLDER"/system/lib/modules/*
@@ -353,6 +387,7 @@ CREATE_ZIP() {
 		warnandfail "$RDIR/$MX_KERNEL_VERSION.zip is 0 bytes, something is wrong!"
 	fi
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR"
+
 }
 
 #CREATE_TAR()
@@ -369,6 +404,7 @@ CREATE_ZIP() {
 #}
 
 SHOW_HELP() {
+
 	cat << EOF
 Machinexlite kernel by robcore
 Script written by jcadduono, frequentc & robcore
@@ -387,28 +423,39 @@ Common options:
 EOF
 
 	exit 1
+
 }
 
 BUILD_RAMDISK_CONTINUE() {
+
 	BUILD_RAMDISK && BUILD_BOOT_IMG && CREATE_ZIP
+
 }
 
 BUILD_KERNEL_CONTINUE() {
+
 	BUILD_KERNEL && BUILD_RAMDISK_CONTINUE
+
 }
 
 BUILD_ALL() {
+
 	CLEAN_BUILD && BUILD_KERNEL_CONFIG && BUILD_KERNEL_CONTINUE
+
 }
 
 BSDWRAPPER() {
+
 	[ -z "$1" ] && warnandfail "Build Single Driver: Missing path/to/folder/ or path/to/file.o"
 	CLEAN_BUILD && BUILD_SINGLE_CONFIG && BUILD_SINGLE_DRIVER "$1"
 	CLEAN_BUILD
+
 }
 
 BUILD_MC() {
+
 	BUILD_MENUCONFIG
+
 }
 
 RUNTEST() {
