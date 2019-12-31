@@ -163,6 +163,7 @@ BUILD_MENUCONFIG() {
 	mkdir -p "$RDIR/build" || warnandfail "Failed to make $RDIR/build directory!"
 	echo -n "$MX_KERNEL_VERSION" > "$RDIR/localversion"
 	chmod 644 "$RDIR/localversion"
+	configit
 	cp "$DEFCONFIG" "$RDIR/build/.config" || warnandfail "Config Copy Error!"
 	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -C "$RDIR" O="$RDIR/build" menuconfig
 }
@@ -173,6 +174,7 @@ BUILD_SINGLE_CONFIG() {
 	mkdir -p "$RDIR/build" || warnandfail "Failed to make $RDIR/build directory!"
 	echo -n "$MX_KERNEL_VERSION" > "$RDIR/localversion"
 	chmod 644 "$RDIR/localversion"
+	configit
 	cp "$DEFCONFIG" "$RDIR/build/.config" || warnandfail "Config Copy Error!"
 	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -C "$RDIR" O="$RDIR/build" -j5 oldconfig || warnandfail "make oldconfig Failed!"
 }
@@ -188,6 +190,7 @@ BUILD_KERNEL_CONFIG() {
 	mkdir -p "$RDIR/build" || warnandfail "Failed to make $RDIR/build directory!"
 	echo -n "$MX_KERNEL_VERSION" > "$RDIR/localversion"
 	chmod 644 "$RDIR/localversion"
+	configit
 	cp "$DEFCONFIG" "$RDIR/build/.config" || warnandfail "Config Copy Error!"
 	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -C "$RDIR" O="$RDIR/build" -j5 oldconfig || warnandfail "make oldconfig Failed!"
 }
