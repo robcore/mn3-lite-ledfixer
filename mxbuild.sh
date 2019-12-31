@@ -80,14 +80,16 @@ fi
 
 test_funcs() {
 
-
-echo "Old Version: $OLDVER"
-echo
-echo "New Version: $NEWVER"
+echo "This has been a test of the emergency broadcast system."
+echo "This was only a test"
 
 }
 
 handle_existing() {
+	if [ -z "$OLDVER" ]
+	then
+		warnandfail "FATAL ERROR! Failed to read version from .oldversion"
+	fi
 	while [ "$WHICHVERSION" != "n" -o "$WHICHVERSION" != "o" ]
 	do
 		read -n1 -r -p "Rebuilding (o)ld version? Or building (n)ew version? Please specify [o|n|Default o]: " WHICHVERSION
@@ -99,10 +101,6 @@ handle_existing() {
 	elif [ "$WHICHVERSION" = "o" ]
 	then
 		echo "Rebulding old version has been selected"
-		if [ -z "$OLDVER" ]
-		then
-			warnandfail "FATAL ERROR! Failed to read version from .oldversion"
-		fi
 		echo "Removing old zip files..."
 		MX_KERNEL_VERSION="machinexlite-Mark$OLDVER-hltetmo"
 		rm -f "$RDIR/$MX_KERNEL_VERSION.zip"
