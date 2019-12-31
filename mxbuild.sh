@@ -8,6 +8,9 @@ env KCONFIG_NOTIMESTAMP=true &>/dev/null
 RDIR="/root/mn3lite"
 OLDVERFILE="$RDIR/.oldversion"
 OLDVER="$(cat $OLDVERFILE)"
+echo -n "invalid" > "$RDIR/.currentversion"
+CURVERFILE="$RDIR/.currentversion"
+CURVER="$(cat $CURVERFILE)"
 RAMDISKFOLDER="$RDIR/mxramdisk"
 ZIPFOLDER="$RDIR/mxzip"
 MXCONFIG="$RDIR/arch/arm/configs/mxconfig"
@@ -155,26 +158,47 @@ echo "This was only a test"
 
 }
 
+versionprompt() {
+
+	read -r -p "Rebuilding (o)ld version? Or building (n)ew version? Please specify [o|n|Default o]: " WHICHVERSION
+	if [ "$WHICHVERSION" = "n" ]
+	then
+		echo -n "new" > "$CURVERFILE"
+	elif [ "$WHICHVERSION" = "o" ]
+	then
+		echo -n "old" > "$CURVERFILE"
+	else
+		echo -n "invalid" > "$CURVERFILE"
+	fi
+
+}
+
 handle_existing() {
 	if [ -z "$OLDVER" ]
 	then
 		warnandfail "FATAL ERROR! Failed to read version from .oldversion"
 	fi
-	while [ "$WHICHVERSION" != "n" -o "$WHICHVERSION" != "o" ]
+
+	versionprompt
+
+	while [ "$CURVER" = "invalid" ]
 	do
-		read -n1 -r -p "Rebuilding (o)ld version? Or building (n)ew version? Please specify [o|n|Default o]: " WHICHVERSION
+		versionprompt
 	done
 
-	if [ -z "$WHICHVERSION" ]
+	if [ -z "$CURVER" ]
 	then
 		warnandfail "You MUST choose a version for the kernel"
-	elif [ "$WHICHVERSION" = "o" ]
+	elif [ "$CURVER" = "invalid" ]
+	then
+		warnandfail "versioning failed.  please fix"
+	elif [ "$CURVER" = "old" ]
 	then
 		echo "Rebulding old version has been selected"
 		echo "Removing old zip files..."
 		MX_KERNEL_VERSION="machinexlite-Mark$OLDVER-hltetmo"
 		rm -f "$RDIR/$MX_KERNEL_VERSION.zip"
-	elif [ "$WHICHVERSION" = "n" ]
+	elif [ "$CURVER" = "new" ]
 	then
 		echo "Building new version has been selected"
 		NEWVER="$(echo $(expr $(( $OLDVER + 1 ))))"
