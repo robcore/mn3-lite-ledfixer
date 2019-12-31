@@ -301,7 +301,7 @@ usage: ./mx-build.sh [OPTION]
 
 Common options:
   -a|--all			Do a complete build (starting at the beginning)
-  -b|--bsd			Build single driver (/path/to/folder/ | /path/to/file.o)
+  -b|--bsd			Build single driver (path/to/folder/ | path/to/file.o)
   -c|--clean		Remove everything this build script has done
   -m|--clean_make	Perform make proper|clean|distclean in one sweep
   -k|--kernel		Try the build again starting at compiling the kernel
@@ -329,7 +329,7 @@ BUILD_ALL() {
 }
 
 BSDWRAPPER() {
-	[ -z "$1" ] && warnandfail "Build Single Driver: Missing /path/to/folder/ or /path/to/file.o"
+	[ -z "$1" ] && warnandfail "Build Single Driver: Missing path/to/folder/ or path/to/file.o"
 	CLEAN_BUILD && BUILD_SINGLE_CONFIG && BUILD_SINGLE_DRIVER "$1"
 	CLEAN_BUILD
 }
