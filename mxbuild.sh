@@ -9,7 +9,7 @@ OLDVERFILE="$RDIR/.oldversion"
 OLDVER="$(cat $OLDVERFILE)"
 RAMDISKFOLDER="$RDIR/mxramdisk"
 ZIPFOLDER="$RDIR/mxzip"
-DEFCONFIG="$RDIR/arch/arm/configs/mxconfig"
+MXCONFIG="$RDIR/arch/arm/configs/mxconfig"
 QUICKDATE="$(date | awk '{print $2$3}')"
 
 #export PATH="/opt/toolchains/arm-cortex_a15-linux-gnueabihf_5.3/bin:$PATH"
@@ -73,9 +73,9 @@ warnandfail() {
 	exit 1
 }
 
-if [ ! -f "$DEFCONFIG" ]
+if [ ! -f "$MXCONFIG" ]
 then
-	echo "$DEFCONFIG not found in arm configs!"
+	echo "$MXCONFIG not found in arm configs!"
 	exit 1
 fi
 
@@ -161,36 +161,30 @@ BUILD_MENUCONFIG() {
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
 	MX_KERNEL_VERSION="dummyconfigbuild"
 	mkdir -p "$RDIR/build" || warnandfail "Failed to make $RDIR/build directory!"
-	echo -n "$MX_KERNEL_VERSION" > "$RDIR/localversion"
-	chmod 644 "$RDIR/localversion"
-	cp "$DEFCONFIG" "$RDIR/build/.config" || warnandfail "Config Copy Error!"
-	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -C "$RDIR" O="$RDIR/build" menuconfig
+	cp "$MXCONFIG" "$RDIR/build/.config" || warnandfail "Config Copy Error!"
+	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -C "$RDIR" O="$RDIR/build" menuconfig
 }
 BUILD_SINGLE_CONFIG() {
 	echo "Creating kernel config..."
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
 	MX_KERNEL_VERSION="buildingsingledriver"
 	mkdir -p "$RDIR/build" || warnandfail "Failed to make $RDIR/build directory!"
-	echo -n "$MX_KERNEL_VERSION" > "$RDIR/localversion"
-	chmod 644 "$RDIR/localversion"
-	cp "$DEFCONFIG" "$RDIR/build/.config" || warnandfail "Config Copy Error!"
-	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -C "$RDIR" O="$RDIR/build" -j5 oldconfig || warnandfail "make oldconfig Failed!"
+	cp "$MXCONFIG" "$RDIR/build/.config" || warnandfail "Config Copy Error!"
+	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -C "$RDIR" O="$RDIR/build" -j5 oldconfig || warnandfail "make oldconfig Failed!"
 }
 
 BUILD_SINGLE_DRIVER() {
 	echo "Building Single Driver..."
-	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -C "$RDIR" -S -s -j5 O="$RDIR/build/" "$1"
+	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -C "$RDIR" -S -s -j5 O="$RDIR/build/" "$1"
 }
 
 BUILD_KERNEL_CONFIG() {
 	echo "Creating kernel config..."
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
 	mkdir -p "$RDIR/build" || warnandfail "Failed to make $RDIR/build directory!"
-	echo -n "$MX_KERNEL_VERSION" > "$RDIR/localversion"
-	chmod 644 "$RDIR/localversion"
 	configit
-	cp "$DEFCONFIG" "$RDIR/build/.config" || warnandfail "Config Copy Error!"
-	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -C "$RDIR" O="$RDIR/build" -j5 oldconfig || warnandfail "make oldconfig Failed!"
+	cp "$MXCONFIG" "$RDIR/build/.config" || warnandfail "Config Copy Error!"
+	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -C "$RDIR" O="$RDIR/build" -j5 oldconfig || warnandfail "make oldconfig Failed!"
 }
 
 BUILD_KERNEL() {
@@ -199,7 +193,7 @@ BUILD_KERNEL() {
 	echo "Snapshot of current environment variables:"
 	env
 	echo "Starting build..."
-	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -S -s -C "$RDIR" O="$RDIR/build" -j5 || warnandfail "Kernel Build failed!"
+	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -S -s -C "$RDIR" O="$RDIR/build" -j5 || warnandfail "Kernel Build failed!"
 }
 
 BUILD_RAMDISK() {
