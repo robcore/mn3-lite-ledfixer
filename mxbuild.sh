@@ -291,22 +291,20 @@ CREATE_ZIP() {
 
 SHOW_HELP() {
 	cat << EOF
-Machinexlite by robcore. To configure this script for your build, edit the top of mx-build.sh before continuing.
+Machinexlite kernel by robcore
+Script written by jcadduono, frequentc & robcore
 
 usage: ./mx-build.sh [OPTION]
-
 Common options:
-  -a|--all	Do a complete build (starting at the beginning)
-  -y|--allyesrebuild	Same as -all but defaults to rebuilding previous version
-  -b|--bsd	Build single driver (path/to/folder/ | path/to/file.o)
-  -c|--clean	Remove everything this build script has done
-  -m|--menu	Setup an environment for and enter menuconfig
-  -k|--kernel	Try the build again starting at compiling the kernel
-  -o|--kernel-only	Recompile only the kernel, nothing else
-  -r|--ramdisk	Try the build again starting at the ramdisk
-  -t|--tests	Execute random test functions for new functionalities in progress
-
-Build script by jcadduono, frequentc & robcore
+ -a|--all            Do a complete build (starting at the beginning)
+ -y|--allyesrebuild  Same as -all but defaults to rebuilding previous version
+ -b|--bsd            Build single driver (path/to/folder/ | path/to/file.o)
+ -c|--clean          Remove everything this build script has done
+ -m|--menu           Setup an environment for and enter menuconfig
+ -k|--kernel         Try the build again starting at compiling the kernel
+ -o|--kernel-only    Recompile only the kernel, nothing else
+ -r|--ramdisk        Try the build again starting at the ramdisk
+ -t|--tests          Testing playground
 EOF
 
 	exit 1
