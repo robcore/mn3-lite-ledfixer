@@ -8,9 +8,6 @@ env KCONFIG_NOTIMESTAMP=true &>/dev/null
 RDIR="/root/mn3lite"
 OLDVERFILE="$RDIR/.oldversion"
 OLDVER="$(cat $OLDVERFILE)"
-echo -n "invalid" > "$RDIR/.currentversion"
-CURVERFILE="$RDIR/.currentversion"
-CURVER="$(cat $CURVERFILE)"
 RAMDISKFOLDER="$RDIR/mxramdisk"
 ZIPFOLDER="$RDIR/mxzip"
 MXCONFIG="$RDIR/arch/arm/configs/mxconfig"
@@ -160,16 +157,7 @@ echo "This was only a test"
 
 versionprompt() {
 
-	read -r -p "Rebuilding (o)ld version? Or building (n)ew version? Please specify [o|n|Default o]: " WHICHVERSION
-	if [ "$WHICHVERSION" = "n" ]
-	then
-		echo -n "new" > "$CURVERFILE"
-	elif [ "$WHICHVERSION" = "o" ]
-	then
-		echo -n "old" > "$CURVERFILE"
-	else
-		echo -n "invalid" > "$CURVERFILE"
-	fi
+	="$(echo $WHICHVERSION | cut -b1)"
 
 }
 
@@ -179,12 +167,17 @@ handle_existing() {
 		warnandfail "FATAL ERROR! Failed to read version from .oldversion"
 	fi
 
-	versionprompt
-
-	while [ "$CURVER" = "invalid" ]
-	do
-		versionprompt
-	done
+	echo -n "Rebuilding (o)ld version? Or building (n)ew version? Please specify [o|n]: "
+	read -r WHICHVERSION
+	if [ "$WHICHVERSION" = "n" ]
+	then
+		CURVER="new"
+	elif [ "$WHICHVERSION" = "o" ]
+	then
+		CURVER="old"
+	else
+		CURVER="invalid"
+	fi
 
 	if [ -z "$CURVER" ]
 	then
