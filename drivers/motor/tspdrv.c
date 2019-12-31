@@ -122,6 +122,32 @@ static int vibrator_work;
 
 struct vibrator_platform_data vibrator_drvdata;
 
+/*
+ * msm8974_sec tspdrv vibration strength control
+ * (/sys/class/timed_output/vibrator/pwm_*)
+ *
+ * sysfs pwm_value
+ *    range   : PWM_MIN - PWM_MAX (0 - 100)
+ * sysfs pwm_max
+ *    returns : PWM_MAX (100)
+ * sysfs pwm_min
+ *    returns : PWM_MIN (0)
+ * sysfs pwm_default
+ *    returns : PWM_DEFAULT (60)
+ * sysfs pwm_threshold
+ *    returns : PWM_THRESHOLD (80)
+ *
+ * Author : Park Ju Hyung <qkrwngud825@gmail.com>
+ * Modified by : Jean-Pierre Rasquin <yank555.lu@gmail.com>
+ * Modified by : James Christopher Adduono <jc@adduono.com>
+ */
+
+#define MAX_STRENGTH 140
+#define PWM_MAX 100U
+#define PWM_MIN 0U
+static unsigned int pwm_value = 100;
+static unsigned int pwm_strength;
+
 static int set_vibetonz(int timeout)
 {
 	int8_t strength;
@@ -135,18 +161,66 @@ static int set_vibetonz(int timeout)
 	} else {
 		DbgOut((KERN_INFO "tspdrv: ENABLE\n"));
 		if (vibrator_drvdata.vib_model == HAPTIC_PWM) {
-			strength = 126;
-			/* 90% duty cycle */
+			strength = (int8_t) ((100 * pwm_value) / 100);
 			ImmVibeSPI_ForceOut_SetSamples(0, 8, 1, &strength);
 		} else { /* HAPTIC_MOTOR */
 		DbgOut((KERN_INFO "tspdrv: ampenable\n"));
 			ImmVibeSPI_ForceOut_AmpEnable(0);
 		}
 	}
-
+	pwm_strength=strength;
 	vibrator_value = timeout;
 	return 0;
 }
+
+static ssize_t pwm_value_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", pwm_value);
+}
+
+ssize_t pwm_value_store(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
+{
+	unsigned int newpval;
+
+	if (!sscanf(buf, "%u", &newpval))
+		return -EINVAL;
+
+	sanitize_min_max(newpval, 0, 100);
+	pwm_value = newpval;
+
+	return count;
+}
+
+
+
+static ssize_t pwm_strength_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", pwm_strength);
+}
+
+static ssize_t pwm_max_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	unsigned int pmax = 100;
+	return sprintf(buf, "%u\n", PWM_MAX);
+}
+
+static ssize_t pwm_min_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	unsigned int pmin = 0;
+	return sprintf(buf, "%u\n", PWM_MIN);
+}
+
+static ssize_t pwm_default_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	unsigned int pdef = 100;
+	return sprintf(buf, "%u\n", pdef);
+}
+
+static DEVICE_ATTR(pwm_value, 0644, pwm_value_show, pwm_value_store);
+static DEVICE_ATTR(pwm_strength, 0440, pwm_strength_show, NULL);
+static DEVICE_ATTR(pwm_max, 0440, pwm_max_show, NULL);
+static DEVICE_ATTR(pwm_min, 0440, pwm_min_show, NULL);
+static DEVICE_ATTR(pwm_default, 0440, pwm_default_show, NULL);
 
 static void _set_vibetonz_work(struct work_struct *unused)
 {
@@ -220,9 +294,41 @@ static void vibetonz_start(void)
 
 	ret = timed_output_dev_register(&timed_output_vt);
 
-	if (ret)
+	if (ret) {
 		DbgOut((KERN_ERR
 		"tspdrv: timed_output_dev_register is fail\n"));
+		return;
+	}
+
+	ret = device_create_file(timed_output_vt.dev, &dev_attr_pwm_value);
+
+	if (ret)
+		DbgOut((KERN_ERR
+		"tspdrv: create sysfs fail: pwm_value\n"));
+
+	ret = device_create_file(timed_output_vt.dev, &dev_attr_pwm_max);
+
+	if (ret)
+		DbgOut((KERN_ERR
+		"tspdrv: create sysfs fail: pwm_max\n"));
+
+	ret = device_create_file(timed_output_vt.dev, &dev_attr_pwm_min);
+
+	if (ret)
+		DbgOut((KERN_ERR
+		"tspdrv: create sysfs fail: pwm_min\n"));
+
+	ret = device_create_file(timed_output_vt.dev, &dev_attr_pwm_default);
+
+	if (ret)
+		DbgOut((KERN_ERR
+		"tspdrv: create sysfs fail: pwm_default\n"));
+
+	ret = device_create_file(timed_output_vt.dev, &dev_attr_pwm_strength);
+
+	if (ret)
+		DbgOut((KERN_ERR
+		"tspdrv: create sysfs fail: pwm_threshold\n"));
 }
 
 /* File IO */
@@ -403,7 +509,7 @@ static void max77803_haptic_power_onoff(int onoff)
 			printk(KERN_ERR"enable l23 failed, rc=%d\n", ret);
 			return;
 		}
-		printk(KERN_DEBUG"haptic power_on is finished.\n");
+		pr_debug("haptic power_on is finished.\n");
 	} else {
 		if (regulator_is_enabled(reg_l23)) {
 			ret = regulator_disable(reg_l23);
@@ -413,7 +519,7 @@ static void max77803_haptic_power_onoff(int onoff)
 				return;
 			}
 		}
-		printk(KERN_DEBUG"haptic power_off is finished.\n");
+		pr_debug("haptic power_off is finished.\n");
 	}
 }
 #endif
@@ -452,7 +558,7 @@ static void max77803_haptic_power_onoff(int onoff)
 			printk(KERN_ERR"enable l23 failed, rc=%d\n", ret);
 			return;
 		}
-		printk(KERN_DEBUG"haptic power_on is finished.\n");
+		pr_debug("haptic power_on is finished.\n");
 	} else {
 		if (regulator_is_enabled(reg_l23)) {
 			ret = regulator_disable(reg_l23);
@@ -462,7 +568,7 @@ static void max77803_haptic_power_onoff(int onoff)
 				return;
 			}
 		}
-		printk(KERN_DEBUG"haptic power_off is finished.\n");
+		pr_debug("haptic power_off is finished.\n");
 	}
 #else
 	static struct regulator *reg_l17;
@@ -484,7 +590,7 @@ static void max77803_haptic_power_onoff(int onoff)
 			printk(KERN_ERR"enable l17 failed, rc=%d\n", ret);
 			return;
 		}
-		printk(KERN_DEBUG"haptic power_on is finished.\n");
+		pr_debug("haptic power_on is finished.\n");
 	} else {
 		if (regulator_is_enabled(reg_l17)) {
 			ret = regulator_disable(reg_l17);
@@ -494,13 +600,53 @@ static void max77803_haptic_power_onoff(int onoff)
 				return;
 			}
 		}
-		printk(KERN_DEBUG"haptic power_off is finished.\n");
+		pr_debug("haptic power_off is finished.\n");
 	}
 #endif
 }
 #endif
 
 
+#if defined(CONFIG_MOTOR_DRV_DRV2603)
+void drv2603_gpio_en(bool en)
+{
+	if (en) {
+		gpio_direction_output(vibrator_drvdata.drv2603_en_gpio, 1);
+	} else {
+		gpio_direction_output(vibrator_drvdata.drv2603_en_gpio, 0);
+	}
+}
+static int32_t drv2603_gpio_init(void)
+{
+	int ret;
+	ret = gpio_request(vibrator_drvdata.drv2603_en_gpio, "vib enable");
+	if (ret < 0) {
+		printk(KERN_ERR "vib enable gpio_request is failed\n");
+		return 1;
+	}
+	return 0;
+}
+#endif
+#if defined(CONFIG_MOTOR_DRV_MAX77888)
+void max77888_gpio_en(bool en)
+{
+	if (en) {
+		gpio_direction_output(vibrator_drvdata.max77888_en_gpio, 1);
+	} else {
+		gpio_direction_output(vibrator_drvdata.max77888_en_gpio, 0);
+	}
+}
+static int32_t max77888_gpio_init(void)
+{
+	int ret;
+	ret = gpio_request(vibrator_drvdata.max77888_en_gpio, "vib enable");
+	if (ret < 0) {
+		printk(KERN_ERR "vib enable gpio_request is failed\n");
+		return 1;
+	}
+	return 0;
+}
+#endif
 static __devinit int tspdrv_probe(struct platform_device *pdev)
 {
 	int ret, i, rc;   /* initialized below */
@@ -516,12 +662,22 @@ static __devinit int tspdrv_probe(struct platform_device *pdev)
 	if(rc)
 		return rc;
 
+#if defined(CONFIG_MACH_HLTEDCM) || defined(CONFIG_MACH_HLTEKDI) || defined(CONFIG_MACH_JS01LTEDCM)
+	virt_mmss_gp1_base = ioremap(MSM_MMSS_GP3_BASE,0x28);
+#elif defined(CONFIG_SEC_BERLUTI_PROJECT) || defined(CONFIG_MACH_S3VE3G_EUR)
+	virt_mmss_gp1_base = ioremap(MSM_MMSS_GP0_BASE,0x28);
+#else
 	virt_mmss_gp1_base = ioremap(MSM_MMSS_GP1_BASE,0x28);
+#endif
 
 	if (!virt_mmss_gp1_base)
 		panic("tspdrv : Unable to ioremap MSM_MMSS_GP1 memory!");
 			
+#if defined(CONFIG_MOTOR_DRV_MAX77803) || defined(CONFIG_MOTOR_DRV_MAX77804K) || defined(CONFIG_MOTOR_DRV_MAX77828)
 	vibrator_drvdata.power_onoff = max77803_haptic_power_onoff;
+#else
+	vibrator_drvdata.power_onoff = NULL;
+#endif
 	vibrator_drvdata.pwm_dev = NULL;
 
 #ifdef IMPLEMENT_AS_CHAR_DRIVER
@@ -768,7 +924,7 @@ static ssize_t write(struct file *file, const char *buf, size_t count,
 	g_nforcelog[g_nforcelog_index++] = g_cSPIBuffer[0];
 	if (g_nforcelog_index >= FORCE_LOG_BUFFER_SIZE) {
 		for (i = 0; i < FORCE_LOG_BUFFER_SIZE; i++) {
-			pr_debug("%d\t%d\n", g_ntime, g_nforcelog[i]);
+			printk(KERN_INFO "%d\t%d\n", g_ntime, g_nforcelog[i]);
 			g_ntime += TIME_INCREMENT;
 		}
 		g_nforcelog_index = 0;
@@ -807,7 +963,7 @@ static long ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 #ifdef QA_TEST
 		if (g_nforcelog_index) {
 			for (i = 0; i < g_nforcelog_index; i++) {
-				pr_debug("%d\t%d\n"
+				printk(KERN_INFO "%d\t%d\n"
 					   , g_ntime, g_nforcelog[i]);
 				g_ntime += TIME_INCREMENT;
 			}

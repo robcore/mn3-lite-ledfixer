@@ -96,12 +96,90 @@ typedef struct {
 int32_t g_nforce_32;
 
 
-#define MOTOR_STRENGTH			100/*MOTOR_STRENGTH 98 %*/
-#define GP_CLK_M_DEFAULT                        3
-#define GP_CLK_N_DEFAULT                        138
-#define GP_CLK_D_DEFAULT                        69  /* 50% duty cycle	*/
-#define IMM_PWM_MULTIPLIER			137
-#define MOTOR_MIN_STRENGTH			70/*IMMERSION VALUE*/
+#if defined(CONFIG_MACH_KS01SKT) \
+	   || defined(CONFIG_MACH_KS01KTT) || defined(CONFIG_MACH_KS01LGT) \
+	   || defined(CONFIG_MACH_JACTIVESKT) || defined(CONFIG_MACH_HLTEDCM) \
+	   || defined(CONFIG_MACH_HLTEKDI)
+#define MOTOR_STRENGTH			94/*MOTOR_STRENGTH 94 %*/
+#elif defined(CONFIG_MACH_LT03EUR) || defined(CONFIG_MACH_LT03SKT)\
+	|| defined(CONFIG_MACH_LT03KTT)	|| defined(CONFIG_MACH_LT03LGT)
+#define MOTOR_STRENGTH			98/*MOTOR_STRENGTH 98 %*/
+#elif defined(CONFIG_MACH_PICASSO_LTE)
+#define MOTOR_STRENGTH			91
+#elif defined(CONFIG_MACH_HLTEUSC) || defined(CONFIG_MACH_HLTEVZW)
+#define MOTOR_STRENGTH			99/*MOTOR_STRENGTH 99 %*/
+#elif defined(CONFIG_SEC_K_PROJECT) || defined(CONFIG_SEC_KACTIVE_PROJECT) || defined(CONFIG_SEC_KSPORTS_PROJECT) \
+	|| defined(CONFIG_SEC_PATEK_PROJECT)
+#define MOTOR_STRENGTH			98/*MOTOR_STRENGTH 98 %*/
+#elif defined(CONFIG_SEC_S_PROJECT)
+#define MOTOR_STRENGTH			87/*MOTOR_STRENGTH 87 %*/
+#else
+#define MOTOR_STRENGTH			98/*MOTOR_STRENGTH 98 %*/
+#endif
+
+
+#if defined (CONFIG_MACH_HLTESPR) || defined (CONFIG_MACH_HLTEEUR) || defined(CONFIG_SEC_LOCALE_KOR_H) || defined (CONFIG_MACH_HLTETMO) || defined(CONFIG_MACH_H3GDUOS) || defined(CONFIG_MACH_HLTEATT)
+	#define GP_CLK_M_DEFAULT                        3
+	#define GP_CLK_N_DEFAULT                        138
+	#define GP_CLK_D_DEFAULT                        69  /* 50% duty cycle	*/
+	#define IMM_PWM_MULTIPLIER			137
+#elif defined (CONFIG_MACH_HLTEDCM) || defined (CONFIG_MACH_HLTEKDI) || defined (CONFIG_MACH_JS01LTEDCM) || defined (CONFIG_MACH_JS01LTESBM)
+	#define GP_CLK_M_DEFAULT			2
+	#define GP_CLK_N_DEFAULT			92
+	#define GP_CLK_D_DEFAULT			46  /* 50% duty cycle */
+	#define IMM_PWM_MULTIPLIER		92
+#elif defined (CONFIG_MACH_HLTEUSC) || defined(CONFIG_MACH_HLTEVZW)
+	#define GP_CLK_M_DEFAULT			1
+	#define GP_CLK_N_DEFAULT			46
+	#define GP_CLK_D_DEFAULT			23  /* 50% duty cycle */
+	#define IMM_PWM_MULTIPLIER		46
+#elif defined(CONFIG_MACH_FLTESKT)
+	#define GP_CLK_M_DEFAULT			2
+	#define GP_CLK_N_DEFAULT                        92
+	#define GP_CLK_D_DEFAULT			46  /* 50% duty cycle */
+	#define IMM_PWM_MULTIPLIER			92
+#elif defined(CONFIG_SEC_K_PROJECT) || defined(CONFIG_SEC_KACTIVE_PROJECT) || defined(CONFIG_SEC_KSPORTS_PROJECT) ||\
+	defined(CONFIG_SEC_PATEK_PROJECT)
+#if defined(CONFIG_MACH_KLTE_MAX77828_JPN)
+	#define GP_CLK_M_DEFAULT			1
+	#define GP_CLK_N_DEFAULT                        20
+	#define GP_CLK_D_DEFAULT			10  /* 50% duty cycle */
+	#define IMM_PWM_MULTIPLIER			20
+#else
+	#define GP_CLK_M_DEFAULT			3
+	#define GP_CLK_N_DEFAULT                        121
+	#define GP_CLK_D_DEFAULT			61  /* 50% duty cycle */
+	#define IMM_PWM_MULTIPLIER			121
+#endif
+#elif defined(CONFIG_SEC_S_PROJECT)
+	#define GP_CLK_M_DEFAULT			3
+	#define GP_CLK_N_DEFAULT                        121
+	#define GP_CLK_D_DEFAULT			61  /* 50% duty cycle */
+	#define IMM_PWM_MULTIPLIER			121
+#elif defined(CONFIG_SEC_LOCALE_KOR_FRESCO)
+	#define GP_CLK_M_DEFAULT			3
+	#define GP_CLK_N_DEFAULT                        120
+	#define GP_CLK_D_DEFAULT			60  /* 50% duty cycle */
+	#define IMM_PWM_MULTIPLIER			120
+#elif defined(CONFIG_SEC_BERLUTI_PROJECT) || defined(CONFIG_MACH_S3VE3G_EUR)
+	#define GP_CLK_M_DEFAULT			1
+	#define GP_CLK_N_DEFAULT			61
+	#define GP_CLK_D_DEFAULT			31  /* 50% duty cycle */
+	#define IMM_PWM_MULTIPLIER			61
+#elif defined(CONFIG_MACH_HESTIALTE_EUR)
+	#define GP_CLK_M_DEFAULT			1
+	#define GP_CLK_N_DEFAULT			40
+	#define GP_CLK_D_DEFAULT			20
+	#define IMM_PWM_MULTIPLIER			40
+#else
+	#define GP_CLK_M_DEFAULT			2
+	#define GP_CLK_N_DEFAULT                        91
+	#define GP_CLK_D_DEFAULT			46  /* 50% duty cycle */
+	#define IMM_PWM_MULTIPLIER			91
+#endif
+
+
+#define MOTOR_MIN_STRENGTH			54/*IMMERSION VALUE*/
 /*
  * ** Global variables for LRA PWM M,N and D values.
  * */
