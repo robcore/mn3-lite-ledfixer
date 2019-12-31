@@ -297,7 +297,7 @@ usage: ./mx-build.sh [OPTION]
 
 Common options:
   -a|--all	Do a complete build (starting at the beginning)
-  -y|--allyesrebuild	Equivalent of -a|--all but defaults to rebuilding previous version
+  -y|--allyesrebuild	Same as -all but defaults to rebuilding previous version
   -b|--bsd	Build single driver (path/to/folder/ | path/to/file.o)
   -c|--clean	Remove everything this build script has done
   -m|--menu	Setup an environment for and enter menuconfig
