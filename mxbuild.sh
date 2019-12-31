@@ -155,12 +155,6 @@ echo "This was only a test"
 
 }
 
-versionprompt() {
-
-	="$(echo $WHICHVERSION | cut -b1)"
-
-}
-
 handle_existing() {
 	if [ -z "$OLDVER" ]
 	then
