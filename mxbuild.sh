@@ -98,22 +98,22 @@ handle_existing() {
 		warnandfail "You MUST choose a version for the kernel"
 	elif [ "$WHICHVERSION" = "o" ]
 	then
+		echo "Rebulding old version has been selected"
 		if [ -z "$OLDVER" ]
 		then
 			warnandfail "FATAL ERROR! Failed to read version from .oldversion"
 		fi
-		echo "Rebulding old version has been selected"
 		echo "Removing old zip files..."
 		MX_KERNEL_VERSION="machinexlite-Mark$OLDVER-hltetmo"
 		rm -f "$RDIR/$MX_KERNEL_VERSION.zip"
 	elif [ "$WHICHVERSION" = "n" ]
 	then
+		echo "Building new version has been selected"
+		NEWVER="$(echo $(expr $(( $OLDVER + 1 ))))"
 		if [ -z "$NEWVER" ]
 		then
 			warnandfail "FATAL ERROR! Failed to raise version number by one!"
 		fi
-		echo "Building new version has been selected"
-		NEWVER="$(echo $(expr $(( $OLDVER + 1 ))))"
 		MX_KERNEL_VERSION="machinexlite-Mark$NEWVER-hltetmo"
 		echo -n "$NEWVER" > "$OLDVERFILE"
 	fi
