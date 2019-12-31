@@ -3,6 +3,7 @@
 export CCACHE_DIR="$HOME/.ccache"
 export USE_CCACHE="1"
 export CCACHE_NLEVELS="8"
+env KCONFIG_NOTIMESTAMP=true &>/dev/null
 
 RDIR="/root/mn3lite"
 OLDVERFILE="$RDIR/.oldversion"
@@ -11,17 +12,9 @@ RAMDISKFOLDER="$RDIR/mxramdisk"
 ZIPFOLDER="$RDIR/mxzip"
 MXCONFIG="$RDIR/arch/arm/configs/mxconfig"
 QUICKDATE="$(date | awk '{print $2$3}')"
-
-#export PATH="/opt/toolchains/arm-cortex_a15-linux-gnueabihf_5.3/bin:$PATH"
-
-export CROSS_COMPILE="/opt/toolchains/arm-cortex_a15-linux-gnueabihf_5.3/bin/arm-cortex_a15-linux-gnueabihf-"
+CORECOUNT="$(grep processor /proc/cpuinfo | wc -l)"
+KDIR="$RDIR/build/arch/arm/boot"
 TOOLCHAIN="/opt/toolchains/arm-cortex_a15-linux-gnueabihf_5.3/bin/arm-cortex_a15-linux-gnueabihf-"
-env KCONFIG_NOTIMESTAMP=true &>/dev/null
-
-#!/bin/sh
-
-# Asuswrt-Merlin helper functions
-# For use with Postconf scripts (and others)
 
 _quote() {
 	echo $1 | sed 's/[]\/()$*.^|[]/\\&/g'
@@ -84,8 +77,6 @@ then
 	echo "$RAMDISKFOLDER not found!"
 	exit 1
 fi
-
-KDIR="$RDIR/build/arch/arm/boot"
 
 handle_existing() {
 	echo -n "Use last version? Mark$OLDVER will be removed [y/n/Default y] ENTER: "
@@ -170,12 +161,12 @@ BUILD_SINGLE_CONFIG() {
 	MX_KERNEL_VERSION="buildingsingledriver"
 	mkdir -p "$RDIR/build" || warnandfail "Failed to make $RDIR/build directory!"
 	cp "$MXCONFIG" "$RDIR/build/.config" || warnandfail "Config Copy Error!"
-	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -C "$RDIR" O="$RDIR/build" -j5 oldconfig || warnandfail "make oldconfig Failed!"
+	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -C "$RDIR" O="$RDIR/build" -j "$CORECOUNT" oldconfig || warnandfail "make oldconfig Failed!"
 }
 
 BUILD_SINGLE_DRIVER() {
 	echo "Building Single Driver..."
-	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -C "$RDIR" -S -s -j5 O="$RDIR/build/" "$1"
+	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -C "$RDIR" -S -s -j "$CORECOUNT" O="$RDIR/build/" "$1"
 }
 
 BUILD_KERNEL_CONFIG() {
@@ -184,7 +175,7 @@ BUILD_KERNEL_CONFIG() {
 	mkdir -p "$RDIR/build" || warnandfail "Failed to make $RDIR/build directory!"
 	configit
 	cp "$MXCONFIG" "$RDIR/build/.config" || warnandfail "Config Copy Error!"
-	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -C "$RDIR" O="$RDIR/build" -j5 oldconfig || warnandfail "make oldconfig Failed!"
+	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -C "$RDIR" O="$RDIR/build" -j "$CORECOUNT" oldconfig || warnandfail "make oldconfig Failed!"
 }
 
 BUILD_KERNEL() {
@@ -193,7 +184,7 @@ BUILD_KERNEL() {
 	echo "Snapshot of current environment variables:"
 	env
 	echo "Starting build..."
-	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -S -s -C "$RDIR" O="$RDIR/build" -j5 || warnandfail "Kernel Build failed!"
+	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -S -s -C "$RDIR" O="$RDIR/build" -j "$CORECOUNT" || warnandfail "Kernel Build failed!"
 }
 
 BUILD_RAMDISK() {
