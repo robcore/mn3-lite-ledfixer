@@ -88,7 +88,7 @@ echo "New Version: $NEWVER"
 }
 
 handle_existing() {
-	while [[ "$WHICHVERSION" != "n" -o "$WHICHVERSION" != "o" ]]
+	while [ "$WHICHVERSION" != "n" -o "$WHICHVERSION" != "o" ]
 	do
 		read -n1 -r -p "Rebuilding (o)ld version? Or building (n)ew version? Please specify [o|n|Default o]: " WHICHVERSION
 	done
