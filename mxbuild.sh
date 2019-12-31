@@ -78,8 +78,78 @@ then
 	exit 1
 fi
 
+shortprog() {
+echo -ne "#####               (25%)\r"; \
+sleep 0.4; \
+echo -ne "##########          (50%)\r"; \
+sleep 0.4; \
+echo -ne "###############     (75%)\r"; \
+sleep 0.4; \
+echo -ne "####################(100%)\r"; \
+echo -ne "                          \r"; \
+#echo -ne "\n"
+}
+
+longprog() {
+
+echo -ne "#                       \r"; \
+sleep 0.4; \
+echo -ne "##                      \r"; \
+sleep 0.4; \
+echo -ne "###                     \r"; \
+sleep 0.4; \
+echo -ne "####                    \r"; \
+sleep 0.4; \
+echo -ne "#####                   \r"; \
+sleep 0.4; \
+echo -ne "######                  \r"; \
+sleep 0.4; \
+echo -ne "#######                 \r"; \
+sleep 0.4; \
+echo -ne "########                \r"; \
+sleep 0.4; \
+echo -ne "#########               \r"; \
+sleep 0.4; \
+echo -ne "##########              \r"; \
+sleep 0.4; \
+echo -ne "###########             \r"; \
+sleep 0.4; \
+echo -ne "############            \r"; \
+sleep 0.4; \
+echo -ne "#############           \r"; \
+sleep 0.4; \
+echo -ne "##############          \r"; \
+sleep 0.4; \
+echo -ne "###############         \r"; \
+sleep 0.4; \
+echo -ne "################        \r"; \
+sleep 0.4; \
+echo -ne "#################       \r"; \
+sleep 0.4; \
+echo -ne "##################      \r"; \
+sleep 0.4; \
+echo -ne "###################     \r"; \
+sleep 0.4; \
+echo -ne "####################    \r"; \
+sleep 0.4; \
+echo -ne "#####################   \r"; \
+sleep 0.4; \
+echo -ne "######################  \r"; \
+sleep 0.4; \
+echo -ne "####################### \r"; \
+sleep 0.4; \
+echo -ne "########################\r"; \
+sleep 0.4; \
+echo -ne "                        \r"; \
+
+}
+
 test_funcs() {
 
+echo "This is a test of the emergency broadcast system."
+echo "This is only a test."
+shortprog
+longprog
 echo "This has been a test of the emergency broadcast system."
 echo "This was only a test"
 
