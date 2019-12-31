@@ -78,31 +78,44 @@ then
 	exit 1
 fi
 
+test_funcs() {
+
+
+echo "Old Version: $OLDVER"
+echo
+echo "New Version: $NEWVER"
+
+}
+
 handle_existing() {
-	echo -n "Use last version? Mark$OLDVER will be removed [y/n/Default y] ENTER: "
-	read -r USEOLD
-	if [ -z "$USEOLD" ]
+	while [[ "$WHICHVERSION" != "n" -o "$WHICHVERSION" != "o" ]]
+	do
+		read -n1 -r -p "Rebuilding (o)ld version? Or building (n)ew version? Please specify [o|n|Default o]: " WHICHVERSION
+	done
+
+	if [ -z "$WHICHVERSION" ]
 	then
 		warnandfail "You MUST choose a version for the kernel"
-	elif [ "$USEOLD" = y ]
+	elif [ "$WHICHVERSION" = "o" ]
 	then
-		MX_KERNEL_VERSION="machinexlite-Mark$OLDVER-hltetmo"
+		if [ -z "$OLDVER" ]
+		then
+			warnandfail "FATAL ERROR! Failed to read version from .oldversion"
+		fi
+		echo "Rebulding old version has been selected"
 		echo "Removing old zip files..."
+		MX_KERNEL_VERSION="machinexlite-Mark$OLDVER-hltetmo"
 		rm -f "$RDIR/$MX_KERNEL_VERSION.zip"
-	elif [ "$USEOLD" = n ]
+	elif [ "$WHICHVERSION" = "n" ]
 	then
-		echo -n "Enter new version and hit enter: "
-		read -r NEWVER
 		if [ -z "$NEWVER" ]
 		then
-			echo "Nothing entered, using old"
-			MX_KERNEL_VERSION="machinexlite-Mark$OLDVER-hltetmo"
-			echo "Removing old zip files..."
-			rm -f "$RDIR/$MX_KERNEL_VERSION.zip" &> /dev/null
-		else
-			MX_KERNEL_VERSION="machinexlite-Mark$NEWVER-hltetmo"
-			echo -n "$NEWVER" > "$OLDVERFILE"
+			warnandfail "FATAL ERROR! Failed to raise version number by one!"
 		fi
+		echo "Building new version has been selected"
+		NEWVER="$(echo $(expr $(( $OLDVER + 1 ))))"
+		MX_KERNEL_VERSION="machinexlite-Mark$NEWVER-hltetmo"
+		echo -n "$NEWVER" > "$OLDVERFILE"
 	fi
 	echo "Kernel version is: $MX_KERNEL_VERSION"
 	echo "--------------------------------"
@@ -284,14 +297,14 @@ usage: ./mx-build.sh [OPTION]
 
 Common options:
   -a|--all			Do a complete build (starting at the beginning)
+  -y|--allyesrebuild Equivalent of -a|--all but defaults to rebuilding previous version
   -b|--bsd			Build single driver (path/to/folder/ | path/to/file.o)
   -c|--clean		Remove everything this build script has done
-  -m|--clean_make	Perform make proper|clean|distclean in one sweep
+  -m|--menu			Setup an environment for and enter menuconfig
   -k|--kernel		Try the build again starting at compiling the kernel
+  -o|--kernel-only	Recompile only the kernel, nothing else
   -r|--ramdisk		Try the build again starting at the ramdisk
-
-Other options that only complete 1 part of the build:
- -ko|--kernel-only	Recompile only the kernel
+  -t|--tests		Execute random test functions for new functionalities in progress
 
 Build script by jcadduono, frequentc & robcore
 EOF
@@ -319,6 +332,12 @@ BSDWRAPPER() {
 
 BUILD_MC() {
 	BUILD_MENUCONFIG
+}
+
+RUNTEST() {
+
+test_funcs && exit 0
+
 }
 
 if [ $# = 0 ] ; then
@@ -364,7 +383,7 @@ while [[ $# -gt 0 ]]
 	    	break
 	    	;;
 
-	    -ko|--kernel-only)
+	    -o|--kernel-only)
 			handle_existing
 	    	BUILD_KERNEL
 	    	break
@@ -373,6 +392,11 @@ while [[ $# -gt 0 ]]
 	     -r|--ramdisk)
 			handle_existing
 	     	BUILD_RAMDISK_CONTINUE
+	    	break
+	    	;;
+
+	     -t|--tests)
+			RUNTEST
 	    	break
 	    	;;
 
