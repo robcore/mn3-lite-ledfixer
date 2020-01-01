@@ -31,7 +31,10 @@ do
 	then
 	    patch -s -p1 < "$PFILE" &> /dev/null
 	else
+		echo "/root/113patches/$PFILE" >> "$STATICLOG"
 		patch -p1 < "$PFILE" | tee -a "$STATICLOG"
+		echo "$PFILE" >> "$STATICLOG"
+		echo " " >> "$STATICLOG"
 	fi
 done
 
