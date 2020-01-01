@@ -17,7 +17,7 @@ echo " " >> "$STATICLOG"
 
 for PFILE in /root/113patches/*
 do
-	if patch -p1 --dry-run < "$PFILE"
+	if patch -s -p1 --dry-run < "$PFILE"
 	then
 	    patch -s -p1 < "$PFILE" &> /dev/null
 	else
