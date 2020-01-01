@@ -27,13 +27,13 @@ echo " " >> "$STATICLOG"
 
 for PFILE in /root/113patches/*
 do
-	if patch -s -p1 --dry-run < "$PFILE"
+	if patch -s -p1 --dry-run < "$PFILE" &> /dev/null
 	then
 	    patch -s -p1 < "$PFILE" &> /dev/null
 	else
+		echo " " >> "$STATICLOG"
 		echo "$PFILE" >> "$STATICLOG"
 		patch -p1 < "$PFILE" | tee -a "$STATICLOG"
-		echo " " >> "$STATICLOG"
 	fi
 done
 
