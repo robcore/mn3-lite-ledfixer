@@ -11,6 +11,16 @@ echo -n "$QUICKDATE" > "/root/mn3lite/tmpdate"
 STATICDATE="$(cat /root/mn3lite/tmpdate)"
 STATICLOG="/root/mn3lite/$STATICDATE-patchinator.log"
 
+trashman() {
+
+	find . -type f \( -iname \*.rej \
+					-o -iname \*.orig \
+					-o -iname \*.bkp \
+					-o -iname \*.ko \) \
+						| parallel rm -fv {};
+
+}
+
 echo "PATCHINATOR LOG" > "$STATICLOG"
 echo "---------------" >> "$STATICLOG"
 echo " " >> "$STATICLOG"
@@ -25,11 +35,7 @@ do
 	fi
 done
 
-find . -type f \( -iname \*.rej \
-				-o -iname \*.orig \
-				-o -iname \*.bkp \
-				-o -iname \*.ko \) \
-					| parallel rm -fv {};
+trashman &>/dev/null
 
 echo "Failed entries have been saved to:"
 echo "$STATICLOG"
