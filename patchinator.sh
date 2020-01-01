@@ -25,13 +25,12 @@ do
 	fi
 done
 
-echo "Failed entries have been saved to:"
-echo "$STATICLOG"
-
 find . -type f \( -iname \*.rej \
 				-o -iname \*.orig \
 				-o -iname \*.bkp \
 				-o -iname \*.ko \) \
 					| parallel rm -fv {};
 
+echo "Failed entries have been saved to:"
+echo "$STATICLOG"
 rm "/root/mn3lite/tmpdate"
