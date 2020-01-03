@@ -39,7 +39,10 @@ dothesplits() {
 		then
 			PREVIOUSFILEFORM=$(printf "%04d\n" $CURRENTPVAL)
 			PREVIOUSFILE="$PATCHFOLDER/$PREVIOUSFILEFORM.patch"
-			truncate -s -1 "$PREVIOUSFILE"
+			if [ -f "PREVIOUSFILE" ]
+			then
+				truncate -s -1 "$PREVIOUSFILE"
+			fi
 			SPLITFILENUM=$((CURRENTPVAL+1))
 			echo -n "$SPLITFILENUM" > "$CURRENTPVALFILE"
 		elif echo "$PLINE" | grep -q 'THISISTHEENDFAKEFAKEFAKEFAKE'
