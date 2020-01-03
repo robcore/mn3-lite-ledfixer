@@ -1,295 +1,3 @@
-PATCHINATOR LOG
----------------
-
-medit /root/113patches/0030.patch \
-arch/arm/Makefile
-Hunk #2 FAILED at 291.
-1 out of 2 hunks FAILED
-
-
-medit /root/113patches/0035.patch \
-can't find file to patch at input line 5
-Perhaps you used the wrong -p or --strip option?
-The text leading up to this was:
---------------------------
-|diff --git a/arch/arm/boot/dts/imx27.dtsi b/arch/arm/boot/dts/imx27.dtsi
-|index bc5e7d5d..9cc8ed23 100644
-|--- a/arch/arm/boot/dts/imx27.dtsi
-|+++ b/arch/arm/boot/dts/imx27.dtsi
---------------------------
-File to patch: 
-Skip this patch? [y] 
-Skipping patch.
-1 out of 1 hunk ignored
-
-
-medit /root/113patches/0036.patch \
-can't find file to patch at input line 5
-Perhaps you used the wrong -p or --strip option?
-The text leading up to this was:
---------------------------
-|diff --git a/arch/arm/boot/dts/imx51-babbage.dts b/arch/arm/boot/dts/imx51-babbage.dts
-|index 9949e606..6b34b23d 100644
-|--- a/arch/arm/boot/dts/imx51-babbage.dts
-|+++ b/arch/arm/boot/dts/imx51-babbage.dts
---------------------------
-File to patch: 
-Skip this patch? [y] 
-Skipping patch.
-1 out of 1 hunk ignored
-
-
-medit /root/113patches/0037.patch \
-can't find file to patch at input line 5
-Perhaps you used the wrong -p or --strip option?
-The text leading up to this was:
---------------------------
-|diff --git a/arch/arm/boot/dts/imx53-ard.dts b/arch/arm/boot/dts/imx53-ard.dts
-|index 2dccce46..7541a91b 100644
-|--- a/arch/arm/boot/dts/imx53-ard.dts
-|+++ b/arch/arm/boot/dts/imx53-ard.dts
---------------------------
-File to patch: 
-Skip this patch? [y] 
-Skipping patch.
-1 out of 1 hunk ignored
-
-
-medit /root/113patches/0038.patch \
-can't find file to patch at input line 5
-Perhaps you used the wrong -p or --strip option?
-The text leading up to this was:
---------------------------
-|diff --git a/arch/arm/boot/dts/tegra-cardhu.dts b/arch/arm/boot/dts/tegra-cardhu.dts
-|index ac3fb755..631a86cb 100644
-|--- a/arch/arm/boot/dts/tegra-cardhu.dts
-|+++ b/arch/arm/boot/dts/tegra-cardhu.dts
---------------------------
-File to patch: 
-Skip this patch? [y] 
-Skipping patch.
-1 out of 1 hunk ignored
-
-
-medit /root/113patches/0039.patch \
-can't find file to patch at input line 5
-Perhaps you used the wrong -p or --strip option?
-The text leading up to this was:
---------------------------
-|diff --git a/arch/arm/configs/at91sam9g45_defconfig b/arch/arm/configs/at91sam9g45_defconfig
-|index 606d48f3..8aab7868 100644
-|--- a/arch/arm/configs/at91sam9g45_defconfig
-|+++ b/arch/arm/configs/at91sam9g45_defconfig
---------------------------
-File to patch: 
-Skip this patch? [y] 
-Skipping patch.
-1 out of 1 hunk ignored
-
-
-medit /root/113patches/0040.patch \
-can't find file to patch at input line 5
-Perhaps you used the wrong -p or --strip option?
-The text leading up to this was:
---------------------------
-|diff --git a/arch/arm/configs/mxs_defconfig b/arch/arm/configs/mxs_defconfig
-|index 1ebbf451..70d0bf40 100644
-|--- a/arch/arm/configs/mxs_defconfig
-|+++ b/arch/arm/configs/mxs_defconfig
---------------------------
-File to patch: 
-Skip this patch? [y] 
-Skipping patch.
-1 out of 1 hunk ignored
-
-
-medit /root/113patches/0043.patch \
-arch/arm/include/asm/assembler.h
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-1 out of 1 hunk ignored
-
-
-medit /root/113patches/0044.patch \
-arch/arm/include/asm/cacheflush.h
-Hunk #1 succeeded at 233 with fuzz 1 (offset 31 lines).
-Hunk #2 succeeded at 252 (offset 36 lines).
-Hunk #3 succeeded at 262 (offset 36 lines).
-Hunk #4 FAILED at 254.
-Hunk #5 succeeded at 342 (offset 36 lines).
-1 out of 5 hunks FAILED
-
-
-medit /root/113patches/0048.patch \
-arch/arm/include/asm/mutex.h
-Hunk #1 FAILED at 7.
-1 out of 1 hunk FAILED
-
-
-medit /root/113patches/0050.patch \
-arch/arm/include/asm/pgtable.h
-Hunk #2 succeeded at 221 with fuzz 2 (offset 17 lines).
-Hunk #3 FAILED at 227.
-Hunk #4 succeeded at 316 (offset 44 lines).
-1 out of 4 hunks FAILED
-
-
-medit /root/113patches/0053.patch \
-arch/arm/include/asm/uaccess.h
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-2 out of 2 hunks ignored
-
-
-medit /root/113patches/0061.patch \
-arch/arm/kernel/perf_event.c
-Hunk #1 FAILED at 109.
-Hunk #2 succeeded at 352 with fuzz 2 (offset 33 lines).
-Hunk #3 succeeded at 1152 (offset 325 lines).
-1 out of 3 hunks FAILED
-
-
-medit /root/113patches/0064.patch \
-arch/arm/kernel/sched_clock.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-1 out of 1 hunk ignored
-
-
-medit /root/113patches/0065.patch \
-arch/arm/kernel/signal.c
-Hunk #1 FAILED at 437.
-1 out of 1 hunk FAILED
-
-
-medit /root/113patches/0066.patch \
-arch/arm/kernel/smp.c
-Hunk #1 succeeded at 313 with fuzz 2 (offset 64 lines).
-Hunk #2 FAILED at 596.
-1 out of 2 hunks FAILED
-
-
-medit /root/113patches/0070.patch \
-arch/arm/kernel/traps.c
-Hunk #1 succeeded at 43 with fuzz 2 (offset 6 lines).
-Hunk #2 succeeded at 403 (offset 27 lines).
-Hunk #3 FAILED at 394.
-Hunk #4 FAILED at 494.
-2 out of 4 hunks FAILED
-
-
-medit /root/113patches/0071.patch \
-arch/arm/lib/getuser.S
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-2 out of 2 hunks ignored
-
-
-medit /root/113patches/0072.patch \
-arch/arm/lib/memset.S
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-3 out of 3 hunks ignored
-
-
-medit /root/113patches/0073.patch \
-arch/arm/lib/putuser.S
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-3 out of 3 hunks ignored
-
-
-medit /root/113patches/0153.patch \
-arch/arm/mm/dma-mapping.c
-Hunk #1 FAILED at 503.
-Hunk #2 FAILED at 538.
-2 out of 2 hunks FAILED
-
-
-medit /root/113patches/0157.patch \
-arch/arm/mm/mm.h
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-1 out of 1 hunk ignored
-
-
-medit /root/113patches/0158.patch \
-arch/arm/mm/mmu.c
-Hunk #1 succeeded at 579 (offset 82 lines).
-Hunk #2 succeeded at 968 with fuzz 2 (offset 185 lines).
-Hunk #3 FAILED at 1137.
-1 out of 3 hunks FAILED
-
-
-medit /root/113patches/0164.patch \
-arch/arm/mm/proc-v7.S
-Hunk #1 succeeded at 97 (offset 3 lines).
-Hunk #2 succeeded at 108 (offset 3 lines).
-Hunk #3 succeeded at 266 (offset 20 lines).
-Hunk #4 FAILED at 254.
-1 out of 4 hunks FAILED
-
-
-medit /root/113patches/0167.patch \
-arch/arm/mm/tlb-v7.S
-Hunk #1 FAILED at 39.
-Hunk #2 FAILED at 67.
-2 out of 2 hunks FAILED
-
-
-medit /root/113patches/0179.patch \
-arch/arm/vfp/entry.S
-Hunk #1 FAILED at 7.
-Hunk #2 succeeded at 34 (offset 1 line).
-Hunk #3 succeeded at 52 (offset 1 line).
-1 out of 3 hunks FAILED
-
-
-medit /root/113patches/0181.patch \
-arch/arm/vfp/vfpmodule.c
-Hunk #1 succeeded at 422 (offset 9 lines).
-Hunk #2 FAILED at 457.
-Hunk #3 succeeded at 732 (offset 37 lines).
-Hunk #4 FAILED at 716.
-2 out of 4 hunks FAILED
-
-
-medit /root/113patches/0229.patch \
-block/blk-sysfs.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-1 out of 1 hunk ignored
-
-
-medit /root/113patches/0236.patch \
-block/scsi_ioctl.c
-Hunk #3 FAILED at 720.
-1 out of 3 hunks FAILED
-
-
-medit /root/113patches/0241.patch \
-crypto/algapi.c
-Hunk #1 succeeded at 386 (offset 44 lines).
-Hunk #2 FAILED at 512.
-1 out of 2 hunks FAILED
-
-
-medit /root/113patches/0244.patch \
-crypto/ansi_cprng.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-1 out of 1 hunk ignored
-
-
 medit /root/113patches/0245.patch \
 crypto/api.c
 Hunk #1 succeeded at 42 (offset 2 lines).
@@ -298,14 +6,6 @@ Hunk #3 succeeded at 180 (offset 5 lines).
 Hunk #4 succeeded at 459 (offset 21 lines).
 Hunk #5 succeeded at 588 (offset 33 lines).
 1 out of 5 hunks FAILED
-
-
-medit /root/113patches/0313.patch \
-drivers/base/bus.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-3 out of 3 hunks ignored
 
 
 medit /root/113patches/0320.patch \
@@ -345,15 +45,6 @@ Hunk #1 FAILED at 371.
 Hunk #2 succeeded at 890 (offset 72 lines).
 1 out of 2 hunks FAILED
 
-
-medit /root/113patches/0379.patch \
-drivers/cpufreq/cpufreq_stats.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-1 out of 1 hunk ignored
-
-
 medit /root/113patches/0422.patch \
 drivers/gpio/gpio-msm-v2.c
 Hunk #1 FAILED at 249.
@@ -367,39 +58,6 @@ Hunk #12 FAILED at 1103.
 Hunk #13 succeeded at 1260 (offset 45 lines).
 1 out of 13 hunks FAILED
 
-
-medit /root/113patches/0560.patch \
-drivers/hid/hid-cherry.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-1 out of 1 hunk ignored
-
-
-medit /root/113patches/0562.patch \
-drivers/hid/hid-core.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-18 out of 18 hunks ignored
-
-
-medit /root/113patches/0566.patch \
-drivers/hid/hid-kye.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-1 out of 1 hunk ignored
-
-
-medit /root/113patches/0567.patch \
-drivers/hid/hid-lg.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-2 out of 2 hunks ignored
-
-
 medit /root/113patches/0572.patch \
 drivers/hid/hid-logitech-dj.c
 Hunk #3 FAILED at 226.
@@ -412,23 +70,6 @@ Hunk #9 succeeded at 437 (offset -7 lines).
 Hunk #10 succeeded at 674 (offset -7 lines).
 Hunk #11 succeeded at 708 with fuzz 2.
 1 out of 12 hunks FAILED
-
-
-medit /root/113patches/0574.patch \
-drivers/hid/hid-magicmouse.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-2 out of 2 hunks ignored
-
-
-medit /root/113patches/0576.patch \
-drivers/hid/hid-monterey.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-1 out of 1 hunk ignored
-
 
 medit /root/113patches/0577.patch \
 drivers/hid/hid-multitouch.c
@@ -446,47 +87,6 @@ Hunk #12 succeeded at 730 (offset 10 lines).
 Hunk #13 succeeded at 786 (offset 10 lines).
 Hunk #14 succeeded at 943 (offset 10 lines).
 1 out of 14 hunks FAILED
-
-
-medit /root/113patches/0578.patch \
-drivers/hid/hid-ntrig.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-1 out of 1 hunk ignored
-
-
-medit /root/113patches/0579.patch \
-drivers/hid/hid-petalynx.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-1 out of 1 hunk ignored
-
-
-medit /root/113patches/0581.patch \
-drivers/hid/hid-pl.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-1 out of 1 hunk ignored
-
-
-medit /root/113patches/0586.patch \
-drivers/hid/hid-sunplus.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-1 out of 1 hunk ignored
-
-
-medit /root/113patches/0589.patch \
-drivers/hid/hid-zpff.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-1 out of 1 hunk ignored
-
 
 medit /root/113patches/0715.patch \
 drivers/md/dm-crypt.c
@@ -508,15 +108,6 @@ Hunk #1 FAILED at 379.
 Hunk #2 FAILED at 418.
 2 out of 2 hunks FAILED
 
-
-medit /root/113patches/0755.patch \
-drivers/media/media-device.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-1 out of 1 hunk ignored
-
-
 medit /root/113patches/0792.patch \
 drivers/mmc/card/block.c
 Hunk #1 succeeded at 228 (offset 46 lines).
@@ -534,52 +125,10 @@ Hunk #12 FAILED at 1764.
 Hunk #13 succeeded at 3346 with fuzz 2 (offset 1546 lines).
 4 out of 13 hunks FAILED
 
-
-medit /root/113patches/0796.patch \
-drivers/mmc/core/sdio.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-1 out of 1 hunk ignored
-
-
-medit /root/113patches/0797.patch \
-drivers/mmc/core/sdio_irq.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-2 out of 2 hunks ignored
-
-
-medit /root/113patches/0806.patch \
-drivers/mmc/host/sdhci.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-3 out of 3 hunks ignored
-
-
-medit /root/113patches/0816.patch \
-drivers/mtd/mtdchar.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-2 out of 2 hunks ignored
-
-
 medit /root/113patches/0947.patch \
 drivers/net/ethernet/smsc/smc91x.h
 Hunk #3 FAILED at 209.
 1 out of 3 hunks FAILED
-
-
-medit /root/113patches/0962.patch \
-drivers/net/hamradio/yam.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-1 out of 1 hunk ignored
-
 
 medit /root/113patches/0980.patch \
 drivers/net/usb/asix.c
@@ -601,39 +150,6 @@ Hunk #3 FAILED at 1153.
 Hunk #4 succeeded at 1319 with fuzz 2 (offset 25 lines).
 1 out of 4 hunks FAILED
 
-
-medit /root/113patches/0999.patch \
-drivers/net/wan/wanxl.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-1 out of 1 hunk ignored
-
-
-medit /root/113patches/1150.patch \
-drivers/of/fdt.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-1 out of 1 hunk ignored
-
-
-medit /root/113patches/1152.patch \
-drivers/oprofile/oprofile_perf.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-1 out of 1 hunk ignored
-
-
-medit /root/113patches/1338.patch \
-drivers/staging/android/binder.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-4 out of 4 hunks ignored
-
-
 medit /root/113patches/1434.patch \
 drivers/staging/zram/zram_drv.c
 Hunk #1 FAILED at 235.
@@ -645,31 +161,6 @@ Hunk #6 FAILED at 723.
 Hunk #7 FAILED at 756.
 Hunk #8 FAILED at 841.
 8 out of 8 hunks FAILED
-
-
-medit /root/113patches/1435.patch \
-can't find file to patch at input line 5
-Perhaps you used the wrong -p or --strip option?
-The text leading up to this was:
---------------------------
-|diff --git a/drivers/staging/zram/zram_sysfs.c b/drivers/staging/zram/zram_sysfs.c
-|index a7f37717..aafcf033 100644
-|--- a/drivers/staging/zram/zram_sysfs.c
-|+++ b/drivers/staging/zram/zram_sysfs.c
---------------------------
-File to patch: 
-Skip this patch? [y] 
-Skipping patch.
-3 out of 3 hunks ignored
-
-
-medit /root/113patches/1436.patch \
-drivers/staging/zsmalloc/zsmalloc-main.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-4 out of 4 hunks ignored
-
 
 medit /root/113patches/1474.patch \
 drivers/tty/n_tty.c
@@ -747,15 +238,6 @@ Hunk #3 succeeded at 1819 (offset 4 lines).
 Hunk #4 succeeded at 1839 (offset 4 lines).
 1 out of 4 hunks FAILED
 
-
-medit /root/113patches/1522.patch \
-drivers/usb/dwc3/core.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-2 out of 2 hunks ignored
-
-
 medit /root/113patches/1525.patch \
 drivers/usb/dwc3/ep0.c
 Hunk #1 FAILED at 209.
@@ -763,15 +245,6 @@ Hunk #2 FAILED at 380.
 Hunk #3 succeeded at 526 (offset 86 lines).
 Hunk #4 FAILED at 568.
 3 out of 4 hunks FAILED
-
-
-medit /root/113patches/1526.patch \
-drivers/usb/dwc3/gadget.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-19 out of 19 hunks ignored
-
 
 medit /root/113patches/1535.patch \
 drivers/usb/gadget/f_mass_storage.c
@@ -787,15 +260,6 @@ Hunk #2 FAILED at 684.
 Hunk #3 succeeded at 1086 (offset 288 lines).
 Hunk #4 succeeded at 1099 (offset 288 lines).
 1 out of 4 hunks FAILED
-
-
-medit /root/113patches/1552.patch \
-drivers/usb/host/ehci-q.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-2 out of 2 hunks ignored
-
 
 medit /root/113patches/1565.patch \
 drivers/usb/host/xhci-hub.c
@@ -980,15 +444,6 @@ Hunk #2 FAILED at 498.
 Hunk #3 succeeded at 511 with fuzz 2 (offset -6 lines).
 1 out of 3 hunks FAILED
 
-
-medit /root/113patches/1697.patch \
-firmware/ihex2fw.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-1 out of 1 hunk ignored
-
-
 medit /root/113patches/1728.patch \
 fs/buffer.c
 Hunk #1 succeeded at 620 (offset 7 lines).
@@ -1005,23 +460,6 @@ Hunk #11 succeeded at 2078 (offset 71 lines).
 Hunk #12 succeeded at 2300 (offset 71 lines).
 6 out of 12 hunks FAILED
 
-
-medit /root/113patches/1768.patch \
-fs/ecryptfs/crypto.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-1 out of 1 hunk ignored
-
-
-medit /root/113patches/1770.patch \
-fs/ecryptfs/ecryptfs_kernel.h
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-1 out of 1 hunk ignored
-
-
 medit /root/113patches/1771.patch \
 fs/ecryptfs/file.c
 Hunk #1 FAILED at 138.
@@ -1034,77 +472,11 @@ Hunk #7 succeeded at 514 (offset 177 lines).
 Hunk #8 FAILED at 383.
 5 out of 8 hunks FAILED
 
-
-medit /root/113patches/1772.patch \
-fs/ecryptfs/inode.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-10 out of 10 hunks ignored
-
-
 medit /root/113patches/1773.patch \
 fs/ecryptfs/keystore.c
 Hunk #1 FAILED at 1149.
 Hunk #2 FAILED at 1204.
 2 out of 2 hunks FAILED
-
-
-medit /root/113patches/1774.patch \
-fs/ecryptfs/kthread.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-1 out of 1 hunk ignored
-
-
-medit /root/113patches/1775.patch \
-fs/ecryptfs/main.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-7 out of 7 hunks ignored
-
-
-medit /root/113patches/1776.patch \
-fs/ecryptfs/miscdev.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-6 out of 6 hunks ignored
-
-
-medit /root/113patches/1777.patch \
-fs/ecryptfs/mmap.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-3 out of 3 hunks ignored
-
-
-medit /root/113patches/1794.patch \
-fs/ext4/balloc.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-8 out of 8 hunks ignored
-
-
-medit /root/113patches/1797.patch \
-fs/ext4/ext4_jbd2.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-1 out of 1 hunk ignored
-
-
-medit /root/113patches/1798.patch \
-fs/ext4/ext4_jbd2.h
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-1 out of 1 hunk ignored
-
 
 medit /root/113patches/1802.patch \
 fs/ext4/ialloc.c
@@ -1191,28 +563,10 @@ Hunk #20 FAILED at 2443.
 Hunk #21 FAILED at 2521.
 8 out of 21 hunks FAILED
 
-
-medit /root/113patches/1812.patch \
-fs/ext4/super.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-25 out of 25 hunks ignored
-
-
 medit /root/113patches/1813.patch \
 fs/ext4/xattr.c
 Hunk #10 FAILED at 1285.
 1 out of 10 hunks FAILED
-
-
-medit /root/113patches/1860.patch \
-fs/jbd2/commit.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-4 out of 4 hunks ignored
-
 
 medit /root/113patches/1861.patch \
 fs/jbd2/journal.c
@@ -1233,15 +587,6 @@ Hunk #14 succeeded at 1883 (offset 50 lines).
 Hunk #15 succeeded at 1971 (offset 50 lines).
 1 out of 15 hunks FAILED
 
-
-medit /root/113patches/1862.patch \
-fs/jbd2/transaction.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-8 out of 8 hunks ignored
-
-
 medit /root/113patches/1882.patch \
 fs/namespace.c
 Hunk #1 succeeded at 1067 (offset 1 line).
@@ -1256,31 +601,6 @@ fs/ubifs/dir.c
 Hunk #7 FAILED at 1001.
 1 out of 7 hunks FAILED
 
-
-medit /root/113patches/2048.patch \
-The next patch would create the file include/linux/compiler-gcc5.h,
-which already exists!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-1 out of 1 hunk ignored
-
-
-medit /root/113patches/2067.patch \
-include/linux/hid.h
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-3 out of 3 hunks ignored
-
-
-medit /root/113patches/2083.patch \
-include/linux/jbd2.h
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-5 out of 5 hunks ignored
-
-
 medit /root/113patches/2104.patch \
 include/linux/mm.h
 Hunk #1 succeeded at 881 (offset 40 lines).
@@ -1292,23 +612,6 @@ Hunk #6 FAILED at 1510.
 Hunk #7 FAILED at 1523.
 Hunk #8 succeeded at 1668 (offset 70 lines).
 2 out of 8 hunks FAILED
-
-
-medit /root/113patches/2106.patch \
-include/linux/mmc/card.h
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-1 out of 1 hunk ignored
-
-
-medit /root/113patches/2107.patch \
-include/linux/mmc/host.h
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-2 out of 2 hunks ignored
-
 
 medit /root/113patches/2143.patch \
 include/linux/sched.h
@@ -1351,15 +654,6 @@ Hunk #1 FAILED at 44.
 Hunk #2 succeeded at 274 (offset 203 lines).
 1 out of 2 hunks FAILED
 
-
-medit /root/113patches/2175.patch \
-include/linux/wait.h
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-5 out of 5 hunks ignored
-
-
 medit /root/113patches/2181.patch \
 include/net/bluetooth/hci_core.h
 Hunk #1 FAILED at 976.
@@ -1384,15 +678,6 @@ include/net/tcp.h
 Hunk #1 FAILED at 252.
 Hunk #2 succeeded at 962 (offset 15 lines).
 1 out of 2 hunks FAILED
-
-
-medit /root/113patches/2212.patch \
-include/net/udp.h
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-1 out of 1 hunk ignored
-
 
 medit /root/113patches/2218.patch \
 include/scsi/scsi_device.h
@@ -1545,15 +830,6 @@ Hunk #39 succeeded at 2557 (offset 28 lines).
 Hunk #40 succeeded at 2636 (offset 28 lines).
 1 out of 40 hunks FAILED
 
-
-medit /root/113patches/2268.patch \
-kernel/hrtimer.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-19 out of 19 hunks ignored
-
-
 medit /root/113patches/2285.patch \
 kernel/power/suspend.c
 Hunk #1 FAILED at 24.
@@ -1571,15 +847,6 @@ Hunk #4 FAILED at 1172.
 Hunk #5 succeeded at 1857 (offset 358 lines).
 Hunk #6 succeeded at 2013 (offset 358 lines).
 1 out of 6 hunks FAILED
-
-
-medit /root/113patches/2288.patch \
-kernel/ptrace.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-10 out of 10 hunks ignored
-
 
 medit /root/113patches/2290.patch \
 kernel/rcutree.c
@@ -1647,23 +914,6 @@ Hunk #14 succeeded at 5514 (offset 41 lines).
 Hunk #15 succeeded at 5579 (offset 41 lines).
 2 out of 15 hunks FAILED
 
-
-medit /root/113patches/2304.patch \
-kernel/sched/rt.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-11 out of 11 hunks ignored
-
-
-medit /root/113patches/2305.patch \
-kernel/sched/sched.h
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-6 out of 6 hunks ignored
-
-
 medit /root/113patches/2307.patch \
 kernel/signal.c
 Hunk #1 FAILED at 482.
@@ -1703,22 +953,6 @@ Hunk #25 succeeded at 1420 (offset 44 lines).
 2 out of 25 hunks FAILED
 
 
-medit /root/113patches/2323.patch \
-can't find file to patch at input line 5
-Perhaps you used the wrong -p or --strip option?
-The text leading up to this was:
---------------------------
-|diff --git a/kernel/timeconst.pl b/kernel/timeconst.pl
-|index eb51d76e..3f42652a 100644
-|--- a/kernel/timeconst.pl
-|+++ b/kernel/timeconst.pl
---------------------------
-File to patch: 
-Skip this patch? [y] 
-Skipping patch.
-1 out of 1 hunk ignored
-
-
 medit /root/113patches/2324.patch \
 kernel/timer.c
 Hunk #1 succeeded at 66 (offset 3 lines).
@@ -1727,15 +961,6 @@ Hunk #3 succeeded at 362 (offset 3 lines).
 Hunk #4 succeeded at 819 (offset 4 lines).
 Hunk #5 FAILED at 1682.
 1 out of 5 hunks FAILED
-
-
-medit /root/113patches/2330.patch \
-kernel/trace/trace.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-24 out of 24 hunks ignored
-
 
 medit /root/113patches/2343.patch \
 kernel/workqueue.c
@@ -1760,59 +985,16 @@ Hunk #18 succeeded at 3760 (offset 67 lines).
 Hunk #19 succeeded at 3918 (offset 69 lines).
 4 out of 19 hunks FAILED
 
-
-medit /root/113patches/2354.patch \
-lib/genalloc.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-1 out of 1 hunk ignored
-
-
 medit /root/113patches/2355.patch \
 lib/idr.c
 Hunk #10 FAILED at 633.
 Hunk #11 succeeded at 795 (offset 7 lines).
 1 out of 11 hunks FAILED
 
-
-medit /root/113patches/2356.patch \
-lib/klist.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-1 out of 1 hunk ignored
-
-
-medit /root/113patches/2373.patch \
-mm/compaction.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-4 out of 4 hunks ignored
-
-
-medit /root/113patches/2374.patch \
-mm/dmapool.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-7 out of 7 hunks ignored
-
-
 medit /root/113patches/2380.patch \
 mm/internal.h
 Hunk #1 FAILED at 309.
 1 out of 1 hunk FAILED
-
-
-medit /root/113patches/2383.patch \
-mm/madvise.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-3 out of 3 hunks ignored
-
 
 medit /root/113patches/2387.patch \
 mm/memory.c
@@ -1846,15 +1028,6 @@ Hunk #2 succeeded at 198 (offset 13 lines).
 Hunk #3 FAILED at 515.
 Hunk #4 succeeded at 782 (offset 67 lines).
 1 out of 4 hunks FAILED
-
-
-medit /root/113patches/2391.patch \
-mm/mlock.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-2 out of 2 hunks ignored
-
 
 medit /root/113patches/2397.patch \
 mm/page-writeback.c
@@ -2028,14 +1201,6 @@ Hunk #3 FAILED at 211.
 1 out of 5 hunks FAILED
 
 
-medit /root/113patches/2488.patch \
-net/core/flow_dissector.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-2 out of 2 hunks ignored
-
-
 medit /root/113patches/2494.patch \
 net/core/rtnetlink.c
 Hunk #1 succeeded at 673 (offset 2 lines).
@@ -2059,59 +1224,10 @@ Hunk #18 succeeded at 2057 (offset 2 lines).
 2 out of 18 hunks FAILED
 
 
-medit /root/113patches/2497.patch \
-net/core/sock.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-8 out of 8 hunks ignored
-
-
-medit /root/113patches/2498.patch \
-net/core/sock_diag.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-1 out of 1 hunk ignored
-
-
-medit /root/113patches/2513.patch \
-net/ipv4/fib_semantics.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-3 out of 3 hunks ignored
-
-
-medit /root/113patches/2533.patch \
-net/ipv4/ping.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-7 out of 7 hunks ignored
-
-
 medit /root/113patches/2537.patch \
 net/ipv4/syncookies.c
 Hunk #1 FAILED at 347.
 1 out of 1 hunk FAILED
-
-
-medit /root/113patches/2539.patch \
-net/ipv4/tcp.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-6 out of 6 hunks ignored
-
-
-medit /root/113patches/2548.patch \
-net/ipv4/udp.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-8 out of 8 hunks ignored
-
 
 medit /root/113patches/2560.patch \
 net/ipv6/ip6_output.c
@@ -2189,15 +1305,6 @@ Hunk #5 FAILED at 1352.
 Hunk #6 FAILED at 1478.
 2 out of 7 hunks FAILED
 
-
-medit /root/113patches/2620.patch \
-net/netfilter/nf_conntrack_proto_dccp.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-3 out of 3 hunks ignored
-
-
 medit /root/113patches/2627.patch \
 net/netfilter/xt_socket.c
 Hunk #1 succeeded at 217 (offset 12 lines).
@@ -2205,31 +1312,6 @@ Hunk #2 succeeded at 238 (offset 12 lines).
 Hunk #3 succeeded at 273 with fuzz 2 (offset 12 lines).
 Hunk #4 FAILED at 288.
 1 out of 4 hunks FAILED
-
-
-medit /root/113patches/2630.patch \
-net/netlink/af_netlink.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-16 out of 16 hunks ignored
-
-
-medit /root/113patches/2641.patch \
-net/rds/ib.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-1 out of 1 hunk ignored
-
-
-medit /root/113patches/2661.patch \
-net/sctp/associola.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-5 out of 5 hunks ignored
-
 
 medit /root/113patches/2693.patch \
 net/unix/af_unix.c
@@ -2317,31 +1399,6 @@ security/selinux/include/objsec.h
 Hunk #1 FAILED at 38.
 1 out of 1 hunk FAILED
 
-
-medit /root/113patches/2740.patch \
-security/selinux/selinuxfs.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-4 out of 4 hunks ignored
-
-
-medit /root/113patches/2741.patch \
-security/selinux/ss/policydb.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-2 out of 2 hunks ignored
-
-
-medit /root/113patches/2742.patch \
-security/selinux/ss/services.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-1 out of 1 hunk ignored
-
-
 medit /root/113patches/2750.patch \
 sound/core/compress_offload.c
 Hunk #4 FAILED at 582.
@@ -2391,15 +1448,6 @@ medit /root/113patches/2856.patch \
 sound/soc/soc-core.c
 Hunk #1 FAILED at 2799.
 1 out of 1 hunk FAILED
-
-
-medit /root/113patches/2902.patch \
-usr/gen_init_cpio.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-2 out of 2 hunks ignored
-
 
 medit /root/113patches/2905.patch \
 virt/kvm/iommu.c
