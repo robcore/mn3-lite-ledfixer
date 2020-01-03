@@ -45,14 +45,6 @@ dothesplits() {
 			fi
 			SPLITFILENUM=$((CURRENTPVAL+1))
 			echo -n "$SPLITFILENUM" > "$CURRENTPVALFILE"
-		elif echo "$PLINE" | grep -q 'THISISTHEENDFAKEFAKEFAKEFAKE'
-		then
-			PREVIOUSFILEFORM=$(printf "%04d\n" $CURRENTPVAL)
-			PREVIOUSFILE="$PATCHFOLDER/$PREVIOUSFILEFORM.patch"
-			truncate -s -1 "$PREVIOUSFILE"
-			echo -ne "                   \r"; \
-			echo "Finished!"; \
-			break
 		else
 			SPLITFILENUM="$CURRENTPVAL"
 		fi
@@ -66,7 +58,11 @@ dothesplits() {
 }
 
 dothesplits
-
 FINALPVALFILE="$PATCHFOLDER/currentpval"
-FINALPVAL="$(cat $CURRENTPVALFILE)"
+FINALPVAL="$(cat $FINALPVALFILE)"
+FINALFILEFORM=$(printf "%04d\n" $FINALPVAL)
+FINALFILE="$PATCHFOLDER/$FINALFILEFORM.patch"
+truncate -s -1 "$FINALFILE"
+echo -ne "                   \r"; \
+echo "Finished!"; \
 echo "$BIGPATCHNAME split into $FINALPVAL patch files!"
