@@ -35,33 +35,35 @@ dothesplits() {
 		local CURRENTPVAL
 		CURRENTPVALFILE="$PATCHFOLDER/currentpval"
 		CURRENTPVAL="$(cat $CURRENTPVALFILE)"
-		echo "$PLINE" | grep -q 'diff --git'
-		if [ "$?" -eq 0 ]
+		if echo "$PLINE" | grep -q 'diff --git'
 		then
+			PREVIOUSFILEFORM=$(printf "%04d\n" $CURRENTPVAL)
+			PREVIOUSFILE="$PATCHFOLDER/$SPLITFILEFORM.patch"
+			truncate -s -1 "$PREVIOUSFILE"
 			SPLITFILENUM=$((CURRENTPVAL+1))
 			echo -n "$SPLITFILENUM" > "$CURRENTPVALFILE"
-			SPLITFILEFORM=$(printf "%04d\n" $SPLITFILENUM)
-			SPLITFILE="$PATCHFOLDER/$SPLITFILEFORM.patch"
-			echo -ne "                   \r"; \
-			echo -ne "Creating $SPLITFILE\r"; \
-		else
-			SPLITFILEFORM=$(printf "%04d\n" $CURRENTPVAL)
-			SPLITFILE="$PATCHFOLDER/$SPLITFILEFORM.patch"
-			echo -ne "                   \r"; \
-			echo -ne "Creating $SPLITFILE\r"; \
-		fi
-
-		echo "$PLINE" | grep -q 'THISISTHEENDFAKEFAKEFAKEFAKE'
-		if [ "$?" -eq 0 ]
+		elif echo "$PLINE" | grep -q 'THISISTHEENDFAKEFAKEFAKEFAKE'
 		then
+			PREVIOUSFILEFORM=$(printf "%04d\n" $CURRENTPVAL)
+			PREVIOUSFILE="$PATCHFOLDER/$SPLITFILEFORM.patch"
+			truncate -s -1 "$PREVIOUSFILE"
 			echo -ne "                   \r"; \
 			echo "Finished!"; \
 			break
 		else
-			echo "$PLINE" >> "$SPLITFILE"
+			SPLITFILENUM="$CURRENTPVAL"
 		fi
+		SPLITFILEFORM=$(printf "%04d\n" $SPLITFILENUM)
+		SPLITFILE="$PATCHFOLDER/$SPLITFILEFORM.patch"
+		echo -ne "                   \r"; \
+		echo -ne "Creating $SPLITFILE\r"; \
+		echo "$PLINE" >> "$SPLITFILE"
 	done < "$BIGPATCHNAME"
 
 }
 
 dothesplits
+
+FINALPVALFILE="$PATCHFOLDER/currentpval"
+FINALPVAL="$(cat $CURRENTPVALFILE)"
+echo "$BIGPATCHNAME split into $FINALPVAL patch files!"
