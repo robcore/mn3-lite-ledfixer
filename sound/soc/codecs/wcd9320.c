@@ -7392,10 +7392,10 @@ static ssize_t headphone_gain_store(struct kobject *kobj,
 	else
 		rightoutput = rightinput;
 
-	lock_sound_control(1);
+	lock_sound_control(&sound_control_codec_ptr->core_res, 1);
 	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX1_VOL_CTL_B2_CTL, leftoutput);
 	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX2_VOL_CTL_B2_CTL, rightoutput);
-	lock_sound_control(0);
+	lock_sound_control(&sound_control_codec_ptr->core_res, 0);
 	return count;
 }
 
@@ -7432,9 +7432,9 @@ static ssize_t speaker_gain_store(struct kobject *kobj,
 	else
 		spkoutput = spkinput;
 
-	lock_sound_control(1);
+	lock_sound_control(&sound_control_codec_ptr->core_res, 1);
 	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX7_VOL_CTL_B2_CTL, spkoutput);
-	lock_sound_control(0);
+	lock_sound_control(&sound_control_codec_ptr->core_res, 0);
 
 	return count;
 }
