@@ -28,6 +28,10 @@ dothesplits() {
 
 	while IFS= read -r PLINE
 	do
+		if [ "$PLINE" = "-- " ]
+		then
+			break;
+		fi
 		local SPLITFILENUM
 		local SPLITFILEFORM
 		local SPLITFILE
@@ -54,6 +58,14 @@ dothesplits() {
 dothesplits
 FINALPVALFILE="$PATCHFOLDER/currentpval"
 FINALPVAL="$(cat $FINALPVALFILE)"
+SHORTPATCHNAME="$(basename $BIGPATCHNAME)"
 echo -ne "                   \r"; \
-echo "Finished!"; \
-echo "$BIGPATCHNAME split into $FINALPVAL patch files!"
+echo "                         "
+echo "Succesful Split!"
+echo "$SHORTPATCHNAME split into $FINALPVAL patch files!"
+echo "Doing some cleanup..."
+echo "Removing $SHORTPATCHNAME"
+rm $BIGPATCHNAME &>/dev/null
+echo "Removing $FINALPVALFILE"
+rm "$FINALPVALFILE"
+echo "Finished!"
