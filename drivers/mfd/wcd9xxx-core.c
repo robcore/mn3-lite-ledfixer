@@ -120,9 +120,9 @@ EXPORT_SYMBOL(wcd9xxx_reg_read);
 
 static unsigned int sound_control_override = 0;
 void lock_sound_control(unsigned int lockval) {
-	if unlikely(lockval <= 0)
+	if (unlikely(lockval <= 0))
 		lockval = 0;
-	if unlikely(lockval >= 1)
+	if (unlikely(lockval >= 1))
 		lockval = 1;
 
 	mutex_lock(&wcd9xxx->io_lock);

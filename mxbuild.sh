@@ -219,7 +219,7 @@ handle_existing() {
 
 }
 
-handle_yes_existing() {
+rebuild() {
 
 	echo "Using last version. Mark$OLDVER will be removed."
 	MX_KERNEL_VERSION="machinexlite-Mark$OLDVER-hltetmo"
@@ -417,7 +417,7 @@ Script written by jcadduono, frequentc & robcore
 usage: ./mx-build.sh [OPTION]
 Common options:
  -a|--all            Do a complete build (starting at the beginning)
- -y|--allyesrebuild  Same as -all but defaults to rebuilding previous version
+ -r|--rebuildme      Same as -all but defaults to rebuilding previous version
  -b|--bsd            Build single driver (path/to/folder/ | path/to/file.o)
  -c|--clean          Remove everything this build script has done
  -m|--menu           Setup an environment for and enter menuconfig
@@ -485,8 +485,8 @@ while [[ $# -gt 0 ]]
 			break
 	    	;;
 
-	     -y|--allyesrebuild)
-			handle_yes_existing
+	     -r|--rebuildme)
+			rebuild
 			BUILD_ALL
 			break
 	    	;;
