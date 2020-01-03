@@ -43,16 +43,17 @@ dothesplits() {
 		if [ "$SPLITLINE" = "$CHECKLINE" ]
 		then
 			SPLITFILENUM=$((CURRENTPVAL+1))
-			echo -n "$SPLITFILENUM" > "$CURRENTPVALFILE"
 			SPLITFILEFORM="$(printf "%04d\n" $SPLITFILENUM)"
-			SPLITFILE="$PATCHFOLDER/$SPLITFILEFORM.patch"
-			echo -ne "                                            \r"; \
-			echo -ne "Creating patch $SPLITFILE out of $PATCHCOUNT\r"; \
+			echo -n "$SPLITFILENUM" > "$CURRENTPVALFILE"
+			echo -ne "                                                \r"; \
+			echo -ne "Creating patch $SPLITFILEFORM out of $PATCHCOUNT\r"; \
 		else
 			SPLITFILENUM="$CURRENTPVAL"
 			SPLITFILEFORM=$(printf "%04d\n" "$SPLITFILENUM")
-			SPLITFILE="$PATCHFOLDER/$SPLITFILEFORM.patch"
 		fi
+
+		SPLITFILE="$PATCHFOLDER/$SPLITFILEFORM.patch"
+
 		if [ "$SPLITFILE" = "$FINALPATCHFILE" ] && [ "$PLINE" = "-- " ]
 		then
 			break;
@@ -64,7 +65,7 @@ dothesplits() {
 }
 
 dothesplits
-echo -ne "                                            \r"; \
+echo -ne "                                                \r"; \
 echo
 echo
 FINALPVALPATH="$PATCHFOLDER/currentpval"
