@@ -33,7 +33,7 @@ do
 	    patch -s -p1 < "$PFILE" > /dev/null 2>&1
 	else
 		echo "$PFILE" >> "$STATICLOG"
-		patch --dry-run -p1 < "$PFILE" >> "$STATICLOG"
+		patch -p1 < "$PFILE" >> "$STATICLOG"
 		echo " " >> "$STATICLOG"
 	fi
 done
