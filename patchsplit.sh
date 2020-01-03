@@ -12,7 +12,7 @@ then
 	exit 1
 fi
 
-if [ -z "$1" ]
+if [ -z "$1" ] || [ ! -f "$1" ]
 then
 	printusage
 	exit 1
