@@ -21,7 +21,7 @@ fi
 BIGPATCHNAME="$1"
 PATCHFOLDER="$(dirname $BIGPATCHNAME)"
 
-rm "$PATCHFOLDER/currentpval"
+rm "$PATCHFOLDER/currentpval" &> /dev/null
 echo -n '0' > "$PATCHFOLDER/currentpval"
 CURRENTPVALFILE="$PATCHFOLDER/currentpval"
 CURRENTPVAL="$(cat $CURRENTPVALFILE)"
@@ -32,18 +32,20 @@ dothesplits() {
 	local SPLITFILEFORM
 	local SPLITFILE
 
-	while IFS=$'\n' read -r PLINE
+	while read -r PLINE
 	do
-		if echo "$PLINE" | grep -q 'THISISTHEENDFAKEFAKEFAKEFAKE'
+		grep -q 'THISISTHEENDFAKEFAKEFAKEFAKE' "$PLINE"
+		if [ "$?" -eq 0 ]
 		then
 			echo -ne "                   \r"; \
 			echo "Finished!"; \
 			break
 		fi
 
-		if echo "$PLINE" | grep -q 'diff --git'
+		grep -q 'diff --git' "$PLINE"
+		if [ "$?" -eq 0 ]
 		then
-			SPLITFILENUM="$(echo $(expr $(( $CURRENTPVAL + 1 ))))"
+			SPLITFILENUM=$((CURRENTPVAL+1))
 			echo -n "$SPLITFILENUM" > CURRENTPVALFILE
 			SPLITFILEFORM=$(printf "%04d\n" "$CURRENTPVAL")
 			SPLITFILE="$PATCHFOLDER/$SPLITFILEFORM.patch"
