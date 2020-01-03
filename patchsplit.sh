@@ -37,10 +37,10 @@ dothesplits() {
 		CURRENTPVAL="$(cat $CURRENTPVALFILE)"
 		if echo "$PLINE" | grep -q 'diff --git'
 		then
-			PREVIOUSFILEFORM=$(printf "%04d\n" $CURRENTPVAL)
-			PREVIOUSFILE="$PATCHFOLDER/$PREVIOUSFILEFORM.patch"
-			if [ -f "PREVIOUSFILE" ]
+			if [ "$CURRENTPVAL" -gt 0 ]
 			then
+				PREVIOUSFILEFORM=$(printf "%04d\n" $CURRENTPVAL)
+				PREVIOUSFILE="$PATCHFOLDER/$PREVIOUSFILEFORM.patch"
 				truncate -s -1 "$PREVIOUSFILE"
 			fi
 			SPLITFILENUM=$((CURRENTPVAL+1))
