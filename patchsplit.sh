@@ -34,7 +34,7 @@ dothesplits() {
 
 	while read -r PLINE
 	do
-		grep -q 'THISISTHEENDFAKEFAKEFAKEFAKE' "$PLINE"
+		echo "$PLINE" | grep -q 'THISISTHEENDFAKEFAKEFAKEFAKE'
 		if [ "$?" -eq 0 ]
 		then
 			echo -ne "                   \r"; \
@@ -42,7 +42,7 @@ dothesplits() {
 			break
 		fi
 
-		grep -q 'diff --git' "$PLINE"
+		echo "$PLINE" | grep -q 'diff --git'
 		if [ "$?" -eq 0 ]
 		then
 			SPLITFILENUM=$((CURRENTPVAL+1))
