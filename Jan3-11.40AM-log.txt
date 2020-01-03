@@ -1,25 +1,3 @@
-medit /root/113patches/0792.patch \
-drivers/mmc/card/block.c
-Hunk #1 succeeded at 228 (offset 46 lines).
-Hunk #2 succeeded at 1320 (offset 617 lines).
-Hunk #3 succeeded at 1358 (offset 617 lines).
-Hunk #4 succeeded at 1387 (offset 617 lines).
-Hunk #5 succeeded at 1663 (offset 637 lines).
-Hunk #6 succeeded at 1677 (offset 637 lines).
-Hunk #7 FAILED at 1070.
-Hunk #8 succeeded at 1728 with fuzz 1 (offset 651 lines).
-Hunk #9 succeeded at 1745 (offset 651 lines).
-Hunk #10 FAILED at 1365.
-Hunk #11 FAILED at 1464.
-Hunk #12 FAILED at 1764.
-Hunk #13 succeeded at 3346 with fuzz 2 (offset 1546 lines).
-4 out of 13 hunks FAILED
-
-medit /root/113patches/0947.patch \
-drivers/net/ethernet/smsc/smc91x.h
-Hunk #3 FAILED at 209.
-1 out of 3 hunks FAILED
-
 medit /root/113patches/0980.patch \
 drivers/net/usb/asix.c
 Hunk #1 FAILED at 35.
@@ -39,18 +17,6 @@ Hunk #2 succeeded at 462 (offset 13 lines).
 Hunk #3 FAILED at 1153.
 Hunk #4 succeeded at 1319 with fuzz 2 (offset 25 lines).
 1 out of 4 hunks FAILED
-
-medit /root/113patches/1434.patch \
-drivers/staging/zram/zram_drv.c
-Hunk #1 FAILED at 235.
-Hunk #2 FAILED at 330.
-Hunk #3 FAILED at 535.
-Hunk #4 FAILED at 703.
-Hunk #5 FAILED at 713.
-Hunk #6 FAILED at 723.
-Hunk #7 FAILED at 756.
-Hunk #8 FAILED at 841.
-8 out of 8 hunks FAILED
 
 medit /root/113patches/1474.patch \
 drivers/tty/n_tty.c
