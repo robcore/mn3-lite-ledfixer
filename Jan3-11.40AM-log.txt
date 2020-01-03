@@ -1,26 +1,3 @@
-medit /root/113patches/1517.patch \
-drivers/usb/core/message.c
-Hunk #1 FAILED at 1770.
-Hunk #2 succeeded at 1807 (offset 4 lines).
-Hunk #3 succeeded at 1819 (offset 4 lines).
-Hunk #4 succeeded at 1839 (offset 4 lines).
-1 out of 4 hunks FAILED
-
-medit /root/113patches/1525.patch \
-drivers/usb/dwc3/ep0.c
-Hunk #1 FAILED at 209.
-Hunk #2 FAILED at 380.
-Hunk #3 succeeded at 526 (offset 86 lines).
-Hunk #4 FAILED at 568.
-3 out of 4 hunks FAILED
-
-medit /root/113patches/1535.patch \
-drivers/usb/gadget/f_mass_storage.c
-Hunk #1 succeeded at 604 (offset 93 lines).
-Hunk #2 FAILED at 731.
-1 out of 2 hunks FAILED
-
-
 medit /root/113patches/1544.patch \
 drivers/usb/gadget/u_ether.c
 Hunk #1 succeeded at 922 (offset 253 lines).
