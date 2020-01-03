@@ -1,14 +1,3 @@
-medit /root/113patches/0980.patch \
-drivers/net/usb/asix.c
-Hunk #1 FAILED at 35.
-Hunk #2 FAILED at 182.
-Hunk #3 FAILED at 303.
-Hunk #4 FAILED at 1109.
-Hunk #5 succeeded at 1470 with fuzz 1 (offset 26 lines).
-Hunk #6 FAILED at 1495.
-Hunk #7 succeeded at 3833 with fuzz 2 (offset 2226 lines).
-5 out of 7 hunks FAILED
-
 
 medit /root/113patches/0993.patch \
 drivers/net/usb/usbnet.c
