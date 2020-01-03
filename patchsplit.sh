@@ -19,10 +19,10 @@ then
 fi
 
 BIGPATCHNAME="$1"
-PATCHFOLDER="$(dirname $BIGPATCHNAME)"
+PATCHFOLDER="$(dirname "$BIGPATCHNAME")"
 PATCHCOUNT=$(grep -c "diff --git " "$BIGPATCHNAME.patch")
-FINALPATCHFORM=$(printf "%04d\n" $PATCHCOUNT)
-FINALPATCHFILE="$PATCHFOLDER/$FINALFILEFORM.patch"
+FINALPATCHFORM=$(printf "%04d\n" "$PATCHCOUNT")
+FINALPATCHFILE="$PATCHFOLDER/$FINALPATCHFORM.patch"
 rm "$PATCHFOLDER/currentpval" &> /dev/null
 echo -n '0' > "$PATCHFOLDER/currentpval"
 echo "Splitting into $PATCHCOUNT patches"
@@ -38,19 +38,19 @@ dothesplits() {
 		local CURRENTPVALFILE
 		local CURRENTPVAL
 		CURRENTPVALFILE="$PATCHFOLDER/currentpval"
-		CURRENTPVAL="$(cat $CURRENTPVALFILE)"
+		CURRENTPVAL="$(cat "$CURRENTPVALFILE")"
 		SPLITLINE="$(echo "$PLINE" | cut --bytes=1-11)"
 		if [ "$SPLITLINE" = "$CHECKLINE" ]
 		then
 			SPLITFILENUM=$((CURRENTPVAL+1))
 			echo -n "$SPLITFILENUM" > "$CURRENTPVALFILE"
-			SPLITFILEFORM=$(printf "%04d\n" $SPLITFILENUM)
+			SPLITFILEFORM="$(printf "%04d\n" $SPLITFILENUM)"
 			SPLITFILE="$PATCHFOLDER/$SPLITFILEFORM.patch"
 			echo -ne "                                            \r"; \
 			echo -ne "Creating patch $SPLITFILE out of $PATCHCOUNT\r"; \
 		else
 			SPLITFILENUM="$CURRENTPVAL"
-			SPLITFILEFORM=$(printf "%04d\n" $SPLITFILENUM)
+			SPLITFILEFORM=$(printf "%04d\n" "$SPLITFILENUM")
 			SPLITFILE="$PATCHFOLDER/$SPLITFILEFORM.patch"
 		fi
 		if [ "$SPLITFILE" = "$FINALPATCHFILE" ] && [ "$PLINE" = "-- " ]
@@ -68,13 +68,13 @@ echo -ne "                                            \r"; \
 echo
 echo
 FINALPVALPATH="$PATCHFOLDER/currentpval"
-FINALPVAL="$(cat $FINALPVALPATH)"
-SHORTPATCHNAME="$(basename $BIGPATCHNAME)"
+FINALPVAL="$(cat "$FINALPVALPATH")"
+SHORTPATCHNAME="$(basename "$BIGPATCHNAME")"
 echo "Succesful Split!"
 echo "$SHORTPATCHNAME split into $FINALPVAL patch files!"
 echo "Doing some cleanup..."
 echo "Removing $SHORTPATCHNAME"
-rm $BIGPATCHNAME &>/dev/null
+rm "$BIGPATCHNAME" &>/dev/null
 echo "Removing currentpval"
 rm "$FINALPVALPATH" &>/dev/null
 echo "Finished!"
