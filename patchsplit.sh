@@ -26,7 +26,7 @@ echo -n '0' > "$PATCHFOLDER/currentpval"
 
 dothesplits() {
 
-	while read -r PLINE
+	while IFS= read -r PLINE
 	do
 		local SPLITFILENUM
 		local SPLITFILEFORM
@@ -37,12 +37,6 @@ dothesplits() {
 		CURRENTPVAL="$(cat $CURRENTPVALFILE)"
 		if echo "$PLINE" | grep -q 'diff --git'
 		then
-			if [ "$CURRENTPVAL" -gt 0 ]
-			then
-				PREVIOUSFILEFORM=$(printf "%04d\n" $CURRENTPVAL)
-				PREVIOUSFILE="$PATCHFOLDER/$PREVIOUSFILEFORM.patch"
-				truncate -s -1 "$PREVIOUSFILE"
-			fi
 			SPLITFILENUM=$((CURRENTPVAL+1))
 			echo -n "$SPLITFILENUM" > "$CURRENTPVALFILE"
 		else
@@ -60,9 +54,6 @@ dothesplits() {
 dothesplits
 FINALPVALFILE="$PATCHFOLDER/currentpval"
 FINALPVAL="$(cat $FINALPVALFILE)"
-FINALFILEFORM=$(printf "%04d\n" $FINALPVAL)
-FINALFILE="$PATCHFOLDER/$FINALFILEFORM.patch"
-truncate -s -1 "$FINALFILE"
 echo -ne "                   \r"; \
 echo "Finished!"; \
 echo "$BIGPATCHNAME split into $FINALPVAL patch files!"

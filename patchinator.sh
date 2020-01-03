@@ -22,19 +22,19 @@ trashman() {
 }
 
 echo "PATCHINATOR LOG" > "$STATICLOG"
-echo "---------------" | tee -a "$STATICLOG"
-echo | tee -a "$STATICLOG"
+echo "---------------" >> "$STATICLOG"
+echo >> "$STATICLOG"
 
 for PFILE in /root/113patches/*
 do
 	patch --dry-run -p1 < "$PFILE" > /dev/null 2>&1
 	if [ $? -eq 0 ]
 	then
-	    patch --dry-run -p1 < "$PFILE" > /dev/null 2>&1
+	    patch -s -p1 < "$PFILE" > /dev/null 2>&1
 	else
-		echo | tee -a "$STATICLOG"
-		echo "$PFILE" | tee -a "$STATICLOG"
-		patch --dry-run -p1 < "$PFILE" | tee -a "$STATICLOG"
+		echo "$PFILE" >> "$STATICLOG"
+		patch --dry-run -p1 < "$PFILE" >> "$STATICLOG"
+		echo " " >> "$STATICLOG"
 	fi
 done
 
