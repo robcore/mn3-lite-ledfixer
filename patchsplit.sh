@@ -20,7 +20,7 @@ fi
 
 BIGPATCHNAME="$1"
 PATCHFOLDER="$(dirname "$BIGPATCHNAME")"
-PATCHCOUNT=$(grep -c "diff --git " "$BIGPATCHNAME.patch")
+PATCHCOUNT=$(grep -c "diff --git " "$BIGPATCHNAME")
 FINALPATCHFORM=$(printf "%04d\n" "$PATCHCOUNT")
 FINALPATCHFILE="$PATCHFOLDER/$FINALPATCHFORM.patch"
 rm "$PATCHFOLDER/currentpval" &> /dev/null
