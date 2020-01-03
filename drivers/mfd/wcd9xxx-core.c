@@ -118,7 +118,19 @@ int wcd9xxx_reg_read(
 }
 EXPORT_SYMBOL(wcd9xxx_reg_read);
 
-extern unsigned int sound_control_override;
+static unsigned int sound_control_override = 0;
+void lock_sound_control(unsigned int lockval) {
+	if unlikely(lockval <= 0)
+		lockval = 0;
+	if unlikely(lockval >= 1)
+		lockval = 1;
+
+	mutex_lock(&wcd9xxx->io_lock);
+	sound_control_override = lockval;
+	mutex_unlock(&wcd9xxx->io_lock);
+}
+EXPORT_SYMBOL(lock_sound_control);
+
 static int wcd9xxx_write(struct wcd9xxx *wcd9xxx, unsigned short reg,
 			int bytes, void *src, bool interface_reg) {
 	int i;

@@ -131,7 +131,7 @@ int wcd9xxx_bulk_read(struct wcd9xxx_core_resource *,
 					unsigned short, int, u8 *);
 int wcd9xxx_bulk_write(struct wcd9xxx_core_resource*,
 					 unsigned short, int, u8*);
-extern unsigned int sound_control_override;
+void lock_sound_control(unsigned int lockval);
 int wcd9xxx_irq_init(struct wcd9xxx_core_resource *);
 void wcd9xxx_irq_exit(struct wcd9xxx_core_resource *);
 int wcd9xxx_core_res_resume(
