@@ -7334,7 +7334,6 @@ static struct regulator *taiko_codec_find_regulator(struct snd_soc_codec *codec,
 	return NULL;
 }
 
-unsigned int sound_control_override;
 static unsigned int sound_control_normalize;
 static unsigned int wcd9xxx_hw_revision;
 static int show_sound_value(unsigned int inputval)
