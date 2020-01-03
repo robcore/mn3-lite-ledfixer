@@ -246,7 +246,7 @@ CLEAN_BUILD() {
 						| parallel rm -fv {};
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
 	rm -rf "$RDIR/build" &>/dev/null
-	rm "$ZIPFOLDER"/boot.img &>/dev/null
+	rm "$ZIPFOLDER/boot.img" &>/dev/null
 	echo -ne "Cleaning build...\r"; \
 	make -C "$RDIR/scripts/mkqcdtbootimg" clean &>/dev/null
 	rm -rf "$RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg" &>/dev/null

@@ -155,6 +155,7 @@ static struct crypto_alg *crypto_larval_add(const char *name, u32 type,
 	up_write(&crypto_alg_sem);
 
 	//patch from kernel 3.13.7 (refer to https://www.kernel.org/ & https://lkml.org/lkml/2013/9/7/139)
+	//Or JUST FUCKING USE THE LTS YOU FUCK (refer to the years you ignored kernel.org for 3.GOFUCKYOURSELF)
 	if (alg != &larval->alg) {
 		kfree(larval);
 		if (crypto_is_larval(alg))

@@ -1,13 +1,3 @@
-medit /root/113patches/0245.patch \
-crypto/api.c
-Hunk #1 succeeded at 42 (offset 2 lines).
-Hunk #2 FAILED at 152.
-Hunk #3 succeeded at 180 (offset 5 lines).
-Hunk #4 succeeded at 459 (offset 21 lines).
-Hunk #5 succeeded at 588 (offset 33 lines).
-1 out of 5 hunks FAILED
-
-
 medit /root/113patches/0320.patch \
 drivers/base/power/main.c
 Hunk #1 FAILED at 979.
