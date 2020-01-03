@@ -46,7 +46,7 @@ dothesplits() {
 		if [ "$?" -eq 0 ]
 		then
 			SPLITFILENUM=$((CURRENTPVAL+1))
-			echo -n "$SPLITFILENUM" > CURRENTPVALFILE
+			echo -n "$SPLITFILENUM" > "$CURRENTPVALFILE"
 			SPLITFILEFORM=$(printf "%04d\n" "$CURRENTPVAL")
 			SPLITFILE="$PATCHFOLDER/$SPLITFILEFORM.patch"
 			echo -ne "                   \r"; \
