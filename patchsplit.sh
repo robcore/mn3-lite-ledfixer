@@ -28,12 +28,12 @@ CURRENTPVAL="$(cat $CURRENTPVALFILE)"
 
 dothesplits() {
 
+	local SPLITFILENUM
+	local SPLITFILEFORM
+	local SPLITFILE
+
 	while IFS=$'\n' read -r PLINE
 	do
-		local SPLITFILENUM
-		local SPLITFILEFORM
-		local SPLITFILE
-
 		if echo "$PLINE" | grep -q 'THISISTHEENDFAKEFAKEFAKEFAKE'
 		then
 			echo -ne "                   \r"; \
