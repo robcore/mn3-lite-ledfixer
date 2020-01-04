@@ -43,31 +43,62 @@ struct cpufreq_limit_handle *cpufreq_limit_get(unsigned long min_freq,
 		unsigned long max_freq, char *label)
 {
 	struct cpufreq_limit_handle *handle;
-	int i;
+	int i, found;
 
 	if (max_freq && max_freq < min_freq)
 		return ERR_PTR(-EINVAL);
 
-	handle = kzalloc(sizeof(*handle), GFP_KERNEL);
-	if (!handle)
-		return ERR_PTR(-ENOMEM);
+	mutex_lock(&cpufreq_limit_lock);
+	found = 0;
+	list_for_each_entry(handle, &cpufreq_limit_requests, node) {
+		if (!strncmp(handle->label, label, strlen(handle->label))) {
+			found = 1;
+			pr_debug("%s: %s is found in list\n", __func__, handle->label);
+			break;
+		}
+	}
+
+	if (found) {
+		if (handle->min == min_freq
+			 && handle->max == max_freq) {
+			pr_info("%s: %s same values(%lu,%lu) entered. just return.\n",
+				__func__, handle->label, handle->min, handle->max);
+			mutex_unlock(&cpufreq_limit_lock);
+			return handle;
+		}
+	}
+
+	if (!found) {
+		handle = kzalloc(sizeof(*handle), GFP_KERNEL);
+		if (!handle) {
+			pr_err("%s: alloc fail for %s .\n", __func__, label);
+			mutex_unlock(&cpufreq_limit_lock);
+			return ERR_PTR(-ENOMEM);
+		}
+
+		if (strlen(label) < sizeof(handle->label))
+			strcpy(handle->label, label);
+		else
+			strncpy(handle->label, label, sizeof(handle->label) - 1);
+
+		list_add_tail(&handle->node, &cpufreq_limit_requests);
+	}
+
+	handle->min = min_freq;
+	handle->max = max_freq;
 
 	pr_debug("%s: %s,%lu,%lu\n", __func__, handle->label, handle->min,
 			handle->max);
 
-	if (strlen(label) < sizeof(handle->label))
-		strcpy(handle->label, label);
-	else
-		strncpy(handle->label, label, sizeof(handle->label) - 1);
-
-	mutex_lock(&cpufreq_limit_lock);
-	handle->min = min_freq;
-	handle->max = max_freq;
-	list_add_tail(&handle->node, &cpufreq_limit_requests);
 	mutex_unlock(&cpufreq_limit_lock);
+
+        /* Re-evaluate policy to trigger adjust notifier for online CPUs */
+	get_online_cpus();
 
 	for_each_online_cpu(i)
 		cpufreq_update_policy(i);
+
+	put_online_cpus();
 
 	return handle;
 }
@@ -91,8 +122,10 @@ int cpufreq_limit_put(struct cpufreq_limit_handle *handle)
 	list_del(&handle->node);
 	mutex_unlock(&cpufreq_limit_lock);
 
+	get_online_cpus();
 	for_each_online_cpu(i)
 		cpufreq_update_policy(i);
+	put_online_cpus();
 
 	kfree(handle);
 	return 0;
@@ -142,13 +175,14 @@ static int cpufreq_limit_notifier_policy(struct notifier_block *nb,
 	cpufreq_verify_within_limits(policy, min, max);
 done:
 	return 0;
-
 }
 
 static struct notifier_block notifier_policy_block = {
-	.notifier_call = cpufreq_limit_notifier_policy
+	.notifier_call = cpufreq_limit_notifier_policy,
+	.priority = -1,
 };
 
+/************************** sysfs begin ************************/
 static ssize_t show_cpufreq_limit_requests(struct kobject *kobj,
 		struct attribute *attr, char *buf)
 {
