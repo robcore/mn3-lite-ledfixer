@@ -948,8 +948,12 @@ static int taiko_config_gain_compander(struct snd_soc_codec *codec,
 				    1 << 2, !enable << 2);
 		break;
 	case COMPANDER_1:
+		pr_info("%s: Setting TAIKO HPH L GAIN - mask:%d value:%d",
+				__func__, (1 << 5), (!enable << 5));
 		snd_soc_update_bits(codec, TAIKO_A_RX_HPH_L_GAIN,
 				    1 << 5, !enable << 5);
+		pr_info("%s: Setting TAIKO HPH R GAIN - mask:%d value:%d",
+				__func__, (1 << 5), (!enable << 5));
 		snd_soc_update_bits(codec, TAIKO_A_RX_HPH_R_GAIN,
 				    1 << 5, !enable << 5);
 		break;
@@ -964,7 +968,6 @@ static int taiko_config_gain_compander(struct snd_soc_codec *codec,
 				    1 << 5, !enable << 5);
 		break;
 	default:
-		WARN_ON(1);
 		ret = -EINVAL;
 	}
 
@@ -1471,8 +1474,8 @@ static int taiko_pa_gain_get(struct snd_kcontrol *kcontrol,
 
 	ucontrol->value.integer.value[0] = ear_pa_gain;
 
-	pr_debug("%s: ear_pa_gain = 0x%x\n", __func__, ear_pa_gain);
-
+	pr_info("%s: ear_pa_gain = 0x%x\n", __func__, ear_pa_gain);
+	pr_info("%s: ear_pa_gain = %u\n", __func__, ear_pa_gain);
 	return 0;
 }
 
@@ -1486,6 +1489,7 @@ static int taiko_pa_gain_put(struct snd_kcontrol *kcontrol,
 			ucontrol->value.integer.value[0]);
 
 	ear_pa_gain =  ucontrol->value.integer.value[0] << 5;
+	pr_info("%s: ear_pa_gain = %u\n", __func__, ear_pa_gain);
 
 	snd_soc_update_bits(codec, TAIKO_A_RX_EAR_GAIN, 0xE0, ear_pa_gain);
 	return 0;
