@@ -37,8 +37,6 @@
 #include <linux/mii.h>
 #include <linux/usb.h>
 #include <linux/crc32.h>
-#include <linux/slab.h>
-#include <linux/if_vlan.h>
 
 #include "axusbnet.c"
 #include "asix.h"
@@ -1471,11 +1469,6 @@ static int ax88772a_phy_powerup(struct usbnet *dev)
 		deverr(dev, "Failed to reset PHY: %d", ret);
 		return ret;
 	}
-
-	dev->driver_priv = kzalloc(sizeof(struct asix_common_private),
-				   GFP_KERNEL);
-	if (!dev->driver_priv)
-		return -ENOMEM;
 
 	return 0;
 }
@@ -3835,10 +3828,6 @@ static const struct usb_device_id products[] = {
 	/* ASIX AX88772 10/100 */
 	USB_DEVICE(0x0b95, 0x7720),
 	.driver_info = (unsigned long) &ax88772_info,
-}, {
-       // DLink DUB-E100 H/W Ver C1
-       USB_DEVICE (0x2001, 0x1a02),
-       .driver_info = (unsigned long) &ax88772_info,
 }, {
 	/* ASIX AX88772 10/100 */
 	USB_DEVICE(0x125E, 0x180D),
