@@ -21,6 +21,20 @@ CORECOUNT="$(grep processor /proc/cpuinfo | wc -l)"
 KDIR="$RDIR/build/arch/arm/boot"
 TOOLCHAIN="/opt/toolchains/arm-cortex_a15-linux-gnueabihf_5.3/bin/arm-cortex_a15-linux-gnueabihf-"
 
+warnandfail() {
+
+	echo -n "MX ERROR on Line ${BASH_LINENO[0]}"
+	echo "!!!"
+	local ISTRING
+	ISTRING="$1"
+	if [ -n "$ISTRING" ]
+	then
+		echo "$ISTRING"
+	fi
+	exit 1
+
+}
+
 _quote() {
 
 	echo $1 | sed 's/[]\/()$*.^|[]/\\&/g'
@@ -67,108 +81,92 @@ pc_delete() {
 
 }
 
-warnandfail() {
-
-	echo -n "MX ERROR on Line ${BASH_LINENO[0]}"
-	echo "!!!"
-	local ISTRING
-	ISTRING="$1"
-	if [ -n "$ISTRING" ]
-	then
-		echo "$ISTRING"
-	fi
-	exit 1
-
-}
-
 if [ ! -f "$MXCONFIG" ]
 then
-	echo "$MXCONFIG not found in arm configs!"
-	exit 1
+	warnandfail "$MXCONFIG not found in arm configs!"
 fi
 
 if [ ! -d "$RAMDISKFOLDER" ]
 then
-	echo "$RAMDISKFOLDER not found!"
-	exit 1
+	warnandfail "$RAMDISKFOLDER not found!"
 fi
 
 shortprog() {
 
-echo -ne "#####               (25%)\r"; \
-sleep 0.4; \
-echo -ne "##########          (50%)\r"; \
-sleep 0.4; \
-echo -ne "###############     (75%)\r"; \
-sleep 0.4; \
-echo -ne "####################(100%)\r"; \
-echo -ne "                          \r"; \
-#echo -ne "\n"
+	echo -ne "#####               (25%)\r"; \
+	sleep 0.4; \
+	echo -ne "##########          (50%)\r"; \
+	sleep 0.4; \
+	echo -ne "###############     (75%)\r"; \
+	sleep 0.4; \
+	echo -ne "####################(100%)\r"; \
+	echo -ne "                          \r"; \
+	#echo -ne "\n"
 
 }
 
 longprog() {
 
-echo -ne "#                       \r"; \
-sleep 0.4; \
-echo -ne "##                      \r"; \
-sleep 0.4; \
-echo -ne "###                     \r"; \
-sleep 0.4; \
-echo -ne "####                    \r"; \
-sleep 0.4; \
-echo -ne "#####                   \r"; \
-sleep 0.4; \
-echo -ne "######                  \r"; \
-sleep 0.4; \
-echo -ne "#######                 \r"; \
-sleep 0.4; \
-echo -ne "########                \r"; \
-sleep 0.4; \
-echo -ne "#########               \r"; \
-sleep 0.4; \
-echo -ne "##########              \r"; \
-sleep 0.4; \
-echo -ne "###########             \r"; \
-sleep 0.4; \
-echo -ne "############            \r"; \
-sleep 0.4; \
-echo -ne "#############           \r"; \
-sleep 0.4; \
-echo -ne "##############          \r"; \
-sleep 0.4; \
-echo -ne "###############         \r"; \
-sleep 0.4; \
-echo -ne "################        \r"; \
-sleep 0.4; \
-echo -ne "#################       \r"; \
-sleep 0.4; \
-echo -ne "##################      \r"; \
-sleep 0.4; \
-echo -ne "###################     \r"; \
-sleep 0.4; \
-echo -ne "####################    \r"; \
-sleep 0.4; \
-echo -ne "#####################   \r"; \
-sleep 0.4; \
-echo -ne "######################  \r"; \
-sleep 0.4; \
-echo -ne "####################### \r"; \
-sleep 0.4; \
-echo -ne "########################\r"; \
-sleep 0.4; \
-echo -ne "                        \r"; \
+	echo -ne "#                       \r"; \
+	sleep 0.4; \
+	echo -ne "##                      \r"; \
+	sleep 0.4; \
+	echo -ne "###                     \r"; \
+	sleep 0.4; \
+	echo -ne "####                    \r"; \
+	sleep 0.4; \
+	echo -ne "#####                   \r"; \
+	sleep 0.4; \
+	echo -ne "######                  \r"; \
+	sleep 0.4; \
+	echo -ne "#######                 \r"; \
+	sleep 0.4; \
+	echo -ne "########                \r"; \
+	sleep 0.4; \
+	echo -ne "#########               \r"; \
+	sleep 0.4; \
+	echo -ne "##########              \r"; \
+	sleep 0.4; \
+	echo -ne "###########             \r"; \
+	sleep 0.4; \
+	echo -ne "############            \r"; \
+	sleep 0.4; \
+	echo -ne "#############           \r"; \
+	sleep 0.4; \
+	echo -ne "##############          \r"; \
+	sleep 0.4; \
+	echo -ne "###############         \r"; \
+	sleep 0.4; \
+	echo -ne "################        \r"; \
+	sleep 0.4; \
+	echo -ne "#################       \r"; \
+	sleep 0.4; \
+	echo -ne "##################      \r"; \
+	sleep 0.4; \
+	echo -ne "###################     \r"; \
+	sleep 0.4; \
+	echo -ne "####################    \r"; \
+	sleep 0.4; \
+	echo -ne "#####################   \r"; \
+	sleep 0.4; \
+	echo -ne "######################  \r"; \
+	sleep 0.4; \
+	echo -ne "####################### \r"; \
+	sleep 0.4; \
+	echo -ne "########################\r"; \
+	sleep 0.4; \
+	echo -ne "                        \r"; \
 
 }
 
 test_funcs() {
 
-echo "This is a test of the emergency broadcast system."
-echo "This is only a test."
-shortprog
-longprog
-echo "This has been a test of the emergency broadcast system."
-echo "This was only a test"
+	echo "This is a test of the emergency broadcast system."
+	echo "This is only a test."
+	shortprog
+	longprog
+	echo "This has been a test of the emergency broadcast system."
+	echo "This was only a test"
 
 }
 
@@ -247,7 +245,7 @@ takeouttrash() {
 
 }
 
-CLEAN_BUILD() {
+clean_build() {
 
 
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
@@ -274,7 +272,7 @@ CLEAN_BUILD() {
 
 }
 
-BUILD_MENUCONFIG() {
+build_menuconfig() {
 
 	echo "Creating kernel config..."
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
@@ -285,7 +283,7 @@ BUILD_MENUCONFIG() {
 
 }
 
-BUILD_SINGLE_CONFIG() {
+build_single_config() {
 
 	echo "Creating kernel config..."
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
@@ -296,14 +294,14 @@ BUILD_SINGLE_CONFIG() {
 
 }
 
-BUILD_SINGLE_DRIVER() {
+build_single_driver() {
 
 	echo "Building Single Driver..."
 	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -C "$RDIR" -S -s -j "$CORECOUNT" O="$RDIR/build/" "$1"
 
 }
 
-BUILD_KERNEL_CONFIG() {
+build_kernel_config() {
 
 	echo "Creating kernel config..."
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
@@ -313,7 +311,7 @@ BUILD_KERNEL_CONFIG() {
 
 }
 
-BUILD_KERNEL() {
+build_kernel() {
 
 	echo "Backing up .config to config.$QUICKDATE"
 	cp "build/.config" "config.$QUICKDATE"
@@ -324,7 +322,7 @@ BUILD_KERNEL() {
 
 }
 
-BUILD_RAMDISK() {
+build_ramdisk() {
 
 	echo "Building ramdisk structure..."
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR"
@@ -345,7 +343,7 @@ BUILD_RAMDISK() {
 
 }
 
-BUILD_BOOT_IMG() {
+build_boot_img() {
 
 	echo "Generating boot.img..."
 	rm -f "$ZIPFOLDER/boot.img"
@@ -374,7 +372,7 @@ BUILD_BOOT_IMG() {
 
 }
 
-CREATE_ZIP() {
+create_zip() {
 
 	echo "Compressing to TWRP flashable zip file..."
 	cd "$ZIPFOLDER" || warnandfail "Failed to cd to $ZIPFOLDER"
@@ -419,7 +417,7 @@ CREATE_ZIP() {
 #	cd $RDIR
 #}
 
-SHOW_HELP() {
+show_help() {
 
 	cat << EOF
 Machinexlite kernel by robcore
@@ -442,46 +440,46 @@ EOF
 
 }
 
-BUILD_RAMDISK_CONTINUE() {
+build_ramdisk_continue() {
 
-	BUILD_RAMDISK && BUILD_BOOT_IMG && CREATE_ZIP
-
-}
-
-BUILD_KERNEL_CONTINUE() {
-
-	BUILD_KERNEL && BUILD_RAMDISK_CONTINUE
+	build_ramdisk && build_boot_img && create_zip
 
 }
 
-BUILD_ALL() {
+build_kernel_continue() {
 
-	CLEAN_BUILD && BUILD_KERNEL_CONFIG && BUILD_KERNEL_CONTINUE
+	build_kernel && build_ramdisk_continue
 
 }
 
-BSDWRAPPER() {
+build_all() {
+
+	clean_build && build_kernel_config && build_kernel_continue
+
+}
+
+bsdwrapper() {
 
 	[ -z "$1" ] && warnandfail "Build Single Driver: Missing path/to/folder/ or path/to/file.o"
-	CLEAN_BUILD && BUILD_SINGLE_CONFIG && BUILD_SINGLE_DRIVER "$1"
-	CLEAN_BUILD
+	clean_build && build_single_config && build_single_driver "$1"
+	clean_build
 
 }
 
-BUILD_MC() {
+build_mc() {
 
-	BUILD_MENUCONFIG
+	build_menuconfig
 
 }
 
-RUNTEST() {
+runtest() {
 
 test_funcs && exit 0
 
 }
 
 if [ $# = 0 ] ; then
-	SHOW_HELP
+	show_help
 fi
 
 while [[ $# -gt 0 ]]
@@ -492,56 +490,56 @@ while [[ $# -gt 0 ]]
 	case $key in
 	     -a|--all)
 			handle_existing
-			BUILD_ALL
+			build_all
 			break
 	    	;;
 
 	     -r|--rebuildme)
 			rebuild
-			BUILD_ALL
+			build_all
 			break
 	    	;;
 
 	     -b|--bsd)
-			BSDWRAPPER "$extrargs"
+			bsdwrapper "$extrargs"
 			break
 	    	;;
 
 	     -c|--clean)
-	    	CLEAN_BUILD
+	    	clean_build
 	    	break
 	    	;;
 
 		 -m|--menu)
-			BUILD_MC
+			build_mc
 			break
 			;;
 
 	     -k|--kernel)
 			handle_existing
-	    	BUILD_KERNEL_CONTINUE
+	    	build_kernel_continue
 	    	break
 	    	;;
 
 	    -o|--kernel-only)
 			handle_existing
-	    	BUILD_KERNEL
+	    	build_kernel
 	    	break
 	    	;;
 
 	     -r|--ramdisk)
 			handle_existing
-	     	BUILD_RAMDISK_CONTINUE
+	     	build_ramdisk_continue
 	    	break
 	    	;;
 
 	     -t|--tests)
-			RUNTEST
+			runtest
 	    	break
 	    	;;
 
 	    *)
-	    	SHOW_HELP
+	    	show_help
 	    	break;
 	    	;;
 	esac
