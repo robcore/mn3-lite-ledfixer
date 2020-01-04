@@ -488,14 +488,14 @@ static void wcd9xxx_cfg_clsh_param_common(
 {
 	int i;
 	const struct wcd9xxx_reg_mask_val reg_set[] = {
-		{WCD9XXX_A_CDC_CLSH_BUCK_NCP_VARS, 0x3 << 0, 0},
-		{WCD9XXX_A_CDC_CLSH_BUCK_NCP_VARS, 0x3 << 2, 1 << 2},
+		{WCD9XXX_A_CDC_CLSH_BUCK_NCP_VARS, (0x3 << 0), 0},
+		{WCD9XXX_A_CDC_CLSH_BUCK_NCP_VARS, (0x3 << 2), (1 << 2)},
 		{WCD9XXX_A_CDC_CLSH_BUCK_NCP_VARS, (0x1 << 4), 0},
 		{WCD9XXX_A_CDC_CLSH_B2_CTL, (0x3 << 0), 0x01},
 		{WCD9XXX_A_CDC_CLSH_B2_CTL, (0x3 << 2), (0x01 << 2)},
 		{WCD9XXX_A_CDC_CLSH_B2_CTL, (0xf << 4), (0x03 << 4)},
 		{WCD9XXX_A_CDC_CLSH_B3_CTL, (0xf << 4), (0x03 << 4)},
-		{WCD9XXX_A_CDC_CLSH_B3_CTL, (0xf << 0), (0x0B)},
+		{WCD9XXX_A_CDC_CLSH_B3_CTL, (0xf << 0), 0x0B},
 		{WCD9XXX_A_CDC_CLSH_B1_CTL, (0x1 << 5), (0x01 << 5)},
 		{WCD9XXX_A_CDC_CLSH_B1_CTL, (0x1 << 1), (0x01 << 1)},
 	};
