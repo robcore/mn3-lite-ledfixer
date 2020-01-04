@@ -179,40 +179,47 @@ handle_existing() {
 		warnandfail "FATAL ERROR! Failed to read version from .oldversion"
 	fi
 
-	echo -n "Rebuilding (o)ld version? Or building (n)ew version? Please specify [o|n]: "
-	read -r WHICHVERSION
-	if [ "$WHICHVERSION" = "n" ]
+	if [ ! -f "$RDIR/machinexlite-Mark$OLDVER-hltetmo.zip" ]
 	then
-		CURVER="new"
-	elif [ "$WHICHVERSION" = "o" ]
-	then
-		CURVER="old"
-	else
-		CURVER="invalid"
-	fi
-
-	if [ -z "$CURVER" ]
-	then
-		warnandfail "You MUST choose a version for the kernel"
-	elif [ "$CURVER" = "invalid" ]
-	then
-		warnandfail "versioning failed.  please fix"
-	elif [ "$CURVER" = "old" ]
-	then
-		echo "Rebulding old version has been selected"
-		echo "Removing old zip files..."
+		echo "Version Override!"
+		echo "Previous version was not completed!"
+		echo "Rebuilding old version"
 		MX_KERNEL_VERSION="machinexlite-Mark$OLDVER-hltetmo"
-		rm -f "$RDIR/$MX_KERNEL_VERSION.zip"
-	elif [ "$CURVER" = "new" ]
-	then
-		echo "Building new version has been selected"
-		NEWVER="$(echo $(expr $(( $OLDVER + 1 ))))"
-		if [ -z "$NEWVER" ]
+	else
+		echo -n "Rebuilding (o)ld version? Or building (n)ew version? Please specify [o|n]: "
+		read -r WHICHVERSION
+		if [ "$WHICHVERSION" = "n" ]
 		then
-			warnandfail "FATAL ERROR! Failed to raise version number by one!"
+			CURVER="new"
+		elif [ "$WHICHVERSION" = "o" ]
+		then
+			CURVER="old"
+		else
+			CURVER="invalid"
 		fi
-		MX_KERNEL_VERSION="machinexlite-Mark$NEWVER-hltetmo"
-		echo -n "$NEWVER" > "$OLDVERFILE"
+		if [ -z "$CURVER" ]
+		then
+			warnandfail "You MUST choose a version for the kernel"
+		elif [ "$CURVER" = "invalid" ]
+		then
+			warnandfail "versioning failed.  please fix"
+		elif [ "$CURVER" = "old" ]
+		then
+			echo "Rebulding old version has been selected"
+			echo "Removing old zip files..."
+			MX_KERNEL_VERSION="machinexlite-Mark$OLDVER-hltetmo"
+			rm -f "$RDIR/$MX_KERNEL_VERSION.zip"
+		elif [ "$CURVER" = "new" ]
+		then
+			echo "Building new version has been selected"
+			NEWVER="$(echo $(expr $(( $OLDVER + 1 ))))"
+			if [ -z "$NEWVER" ]
+			then
+				warnandfail "FATAL ERROR! Failed to raise version number by one!"
+			fi
+			MX_KERNEL_VERSION="machinexlite-Mark$NEWVER-hltetmo"
+			echo -n "$NEWVER" > "$OLDVERFILE"
+		fi
 	fi
 	echo "Kernel version is: $MX_KERNEL_VERSION"
 	echo "--------------------------------"
@@ -230,35 +237,40 @@ rebuild() {
 
 }
 
-CLEAN_BUILD() {
+takeouttrash() {
 
-	echo -ne "Cleaning build   \r"; \
-	make clean &>/dev/null
-	make distclean &>/dev/null
-	echo -ne "Cleaning build.  \r"; \
-	make mrproper &>/dev/null
-	echo -ne "Cleaning build.. \r"; \
-	# clean up leftover junk
 	find . -type f \( -iname \*.rej \
-					-o -iname \*.orig \
-					-o -iname \*.bkp \
-					-o -iname \*.ko \) \
-						| parallel rm -fv {};
-	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
-	rm -rf "$RDIR/build" &>/dev/null
-	rm "$ZIPFOLDER/boot.img" &>/dev/null
-	echo -ne "Cleaning build...\r"; \
-	make -C "$RDIR/scripts/mkqcdtbootimg" clean &>/dev/null
-	rm -rf "$RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg" &>/dev/null
-	echo -ne "                 \r"; \
-	echo -ne "Cleaned\r"; \
-	echo -ne "\n"
+			-o -iname \*.orig \
+			-o -iname \*.bkp \
+			-o -iname \*.ko \) \
+			| parallel rm -fv {};
 
 }
 
-configit() {
+CLEAN_BUILD() {
 
-git add -u && git add . && git add -A && git commit -a -m 'Config updated by build script'
+
+	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
+	echo -ne "Cleaning build         \r"; \
+	make clean &>/dev/null
+	echo -ne "Cleaning build.        \r"; \
+	make distclean &>/dev/null
+	echo -ne "Cleaning build..       \r"; \
+	make mrproper &>/dev/null
+	echo -ne "Cleaning build...      \r"; \
+	takeouttrash &>/dev/null
+	echo -ne "Cleaning build....     \r"; \
+	rm -rf "$RDIR/build" &>/dev/null
+	echo -ne "Cleaning build.....    \r"; \
+	rm "$ZIPFOLDER/boot.img" &>/dev/null
+	echo -ne "Cleaning build......   \r"; \
+	make -C "$RDIR/scripts/mkqcdtbootimg" clean &>/dev/null
+	echo -ne "Cleaning build.......  \r"; \
+	rm -rf "$RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg" &>/dev/null
+	echo -ne "Cleaning build........ \r"; \
+	echo -ne "                       \r"; \
+	echo -ne "Cleaned                \r"; \
+	echo -e "\n"
 
 }
 
@@ -296,7 +308,6 @@ BUILD_KERNEL_CONFIG() {
 	echo "Creating kernel config..."
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
 	mkdir -p "$RDIR/build" || warnandfail "Failed to make $RDIR/build directory!"
-	configit
 	cp "$MXCONFIG" "$RDIR/build/.config" || warnandfail "Config Copy Error!"
 	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -C "$RDIR" O="$RDIR/build" -j "$CORECOUNT" oldconfig || warnandfail "make oldconfig Failed!"
 
