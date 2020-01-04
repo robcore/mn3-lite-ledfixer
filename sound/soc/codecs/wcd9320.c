@@ -7423,12 +7423,6 @@ static ssize_t speaker_gain_show(struct kobject *kobj,
 	return sprintf(buf, "%d\n", spkval);
 }
 
-static ssize_t sound_control_normalize_show (struct kobject *kobj,
-		struct kobj_attribute *attr, char *buf)
-{
-	return sprintf(buf, "%u\n", sound_control_normalize);
-}
-
 static ssize_t speaker_gain_store(struct kobject *kobj,
 		struct kobj_attribute *attr, const char *buf, size_t count)
 {
@@ -7455,6 +7449,12 @@ static ssize_t speaker_gain_store(struct kobject *kobj,
 	return count;
 }
 
+static ssize_t sound_control_normalize_show (struct kobject *kobj,
+		struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", sound_control_normalize);
+}
+
 static ssize_t sound_control_normalize_store(struct kobject *kobj,
 		struct kobj_attribute *attr, const char *buf, size_t count)
 {
@@ -7473,6 +7473,16 @@ static ssize_t sound_control_normalize_store(struct kobject *kobj,
 	return count;
 }
 
+static ssize_t hph_debug_show(struct kobject *kobj,
+		struct kobj_attribute *attr, char *buf)
+{
+	int wcd_hphl, wcd_hphr;
+
+	wcd_hphl = wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, WCD9XXX_A_RX_HPH_L_GAIN);
+	wcd_hphr = wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, WCD9XXX_A_RX_HPH_R_GAIN);
+	return sprintf(buf, "WCD9XXX_A_RX_HPH_L_GAIN: %d\n WCD9XXX_A_RX_HPH_R_GAIN: %d\n", wcd_hphl, wcd_hphr);
+}
+
 static struct kobj_attribute headphone_gain_attribute =
 	__ATTR(headphone_gain, 0644,
 		headphone_gain_show,
@@ -7488,11 +7498,16 @@ static struct kobj_attribute sound_control_normalize_attribute =
 		sound_control_normalize_show,
 		sound_control_normalize_store);
 
+static struct kobj_attribute hph_debug_attribute =
+	__ATTR(hph_debug, 0444,
+		hph_debug_show,
+		NULL);
 
 static struct attribute *sound_control_attrs[] = {
 		&headphone_gain_attribute.attr,
 		&speaker_gain_attribute.attr,
 		&sound_control_normalize_attribute.attr,
+		&hph_debug_attribute.attr,
 		NULL,
 };
 
