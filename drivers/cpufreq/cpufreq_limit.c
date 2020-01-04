@@ -17,6 +17,7 @@
 #include <linux/slab.h>
 #include <linux/err.h>
 #include <linux/suspend.h>
+#include <linux/cpu.h>
 
 struct cpufreq_limit_handle {
 	struct list_head node;
