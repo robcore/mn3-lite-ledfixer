@@ -55,15 +55,14 @@ struct cpufreq_limit_handle *cpufreq_limit_get(unsigned long min_freq,
 	pr_debug("%s: %s,%lu,%lu\n", __func__, handle->label, handle->min,
 			handle->max);
 
-	handle->min = min_freq;
-	handle->max = max_freq;
-
 	if (strlen(label) < sizeof(handle->label))
 		strcpy(handle->label, label);
 	else
 		strncpy(handle->label, label, sizeof(handle->label) - 1);
 
 	mutex_lock(&cpufreq_limit_lock);
+	handle->min = min_freq;
+	handle->max = max_freq;
 	list_add_tail(&handle->node, &cpufreq_limit_requests);
 	mutex_unlock(&cpufreq_limit_lock);
 
