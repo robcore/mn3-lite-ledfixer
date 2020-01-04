@@ -7369,33 +7369,45 @@ static ssize_t headphone_gain_store(struct kobject *kobj,
 	unsigned int leftoutput;
 	int rightinput;
 	unsigned int rightoutput;
+	int dualinput;
+	unsigned int dualoutput;
 
-	sscanf(buf, "%d %d", &leftinput, &rightinput);
+	if (sscanf(buf, "%d %d", &leftinput, &rightinput) == 2) {
+		if (leftinput < -84)
+			leftinput = -84;
+		if (leftinput > 20)
+			leftinput = 20;
+		if (rightinput < -84)
+			rightinput = -84;
+		if (rightinput > 20)
+			rightinput = 20;
+		if (sound_control_normalize && leftinput < 0)
+			leftoutput = (leftinput + 256);
+		else
+			leftoutput = leftinput;
+		if (sound_control_normalize && rightinput < 0)
+			rightoutput = (rightinput + 256);
+		else
+			rightoutput = rightinput;
+		lock_sound_control(&sound_control_codec_ptr->core_res, 1);
+		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX1_VOL_CTL_B2_CTL, leftoutput);
+		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX2_VOL_CTL_B2_CTL, rightoutput);
+		lock_sound_control(&sound_control_codec_ptr->core_res, 0);
+	} else if (sscanf(buf, "%d", &dualinput) == 1) {
+		if (dualinput < -84)
+			dualinput = -84;
+		if (dualinput > 20)
+			dualinput = 20;
+		if (sound_control_normalize && dualinput < 0)
+			dualoutput = (dualinput + 256);
+		else
+			dualoutput = dualinput;
+		lock_sound_control(&sound_control_codec_ptr->core_res, 1);
+		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX1_VOL_CTL_B2_CTL, dualoutput);
+		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX2_VOL_CTL_B2_CTL, dualoutput);
+		lock_sound_control(&sound_control_codec_ptr->core_res, 0);
+	}
 
-	if (leftinput < -84)
-		leftinput = -84;
-	if (leftinput > 40)
-		leftinput = 40;
-
-	if (rightinput < -84)
-		rightinput = -84;
-	if (rightinput > 40)
-		rightinput = 40;
-
-	if (sound_control_normalize && leftinput < 0)
-		leftoutput = (leftinput + 256);
-	else
-		leftoutput = leftinput;
-
-	if (sound_control_normalize && rightinput < 0)
-		rightoutput = (rightinput + 256);
-	else
-		rightoutput = rightinput;
-
-	lock_sound_control(&sound_control_codec_ptr->core_res, 1);
-	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX1_VOL_CTL_B2_CTL, leftoutput);
-	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX2_VOL_CTL_B2_CTL, rightoutput);
-	lock_sound_control(&sound_control_codec_ptr->core_res, 0);
 	return count;
 }
 
@@ -7424,8 +7436,8 @@ static ssize_t speaker_gain_store(struct kobject *kobj,
 
 	if (spkinput < -84)
 		spkinput = -84;
-	if (spkinput > 40)
-		spkinput = 40;
+	if (spkinput > 20)
+		spkinput = 20;
 
 	if (sound_control_normalize && spkinput < 0)
 		spkoutput = spkinput + 256;
