@@ -126,27 +126,12 @@
 #define EPEN_RESUME_DELAY 180
 
 /* Wacom Booster */
-#if !defined(CONFIG_INPUT_BOOSTER)
-//#define WACOM_BOOSTER
-#endif
 
 #if defined(CONFIG_MACH_HLLTE) || defined(CONFIG_MACH_HL3G) || \
 	defined(CONFIG_MACH_FRESCONEOLTE_CTC) || defined(CONFIG_SEC_LOCALE_KOR_FRESCO)
 /* softkey block workaround */
 #define WACOM_USE_SOFTKEY_BLOCK
 #define SOFTKEY_BLOCK_DURATION (HZ / 10)
-
-#define WACOM_BOOSTER_CPU_FREQ1 1600000
-#define WACOM_BOOSTER_MIF_FREQ1 667000
-#define WACOM_BOOSTER_INT_FREQ1 333000
-
-#define WACOM_BOOSTER_CPU_FREQ2 650000
-#define WACOM_BOOSTER_MIF_FREQ2 400000
-#define WACOM_BOOSTER_INT_FREQ2 111000
-
-#define WACOM_BOOSTER_CPU_FREQ3 650000
-#define WACOM_BOOSTER_MIF_FREQ3 667000
-#define WACOM_BOOSTER_INT_FREQ3 333000
 
 /* LCD freq sync */
 //#define LCD_FREQ_SYNC
@@ -247,18 +232,6 @@
 
 #define COOR_WORK_AROUND
 
-#define WACOM_BOOSTER_CPU_FREQ1 1600000
-#define WACOM_BOOSTER_MIF_FREQ1 800000
-#define WACOM_BOOSTER_INT_FREQ1 400000
-
-#define WACOM_BOOSTER_CPU_FREQ2 650000
-#define WACOM_BOOSTER_MIF_FREQ2 400000
-#define WACOM_BOOSTER_INT_FREQ2 222000
-
-#define WACOM_BOOSTER_CPU_FREQ3 650000
-#define WACOM_BOOSTER_MIF_FREQ3 400000
-#define WACOM_BOOSTER_INT_FREQ3 222000
-
 #elif defined(CONFIG_N1A)
 
 #define WACOM_CONNECTION_CHECK
@@ -288,34 +261,10 @@
 #define WACOM_USE_SOFTKEY_BLOCK
 #define SOFTKEY_BLOCK_DURATION (HZ / 10)
 
-#define WACOM_BOOSTER_CPU_FREQ1 1600000
-#define WACOM_BOOSTER_MIF_FREQ1 800000
-#define WACOM_BOOSTER_INT_FREQ1 400000
-
-#define WACOM_BOOSTER_CPU_FREQ2 650000
-#define WACOM_BOOSTER_MIF_FREQ2 400000
-#define WACOM_BOOSTER_INT_FREQ2 222000
-
-#define WACOM_BOOSTER_CPU_FREQ3 650000
-#define WACOM_BOOSTER_MIF_FREQ3 400000
-#define WACOM_BOOSTER_INT_FREQ3 222000
-
 #elif defined(CONFIG_HA)
 /* softkey block workaround */
 #define WACOM_USE_SOFTKEY_BLOCK
 #define SOFTKEY_BLOCK_DURATION (HZ / 10)
-
-#define WACOM_BOOSTER_CPU_FREQ1 1600000
-#define WACOM_BOOSTER_MIF_FREQ1 667000
-#define WACOM_BOOSTER_INT_FREQ1 333000
-
-#define WACOM_BOOSTER_CPU_FREQ2 650000
-#define WACOM_BOOSTER_MIF_FREQ2 400000
-#define WACOM_BOOSTER_INT_FREQ2 111000
-
-#define WACOM_BOOSTER_CPU_FREQ3 650000
-#define WACOM_BOOSTER_MIF_FREQ3 667000
-#define WACOM_BOOSTER_INT_FREQ3 333000
 
 /* LCD freq sync */
 #define LCD_FREQ_SYNC
@@ -387,16 +336,6 @@
 
 #endif /*End of Model config*/
 
-#define WACOM_BOOSTER_OFF_TIME	500
-#define WACOM_BOOSTER_CHG_TIME	130
-
-enum BOOST_LEVEL {
-	WACOM_BOOSTER_DISABLE = 0,
-	WACOM_BOOSTER_LEVEL1,
-	WACOM_BOOSTER_LEVEL2,
-	WACOM_BOOSTER_LEVEL3,
-};
-
 #if !defined(WACOM_SLEEP_WITH_PEN_SLP)
 #define WACOM_SLEEP_WITH_PEN_LDO_EN
 #endif
@@ -410,17 +349,6 @@ enum BOOST_LEVEL {
 #ifdef WACOM_USE_PDATA
 #undef WACOM_USE_QUERY_DATA
 #endif
-
-
-//#ifdef CONFIG_SEC_DVFS
-#include <linux/cpufreq.h>
-#define WACOM_BOOSTER_DVFS
-#define DVFS_STAGE_TRIPLE       3
-#define DVFS_STAGE_DUAL         2
-#define DVFS_STAGE_SINGLE       1
-#define DVFS_STAGE_NONE         0
-//#endif
-
 
 /*Parameters for wacom own features*/
 struct wacom_features {
@@ -499,26 +427,6 @@ struct wacom_i2c {
 #endif
 #ifdef BATTERY_SAVING_MODE
 	bool battery_saving_mode;
-#endif
-#if defined(WACOM_BOOSTER_DVFS)
-	struct delayed_work	work_dvfs_off;
-	struct delayed_work	work_dvfs_chg;
-	struct mutex		dvfs_lock;
-	bool dvfs_lock_status;
-	int dvfs_boost_mode;
-	int dvfs_freq;
-	int dvfs_old_stauts;
-	bool stay_awake;
-
-#elif defined(WACOM_BOOSTER)
-	bool dvfs_lock_status;
-	struct delayed_work dvfs_off_work;
-	struct delayed_work dvfs_chg_work;
-	struct mutex dvfs_lock;
-	struct pm_qos_request cpu_qos;
-	struct pm_qos_request mif_qos;
-	struct pm_qos_request int_qos;
-	unsigned char boost_level;
 #endif
 	bool pwr_flag;
 	bool power_enable;
