@@ -59,7 +59,7 @@
 #define USE_RECENT_TOUCHKEY
 #define PROXIMITY
 #define EDGE_SWIPE
-#define TKEY_BOOSTER
+//#define TKEY_BOOSTER
 #define SYNAPTICS_DEVICE_NAME	"T320"
 #define USE_PALM_REJECTION_KERNEL
 
@@ -208,7 +208,7 @@
 #define TOUCHKEY_BACKLIGHT "button-backlight"
 #endif
 
-#if defined(TSP_BOOSTER) || defined(TKEY_BOOSTER)
+#if 0
 #define DVFS_STAGE_NINTH	9
 #define DVFS_STAGE_PENTA	5
 #define DVFS_STAGE_TRIPLE	3
@@ -1216,7 +1216,7 @@ struct synaptics_rmi4_data {
 	int bootmode;
 #endif
 
-#ifdef TSP_BOOSTER
+#if 0
 	struct delayed_work	work_dvfs_off;
 	struct delayed_work	work_dvfs_chg;
 	struct mutex		dvfs_lock;
@@ -1225,7 +1225,7 @@ struct synaptics_rmi4_data {
 	int dvfs_boost_mode;
 	int dvfs_freq;
 #endif
-#ifdef TKEY_BOOSTER
+#if 0
 	struct delayed_work	work_tkey_dvfs_off;
 	struct delayed_work	work_tkey_dvfs_chg;
 	struct mutex		tkey_dvfs_lock;
