@@ -22,6 +22,42 @@ QUICKDATE="$QUICKMONTHDAY-$QUICKTIME"
 CORECOUNT="$(grep processor /proc/cpuinfo | wc -l)"
 KDIR="$RDIR/build/arch/arm/boot"
 TOOLCHAIN="/opt/toolchains/arm-cortex_a15-linux-gnueabihf_5.3/bin/arm-cortex_a15-linux-gnueabihf-"
+echo -n "$(date +%s)" > "$RDIR/.starttime"
+STARTTIME="$(cat $RDIR/.starttime)"
+
+timerprint() {
+
+	local DIFFMINS
+	local DIFFSECS
+
+	DIFFMINS=$(bc <<< "(${1}%3600)/60")
+	DIFFSECS=$(bc <<< "${1}%60")
+	echo -n "Build completed in: "
+	printf "$DIFFMINS"
+	if [ "$DIFFMINS" = "1" ]
+	then
+		echo -n " Minute and "
+	else
+		echo -n " Minutes and "
+	fi
+	printf "$DIFFSECS"
+	if [ "$DIFFSECS" = "1" ]
+	then
+		echo " Second."
+	else
+		echo " Second."
+	fi
+
+}
+
+timerdiff() {
+
+	echo -n "$(date +%s)" > "$RDIR/.endtime"
+	ENDTIME="$(cat $RDIR/.endtime)"
+	DIFFTIME=$(( $ENDTIME - $STARTTIME ))
+	timerprint "$DIFFTIME"
+
+}
 
 warnandfail() {
 
@@ -250,6 +286,8 @@ rebuild() {
 }
 
 takeouttrash() {
+	rm $RDIR/.starttime &> /dev/null
+	rm $RDIR/.endtime &> /dev/null
 
 	find . -type f \( -iname \*.rej \
 			-o -iname \*.orig \
@@ -410,9 +448,10 @@ create_zip() {
 	if [ -s "$RDIR/$MX_KERNEL_VERSION.zip" ]
 	then
 		echo "Uploading $MX_KERNEL_VERSION.zip to Google Drive"
-		/bin/bash /root/google-drive-upload/upload.sh "$RDIR/$MX_KERNEL_VERSION.zip"
+		/bin/bash /root/google-drive-upload/upload.sh "$RDIR/$MX_KERNEL_VERSION.zip" || warnandfail "$RDIR/$MX_KERNEL_VERSION.zip failed to upload!"
 		echo -n "$MX_KERNEL_VERSION.zip" > "$RDIR/.lastzip"
-		/bin/bash /bin/robsms "$MX_KERNEL_VERSION.zip is ready!"
+		/bin/bash /bin/robmail "$MX_KERNEL_VERSION.zip uploaded!"
+		timerdiff
 	else
 		warnandfail "$RDIR/$MX_KERNEL_VERSION.zip is 0 bytes, something is wrong!"
 	fi
@@ -470,7 +509,7 @@ build_kernel_continue() {
 
 build_all() {
 
-	clean_build && build_kernel_config && build_kernel_continue
+	clean_build && build_kernel_config && build_kernel_continue && clean_build
 
 }
 
