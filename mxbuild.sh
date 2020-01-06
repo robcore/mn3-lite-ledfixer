@@ -412,7 +412,7 @@ create_zip() {
 		echo "Uploading $MX_KERNEL_VERSION.zip to Google Drive"
 		/bin/bash /root/google-drive-upload/upload.sh "$RDIR/$MX_KERNEL_VERSION.zip"
 		echo -n "$MX_KERNEL_VERSION.zip" > "$RDIR/.lastzip"
-		/bin/bash /bin/robsms "MX_KERNEL_VERSION.zip is ready!"
+		/bin/bash /bin/robsms "$MX_KERNEL_VERSION.zip is ready!"
 	else
 		warnandfail "$RDIR/$MX_KERNEL_VERSION.zip is 0 bytes, something is wrong!"
 	fi
