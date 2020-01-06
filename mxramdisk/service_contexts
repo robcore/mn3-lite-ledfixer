@@ -8,7 +8,6 @@ appops                                    u:object_r:system_server_service:s0
 appwidget                                 u:object_r:system_server_service:s0
 assetatlas                                u:object_r:system_server_service:s0
 audio                                     u:object_r:system_server_service:s0
-media.dolby_memoryservice                 u:object_r:system_server_service:s0
 backup                                    u:object_r:system_server_service:s0
 batteryproperties                         u:object_r:healthd_service:s0
 batterypropreg                            u:object_r:healthd_service:s0
@@ -295,6 +294,12 @@ generic_vpn_policy                          u:object_r:system_server_service:s0
 geofencing                                  u:object_r:system_server_service:s0
 irm_service                                 u:object_r:system_server_service:s0
 kioskmode                                   u:object_r:system_server_service:s0
+knoxcustom                                  u:object_r:system_server_service:s0
+knox_ccm_policy                             u:object_r:system_server_service:s0
+knox_pinpad_service                         u:object_r:system_server_service:s0
+knox_scep_policy                            u:object_r:system_server_service:s0
+knox_timakeystore_policy                    u:object_r:system_server_service:s0
+knox_vpn_policy                             u:object_r:system_server_service:s0
 ldap_account_policy                         u:object_r:system_server_service:s0
 license_log_service                         u:object_r:system_server_service:s0
 location_policy                             u:object_r:system_server_service:s0
