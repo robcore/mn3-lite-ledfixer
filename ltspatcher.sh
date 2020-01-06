@@ -19,10 +19,10 @@ failpause() {
 
 pcheckrs() {
 
-	if patch -p1 -R --dry-run < "$1"
+	if patch -p1 -R --dry-run < "$1" &>/dev/null
 	then
 		reversepause "$1 failed"
-	elif patch -p1 --dry-run < "$1"
+	elif patch -p1 --dry-run < "$1" &>/dev/null
 	then
 		patch -p1 < "$1"
 		echo "$1 Applied Cleanly."
