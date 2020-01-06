@@ -185,7 +185,7 @@ handle_existing() {
 		echo "Previous version was not completed!"
 		echo "Rebuilding old version"
 		MX_KERNEL_VERSION="machinexlite-Mark$OLDVER-hltetmo"
-	else if [ "$LASTZIP" = "machinexlite-Mark$OLDVER-hltetmo.zip" ]
+	elif [ "$LASTZIP" = "machinexlite-Mark$OLDVER-hltetmo.zip" ]
 	then
 		echo "Version Override"
 		echo "Previous version completed successfully!"
