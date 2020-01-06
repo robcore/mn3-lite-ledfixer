@@ -47,6 +47,8 @@ timerprint() {
 	else
 		echo " Second."
 	fi
+	rm $RDIR/.starttime &> /dev/null
+	rm $RDIR/.endtime &> /dev/null
 
 }
 
@@ -481,7 +483,8 @@ Script written by jcadduono, frequentc & robcore
 usage: ./mx-build.sh [OPTION]
 Common options:
  -a|--all            Do a complete build (starting at the beginning)
- -r|--rebuildme      Same as -all but defaults to rebuilding previous version
+ -d|--debug          Same as --all but skips final cleanup
+ -r|--rebuildme      Same as --all but defaults to rebuilding previous version
  -b|--bsd            Build single driver (path/to/folder/ | path/to/file.o)
  -c|--clean          Remove everything this build script has done
  -m|--menu           Setup an environment for and enter menuconfig
@@ -510,6 +513,12 @@ build_kernel_continue() {
 build_all() {
 
 	clean_build && build_kernel_config && build_kernel_continue && clean_build
+
+}
+
+build_debug() {
+
+	clean_build && build_kernel_config && build_kernel_continue
 
 }
 
@@ -546,6 +555,12 @@ while [[ $# -gt 0 ]]
 	     -a|--all)
 			handle_existing
 			build_all
+			break
+	    	;;
+
+	     -d|--debug)
+			handle_existing
+			build_debug
 			break
 	    	;;
 
