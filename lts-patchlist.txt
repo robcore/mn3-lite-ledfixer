@@ -1,7 +1,5 @@
 
 
-/root/linux-stable/patches/0733-rt2x00-Add-support-for-BUFFALO-WLI-UC-GNM2-to-rt2800.patch
-/root/linux-stable/patches/0734-Linux-3.4.10.patch
 /root/linux-stable/patches/0735-USB-vt6656-remove-__devinit-from-the-struct-usb_devi.patch
 /root/linux-stable/patches/0736-USB-emi62-remove-__devinit-from-the-struct-usb_devic.patch
 /root/linux-stable/patches/0737-ALSA-hda-fix-Copyright-debug-message.patch
