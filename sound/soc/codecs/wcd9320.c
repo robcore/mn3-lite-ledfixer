@@ -4350,6 +4350,9 @@ static void taiko_shutdown(struct snd_pcm_substream *substream,
 	}
 }
 
+static unsigned int high_perf_mode;
+module_param(high_perf_mode, uint, 0644);
+
 static int taiko_prepare(struct snd_pcm_substream *substream,
 		struct snd_soc_dai *dai)
 {
@@ -4358,6 +4361,7 @@ static int taiko_prepare(struct snd_pcm_substream *substream,
 	struct snd_soc_codec *codec = dai->codec;
 	struct taiko_priv *taiko_p = snd_soc_codec_get_drvdata(codec);
 	int found_hs_pa = 0;
+	unsigned int hph_override;
 
 	if (substream->stream)
 		return 0;
@@ -4375,18 +4379,18 @@ static int taiko_prepare(struct snd_pcm_substream *substream,
 		dai->driver->playback.stream_name, taiko_p->dai[dai->id].rate,
 			taiko_p->dai[dai->id].bit_width,
 			taiko_p->comp_enabled[COMPANDER_1]);
+	if (!high_perf_mode || (!taiko_p->comp_enabled[COMPANDER_1])) {
+		if (((taiko_p->dai[dai->id].rate != 192000 ||
+			 taiko_p->dai[dai->id].rate != 96000)) ||
+		    (taiko_p->dai[dai->id].bit_width != 24)) {
 
-	if ((!(taiko_p->dai[dai->id].rate == 192000 ||
-		 taiko_p->dai[dai->id].rate == 96000)) ||
-	    !(taiko_p->dai[dai->id].bit_width == 24) ||
-	    !(taiko_p->comp_enabled[COMPANDER_1])) {
+			taiko_p->clsh_d.hs_perf_mode_enabled = false;
+			snd_soc_update_bits(codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20);
 
-		taiko_p->clsh_d.hs_perf_mode_enabled = false;
-		snd_soc_update_bits(codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20);
-
-		dev_dbg(dai->dev ,"%s(): high performnce mode not needed\n",
+			dev_dbg(dai->dev ,"%s(): high performnce mode not needed\n",
 				__func__);
-		return 0;
+			return 0;
+		}
 	}
 
 	paths = snd_soc_dapm_codec_dai_get_playback_connected_widgets(dai, &wlist);
@@ -4418,7 +4422,11 @@ static int taiko_prepare(struct snd_pcm_substream *substream,
 			taiko_p->dai[dai->id].bit_width,
 			taiko_p->comp_enabled[COMPANDER_1]);
 
-	if ((taiko_p->dai[dai->id].rate == 192000 ||
+	if (high_perf_mode && taiko_p->comp_enabled[COMPANDER_1]) {
+		pr_debug("%s(): HS peformance mode enabled", __func__);
+		taiko_p->clsh_d.hs_perf_mode_enabled = true;
+		snd_soc_update_bits(codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x00);
+	} else if ((taiko_p->dai[dai->id].rate == 192000 ||
 		taiko_p->dai[dai->id].rate == 96000) &&
 	    (taiko_p->dai[dai->id].bit_width == 24) &&
 	    (taiko_p->comp_enabled[COMPANDER_1])) {
