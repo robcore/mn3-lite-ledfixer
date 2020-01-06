@@ -922,7 +922,8 @@ static int eth_stop(struct net_device *net)
 	spin_lock_irqsave(&dev->lock, flags);
 	if (dev->port_usb) {
 		struct gether	*link = dev->port_usb;
-
+		const struct usb_endpoint_descriptor *in;
+		const struct usb_endpoint_descriptor *out;
 		if (link->close)
 			link->close(link);
 
@@ -945,6 +946,9 @@ static int eth_stop(struct net_device *net)
 				link->in_ep->desc = NULL;
 				link->out_ep->desc = NULL;
 				return -EINVAL;
+			} else {
+				link->in_ep->desc = in;
+				link->out_ep->desc = out;
 			}
 			DBG(dev, "host still using in/out endpoints\n");
 			usb_ep_enable(link->in_ep);

@@ -1,37 +1,5 @@
 
 
-/root/linux-stable/patches/0701-Linux-3.4.9.patch
-/root/linux-stable/patches/0702-s390-compat-fix-compat-wrappers-for-process_vm-syste.patch
-/root/linux-stable/patches/0703-s390-compat-fix-mmap-compat-system-calls.patch
-/root/linux-stable/patches/0704-dma-imx-dma-Fix-kernel-crash-due-to-missing-clock-co.patch
-/root/linux-stable/patches/0705-fuse-verify-all-ioctl-retry-iov-elements.patch
-/root/linux-stable/patches/0706-xen-mark-local-pages-as-FOREIGN-in-the-m2p_override.patch
-/root/linux-stable/patches/0707-drm-i915-prefer-wide-slow-to-fast-narrow-in-DP-confi.patch
-/root/linux-stable/patches/0708-drm-nvd0-disp-mask-off-high-16-bit-of-negative-curso.patch
-/root/linux-stable/patches/0709-drm-i915-correctly-order-the-ring-init-sequence.patch
-/root/linux-stable/patches/0710-drm-i915-ignore-eDP-bpc-settings-from-vbt.patch
-/root/linux-stable/patches/0711-drm-i915-reorder-edp-disabling-to-fix-ivb-MacBook-Ai.patch
-/root/linux-stable/patches/0712-drm-radeon-properly-handle-crtc-powergating.patch
-/root/linux-stable/patches/0713-drm-radeon-do-not-reenable-crtc-after-moving-vram-st.patch
-/root/linux-stable/patches/0714-drm-radeon-add-some-new-SI-pci-ids.patch
-/root/linux-stable/patches/0715-drm-radeon-fix-bank-tiling-parameters-on-cayman.patch
-/root/linux-stable/patches/0716-drm-radeon-fix-bank-tiling-parameters-on-evergreen.patch
-/root/linux-stable/patches/0717-ext4-make-sure-the-journal-sb-is-written-in-ext4_cle.patch
-/root/linux-stable/patches/0718-ext4-avoid-kmemcheck-complaint-from-reading-uninitia.patch
-/root/linux-stable/patches/0719-ext4-fix-long-mount-times-on-very-big-file-systems.patch
-/root/linux-stable/patches/0720-ext4-fix-kernel-BUG-on-large-scale-rm-rf-commands.patch
-/root/linux-stable/patches/0721-xhci-Add-Etron-XHCI_TRUST_TX_LENGTH-quirk.patch
-/root/linux-stable/patches/0722-xhci-Increase-reset-timeout-for-Renesas-720201-host.patch
-/root/linux-stable/patches/0723-xhci-Switch-PPT-ports-to-EHCI-on-shutdown.patch
-/root/linux-stable/patches/0724-xhci-Fix-bug-after-deq-ptr-set-to-link-TRB.patch
-/root/linux-stable/patches/0725-USB-add-USB_VENDOR_AND_INTERFACE_INFO-macro.patch
-/root/linux-stable/patches/0726-pmac_zilog-kdb-Fix-console-poll-hook-to-return-inste.patch
-/root/linux-stable/patches/0727-IB-srp-Fix-a-race-condition.patch
-/root/linux-stable/patches/0728-USB-support-the-new-interfaces-of-Huawei-Data-Card-d.patch
-/root/linux-stable/patches/0729-USB-option-add-ZTE-K5006-Z.patch
-/root/linux-stable/patches/0730-USB-ftdi_sio-Add-VID-PID-for-Kondo-Serial-USB.patch
-/root/linux-stable/patches/0731-usb-serial-mos7840-Fixup-mos7840_chars_in_buffer.patch
-/root/linux-stable/patches/0732-usb-gadget-u_ether-fix-kworker-100-CPU-issue-with-st.patch
 /root/linux-stable/patches/0733-rt2x00-Add-support-for-BUFFALO-WLI-UC-GNM2-to-rt2800.patch
 /root/linux-stable/patches/0734-Linux-3.4.10.patch
 /root/linux-stable/patches/0735-USB-vt6656-remove-__devinit-from-the-struct-usb_devi.patch
