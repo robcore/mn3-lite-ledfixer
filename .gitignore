@@ -116,3 +116,4 @@ scripts/mkqcdtbootimg/mkqcdtbootimg
 config.*
 magiskbackup
 mxzip/boot.img
+.lastzip

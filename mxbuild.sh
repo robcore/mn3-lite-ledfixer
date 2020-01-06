@@ -8,6 +8,8 @@ env KCONFIG_NOTIMESTAMP=true &>/dev/null
 RDIR="/root/mn3lite"
 OLDVERFILE="$RDIR/.oldversion"
 OLDVER="$(cat $OLDVERFILE)"
+LASTZIPFILE="$RDIR/.lastzip"
+LASTZIP="$(cat $LASTZIPFILE)"
 RAMDISKFOLDER="$RDIR/mxramdisk"
 ZIPFOLDER="$RDIR/mxzip"
 MXCONFIG="$RDIR/arch/arm/configs/mxconfig"
@@ -183,6 +185,18 @@ handle_existing() {
 		echo "Previous version was not completed!"
 		echo "Rebuilding old version"
 		MX_KERNEL_VERSION="machinexlite-Mark$OLDVER-hltetmo"
+	else if [ "$LASTZIP" = "machinexlite-Mark$OLDVER-hltetmo.zip" ]
+	then
+		echo "Version Override"
+		echo "Previous version completed successfully!"
+		echo "Building new version!"
+		NEWVER="$(echo $(expr $(( $OLDVER + 1 ))))"
+		if [ -z "$NEWVER" ]
+		then
+			warnandfail "FATAL ERROR! Failed to raise version number by one!"
+		fi
+		MX_KERNEL_VERSION="machinexlite-Mark$NEWVER-hltetmo"
+		echo -n "$NEWVER" > "$OLDVERFILE"
 	else
 		echo -n "Rebuilding (o)ld version? Or building (n)ew version? Please specify [o|n]: "
 		read -r WHICHVERSION
@@ -397,6 +411,7 @@ create_zip() {
 	then
 		echo "Uploading $MX_KERNEL_VERSION.zip to Google Drive"
 		/bin/bash /root/google-drive-upload/upload.sh "$RDIR/$MX_KERNEL_VERSION.zip"
+		echo -n "$MX_KERNEL_VERSION.zip" > "$RDIR/.lastzip"
 	else
 		warnandfail "$RDIR/$MX_KERNEL_VERSION.zip is 0 bytes, something is wrong!"
 	fi
