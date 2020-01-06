@@ -1,19 +1,4 @@
 
-
-/root/linux-stable/patches/0515-HID-add-battery-quirk-for-Apple-Wireless-ANSI.patch
-/root/linux-stable/patches/0516-HID-add-Sennheiser-BTD500USB-device-support.patch
-/root/linux-stable/patches/0517-HID-multitouch-Add-support-for-Baanto-touchscreen.patch
-/root/linux-stable/patches/0518-MIPS-Properly-align-the-.data.init_task-section.patch
-/root/linux-stable/patches/0519-UBIFS-fix-a-bug-in-empty-space-fix-up.patch
-/root/linux-stable/patches/0520-ore-Fix-NFS-crash-by-supporting-any-unaligned-RAID-I.patch
-/root/linux-stable/patches/0521-ore-Remove-support-of-partial-IO-request-NFS-crash.patch
-/root/linux-stable/patches/0522-pnfs-obj-don-t-leak-objio_state-if-ore_write-read-fa.patch
-/root/linux-stable/patches/0523-dm-thin-do-not-send-discards-to-shared-blocks.patch
-/root/linux-stable/patches/0524-dm-raid1-fix-crash-with-mirror-recovery-and-discard.patch
-/root/linux-stable/patches/0525-dm-raid1-set-discard_zeroes_data_unsupported.patch
-/root/linux-stable/patches/0526-ARM-SAMSUNG-Update-default-rate-for-xusbxti-clock.patch
-/root/linux-stable/patches/0527-cifs-when-CONFIG_HIGHMEM-is-set-serialize-the-read-w.patch
-/root/linux-stable/patches/0528-Linux-3.4.7.patch
 /root/linux-stable/patches/0529-target-Add-generation-of-LOGICAL-BLOCK-ADDRESS-OUT-O.patch
 /root/linux-stable/patches/0530-iscsi-target-Drop-bogus-struct-file-usage-for-iSCSI-.patch
 /root/linux-stable/patches/0531-mmc-sdhci-pci-CaFe-has-broken-card-detection.patch
