@@ -547,11 +547,9 @@ if [ $# = 0 ] ; then
 fi
 
 while [[ $# -gt 0 ]]
-	do
-	key="$1"
+do
 	extrargs="$2"
-
-	case $key in
+	case "$1" in
 	     -a|--all)
 			handle_existing
 			build_all
