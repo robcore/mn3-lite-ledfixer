@@ -117,3 +117,5 @@ config.*
 magiskbackup
 mxzip/boot.img
 .lastzip
+.starttime
+.endtime

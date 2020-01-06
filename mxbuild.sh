@@ -33,14 +33,14 @@ timerprint() {
 	DIFFMINS=$(bc <<< "(${1}%3600)/60")
 	DIFFSECS=$(bc <<< "${1}%60")
 	echo -n "Build completed in: "
-	printf "$DIFFMINS"
+	printf "%d" "$DIFFMINS"
 	if [ "$DIFFMINS" = "1" ]
 	then
 		echo -n " Minute and "
 	else
 		echo -n " Minutes and "
 	fi
-	printf "$DIFFSECS"
+	printf "%d" "$DIFFSECS"
 	if [ "$DIFFSECS" = "1" ]
 	then
 		echo " Second."
@@ -56,7 +56,7 @@ timerdiff() {
 
 	echo -n "$(date +%s)" > "$RDIR/.endtime"
 	ENDTIME="$(cat $RDIR/.endtime)"
-	DIFFTIME=$(( $ENDTIME - $STARTTIME ))
+	DIFFTIME=$(( ENDTIME - STARTTIME ))
 	timerprint "$DIFFTIME"
 
 }
@@ -228,7 +228,7 @@ handle_existing() {
 		echo "Version Override"
 		echo "Previous version completed successfully!"
 		echo "Building new version!"
-		NEWVER="$(echo $(expr $(( $OLDVER + 1 ))))"
+		NEWVER="$(echo $(( OLDVER + 1 )))"
 		if [ -z "$NEWVER" ]
 		then
 			warnandfail "FATAL ERROR! Failed to raise version number by one!"
@@ -262,7 +262,7 @@ handle_existing() {
 		elif [ "$CURVER" = "new" ]
 		then
 			echo "Building new version has been selected"
-			NEWVER="$(echo $(expr $(( $OLDVER + 1 ))))"
+			NEWVER="$(echo $(( OLDVER + 1 )))"
 			if [ -z "$NEWVER" ]
 			then
 				warnandfail "FATAL ERROR! Failed to raise version number by one!"
@@ -344,14 +344,14 @@ build_single_config() {
 	MX_KERNEL_VERSION="buildingsingledriver"
 	mkdir -p "$RDIR/build" || warnandfail "Failed to make $RDIR/build directory!"
 	cp "$MXCONFIG" "$RDIR/build/.config" || warnandfail "Config Copy Error!"
-	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -C "$RDIR" O="$RDIR/build" -j "$CORECOUNT" oldconfig || warnandfail "make oldconfig Failed!"
+	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -C "$RDIR" O="$RDIR/build" -j"$CORECOUNT" oldconfig || warnandfail "make oldconfig Failed!"
 
 }
 
 build_single_driver() {
 
 	echo "Building Single Driver..."
-	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -C "$RDIR" -S -s -j "$CORECOUNT" O="$RDIR/build/" "$1"
+	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -C "$RDIR" -S -s -j"$CORECOUNT" O="$RDIR/build/" "$1"
 
 }
 
@@ -361,7 +361,7 @@ build_kernel_config() {
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
 	mkdir -p "$RDIR/build" || warnandfail "Failed to make $RDIR/build directory!"
 	cp "$MXCONFIG" "$RDIR/build/.config" || warnandfail "Config Copy Error!"
-	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -C "$RDIR" O="$RDIR/build" -j "$CORECOUNT" oldconfig || warnandfail "make oldconfig Failed!"
+	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -C "$RDIR" O="$RDIR/build" -j"$CORECOUNT" oldconfig || warnandfail "make oldconfig Failed!"
 
 }
 
@@ -372,7 +372,7 @@ build_kernel() {
 	echo "Snapshot of current environment variables:"
 	env
 	echo "Starting build..."
-	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -S -s -C "$RDIR" O="$RDIR/build" -j "$CORECOUNT" || warnandfail "Kernel Build failed!"
+	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -S -s -C "$RDIR" O="$RDIR/build" -j"$CORECOUNT" || warnandfail "Kernel Build failed!"
 
 }
 
@@ -490,7 +490,7 @@ Common options:
  -m|--menu           Setup an environment for and enter menuconfig
  -k|--kernel         Try the build again starting at compiling the kernel
  -o|--kernel-only    Recompile only the kernel, nothing else
- -r|--ramdisk        Try the build again starting at the ramdisk
+ -rd|--ramdisk       Try the build again starting at the ramdisk
  -t|--tests          Testing playground
 EOF
 
@@ -597,7 +597,7 @@ while [[ $# -gt 0 ]]
 	    	break
 	    	;;
 
-	     -r|--ramdisk)
+	     -rd|--ramdisk)
 			handle_existing
 	     	build_ramdisk_continue
 	    	break
