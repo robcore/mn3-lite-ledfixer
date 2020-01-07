@@ -260,7 +260,7 @@ MODULE_PARM_DESC(spkr_drv_wrnd,
 	       "Run software workaround to avoid leakage on the speaker drive");
 
 static struct wcd9xxx *sound_control_codec_ptr;
-static struct snd_soc_codec *direct_codec;
+//static struct snd_soc_codec *direct_codec;
 
 #define WCD9320_RATES (SNDRV_PCM_RATE_8000 | SNDRV_PCM_RATE_16000 |\
 			SNDRV_PCM_RATE_32000 | SNDRV_PCM_RATE_48000 |\
@@ -915,18 +915,18 @@ static int taiko_set_compander(struct snd_kcontrol *kcontrol,
 	return 0;
 }
 
-#define HPH_RX_GAIN_MAX 20
+//#define HPH_RX_GAIN_MAX 20
 
-static unsigned int user_hphl_volume;
-static unsigned int user_hphr_volume;
+//static unsigned int user_hphl_volume;
+//static unsigned int user_hphr_volume;
 
-static void update_hph_pa_gain(void) {
+/*static void update_hph_pa_gain(void) {
 		snd_soc_update_bits(direct_codec, TAIKO_A_RX_HPH_L_GAIN, 0x0F,
 				(HPH_RX_GAIN_MAX - user_hphl_volume));
 		snd_soc_update_bits(direct_codec, TAIKO_A_RX_HPH_R_GAIN, 0x0F,
 				(HPH_RX_GAIN_MAX - user_hphr_volume));
 }
-
+*/
 static int taiko_config_gain_compander(struct snd_soc_codec *codec,
 				       int comp, bool enable)
 {
@@ -946,8 +946,8 @@ static int taiko_config_gain_compander(struct snd_soc_codec *codec,
 				__func__, (1 << 5), (!enable << 5));
 		snd_soc_update_bits(codec, TAIKO_A_RX_HPH_R_GAIN,
 				    1 << 5, !enable << 5);
-		if (enable)
-			update_hph_pa_gain();
+		//if (enable)
+			//update_hph_pa_gain();
 		break;
 	case COMPANDER_2:
 		snd_soc_update_bits(codec, TAIKO_A_RX_LINE_1_GAIN,
@@ -6986,7 +6986,7 @@ static int taiko_setup_zdet(struct wcd9xxx_mbhc *mbhc,
 		/* Ramp generator takes ~17ms */
 		usleep_range(ramp_wait_us,
 				ramp_wait_us + WCD9XXX_USLEEP_RANGE_MARGIN_US);
-		update_hph_pa_gain();
+		//update_hph_pa_gain();
 		break;
 	case PA_DISABLE:
 		/* Ramp HPH L & R back to Zero */
@@ -7395,7 +7395,7 @@ static ssize_t sound_control_normalize_store(struct kobject *kobj,
 
 	return count;
 }
-
+/*
 static ssize_t headphone_pa_gain_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf)
 {
@@ -7405,7 +7405,7 @@ static ssize_t headphone_pa_gain_show(struct kobject *kobj,
 	wcd_hphr = (HPH_RX_GAIN_MAX - user_hphr_volume);
 	return sprintf(buf, "%d %d\n", wcd_hphl, wcd_hphr);
 }
-
+*/
 static ssize_t headphone_pa_gain_raw_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf)
 {
@@ -7415,7 +7415,7 @@ static ssize_t headphone_pa_gain_raw_show(struct kobject *kobj,
 	wcd_hphr = wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, WCD9XXX_A_RX_HPH_R_GAIN);
 	return sprintf(buf, "%d %d\n", wcd_hphl, wcd_hphr);
 }
-
+/*
 static ssize_t headphone_pa_gain_store(struct kobject *kobj,
 		struct kobj_attribute *attr, const char *buf, size_t count)
 {
@@ -7446,7 +7446,7 @@ static ssize_t headphone_pa_gain_store(struct kobject *kobj,
 	update_hph_pa_gain();
 	return count;
 }
-
+*/
 static struct kobj_attribute headphone_gain_attribute =
 	__ATTR(headphone_gain, 0644,
 		headphone_gain_show,
@@ -7462,10 +7462,10 @@ static struct kobj_attribute sound_control_normalize_attribute =
 		sound_control_normalize_show,
 		sound_control_normalize_store);
 
-static struct kobj_attribute headphone_pa_gain_attribute =
-	__ATTR(headphone_pa_gain, 0644,
-		headphone_pa_gain_show,
-		headphone_pa_gain_store);
+//static struct kobj_attribute headphone_pa_gain_attribute =
+//	__ATTR(headphone_pa_gain, 0644,
+//		headphone_pa_gain_show,
+//		headphone_pa_gain_store);
 
 static struct kobj_attribute headphone_pa_gain_raw_attribute =
 	__ATTR(headphone_pa_gain_raw, 0444,
@@ -7525,7 +7525,6 @@ static int taiko_codec_probe(struct snd_soc_codec *codec)
 
 	snd_soc_codec_set_drvdata(codec, taiko);
 
-
 	/* codec resmgr module init */
 	wcd9xxx = codec->control_data;
 	core_res = &wcd9xxx->core_res;
@@ -7562,7 +7561,7 @@ static int taiko_codec_probe(struct snd_soc_codec *codec)
 	}
 #endif
 	taiko->codec = codec;
-	direct_codec = codec;
+	//direct_codec = codec;
 	for (i = 0; i < COMPANDER_MAX; i++) {
 		taiko->comp_enabled[i] = 0;
 		taiko->comp_fs[i] = COMPANDER_FS_48KHZ;
