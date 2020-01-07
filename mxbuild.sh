@@ -32,20 +32,20 @@ timerprint() {
 
 	DIFFMINS=$(bc <<< "(${1}%3600)/60")
 	DIFFSECS=$(bc <<< "${1}%60")
-	echo -n "Build completed in: "
+	printf "%s" "Build completed in: "
 	printf "%d" "$DIFFMINS"
 	if [ "$DIFFMINS" = "1" ]
 	then
-		echo -n " Minute and "
+		printf "%s" " Minute and "
 	else
-		echo -n " Minutes and "
+		printf "%s" " Minutes and "
 	fi
 	printf "%d" "$DIFFSECS"
 	if [ "$DIFFSECS" = "1" ]
 	then
-		echo " Second."
+		printf "%s\n" " Second."
 	else
-		echo " Seconds."
+		printf "%s\n" " Seconds."
 	fi
 	rm $RDIR/.starttime &> /dev/null
 	rm $RDIR/.endtime &> /dev/null
@@ -54,7 +54,7 @@ timerprint() {
 
 timerdiff() {
 
-	echo -n "$(date +%s)" > "$RDIR/.endtime"
+	printf "%s" "$(date +%s)" > "$RDIR/.endtime"
 	ENDTIME="$(cat $RDIR/.endtime)"
 	DIFFTIME=$(( ENDTIME - STARTTIME ))
 	timerprint "$DIFFTIME"
@@ -69,7 +69,7 @@ warnandfail() {
 	ISTRING="$1"
 	if [ -n "$ISTRING" ]
 	then
-		echo "$ISTRING"
+		printf "%s\n" "$ISTRING"
 	fi
 	exit 1
 
@@ -133,69 +133,39 @@ fi
 
 shortprog() {
 
-	echo -ne "#####               (25%)\r"; \
+	printf "%s\r" "-----------------------------------"; \
 	sleep 0.4; \
-	echo -ne "##########          (50%)\r"; \
+	printf "%s\r" "----------------- -----------------"; \
 	sleep 0.4; \
-	echo -ne "###############     (75%)\r"; \
+	printf "%s\r" "---------------     ---------------"; \
 	sleep 0.4; \
-	echo -ne "####################(100%)\r"; \
-	echo -ne "                          \r"; \
+	printf "%s\r" "----------               ----------"; \
+	sleep 0.4; \
+	printf "%s\r" "-------                     -------"; \
+	sleep 0.4; \
+	printf "%s\r" "-----                         -----"; \
+	sleep 0.4; \
+	printf "%s\r" "---                             ---"; \
+	sleep 0.4; \
+	printf "%s\r" "-                                 -"; \
+	sleep 0.4; \
+	printf "%s\r" "---                             ---"; \
+	sleep 0.4; \
+	printf "%s\r" "-----                         -----"; \
+	sleep 0.4; \
+	printf "%s\r" "-------                     -------"; \
+	sleep 0.4; \
+	printf "%s\r" "----------               ----------"; \
+	sleep 0.4; \
+	printf "%s\r" "---------------     ---------------"; \
+	sleep 0.4; \
+	printf "%s\r" "----------------- -----------------"; \
+	sleep 0.4; \
+	printf "%s\r" "-----------------------------------"; \
+	sleep 0.4; \
+	printf "%s\r" "                                   "; \
+	printf "%s\n"
 	#echo -ne "\n"
-
-}
-
-longprog() {
-
-	echo -ne "#                       \r"; \
-	sleep 0.4; \
-	echo -ne "##                      \r"; \
-	sleep 0.4; \
-	echo -ne "###                     \r"; \
-	sleep 0.4; \
-	echo -ne "####                    \r"; \
-	sleep 0.4; \
-	echo -ne "#####                   \r"; \
-	sleep 0.4; \
-	echo -ne "######                  \r"; \
-	sleep 0.4; \
-	echo -ne "#######                 \r"; \
-	sleep 0.4; \
-	echo -ne "########                \r"; \
-	sleep 0.4; \
-	echo -ne "#########               \r"; \
-	sleep 0.4; \
-	echo -ne "##########              \r"; \
-	sleep 0.4; \
-	echo -ne "###########             \r"; \
-	sleep 0.4; \
-	echo -ne "############            \r"; \
-	sleep 0.4; \
-	echo -ne "#############           \r"; \
-	sleep 0.4; \
-	echo -ne "##############          \r"; \
-	sleep 0.4; \
-	echo -ne "###############         \r"; \
-	sleep 0.4; \
-	echo -ne "################        \r"; \
-	sleep 0.4; \
-	echo -ne "#################       \r"; \
-	sleep 0.4; \
-	echo -ne "##################      \r"; \
-	sleep 0.4; \
-	echo -ne "###################     \r"; \
-	sleep 0.4; \
-	echo -ne "####################    \r"; \
-	sleep 0.4; \
-	echo -ne "#####################   \r"; \
-	sleep 0.4; \
-	echo -ne "######################  \r"; \
-	sleep 0.4; \
-	echo -ne "####################### \r"; \
-	sleep 0.4; \
-	echo -ne "########################\r"; \
-	sleep 0.4; \
-	echo -ne "                        \r"; \
 
 }
 
@@ -204,7 +174,6 @@ test_funcs() {
 	echo "This is a test of the emergency broadcast system."
 	echo "This is only a test."
 	shortprog
-	longprog
 	echo "This has been a test of the emergency broadcast system."
 	echo "This was only a test"
 
