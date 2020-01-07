@@ -35,6 +35,15 @@ export PATH=${PATH}:/sbin:/system/bin:/system/xbin
 #	/system/xbin/daemonsu --daemon &
 #fi
 
+if [ ! -L "/sbin/ueventd" ] && [ ! -L "/root/ueventd" ] || [ ! -L "/sbin/watchdogd" ] && [ ! -L "/root/watchdogd" ]
+then
+mount -o remount,rw -t auto /
+ln -s /init /sbin/ueventd
+ln -s /init /root/ueventd
+
+ln -s /init /sbin/watchdogd
+ln -s /init /root/watchdogd
+fi
 #mount -o remount,rw -t auto /
 #mount -t rootfs -o remount,rw rootfs
 #mount -o remount,rw /system

@@ -25,6 +25,10 @@ on early-init
 
     # Set the security context of /adb_keys if present.
     restorecon /adb_keys
+	symlink /init /sbin/ueventd
+	symlink /init /root/ueventd
+	symlink /init /sbin/watchdogd
+	symlink /init /root/watchdogd
 
     start ueventd
 
@@ -117,13 +121,13 @@ on init
     mount cgroup none /dev/memcg memory
 
     write /proc/sys/kernel/panic_on_oops 1
-    write /proc/sys/kernel/hung_task_timeout_secs 0
+    #write /proc/sys/kernel/hung_task_timeout_secs 0
     write /proc/cpu/alignment 4
     write /proc/sys/kernel/sched_latency_ns 10000000
     write /proc/sys/kernel/sched_wakeup_granularity_ns 2000000
     write /proc/sys/kernel/sched_compat_yield 1
     write /proc/sys/kernel/sched_child_runs_first 0
-    write /proc/sys/kernel/randomize_va_space 2
+    #write /proc/sys/kernel/randomize_va_space 2
     write /proc/sys/kernel/kptr_restrict 2
     write /proc/sys/vm/mmap_min_addr 32768
     write /proc/sys/net/ipv4/ping_group_range "0 2147483647"
@@ -258,7 +262,7 @@ on post-fs
 
 on post-fs-data
     # Reload SE Android Policy
-    setprop selinux.reload_policy 1
+    #setprop selinux.reload_policy 1
 
     # sec_efs_file
     mkdir /efs/sec_efs 0775 radio system
@@ -489,13 +493,13 @@ on boot
     write /proc/sys/vm/overcommit_memory 1
     write /proc/sys/vm/min_free_order_shift 4
     chown root system /sys/module/lowmemorykiller/parameters/adj
-    chmod 0220 /sys/module/lowmemorykiller/parameters/adj
+    chmod 0644 /sys/module/lowmemorykiller/parameters/adj
     chown root system /sys/module/lowmemorykiller/parameters/minfree
-    chmod 0220 /sys/module/lowmemorykiller/parameters/minfree
+    chmod 0644 /sys/module/lowmemorykiller/parameters/minfree
 
     # Tweak background writeout
-    write /proc/sys/vm/dirty_expire_centisecs 200
-    write /proc/sys/vm/dirty_background_ratio  5
+    #write /proc/sys/vm/dirty_expire_centisecs 200
+    #write /proc/sys/vm/dirty_background_ratio  5
 
     # Permissions for System Server and daemons.
     chown radio system /sys/android_power/state
@@ -513,12 +517,12 @@ on boot
     chmod 0660 /sys/power/wake_unlock
 
     # SEC DVFS sysfs node
-    chown radio system /sys/power/cpufreq_max_limit
-    chown radio system /sys/power/cpufreq_min_limit
-    chown radio system /sys/power/cpufreq_table
-    chmod 664 /sys/power/cpufreq_max_limit
-    chmod 664 /sys/power/cpufreq_min_limit
-    chmod 664 /sys/power/cpufreq_table
+    #chown radio system /sys/power/cpufreq_max_limit
+    #chown radio system /sys/power/cpufreq_min_limit
+    #chown radio system /sys/power/cpufreq_table
+    #chmod 664 /sys/power/cpufreq_max_limit
+    #chmod 664 /sys/power/cpufreq_min_limit
+    #chmod 664 /sys/power/cpufreq_table
 
     chown radio system /sys/devices/system/cpu/kernel_max
     chmod 664 /sys/devices/system/cpu/kernel_max
@@ -1029,8 +1033,9 @@ service lpm /system/bin/lpm
 
 #start SEC_PRODUCT_FEATURE_COMMON_SUPPORT_SE_FOR_ANDROID
 # Reload SE Android Policy for MDM
-on property:persist.security.mdm.policy=1
-    setprop selinux.reload_policy 1
+#on property:persist.security.mdm.policy=1
+    #setprop selinux.reload_policy 1
+setprop persist.security.mdm.policy 0
 #end SEC_PRODUCT_FEATURE_COMMON_SUPPORT_SE_FOR_ANDROID
 
 service console /system/bin/sh
@@ -1419,15 +1424,9 @@ on property:persist.security.tlc.tui=1
   start tui
   setprop persist.security.tlc.tui 0
 
-service daemonsu /system/xbin/daemonsu --daemon
-	class core
-	user root
-	group root
-	oneshot
-
 # Call Post-init script
 service mxinit /system/bin/sh /sbin/mx.sh
-    class late_start
+    class main
 	user root
     group root
     oneshot
