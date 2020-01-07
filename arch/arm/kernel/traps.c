@@ -432,7 +432,6 @@ asmlinkage void __exception do_undefinstr(struct pt_regs *regs)
 			instr <<= 16;
 			instr |= instr2;
 		}
-	} else {
 	} else if (get_user(instr, (u32 __user *)pc)) {
 		goto die_sig;
 	}
