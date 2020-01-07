@@ -478,7 +478,6 @@ struct taiko_priv {
 	 * end of impedance measurement
 	 */
 	struct list_head reg_save_restore;
-	struct pm_qos_request pm_qos_req;
 };
 
 static const u32 comp_shift[] = {
@@ -533,7 +532,7 @@ static const struct comp_sample_dependent_params comp_samp_params[] = {
 		/* 192 Khz */
 		.peak_det_timeout = 0x0B,
 		.rms_meter_div_fact = 0xC,
-		.rms_meter_resamp_fact = 0x50,
+		.rms_meter_resamp_fact = 0xA0,
 	},
 };
 
@@ -667,8 +666,8 @@ static int taiko_put_anc_func(struct snd_kcontrol *kcontrol,
 		snd_soc_dapm_enable_pin(dapm, "EAR PA");
 		snd_soc_dapm_enable_pin(dapm, "EAR");
 	}
-	snd_soc_dapm_sync(dapm);
 	mutex_unlock(&dapm->codec->mutex);
+	snd_soc_dapm_sync(dapm);
 	return 0;
 }
 
@@ -691,23 +690,6 @@ static int taiko_get_iir_enable_audio_mixer(
 		(uint32_t)ucontrol->value.integer.value[0]);
 	return 0;
 }
-
-#if defined(CONFIG_SEC_JACTIVE_PROJECT)
-static int taiko_get_sub_mic_delay_set(struct snd_kcontrol *kcontrol,
-	struct snd_ctl_elem_value *ucontrol)
-{
-	return 0;
-}
-
-static int taiko_put_sub_mic_delay_set(struct snd_kcontrol *kcontrol,
-	struct snd_ctl_elem_value *ucontrol)
-{
-	sub_mic_rec_delay = ucontrol->value.integer.value[0];
-	pr_info("%s : sub_mic_rec_delay : %d\n",  __func__, sub_mic_rec_delay);
-
-	return 0;
-}
-#endif
 
 static int taiko_put_iir_enable_audio_mixer(
 					struct snd_kcontrol *kcontrol,
@@ -1038,16 +1020,17 @@ static int taiko_config_compander(struct snd_soc_dapm_widget *w,
 		snd_soc_update_bits(codec,
 				    TAIKO_A_CDC_COMP0_FS_CFG + (comp * 8),
 				    0x07, rate);
-		/* Set the static gain offset */
-		if (comp == COMPANDER_1
-			&& buck_mv == WCD9XXX_CDC_BUCK_MV_1P8) {
-			snd_soc_update_bits(codec,
-					TAIKO_A_CDC_COMP0_B4_CTL + (comp * 8),
-					0x80, 0x80);
-		} else {
-			snd_soc_update_bits(codec,
+		/* Set the static gain offset for HPH Path */
+		if (comp == COMPANDER_1) {
+			if (buck_mv == WCD9XXX_CDC_BUCK_MV_2P15) {
+				snd_soc_update_bits(codec,
 					TAIKO_A_CDC_COMP0_B4_CTL + (comp * 8),
 					0x80, 0x00);
+			} else {
+				snd_soc_update_bits(codec,
+					TAIKO_A_CDC_COMP0_B4_CTL + (comp * 8),
+					0x80, 0x80);
+			}
 		}
 		/* Enable RX interpolation path compander clocks */
 		snd_soc_update_bits(codec, TAIKO_A_CDC_CLK_RX_B2_CTL,
@@ -1108,12 +1091,6 @@ static int taiko_config_compander(struct snd_soc_dapm_widget *w,
 static const char *const taiko_anc_func_text[] = {"OFF", "ON"};
 static const struct soc_enum taiko_anc_func_enum =
 		SOC_ENUM_SINGLE_EXT(2, taiko_anc_func_text);
-
-#if defined(CONFIG_SEC_JACTIVE_PROJECT)
-static const char *const taiko_sub_mic_delay_text[] = {"OFF", "ON"};
-static const struct soc_enum taiko_sub_mic_delay_enum =
-		SOC_ENUM_SINGLE_EXT(2, taiko_sub_mic_delay_text);
-#endif
 
 static const char *const tabla_ear_pa_gain_text[] = {"POS_6_DB", "POS_2_DB"};
 static const struct soc_enum tabla_ear_pa_gain_enum[] = {
@@ -1365,10 +1342,6 @@ static const struct snd_kcontrol_new taiko_snd_controls[] = {
 		taiko_put_anc_slot),
 	SOC_ENUM_EXT("ANC Function", taiko_anc_func_enum, taiko_get_anc_func,
 		taiko_put_anc_func),
-#if defined(CONFIG_SEC_JACTIVE_PROJECT)
-        SOC_ENUM_EXT("SUB_MIC_REC_DELAY", taiko_sub_mic_delay_enum, taiko_get_sub_mic_delay_set,
-            taiko_put_sub_mic_delay_set),
-#endif
 
 	SOC_ENUM("TX1 HPF cut off", cf_dec1_enum),
 	SOC_ENUM("TX2 HPF cut off", cf_dec2_enum),
@@ -1579,44 +1552,9 @@ static const struct snd_kcontrol_new taiko_2_x_analog_gain_controls[] = {
 			analog_gain),
 };
 
-#if defined(CONFIG_MACH_KLTE_JPN) || defined(CONFIG_MACH_KLTE_KOR)
-extern unsigned int system_rev;
-#endif
-
 static int taiko_hph_impedance_get(struct snd_kcontrol *kcontrol,
 				   struct snd_ctl_elem_value *ucontrol)
 {
-#if defined(CONFIG_MACH_KLTE_KOR)
-	if (system_rev >= 13) {
-		uint32_t zl, zr;
-		bool hphr;
-		struct soc_multi_mixer_control *mc;
-		struct snd_soc_codec *codec = snd_kcontrol_chip(kcontrol);
-		struct taiko_priv *priv = snd_soc_codec_get_drvdata(codec);
-
-		mc = (struct soc_multi_mixer_control *)(kcontrol->private_value);
-
-		hphr = mc->shift;
-		wcd9xxx_mbhc_get_impedance(&priv->mbhc, &zl, &zr);
-		pr_debug("%s: zl %u, zr %u\n", __func__, zl, zr);
-		ucontrol->value.integer.value[0] = hphr ? zr : zl;
-	}
-#elif defined(CONFIG_MACH_KLTE_JPN)
-	if (system_rev >= 11) {
-		uint32_t zl, zr;
-		bool hphr;
-		struct soc_multi_mixer_control *mc;
-		struct snd_soc_codec *codec = snd_kcontrol_chip(kcontrol);
-		struct taiko_priv *priv = snd_soc_codec_get_drvdata(codec);
-
-		mc = (struct soc_multi_mixer_control *)(kcontrol->private_value);
-
-		hphr = mc->shift;
-		wcd9xxx_mbhc_get_impedance(&priv->mbhc, &zl, &zr);
-		pr_debug("%s: zl %u, zr %u\n", __func__, zl, zr);
-		ucontrol->value.integer.value[0] = hphr ? zr : zl;
-	}
-#else
 #if !defined(CONFIG_SAMSUNG_JACK) && !defined(CONFIG_MUIC_DET_JACK)
 	uint32_t zl, zr;
 	bool hphr;
@@ -1631,8 +1569,8 @@ static int taiko_hph_impedance_get(struct snd_kcontrol *kcontrol,
 	pr_debug("%s: zl %u, zr %u\n", __func__, zl, zr);
 	ucontrol->value.integer.value[0] = hphr ? zr : zl;
 #endif
-#endif
 	ucontrol->value.integer.value[0] = 0;
+
 	return 0;
 }
 
@@ -2279,9 +2217,9 @@ static int slim_tx_mixer_put(struct snd_kcontrol *kcontrol,
 	pr_debug("%s: name %s sname %s updated value %u shift %d\n", __func__,
 		widget->name, widget->sname, widget->value, widget->shift);
 
+	mutex_unlock(&codec->mutex);
 	snd_soc_dapm_mixer_update_power(widget, kcontrol, enable);
 
-	mutex_unlock(&codec->mutex);
 	return 0;
 }
 
@@ -2369,9 +2307,8 @@ static int slim_rx_mux_put(struct snd_kcontrol *kcontrol,
 		goto err;
 	}
 rtn:
-	snd_soc_dapm_mux_update_power(widget, kcontrol, 1, widget->value, e);
-
 	mutex_unlock(&codec->mutex);
+	snd_soc_dapm_mux_update_power(widget, kcontrol, 1, widget->value, e);
 	return 0;
 err:
 	mutex_unlock(&codec->mutex);
@@ -2505,10 +2442,6 @@ static int taiko_codec_enable_adc(struct snd_soc_dapm_widget *w,
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
-#if defined(CONFIG_SEC_JACTIVE_PROJECT)
-		if ((sub_mic_rec_delay == 1) && ((w->reg) == TAIKO_A_CDC_TX_3_GAIN))
-				usleep_range(400000, 400000);
-#endif
 		taiko_codec_enable_adc_block(codec, 1);
 		snd_soc_update_bits(codec, adc_reg, 1 << init_bit_shift,
 				1 << init_bit_shift);
@@ -2591,10 +2524,9 @@ static int taiko_codec_enable_lineout(struct snd_soc_dapm_widget *w,
 						 WCD9XXX_CLSH_STATE_LO,
 						 WCD9XXX_CLSH_REQ_ENABLE,
 						 WCD9XXX_CLSH_EVENT_POST_PA);
-		pr_debug("%s: sleeping 5 ms after %s PA turn on\n",
+		pr_debug("%s: sleeping 3 ms after %s PA turn on\n",
 				__func__, w->name);
-		/* Wait for CnP time after PA enable */
-		usleep_range(5000, 5100);
+		usleep_range(3000, 3000);
 		break;
 	case SND_SOC_DAPM_POST_PMD:
 		wcd9xxx_clsh_fsm(codec, &taiko->clsh_d,
@@ -2602,10 +2534,6 @@ static int taiko_codec_enable_lineout(struct snd_soc_dapm_widget *w,
 						 WCD9XXX_CLSH_REQ_DISABLE,
 						 WCD9XXX_CLSH_EVENT_POST_PA);
 		snd_soc_update_bits(codec, lineout_gain_reg, 0x40, 0x00);
-		pr_debug("%s: sleeping 5 ms after %s PA turn off\n",
-				__func__, w->name);
-		/* Wait for CnP time after PA disable */
-		usleep_range(5000, 5100);
 		break;
 	}
 	return 0;
@@ -2714,12 +2642,6 @@ static int taiko_codec_config_mad(struct snd_soc_codec *codec)
 	struct taiko_priv *taiko = snd_soc_codec_get_drvdata(codec);
 
 	pr_debug("%s: enter\n", __func__);
-	/* wakeup for codec calibration access */
-	pm_qos_add_request(&taiko->pm_qos_req,
-			   PM_QOS_CPU_DMA_LATENCY,
-			   PM_QOS_DEFAULT_VALUE);
-	pm_qos_update_request(&taiko->pm_qos_req,
-			      msm_cpuidle_get_deep_idle_latency());
 	ret = request_firmware(&fw, filename, codec->dev);
 	if (ret != 0) {
 		pr_err("Failed to acquire MAD firwmare data %s: %d\n", filename,
@@ -2789,9 +2711,6 @@ static int taiko_codec_config_mad(struct snd_soc_codec *codec)
 
 	release_firmware(fw);
 	pr_debug("%s: leave ret %d\n", __func__, ret);
-	pm_qos_update_request(&taiko->pm_qos_req,
-			      PM_QOS_DEFAULT_VALUE);
-	pm_qos_remove_request(&taiko->pm_qos_req);
 	return ret;
 }
 
@@ -5208,20 +5127,6 @@ static struct snd_soc_dai_driver taiko_dai[] = {
 		.ops = &taiko_dai_ops,
 	},
 	{
-		.name = "taiko_tx3",
-		.id = AIF3_CAP,
-		.capture = {
-			.stream_name = "AIF3 Capture",
-			.rates = WCD9320_RATES,
-			.formats = TAIKO_FORMATS,
-			.rate_max = 48000,
-			.rate_min = 8000,
-			.channels_min = 1,
-			.channels_max = 2,
-		},
-		.ops = &taiko_dai_ops,
-	},
-	{
 		.name = "taiko_rx3",
 		.id = AIF3_PB,
 		.playback = {
@@ -5230,6 +5135,20 @@ static struct snd_soc_dai_driver taiko_dai[] = {
 			.formats = TAIKO_FORMATS_S16_S24_LE,
 			.rate_min = 8000,
 			.rate_max = 192000,
+			.channels_min = 1,
+			.channels_max = 2,
+		},
+		.ops = &taiko_dai_ops,
+	},
+	{
+		.name = "taiko_tx3",
+		.id = AIF3_CAP,
+		.capture = {
+			.stream_name = "AIF3 Capture",
+			.rates = WCD9320_RATES,
+			.formats = TAIKO_FORMATS,
+			.rate_max = 48000,
+			.rate_min = 8000,
 			.channels_min = 1,
 			.channels_max = 2,
 		},
@@ -6768,8 +6687,8 @@ static const struct wcd9xxx_reg_mask_val taiko_codec_reg_init_val[] = {
 	{TAIKO_A_RX_HPH_R_TEST, 0x01, 0x01},
 
 	/* Initialize gain registers to use register gain */
-	{TAIKO_A_RX_HPH_L_GAIN, 0x20, 0x20},
-	{TAIKO_A_RX_HPH_R_GAIN, 0x20, 0x20},
+	{TAIKO_A_RX_HPH_L_GAIN, 0x20, 0x14},
+	{TAIKO_A_RX_HPH_R_GAIN, 0x20, 0x14},
 	{TAIKO_A_RX_LINE_1_GAIN, 0x20, 0x20},
 	{TAIKO_A_RX_LINE_2_GAIN, 0x20, 0x20},
 	{TAIKO_A_RX_LINE_3_GAIN, 0x20, 0x20},
@@ -7097,6 +7016,10 @@ static int taiko_setup_zdet(struct wcd9xxx_mbhc *mbhc,
 			wcd9xxx_enable_static_pa(mbhc, false);
 		wcd9xxx_restore_registers(codec, &taiko->reg_save_restore);
 		break;
+	default:
+		dev_dbg(codec->dev, "%s: Case %d not supported\n",
+			__func__, stage);
+		break;
 	}
 #undef __wr
 
@@ -7219,7 +7142,10 @@ static int taiko_post_reset_cb(struct wcd9xxx *wcd9xxx)
 		else
 			taiko_hs_detect(codec, taiko->mbhc.mbhc_cfg);
 	}
-	taiko->machine_codec_event_cb(codec, WCD9XXX_CODEC_EVENT_CODEC_UP);
+
+	if (taiko->machine_codec_event_cb)
+		taiko->machine_codec_event_cb(codec,
+				      WCD9XXX_CODEC_EVENT_CODEC_UP);
 
 	taiko_cleanup_irqs(taiko);
 	ret = taiko_setup_irqs(taiko);
@@ -7488,7 +7414,7 @@ static ssize_t hph_debug_show(struct kobject *kobj,
 
 	wcd_hphl = wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, WCD9XXX_A_RX_HPH_L_GAIN);
 	wcd_hphr = wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, WCD9XXX_A_RX_HPH_R_GAIN);
-	return sprintf(buf, "WCD9XXX_A_RX_HPH_L_GAIN: %d\n WCD9XXX_A_RX_HPH_R_GAIN: %d\n", wcd_hphl, wcd_hphr);
+	return sprintf(buf, "WCD9XXX_A_RX_HPH_L_GAIN: %d\nWCD9XXX_A_RX_HPH_R_GAIN: %d\n", wcd_hphl, wcd_hphr);
 }
 
 static struct kobj_attribute headphone_gain_attribute =
@@ -7532,9 +7458,6 @@ static int taiko_codec_probe(struct snd_soc_codec *codec)
 	struct wcd9xxx_pdata *pdata;
 	struct wcd9xxx *wcd9xxx;
 	struct snd_soc_dapm_context *dapm = &codec->dapm;
-#if defined(CONFIG_SEC_JACTIVE_PROJECT)
-	extern unsigned int system_rev;
-#endif
 	int ret = 0;
 	int i, rco_clk_rate;
 	void *ptr = NULL;
@@ -7591,31 +7514,6 @@ static int taiko_codec_probe(struct snd_soc_codec *codec)
 		rco_clk_rate = TAIKO_MCLK_CLK_9P6MHZ;
 		wcd9xxx_hw_revision = 2;
 	}
-#if defined(CONFIG_MACH_KLTE_KOR)
-	if (system_rev >= 13) {
-		/* init and start mbhc */
-		ret = wcd9xxx_mbhc_init(&taiko->mbhc, &taiko->resmgr, codec,
-					taiko_enable_mbhc_micbias,
-					&mbhc_cb, &cdc_intr_ids,
-					rco_clk_rate, false);
-		if (ret) {
-			pr_err("%s: mbhc init failed %d\n", __func__, ret);
-			goto err_init;
-		}
-	}
-#elif defined(CONFIG_MACH_KLTE_JPN)
-	if (system_rev >= 11) {
-		/* init and start mbhc */
-		ret = wcd9xxx_mbhc_init(&taiko->mbhc, &taiko->resmgr, codec,
-					taiko_enable_mbhc_micbias,
-					&mbhc_cb, &cdc_intr_ids,
-					rco_clk_rate, false);
-		if (ret) {
-			pr_err("%s: mbhc init failed %d\n", __func__, ret);
-			goto err_init;
-		}
-	}
-#else
 #if !defined(CONFIG_SAMSUNG_JACK) && !defined(CONFIG_MUIC_DET_JACK)
 	/* init and start mbhc */
 	ret = wcd9xxx_mbhc_init(&taiko->mbhc, &taiko->resmgr, codec,
@@ -7626,23 +7524,7 @@ static int taiko_codec_probe(struct snd_soc_codec *codec)
 		pr_err("%s: mbhc init failed %d\n", __func__, ret);
 		goto err_init;
 	}
-#elif defined(CONFIG_SEC_JACTIVE_PROJECT)
-/* init and start mbhc */
-	pr_info("taiko_codec_probe system_rev %d",system_rev);
-	if(system_rev < 3)
-	{
-        ret = wcd9xxx_mbhc_init(&taiko->mbhc, &taiko->resmgr, codec,
-                    taiko_enable_mbhc_micbias,
-                    &mbhc_cb, &cdc_intr_ids,
-                    rco_clk_rate, false);
-        if (ret) {
-            pr_err("%s: mbhc init failed %d\n", __func__, ret);
-            goto err_init;
-        }
-	}
 #endif
-#endif
-
 	taiko->codec = codec;
 	for (i = 0; i < COMPANDER_MAX; i++) {
 		taiko->comp_enabled[i] = 0;
@@ -7758,8 +7640,8 @@ static int taiko_codec_probe(struct snd_soc_codec *codec)
 	snd_soc_dapm_disable_pin(dapm, "ANC HEADPHONE");
 	snd_soc_dapm_disable_pin(dapm, "ANC EAR PA");
 	snd_soc_dapm_disable_pin(dapm, "ANC EAR");
-	snd_soc_dapm_sync(dapm);
 	mutex_unlock(&dapm->codec->mutex);
+	snd_soc_dapm_sync(dapm);
 
 	codec->ignore_pmdown_time = 1;
 
@@ -7786,9 +7668,7 @@ err_init:
 static int taiko_codec_remove(struct snd_soc_codec *codec)
 {
 	struct taiko_priv *taiko = snd_soc_codec_get_drvdata(codec);
-#if defined(CONFIG_SEC_JACTIVE_PROJECT)
-	extern unsigned int system_rev;
-#endif
+
 	WCD9XXX_BG_CLK_LOCK(&taiko->resmgr);
 	atomic_set(&kp_taiko_priv, 0);
 
@@ -7798,28 +7678,9 @@ static int taiko_codec_remove(struct snd_soc_codec *codec)
 	WCD9XXX_BG_CLK_UNLOCK(&taiko->resmgr);
 
 	taiko_cleanup_irqs(taiko);
-
-#if defined(CONFIG_MACH_KLTE_KOR)
-	if (system_rev >= 13) {
-		/* cleanup MBHC */
-		wcd9xxx_mbhc_deinit(&taiko->mbhc);
-	}
-#elif defined(CONFIG_MACH_KLTE_JPN)
-	if (system_rev >= 11) {
-		/* cleanup MBHC */
-		wcd9xxx_mbhc_deinit(&taiko->mbhc);
-	}
-#else
 #if !defined(CONFIG_SAMSUNG_JACK) && !defined(CONFIG_MUIC_DET_JACK)
 	/* cleanup MBHC */
 	wcd9xxx_mbhc_deinit(&taiko->mbhc);
-#elif defined(CONFIG_SEC_JACTIVE_PROJECT)
-	pr_info("taiko_codec_remove system_rev %d",system_rev);
-	if(system_rev < 3)
-	{
-		wcd9xxx_mbhc_deinit(&taiko->mbhc);
-	}
-#endif
 #endif
 	/* cleanup resmgr */
 	wcd9xxx_resmgr_deinit(&taiko->resmgr);
@@ -7879,7 +7740,7 @@ static const struct dev_pm_ops taiko_pm_ops = {
 };
 #endif
 
-static int __devinit taiko_probe(struct platform_device *pdev)
+static int taiko_probe(struct platform_device *pdev)
 {
 	int ret = 0;
 	if (wcd9xxx_get_intf_type() == WCD9XXX_INTERFACE_TYPE_SLIMBUS)
@@ -7890,7 +7751,7 @@ static int __devinit taiko_probe(struct platform_device *pdev)
 			taiko_i2s_dai, ARRAY_SIZE(taiko_i2s_dai));
 	return ret;
 }
-static int __devexit taiko_remove(struct platform_device *pdev)
+static int taiko_remove(struct platform_device *pdev)
 {
 	snd_soc_unregister_codec(&pdev->dev);
 	return 0;
