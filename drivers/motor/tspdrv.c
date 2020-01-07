@@ -298,27 +298,27 @@ static void vibetonz_start(void)
 	ret = device_create_file(timed_output_vt.dev, &dev_attr_pwm_value);
 
 	if (ret)
-		pr_debug("tspdrv: create sysfs fail: pwm\n"));
+		pr_debug("tspdrv: create sysfs fail: pwm\n");
 
 	ret = device_create_file(timed_output_vt.dev, &dev_attr_pwm_max);
 
 	if (ret)
-		pr_debug("tspdrv: create sysfs fail: pwm\n"));
+		pr_debug("tspdrv: create sysfs fail: pwm\n");
 	
 	ret = device_create_file(timed_output_vt.dev, &dev_attr_pwm_min);
 
 	if (ret)
-		pr_debug("tspdrv: create sysfs fail: pwm\n"));
+		pr_debug("tspdrv: create sysfs fail: pwm\n");
 
 	ret = device_create_file(timed_output_vt.dev, &dev_attr_pwm_default);
 
 	if (ret)
-		pr_debug("tspdrv: create sysfs fail: pwm\n"));
+		pr_debug("tspdrv: create sysfs fail: pwm\n");
 
 	ret = device_create_file(timed_output_vt.dev, &dev_attr_pwm_strength);
 
 	if (ret)
-		pr_debug("tspdrv: create sysfs fail: pwm\n"));
+		pr_debug("tspdrv: create sysfs fail: pwm\n");
 }
 
 /* File IO */
