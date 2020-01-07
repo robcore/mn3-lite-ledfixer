@@ -2,18 +2,24 @@
 
 PATCHFILE="/root/mn3lite/lts-patchlist.txt"
 
+localpause() {
+
+	read -r -p "PAUSE! Press [ENTER] to continue."
+
+}
+
 reversepause() {
 
 	printf "%s\n" "ltspatcher : $1"
 	printf "%s\n" "Patch can be reversed! Probably already applied!"
-	pause
+	localpause
 
 }
 
 failpause() {
 
 	printf "%s\n" "ltspatcher : $1"
-	pause
+	localpause
 
 }
 
@@ -24,7 +30,7 @@ pcheckrs() {
 		reversepause "$1 failed"
 	elif patch -p1 --dry-run < "$1" &>/dev/null
 	then
-		patch -p1 < "$1"
+		patch -p1 --dry-run < "$1"
 		echo "$1 Applied Cleanly."
 	else
 		failpause "$1 Does not apply cleanly"
@@ -138,7 +144,7 @@ do
 	   [ "$PATCHLINE" = "/root/linux-stable/patches/5929-Linux-3.4.113.patch" ]
 	then
 		echo "$PATCHLINE reached"
-		pause
+		localpause
 	else
 		pcheckrs "$PATCHLINE"
 	fi
