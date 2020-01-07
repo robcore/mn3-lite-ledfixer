@@ -34,7 +34,7 @@ pcheckrs() {
 
 while IFS= read -r PATCHLINE
 do
-	if [ "$PATCHLINE" = "/root/linux-stable/patches/0820-Linux-3.4.11.patch" ] || \
+	if
 	   [ "$PATCHLINE" = "/root/linux-stable/patches/1038-Linux-3.4.12.patch" ] || \
 	   [ "$PATCHLINE" = "/root/linux-stable/patches/1091-Linux-3.4.13.patch" ] || \
 	   [ "$PATCHLINE" = "/root/linux-stable/patches/1212-Linux-3.4.14.patch" ] || \
