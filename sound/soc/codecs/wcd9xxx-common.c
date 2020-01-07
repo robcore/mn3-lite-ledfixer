@@ -770,7 +770,7 @@ static void wcd9xxx_set_fclk_get_ncp(struct snd_soc_codec *codec,
 
 	/* enable NCP and wait until settles down */
 	if (snd_soc_update_bits(codec, WCD9XXX_A_NCP_EN, 0x01, 0x01))
-		usleep_range(NCP_SETTLE_TIME_US, NCP_SETTLE_TIME_US + 50);
+		usleep_range(NCP_SETTLE_TIME_US, NCP_SETTLE_TIME_US);
 	pr_debug("%s: leave\n", __func__);
 }
 
@@ -1134,7 +1134,7 @@ static void wcd9xxx_clsh_set_hs_performance_mode(struct snd_soc_codec *codec,
 
 	/* enable NCP and wait until settles down */
 	if (snd_soc_update_bits(codec, WCD9XXX_A_NCP_EN, 0x01, 0x01))
-		usleep_range(NCP_SETTLE_TIME_US, NCP_SETTLE_TIME_US + 50);
+		usleep_range(NCP_SETTLE_TIME_US, NCP_SETTLE_TIME_US);
 }
 
 static void wcd9xxx_clsh_state_hph_l(struct snd_soc_codec *codec,

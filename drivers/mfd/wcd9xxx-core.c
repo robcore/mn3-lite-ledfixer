@@ -152,7 +152,12 @@ static int wcd9xxx_write(struct wcd9xxx *wcd9xxx, unsigned short reg,
 				break;
 		}
 	}
-
+/*
+	if (reg == 0x1AE)
+		pr_info("%s: HPH Left PA write: %u\n", __func__, (u8 *)src);
+	if (reg == 0x1B4)
+		pr_info("%s: HPH Right PA write: %u\n", __func__, (u8 *)src);
+*/
 /*
 	for (i = 0; i < bytes; i++)
 		dev_dbg(wcd9xxx->dev, "Write %02x to 0x%x\n", ((u8 *)src)[i],
