@@ -1,5 +1,3 @@
-
-
 /root/linux-stable/patches/0821-net-Allow-driver-to-limit-number-of-GSO-segments-per.patch
 /root/linux-stable/patches/0822-sfc-Fix-maximum-number-of-TSO-segments-and-minimum-T.patch
 /root/linux-stable/patches/0823-tcp-Apply-device-TSO-segment-limit-earlier.patch
