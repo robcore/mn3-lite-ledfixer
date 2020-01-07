@@ -7476,7 +7476,7 @@ static struct attribute *sound_control_attrs[] = {
 		&headphone_gain_attribute.attr,
 		&speaker_gain_attribute.attr,
 		&sound_control_normalize_attribute.attr,
-		&headphone_pa_gain_attribute.attr,
+		//&headphone_pa_gain_attribute.attr,
 		&headphone_pa_gain_raw_attribute.attr,
 		NULL,
 };
