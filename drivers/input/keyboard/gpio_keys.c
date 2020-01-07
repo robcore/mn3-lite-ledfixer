@@ -107,9 +107,9 @@ struct gpio_keys_drvdata {
 		if (drv_data->irq_state == false) { \
 			drv_data->irq_state = true; \
 			enable_irq(drv_data->irq_flip_cover); \
-			pr_info("%s():irq is enabled\n", __func__);\
+			pr_debug("%s():irq is enabled\n", __func__);\
 		} else { \
-			pr_info("%s():irq is already enabled\n",\
+			pr_debug("%s():irq is already enabled\n",\
 					__func__);\
 		}\
 	} while (0)
@@ -119,9 +119,9 @@ struct gpio_keys_drvdata {
 		if (drv_data->irq_state == true) { \
 			drv_data->irq_state = false; \
 			disable_irq(drv_data->irq_flip_cover); \
-			pr_info("%s():irq is disabled\n", __func__);\
+			pr_debug("%s():irq is disabled\n", __func__);\
 		} else { \
-			pr_info("%s():irq is already disabled\n",\
+			pr_debug("%s():irq is already disabled\n",\
 					__func__);\
 		}\
 	} while (0)
@@ -141,9 +141,6 @@ static void sec_gpiocheck_work(struct work_struct *work)
     u32 i = PERIODIC_CHECK_GPIONUM;
 
     __msm_gpiomux_read(i, &val);
-
-    printk(KERN_DEBUG "[gpio=%d] func=%d, drv=%d, full=%d, dir=%d dat=%d\n",
-            i, val.func, val.drv, val.pull, val.dir, __msm_gpio_get_inout_lh(i) );
 
     schedule_delayed_work(&g_gpio_check_work, msecs_to_jiffies(PERIODIC_CHECK_GAP));
 }
@@ -432,7 +429,7 @@ static void gpio_key_change_dvfs_lock(struct work_struct *work)
 	retval = set_freq_limit(DVFS_TOUCH_ID,
 			MIN_TOUCH_LIMIT_SECOND);
 	if (retval < 0)
-		printk(KERN_ERR
+		pr_debug(
 			"%s: booster change failed(%d).\n",
 			__func__, retval);
 	mutex_unlock(&bdata->dvfs_lock);
@@ -447,7 +444,7 @@ static void gpio_key_set_dvfs_off(struct work_struct *work)
 	mutex_lock(&bdata->dvfs_lock);
 	retval = set_freq_limit(DVFS_TOUCH_ID, -1);
 	if (retval < 0)
-		printk(KERN_ERR
+		pr_debug(
 			"%s: booster stop failed(%d).\n",
 			__func__, retval);
 	bdata->dvfs_lock_status = false;
@@ -470,7 +467,7 @@ static void gpio_key_set_dvfs_lock(struct gpio_button_data *bdata,
 			ret = set_freq_limit(DVFS_TOUCH_ID,
 					MIN_TOUCH_LIMIT);
 			if (ret < 0)
-				printk(KERN_ERR
+				pr_debug(
 					"%s: cpu first lock failed(%d)\n",
 					__func__, ret);
 
@@ -501,9 +498,6 @@ static void gpio_keys_gpio_report_event(struct gpio_button_data *bdata)
 	struct input_dev *input = bdata->input;
 	unsigned int type = button->type ?: EV_KEY;
 	int state = (gpio_get_value_cansleep(button->gpio) ? 1 : 0) ^ button->active_low;
-
-	printk(KERN_INFO "%s: %s key is %s\n",
-		__func__, button->desc, state ? "pressed" : "released");
 
 #ifdef CONFIG_SEC_DEBUG
 	sec_debug_check_crash_key(button->code, state);
@@ -820,7 +814,7 @@ static irqreturn_t flip_cover_detect(int irq, void *dev_id)
 		wake_unlock(&ddata->flip_wake_lock);
 	}
 
-	pr_info("[keys] %s flip_status : %d (%s)\n",
+	pr_debug("[keys] %s flip_status : %d (%s)\n",
 		__func__, comp_val[0], comp_val[0]?"on":"off");
 
 	for(i=1;i<HALL_COMPARISONS;i++){
@@ -833,7 +827,7 @@ static irqreturn_t flip_cover_detect(int irq, void *dev_id)
 	}
 
 	ddata->flip_cover = comp_val[0];
-	pr_info("[keys] hall ic reported value: %d (%s)\n",
+	pr_debug("[keys] hall ic reported value: %d (%s)\n",
 		ddata->flip_cover, ddata->flip_cover?"on":"off");
 
 	input_report_switch(ddata->input,
@@ -915,7 +909,7 @@ void gpio_hall_irq_set(int state, bool auth_changed)
 		drv_data->cover_state = state;
 
 	if (drv_data->gsm_area) {
-		pr_info("%s: cover state = %d\n",
+		pr_debug("%s: cover state = %d\n",
 				__func__, drv_data->cover_state);
 		mutex_lock(&drv_data->irq_lock);
 		if (state)
@@ -950,7 +944,7 @@ static int gpio_keys_open(struct input_dev *input)
 			IRQF_TRIGGER_FALLING | IRQF_ONESHOT,
 			"flip_cover", ddata);
 	if (ret < 0) {
-		printk(KERN_ERR "keys: failed to request flip cover irq %d gpio %d\n",
+		pr_debug( "keys: failed to request flip cover irq %d gpio %d\n",
 				irq, ddata->gpio_flip_cover);
 	} else {
 		/* update the current status */
@@ -1028,7 +1022,7 @@ static ssize_t sysfs_hall_debounce_store(struct device *dev,
 	else if (!strncasecmp(buf, "OFF", 3))
 		ddata->debounce_set = false;
 	else
-		pr_info("%s:Wrong command, current state %s\n", __func__, buf);
+		pr_debug("%s:Wrong command, current state %s\n", __func__, buf);
 
 	return count;
 }
@@ -1070,7 +1064,7 @@ static ssize_t sysfs_hall_irq_ctrl_store(struct device *dev,
 			gpio_hall_irq_set(enable, false);
 			ddata->gsm_area = false;
 		} else {
-			pr_info("%s: Wrong command, current state %s\n",
+			pr_debug("%s: Wrong command, current state %s\n",
 					__func__, ddata->gsm_area?"ON":"OFF");
 		}
 	}
@@ -1239,7 +1233,7 @@ static ssize_t  sysfs_key_onoff_show(struct device *dev,
 	if(state || check_short_key() || check_short_pkey())
 		state = 1;
 #endif
-	pr_info("key state:%d\n",  state);
+	pr_debug("key state:%d\n",  state);
 	return snprintf(buf, 5, "%d\n", state);
 }
 static DEVICE_ATTR(sec_key_pressed, 0664 , sysfs_key_onoff_show, NULL);
@@ -1260,7 +1254,7 @@ static ssize_t sysfs_key_code_show(struct device *dev,
 		else if(bdata->button->code==KEY_VOLUMEDOWN)
 			volume_down = (gpio_get_value_cansleep(bdata->button->gpio) ? 1 : 0) ^ bdata->button->active_low;
 
-		//pr_info("%s, code=%d %d/%d\n",  __func__,bdata->button->code, i,ddata->n_buttons );
+		//pr_debug("%s, code=%d %d/%d\n",  __func__,bdata->button->code, i,ddata->n_buttons );
 	}
 	power = check_short_pkey();
 
@@ -1297,7 +1291,7 @@ static ssize_t wakeup_enable(struct device *dev,
 				button->button->wakeup = 1;
 			else
 				button->button->wakeup = 0;
-			pr_info("%s wakeup status %d\n", button->button->desc,\
+			pr_debug("%s wakeup status %d\n", button->button->desc,\
 					button->button->wakeup);
 		}
 	}
@@ -1319,7 +1313,7 @@ static int keypadled_powerset(struct device *dev)
 {
 	int ret;
 
-	printk(KERN_ERR "[Key_LED] %s : %d\n",__func__,__LINE__);
+	pr_debug( "[Key_LED] %s : %d\n",__func__,__LINE__);
 	if(!keyled_3p3)
 		keyled_3p3 = regulator_get(NULL, "8084_l22");
 
@@ -1335,7 +1329,7 @@ static int keypadled_powerset(struct device *dev)
 		pr_err("%s: error vreg_l22 set voltage ret=%d\n",
 		       __func__, ret);
 
-	printk(KERN_ERR "[Key_LED] %s : %d\n",__func__,__LINE__);
+	pr_debug( "[Key_LED] %s : %d\n",__func__,__LINE__);
 
 	return 0;
 }
@@ -1347,7 +1341,7 @@ static int keypadled_poweron(struct device *dev, struct device_attribute *attr, 
 
 	sscanf(buf, "%d", &data);
 
-	printk(KERN_ERR "[Key_LED] %s : %d data=%d\n",__func__,__LINE__,data);
+	pr_debug( "[Key_LED] %s : %d data=%d\n",__func__,__LINE__,data);
 
 	if(!keyled_3p3){
 		pr_err("%s: keyled_3p3 is null\n",__func__);
@@ -1365,7 +1359,7 @@ static int keypadled_poweron(struct device *dev, struct device_attribute *attr, 
 			pr_err("%s: error l22 disabling regulator\n", __func__);
 	}
 
-	printk(KERN_ERR "[Key_LED] %s : %d\n",__func__,__LINE__);
+	pr_debug( "[Key_LED] %s : %d\n",__func__,__LINE__);
 
 	return size;
 }

@@ -1173,7 +1173,7 @@ bool kernel_sec_set_debug_level(int level)
 	if (!(level == KERNEL_SEC_DEBUG_LEVEL_LOW
 			|| level == KERNEL_SEC_DEBUG_LEVEL_MID
 			|| level == KERNEL_SEC_DEBUG_LEVEL_HIGH)) {
-		pr_notice(KERN_NOTICE "(kernel_sec_set_debug_level) The debug"\
+		pr_debug("(kernel_sec_set_debug_level) The debug"\
 				"value is invalid(0x%x)!! Set default"\
 				"level(LOW)\n", level);
 		sec_dbg_level = KERNEL_SEC_DEBUG_LEVEL_LOW;
@@ -1203,7 +1203,7 @@ bool kernel_sec_set_debug_level(int level)
 	/* write to param */
 	sec_set_param(param_index_debuglevel, &sec_dbg_level);
 
-	pr_notice(KERN_NOTICE "(kernel_sec_set_debug_level)"\
+	pr_debug("(kernel_sec_set_debug_level)"\
 			"The debug value is 0x%x !!\n", level);
 
 	return 1;
@@ -1218,7 +1218,7 @@ int kernel_sec_get_debug_level(void)
 			|| sec_dbg_level == KERNEL_SEC_DEBUG_LEVEL_MID
 			|| sec_dbg_level == KERNEL_SEC_DEBUG_LEVEL_HIGH)) {
 		/*In case of invalid debug level, default (debug level low)*/
-		pr_notice(KERN_NOTICE "(%s) The debug value is"\
+		pr_debug("(%s) The debug value is"\
 				"invalid(0x%x)!! Set default level(LOW)\n",
 				__func__, sec_dbg_level);
 		sec_dbg_level = KERNEL_SEC_DEBUG_LEVEL_LOW;
@@ -1628,8 +1628,6 @@ void sec_debug_check_crash_key(unsigned int code, int value)
 #ifdef CONFIG_TOUCHSCREEN_MMS252
         static enum { NO, T1, T2, T3} state_tsp = NO;
 #endif
-
-	//printk(KERN_ERR "%s code %d value %d state %d enable %d\n", __func__, code, value, state, enable);
 
 	if (code == KEY_POWER) {
 		if (value)

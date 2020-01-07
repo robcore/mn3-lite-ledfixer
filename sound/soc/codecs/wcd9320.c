@@ -917,18 +917,6 @@ static int taiko_set_compander(struct snd_kcontrol *kcontrol,
 	return 0;
 }
 
-//#define HPH_RX_GAIN_MAX 20
-
-//static unsigned int user_hphl_volume;
-//static unsigned int user_hphr_volume;
-
-/*static void update_hph_pa_gain(void) {
-		snd_soc_update_bits(direct_codec, TAIKO_A_RX_HPH_L_GAIN, 0x0F,
-				(HPH_RX_GAIN_MAX - user_hphl_volume));
-		snd_soc_update_bits(direct_codec, TAIKO_A_RX_HPH_R_GAIN, 0x0F,
-				(HPH_RX_GAIN_MAX - user_hphr_volume));
-}
-*/
 static int taiko_config_gain_compander(struct snd_soc_codec *codec,
 				       int comp, bool enable)
 {
@@ -940,16 +928,10 @@ static int taiko_config_gain_compander(struct snd_soc_codec *codec,
 				    1 << 2, !enable << 2);
 		break;
 	case COMPANDER_1:
-		pr_info("%s: Setting TAIKO HPH L GAIN - mask:%d value:%d",
-				__func__, (1 << 5), (!enable << 5));
 		snd_soc_update_bits(codec, TAIKO_A_RX_HPH_L_GAIN,
 				    1 << 5, !enable << 5);
-		pr_info("%s: Setting TAIKO HPH R GAIN - mask:%d value:%d",
-				__func__, (1 << 5), (!enable << 5));
 		snd_soc_update_bits(codec, TAIKO_A_RX_HPH_R_GAIN,
 				    1 << 5, !enable << 5);
-		//if (enable)
-			//update_hph_pa_gain();
 		break;
 	case COMPANDER_2:
 		snd_soc_update_bits(codec, TAIKO_A_RX_LINE_1_GAIN,
@@ -4201,7 +4183,7 @@ static int taiko_write(struct snd_soc_codec *codec, unsigned int reg,
 		return 0;
 
 	if (reg > TAIKO_MAX_REGISTER)
-		return -EINVAL;
+		return -ERANGE;
 
 	if (codec == NULL)
 		return -ENOMEM;
@@ -4230,7 +4212,7 @@ static unsigned int taiko_read(struct snd_soc_codec *codec,
 		return 0;
 
 	if (reg > TAIKO_MAX_REGISTER)
-		return -EINVAL;
+		return -ERANGE;
 
 	if (codec == NULL)
 		return -ENOMEM;
@@ -5918,8 +5900,8 @@ static const struct snd_soc_dapm_widget taiko_dapm_widgets[] = {
 			       SND_SOC_DAPM_PRE_PMU | SND_SOC_DAPM_POST_PMU |
 			       SND_SOC_DAPM_POST_PMD),
 	SND_SOC_DAPM_MICBIAS_E("Main Mic Bias", 0, 0, 0,
-				0, SND_SOC_DAPM_PRE_PMU |SND_SOC_DAPM_POST_PMU |
-				SND_SOC_DAPM_POST_PMD),
+			       0, SND_SOC_DAPM_PRE_PMU |SND_SOC_DAPM_POST_PMU |
+			       SND_SOC_DAPM_POST_PMD),
 
 	SND_SOC_DAPM_INPUT("AMIC3"),
 
@@ -6537,7 +6519,8 @@ static const struct wcd9xxx_reg_mask_val taiko_reg_defaults[] = {
 	TAIKO_REG_VAL(TAIKO_A_CDC_CONN_MAD, 0x01),
 
 	/* Set HPH Path to low power mode */
-	//TAIKO_REG_VAL(TAIKO_A_RX_HPH_BIAS_PA, 0x55),
+	TAIKO_REG_VAL(TAIKO_A_RX_HPH_BIAS_PA, 0x55),
+
 	/* BUCK default */
 	TAIKO_REG_VAL(WCD9XXX_A_BUCK_CTRL_CCL_4, 0x51),
 	TAIKO_REG_VAL(WCD9XXX_A_BUCK_CTRL_CCL_1, 0x5B),
@@ -6568,8 +6551,8 @@ static const struct wcd9xxx_reg_mask_val taiko_1_0_reg_defaults[] = {
 	TAIKO_REG_VAL(TAIKO_A_RX_EAR_BIAS_PA, 0x76),
 	/* Reduce LINE DAC bias to 70% */
 	TAIKO_REG_VAL(TAIKO_A_RX_LINE_BIAS_PA, 0x7A),
-	/* Reduce HPH DAC bias to 80% */
-	TAIKO_REG_VAL(TAIKO_A_RX_HPH_BIAS_PA, 0x8B),
+	/* Reduce HPH DAC bias to 70% */
+	TAIKO_REG_VAL(TAIKO_A_RX_HPH_BIAS_PA, 0x7A),
 
 	/*
 	 * There is a diode to pull down the micbias while doing
@@ -7132,7 +7115,7 @@ static int taiko_post_reset_cb(struct wcd9xxx *wcd9xxx)
 		ret = wcd9xxx_mbhc_init(&taiko->mbhc, &taiko->resmgr, codec,
 					taiko_enable_mbhc_micbias,
 					&mbhc_cb, &cdc_intr_ids,
-					rco_clk_rate, false);
+					rco_clk_rate, true);
 		if (ret)
 			pr_err("%s: mbhc init failed %d\n", __func__, ret);
 		else
@@ -7545,7 +7528,7 @@ static int taiko_codec_probe(struct snd_soc_codec *codec)
 	/* Taiko does not support dynamic switching of vdd_cp */
 	taiko->clsh_d.is_dynamic_vdd_cp = false;
 	wcd9xxx_clsh_init(&taiko->clsh_d, &taiko->resmgr);
-		
+
 	if (TAIKO_IS_1_0(core->version)) {
 		rco_clk_rate = TAIKO_MCLK_CLK_12P288MHZ;
 		wcd9xxx_hw_revision = 1;
