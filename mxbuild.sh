@@ -45,7 +45,7 @@ timerprint() {
 	then
 		echo " Second."
 	else
-		echo " Second."
+		echo " Seconds."
 	fi
 	rm $RDIR/.starttime &> /dev/null
 	rm $RDIR/.endtime &> /dev/null
