@@ -519,7 +519,6 @@ static int zerocopy_sg_from_iovec(struct sk_buff *skb, const struct iovec *from,
 		struct page *page[MAX_SKB_FRAGS];
 		int num_pages;
 		unsigned long base;
-		unsigned long truesize;
 
 		len = from->iov_len - offset1;
 		if (!len) {
@@ -532,15 +531,13 @@ static int zerocopy_sg_from_iovec(struct sk_buff *skb, const struct iovec *from,
 		if (i + size > MAX_SKB_FRAGS)
 			return -EMSGSIZE;
 		num_pages = get_user_pages_fast(base, size, 0, &page[i]);
-		if (num_pages != size) {
-			for (i = 0; i < num_pages; i++)
-				put_page(page[i]);
-		}
-		truesize = size * PAGE_SIZE;
+		if (num_pages != size)
+			/* put_page is in skb free */
+			return -EFAULT;
 		skb->data_len += len;
 		skb->len += len;
-		skb->truesize += truesize;
-		atomic_add(truesize, &skb->sk->sk_wmem_alloc);
+		skb->truesize += len;
+		atomic_add(len, &skb->sk->sk_wmem_alloc);
 		while (len) {
 			int off = base & ~PAGE_MASK;
 			int size = min_t(int, len, PAGE_SIZE - off);
@@ -715,9 +712,10 @@ static ssize_t macvtap_get_user(struct macvtap_queue *q, struct msghdr *m,
 	if (!skb)
 		goto err;
 
-	if (zerocopy)
+	if (zerocopy) {
 		err = zerocopy_sg_from_iovec(skb, iv, vnet_hdr_len, count);
-	else
+		skb_shinfo(skb)->tx_flags |= SKBTX_DEV_ZEROCOPY;
+	} else
 		err = skb_copy_datagram_from_iovec(skb, 0, iv, vnet_hdr_len,
 						   len);
 	if (err)
@@ -736,10 +734,8 @@ static ssize_t macvtap_get_user(struct macvtap_queue *q, struct msghdr *m,
 	rcu_read_lock_bh();
 	vlan = rcu_dereference_bh(q->vlan);
 	/* copy skb_ubuf_info for callback when skb has no error */
-	if (zerocopy) {
+	if (zerocopy)
 		skb_shinfo(skb)->destructor_arg = m->msg_control;
-		skb_shinfo(skb)->tx_flags |= SKBTX_DEV_ZEROCOPY;
-	}
 	if (vlan)
 		macvlan_start_xmit(skb, vlan->dev);
 	else
