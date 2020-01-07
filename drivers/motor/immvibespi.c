@@ -389,7 +389,6 @@ static int32_t ImmVibeSPI_ForceOut_SetSamples(u_int8_t nActuatorIndex,
 	case 8:
 		/* pForceOutputBuffer is expected to contain 1 byte */
 		if (nBufferSizeInBytes != 1) {
-			nBufferSizeInBytes);
 			return VIBE_E_FAIL;
 		}
 		nforce = pForceOutputBuffer[0];
