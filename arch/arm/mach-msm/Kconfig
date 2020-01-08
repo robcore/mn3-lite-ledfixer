@@ -799,8 +799,8 @@ config SEC_MEGA2_PROJECT
         help
          Common flag for all the MEGA2 Models and variants. Please use this flag for all
 	 the features common in all the MEGA2 Variants(3G,LTE,Wifi & Carrier).
-	 
-config SEC_AFYONLTE_COMMON 
+
+config SEC_AFYONLTE_COMMON
 	bool "AFYON LTE Projects"
 	default n
         help
