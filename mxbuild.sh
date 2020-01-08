@@ -49,6 +49,7 @@ timerprint() {
 	fi
 	rm $RDIR/.starttime &> /dev/null
 	rm $RDIR/.endtime &> /dev/null
+	printf "%s" "Finished!"
 
 }
 
@@ -421,7 +422,7 @@ create_zip() {
 		echo "Uploading $MX_KERNEL_VERSION.zip to Google Drive"
 		/bin/bash /root/google-drive-upload/upload.sh "$RDIR/$MX_KERNEL_VERSION.zip" || warnandfail "$RDIR/$MX_KERNEL_VERSION.zip failed to upload!"
 		echo -n "$MX_KERNEL_VERSION.zip" > "$RDIR/.lastzip"
-		/bin/bash /bin/robmail "$MX_KERNEL_VERSION.zip uploaded!"
+		#/bin/bash /bin/robmail "$MX_KERNEL_VERSION.zip uploaded!"
 		timerdiff
 	else
 		warnandfail "$RDIR/$MX_KERNEL_VERSION.zip is 0 bytes, something is wrong!"
