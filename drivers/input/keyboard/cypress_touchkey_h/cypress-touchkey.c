@@ -730,12 +730,11 @@ static irqreturn_t cypress_touchkey_interrupt(int irq, void *dev_id)
 	int i;
 
 	ret = gpio_get_value(info->pdata->gpio_int);
+	if (ret)
 		goto out;
-	}
 
-	if (info->is_powering_on) {
+	if (info->is_powering_on)
 		goto out;
-	}
 
 	buf[0] = i2c_smbus_read_byte_data(info->client, CYPRESS_GEN);
 	if (buf[0] < 0) {
@@ -1904,8 +1903,7 @@ static int __devinit cypress_touchkey_probe(struct i2c_client *client,
 
 #if defined(CONFIG_GLOVE_TOUCH)
 	info->glove_wq = create_singlethread_workqueue("cypress_touchkey");
-	if (!info->glove_wq)
-	else
+	if (info->glove_wq)
 		INIT_WORK(&info->glove_work, cypress_touchkey_glove_work);
 #endif
 
