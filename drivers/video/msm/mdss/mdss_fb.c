@@ -1051,7 +1051,7 @@ static void mdss_fb_scale_bl(struct msm_fb_data_type *mfd, u32 *bl_lvl)
 }
 
 static unsigned int force_max_brightness;
-module_param(force_max_brightness, unsigned int, 0644)
+module_param(force_max_brightness, uint, 0644)
 
 /* must call this function from within mfd->bl_lock */
 void mdss_fb_set_backlight(struct msm_fb_data_type *mfd, u32 bkl_lvl)
