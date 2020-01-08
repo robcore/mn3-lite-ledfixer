@@ -530,7 +530,7 @@ static const struct comp_sample_dependent_params comp_samp_params[] = {
 		/* 192 Khz */
 		.peak_det_timeout = 0x0B,
 		.rms_meter_div_fact = 0xC,
-		.rms_meter_resamp_fact = 0x50,
+		.rms_meter_resamp_fact = 0xA0,
 	},
 };
 
@@ -6519,7 +6519,7 @@ static const struct wcd9xxx_reg_mask_val taiko_reg_defaults[] = {
 	TAIKO_REG_VAL(TAIKO_A_CDC_CONN_MAD, 0x01),
 
 	/* Set HPH Path to low power mode */
-	TAIKO_REG_VAL(TAIKO_A_RX_HPH_BIAS_PA, 0x55),
+	//TAIKO_REG_VAL(TAIKO_A_RX_HPH_BIAS_PA, 0x55),
 
 	/* BUCK default */
 	TAIKO_REG_VAL(WCD9XXX_A_BUCK_CTRL_CCL_4, 0x51),
@@ -6548,11 +6548,11 @@ static const struct wcd9xxx_reg_mask_val taiko_1_0_reg_defaults[] = {
 	 */
 	TAIKO_REG_VAL(WCD9XXX_A_BUCK_MODE_3, 0xCE),
 	/*Reduce EAR DAC bias to 70% */
-	TAIKO_REG_VAL(TAIKO_A_RX_EAR_BIAS_PA, 0x76),
+	TAIKO_REG_VAL(TAIKO_A_RX_EAR_BIAS_PA, 0x96),
 	/* Reduce LINE DAC bias to 70% */
 	TAIKO_REG_VAL(TAIKO_A_RX_LINE_BIAS_PA, 0x7A),
 	/* Reduce HPH DAC bias to 70% */
-	TAIKO_REG_VAL(TAIKO_A_RX_HPH_BIAS_PA, 0x7A),
+	TAIKO_REG_VAL(TAIKO_A_RX_HPH_BIAS_PA, 0x96),
 
 	/*
 	 * There is a diode to pull down the micbias while doing
@@ -6590,7 +6590,7 @@ static const struct wcd9xxx_reg_mask_val taiko_2_0_reg_defaults[] = {
 	TAIKO_REG_VAL(TAIKO_A_BUCK_CTRL_CCL_4, 0x51),
 	TAIKO_REG_VAL(TAIKO_A_NCP_DTEST, 0x10),
 	TAIKO_REG_VAL(TAIKO_A_RX_HPH_CHOP_CTL, 0xA4),
-	TAIKO_REG_VAL(TAIKO_A_RX_HPH_BIAS_PA, 0x7A),
+	TAIKO_REG_VAL(TAIKO_A_RX_HPH_BIAS_PA, 0x96),
 	TAIKO_REG_VAL(TAIKO_A_RX_HPH_OCP_CTL, 0x6B),
 	TAIKO_REG_VAL(TAIKO_A_RX_HPH_CNP_WG_CTL, 0xDA),
 	TAIKO_REG_VAL(TAIKO_A_RX_HPH_CNP_WG_TIME, 0x15),
@@ -7253,6 +7253,9 @@ static struct regulator *taiko_codec_find_regulator(struct snd_soc_codec *codec,
 
 static unsigned int sound_control_normalize = 1;
 static unsigned int wcd9xxx_hw_revision;
+u8 hphl_cached_gain = 0;
+u8 hphr_cached_gain = 0;
+u8 speaker_cached_gain = 0;
 static int show_sound_value(unsigned int inputval)
 {
 	int tempval;
@@ -7309,6 +7312,8 @@ static ssize_t headphone_gain_store(struct kobject *kobj,
 		lock_sound_control(&sound_control_codec_ptr->core_res, 1);
 		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX1_VOL_CTL_B2_CTL, leftoutput);
 		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX2_VOL_CTL_B2_CTL, rightoutput);
+		hphl_cached_gain = leftoutput;
+		hphr_cached_gain = rightoutput;
 		lock_sound_control(&sound_control_codec_ptr->core_res, 0);
 	} else if (sscanf(buf, "%d", &dualinput) == 1) {
 		if (dualinput < -84)
@@ -7322,6 +7327,8 @@ static ssize_t headphone_gain_store(struct kobject *kobj,
 		lock_sound_control(&sound_control_codec_ptr->core_res, 1);
 		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX1_VOL_CTL_B2_CTL, dualoutput);
 		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX2_VOL_CTL_B2_CTL, dualoutput);
+		hphl_cached_gain = dualinput;
+		hphr_cached_gain = dualinput;
 		lock_sound_control(&sound_control_codec_ptr->core_res, 0);
 	}
 
@@ -7357,6 +7364,7 @@ static ssize_t speaker_gain_store(struct kobject *kobj,
 
 	lock_sound_control(&sound_control_codec_ptr->core_res, 1);
 	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX7_VOL_CTL_B2_CTL, spkoutput);
+	speaker_cached_gain = spkoutput;
 	lock_sound_control(&sound_control_codec_ptr->core_res, 0);
 
 	return count;
