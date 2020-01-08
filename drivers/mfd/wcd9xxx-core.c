@@ -185,6 +185,7 @@ static int __wcd9xxx_reg_write(struct wcd9xxx *wcd9xxx,
 
 	if (need_fixup) {
 		lock_sound_control(&wcd9xxx->core_res, 1);
+		mutex_lock(&wcd9xxx->io_lock);
 		switch (reg) {
 			case 0x2B7:
 				ret = wcd9xxx_write(wcd9xxx, reg, 1, &hphl_cached_gain, false);
@@ -198,6 +199,7 @@ static int __wcd9xxx_reg_write(struct wcd9xxx *wcd9xxx,
 			default:
 				break;
 		}
+		mutex_unlock(&wcd9xxx->io_lock);
 		lock_sound_control(&wcd9xxx->core_res, 0);
 	}
 
