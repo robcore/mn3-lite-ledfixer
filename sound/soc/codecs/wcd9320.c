@@ -261,6 +261,11 @@ MODULE_PARM_DESC(spkr_drv_wrnd,
 	       "Run software workaround to avoid leakage on the speaker drive");
 
 static struct wcd9xxx *sound_control_codec_ptr;
+static unsigned int sound_control_normalize = 1;
+static unsigned int wcd9xxx_hw_revision;
+u8 hphl_cached_gain = 0;
+u8 hphr_cached_gain = 0;
+u8 speaker_cached_gain = 0;
 //static struct snd_soc_codec *direct_codec;
 
 #define WCD9320_RATES (SNDRV_PCM_RATE_8000 | SNDRV_PCM_RATE_16000 |\
@@ -2546,6 +2551,9 @@ static int taiko_codec_enable_spk_pa(struct snd_soc_dapm_widget *w,
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
 		taiko->spkr_pa_widget_on = true;
+		lock_sound_control(&sound_control_codec_ptr->core_res, 1);
+		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX7_VOL_CTL_B2_CTL, speaker_cached_gain);
+		lock_sound_control(&sound_control_codec_ptr->core_res, 0);
 		snd_soc_update_bits(codec, TAIKO_A_SPKR_DRV_EN, 0x80, 0x80);
 		break;
 	case SND_SOC_DAPM_POST_PMD:
@@ -3408,6 +3416,10 @@ static int taiko_hph_pa_event(struct snd_soc_dapm_widget *w,
 						 req_clsh_state,
 						 WCD9XXX_CLSH_REQ_ENABLE,
 						 WCD9XXX_CLSH_EVENT_POST_PA);
+		lock_sound_control(&sound_control_codec_ptr->core_res, 1);
+		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX1_VOL_CTL_B2_CTL, hphl_cached_gain);
+		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX2_VOL_CTL_B2_CTL, hphr_cached_gain);
+		lock_sound_control(&sound_control_codec_ptr->core_res, 0);
 
 		break;
 
@@ -6725,6 +6737,8 @@ static const struct wcd9xxx_reg_mask_val taiko_codec_reg_init_val[] = {
 	/* set MAD input MIC to DMIC1 */
 	{TAIKO_A_CDC_CONN_MAD, 0x0F, 0x08},
 
+	/* set DMIC CLK drive strength to 4mA */
+	{TAIKO_A_HDRIVE_OVERRIDE, 0x07, 0x01},
 };
 
 static void taiko_codec_init_reg(struct snd_soc_codec *codec)
@@ -6732,10 +6746,12 @@ static void taiko_codec_init_reg(struct snd_soc_codec *codec)
 	u32 i;
 
 	for (i = 0; i < ARRAY_SIZE(taiko_codec_reg_init_val); i++) {
-		pr_info("Taiko Init: Reg: %u Mask: %u Val: %u ",
-		       taiko_codec_reg_init_val[i].reg,
-				taiko_codec_reg_init_val[i].mask,
-				taiko_codec_reg_init_val[i].val);
+#if 0
+		 pr_info("Taiko Init: Reg: %u Mask: %u Val: %u ",
+		 taiko_codec_reg_init_val[i].reg,
+		 taiko_codec_reg_init_val[i].mask,
+		 taiko_codec_reg_init_val[i].val);
+#endif
 		snd_soc_update_bits(codec, taiko_codec_reg_init_val[i].reg,
 				taiko_codec_reg_init_val[i].mask,
 				taiko_codec_reg_init_val[i].val);
@@ -7256,11 +7272,6 @@ static struct regulator *taiko_codec_find_regulator(struct snd_soc_codec *codec,
 	return NULL;
 }
 
-static unsigned int sound_control_normalize = 1;
-static unsigned int wcd9xxx_hw_revision;
-u8 hphl_cached_gain = 0;
-u8 hphr_cached_gain = 0;
-u8 speaker_cached_gain = 0;
 static int show_sound_value(unsigned int inputval)
 {
 	int tempval;
