@@ -272,13 +272,13 @@ u8 speaker_cached_gain = 0;
 u32 hphl_pa_gain = 0x20;
 u32 hphr_pa_gain = 0x20;
 
-static void update_speaker_gain() {
+static void update_speaker_gain(void) {
 	lock_sound_control(&sound_control_codec_ptr->core_res, 1);
 	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX7_VOL_CTL_B2_CTL, speaker_cached_gain);
 	lock_sound_control(&sound_control_codec_ptr->core_res, 0);
 }
 
-static void update_headphone_gain() {
+static void update_headphone_gain(void) {
 	lock_sound_control(&sound_control_codec_ptr->core_res, 1);
 	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX1_VOL_CTL_B2_CTL, hphl_cached_gain);
 	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX2_VOL_CTL_B2_CTL, hphr_cached_gain);
