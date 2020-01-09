@@ -335,13 +335,6 @@ config CLK_TUNING
 	bool "Support CLK tuning"
 	default n
 
-config FB_MSM_MDSS_KCAL_CTRL
-	depends on FB_MSM_MDSS
-	bool "MDSS color control"
-	---help---
-	  Enable sysfs for rgb/lut control for mdss-mdp display controllers
-	  in the MDSS sub-system.
-
 config MDP_NEGATIVE_SUPPORT
 	bool "Support MDP negative color"
 	default n
