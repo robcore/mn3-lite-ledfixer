@@ -262,9 +262,15 @@ MODULE_PARM_DESC(spkr_drv_wrnd,
 
 static struct wcd9xxx *sound_control_codec_ptr;
 static unsigned int wcd9xxx_hw_revision;
+static bool hpwidget = false;
+static bool spkwidget = false;
+static unsigned int  uhqa_mode = 1;
+static unsigned int hph_pa_enabled = 0;
 u8 hphl_cached_gain = 0;
 u8 hphr_cached_gain = 0;
 u8 speaker_cached_gain = 0;
+u32 hphl_pa_gain = 0x20;
+u32 hphr_pa_gain = 0x20;
 
 static void update_speaker_gain() {
 	lock_sound_control(&sound_control_codec_ptr->core_res, 1);
@@ -2566,10 +2572,12 @@ static int taiko_codec_enable_spk_pa(struct snd_soc_dapm_widget *w,
 		taiko->spkr_pa_widget_on = true;
 		update_speaker_gain();
 		snd_soc_update_bits(codec, TAIKO_A_SPKR_DRV_EN, 0x80, 0x80);
+		spkwidget = true;
 		break;
 	case SND_SOC_DAPM_POST_PMD:
 		taiko->spkr_pa_widget_on = false;
 		snd_soc_update_bits(codec, TAIKO_A_SPKR_DRV_EN, 0x80, 0x00);
+		spkwidget = false;
 		break;
 	}
 	return 0;
@@ -3426,7 +3434,14 @@ static int taiko_hph_pa_event(struct snd_soc_dapm_widget *w,
 						 req_clsh_state,
 						 WCD9XXX_CLSH_REQ_ENABLE,
 						 WCD9XXX_CLSH_EVENT_POST_PA);
+		hpwidget = true;
 		update_headphone_gain();
+		if (uhqa_mode) {
+			taiko_write(wcd9320_codec, TAIKO_A_RX_HPH_L_PA_CTL, 0x48);
+			taiko_write(wcd9320_codec, TAIKO_A_RX_HPH_R_PA_CTL, 0x48);
+			taiko_write(wcd9320_codec, TAIKO_A_RX_HPH_BIAS_PA,  0xAA);
+			snd_soc_update_bits(wcd9320_codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x00);
+		}
 		break;
 	case SND_SOC_DAPM_POST_PMD:
 		usleep_range(pa_settle_time, pa_settle_time + 1000);
@@ -3440,6 +3455,7 @@ static int taiko_hph_pa_event(struct snd_soc_dapm_widget *w,
 						 req_clsh_state,
 						 WCD9XXX_CLSH_REQ_DISABLE,
 						 WCD9XXX_CLSH_EVENT_POST_PA);
+		hpwidget = false;
 
 		break;
 	}
@@ -7281,7 +7297,7 @@ static int show_sound_value(unsigned int inputval)
 {
 	int tempval;
 
-	tempval = wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, inputval);
+	tempval = (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, inputval);
 
 	if ((tempval >= 172) && (tempval <= 255))
 		tempval -= 256;
@@ -7371,6 +7387,48 @@ static ssize_t speaker_gain_store(struct kobject *kobj,
 	return count;
 }
 
+static ssize_t uhqa_mode_show(struct kobject *kobj,
+		struct kobj_attribute *attr, char *buf) {
+	return sprintf(buf, "%d\n", uhqa_mode);
+}
+
+static ssize_t uhqa_mode_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count) {
+	int uval;
+
+	sscanf(buf, "%d", &uval);
+
+	if (uval < 0)
+		uval = 0;
+	if (uval > 1)
+		uval = 1;
+
+	uhqa_mode = uval;
+	if (hpwidget) {
+		if (uhqa_mode) {
+			wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_L_PA_CTL, 0x48);
+			wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_R_PA_CTL, 0x48);
+			wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_BIAS_PA,  0xAA);
+			snd_soc_update_bits(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x00);
+		} else {
+			wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_L_PA_CTL, 0x40);
+			wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_R_PA_CTL, 0x40);
+			wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_BIAS_PA,  0x55);
+			snd_soc_update_bits(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20);
+		}
+	}
+	return count;
+}
+
+static ssize_t headphone_pa_gain_raw_show(struct kobject *kobj,
+		struct kobj_attribute *attr, char *buf) {
+	int wcd_hphl, wcd_hphr;
+
+	wcd_hphl = wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, WCD9XXX_A_RX_HPH_L_GAIN);
+	wcd_hphr = wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, WCD9XXX_A_RX_HPH_R_GAIN);
+	return sprintf(buf, "%d %d\n", wcd_hphl, wcd_hphr);
+}
+
 /*
 static ssize_t headphone_pa_gain_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf) {
@@ -7381,14 +7439,7 @@ static ssize_t headphone_pa_gain_show(struct kobject *kobj,
 	return sprintf(buf, "%d %d\n", wcd_hphl, wcd_hphr);
 }
 */
-static ssize_t headphone_pa_gain_raw_show(struct kobject *kobj,
-		struct kobj_attribute *attr, char *buf) {
-	int wcd_hphl, wcd_hphr;
 
-	wcd_hphl = wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, WCD9XXX_A_RX_HPH_L_GAIN);
-	wcd_hphr = wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, WCD9XXX_A_RX_HPH_R_GAIN);
-	return sprintf(buf, "%d %d\n", wcd_hphl, wcd_hphr);
-}
 /*
 static ssize_t headphone_pa_gain_store(struct kobject *kobj,
 		struct kobj_attribute *attr, const char *buf, size_t count)
@@ -7431,6 +7482,11 @@ static struct kobj_attribute speaker_gain_attribute =
 		speaker_gain_show,
 		speaker_gain_store);
 
+static struct kobj_attribute uhqa_mode_attribute =
+	__ATTR(uhqa_mode, 0644,
+		uhqa_mode_show,
+		uhqa_mode_store);
+
 //static struct kobj_attribute headphone_pa_gain_attribute =
 //	__ATTR(headphone_pa_gain, 0644,
 //		headphone_pa_gain_show,
@@ -7444,6 +7500,7 @@ static struct kobj_attribute headphone_pa_gain_raw_attribute =
 static struct attribute *sound_control_attrs[] = {
 		&headphone_gain_attribute.attr,
 		&speaker_gain_attribute.attr,
+		&uhqa_mode_attribute.attr,
 		//&headphone_pa_gain_attribute.attr,
 		&headphone_pa_gain_raw_attribute.attr,
 		NULL,
