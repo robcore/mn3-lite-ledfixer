@@ -261,6 +261,7 @@ MODULE_PARM_DESC(spkr_drv_wrnd,
 	       "Run software workaround to avoid leakage on the speaker drive");
 
 static struct wcd9xxx *sound_control_codec_ptr;
+static struct snd_soc_codec *direct_codec;
 static unsigned int wcd9xxx_hw_revision;
 static bool hpwidget = false;
 static bool spkwidget = false;
@@ -284,8 +285,6 @@ static void update_headphone_gain(void) {
 	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX2_VOL_CTL_B2_CTL, hphr_cached_gain);
 	lock_sound_control(&sound_control_codec_ptr->core_res, 0);
 }
-
-//static struct snd_soc_codec *direct_codec;
 
 #define WCD9320_RATES (SNDRV_PCM_RATE_8000 | SNDRV_PCM_RATE_16000 |\
 			SNDRV_PCM_RATE_32000 | SNDRV_PCM_RATE_48000 |\
@@ -3437,10 +3436,10 @@ static int taiko_hph_pa_event(struct snd_soc_dapm_widget *w,
 		hpwidget = true;
 		update_headphone_gain();
 		if (uhqa_mode) {
-			taiko_write(wcd9320_codec, TAIKO_A_RX_HPH_L_PA_CTL, 0x48);
-			taiko_write(wcd9320_codec, TAIKO_A_RX_HPH_R_PA_CTL, 0x48);
-			taiko_write(wcd9320_codec, TAIKO_A_RX_HPH_BIAS_PA,  0xAA);
-			snd_soc_update_bits(wcd9320_codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x00);
+			wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_L_PA_CTL, 0x48);
+			wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_R_PA_CTL, 0x48);
+			wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_BIAS_PA,  0xAA);
+			snd_soc_update_bits(direct_codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x00);
 		}
 		break;
 	case SND_SOC_DAPM_POST_PMD:
@@ -7346,12 +7345,13 @@ static ssize_t headphone_gain_store(struct kobject *kobj,
 		if (dualinput > 40)
 			dualinput = 40;
 
-		if (dualinput < 0)
+		if (dualinput < 0) {
 			hphl_cached_gain = (dualinput + 256);
 			hphr_cached_gain = (dualinput + 256);
-		else
+		} else {
 			hphl_cached_gain = dualinput;
 			hphr_cached_gain = dualinput;
+		}
 	}
 
 	update_headphone_gain();
@@ -7409,12 +7409,12 @@ static ssize_t uhqa_mode_store(struct kobject *kobj,
 			wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_L_PA_CTL, 0x48);
 			wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_R_PA_CTL, 0x48);
 			wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_BIAS_PA,  0xAA);
-			snd_soc_update_bits(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x00);
+			snd_soc_update_bits(direct_codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x00);
 		} else {
 			wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_L_PA_CTL, 0x40);
 			wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_R_PA_CTL, 0x40);
 			wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_BIAS_PA,  0x55);
-			snd_soc_update_bits(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20);
+			snd_soc_update_bits(direct_codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20);
 		}
 	}
 	return count;
@@ -7583,7 +7583,6 @@ static int taiko_codec_probe(struct snd_soc_codec *codec)
 	}
 #endif
 	taiko->codec = codec;
-	//direct_codec = codec;
 	for (i = 0; i < COMPANDER_MAX; i++) {
 		taiko->comp_enabled[i] = 0;
 		taiko->comp_fs[i] = COMPANDER_FS_48KHZ;
@@ -7704,6 +7703,7 @@ static int taiko_codec_probe(struct snd_soc_codec *codec)
 	codec->ignore_pmdown_time = 1;
 
 	sound_control_codec_ptr = codec->control_data;
+	direct_codec = codec;
 	pr_info("Taiko Sound Engine Probe\n");
 	if (codec->name)
 		pr_info("Probing Codec: %s\n", codec->name);
