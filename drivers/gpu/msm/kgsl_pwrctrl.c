@@ -254,7 +254,7 @@ static int kgsl_pwrctrl_thermal_pwrlevel_store(struct device *dev,
 	return count;
 }
 
-static int kgsl_pwrctrl_thermal_pwrlevel_show(struct device *dev,
+static ssize_t kgsl_pwrctrl_thermal_pwrlevel_show(struct device *dev,
 					struct device_attribute *attr,
 					char *buf)
 {
@@ -267,7 +267,7 @@ static int kgsl_pwrctrl_thermal_pwrlevel_show(struct device *dev,
 	return snprintf(buf, PAGE_SIZE, "%d\n", pwr->thermal_pwrlevel);
 }
 
-static int kgsl_pwrctrl_max_pwrlevel_store(struct device *dev,
+static ssize_t kgsl_pwrctrl_max_pwrlevel_store(struct device *dev,
 					 struct device_attribute *attr,
 					 const char *buf, size_t count)
 {
@@ -307,7 +307,7 @@ static int kgsl_pwrctrl_max_pwrlevel_store(struct device *dev,
 	return count;
 }
 
-static int kgsl_pwrctrl_max_pwrlevel_show(struct device *dev,
+static ssize_t kgsl_pwrctrl_max_pwrlevel_show(struct device *dev,
 					struct device_attribute *attr,
 					char *buf)
 {
@@ -317,10 +317,10 @@ static int kgsl_pwrctrl_max_pwrlevel_show(struct device *dev,
 	if (device == NULL)
 		return 0;
 	pwr = &device->pwrctrl;
-	return snprintf(buf, PAGE_SIZE, "%d\n", pwr->max_pwrlevel);
+	return snprintf(buf, PAGE_SIZE, "%u\n", pwr->max_pwrlevel);
 }
 
-static int kgsl_pwrctrl_min_pwrlevel_store(struct device *dev,
+static ssize_t kgsl_pwrctrl_min_pwrlevel_store(struct device *dev,
 					 struct device_attribute *attr,
 					 const char *buf, size_t count)
 {	struct kgsl_device *device = kgsl_device_from_dev(dev);
@@ -361,7 +361,7 @@ static int kgsl_pwrctrl_min_pwrlevel_store(struct device *dev,
 	return count;
 }
 
-static int kgsl_pwrctrl_min_pwrlevel_show(struct device *dev,
+static ssize_t kgsl_pwrctrl_min_pwrlevel_show(struct device *dev,
 					struct device_attribute *attr,
 					char *buf)
 {
@@ -370,10 +370,10 @@ static int kgsl_pwrctrl_min_pwrlevel_show(struct device *dev,
 	if (device == NULL)
 		return 0;
 	pwr = &device->pwrctrl;
-	return snprintf(buf, PAGE_SIZE, "%d\n", pwr->min_pwrlevel);
+	return snprintf(buf, PAGE_SIZE, "%u\n", pwr->min_pwrlevel);
 }
 
-static int kgsl_pwrctrl_num_pwrlevels_show(struct device *dev,
+static ssize_t kgsl_pwrctrl_num_pwrlevels_show(struct device *dev,
 					struct device_attribute *attr,
 					char *buf)
 {
@@ -400,7 +400,7 @@ static int _get_nearest_pwrlevel(struct kgsl_pwrctrl *pwr, unsigned int clock)
 	return -ERANGE;
 }
 
-static int kgsl_pwrctrl_max_gpuclk_store(struct device *dev,
+static ssize_t kgsl_pwrctrl_max_gpuclk_store(struct device *dev,
 					 struct device_attribute *attr,
 					 const char *buf, size_t count)
 {
@@ -438,7 +438,7 @@ done:
 	return count;
 }
 
-static int kgsl_pwrctrl_max_gpuclk_show(struct device *dev,
+static ssize_t kgsl_pwrctrl_max_gpuclk_show(struct device *dev,
 					struct device_attribute *attr,
 					char *buf)
 {
@@ -448,11 +448,11 @@ static int kgsl_pwrctrl_max_gpuclk_show(struct device *dev,
 	if (device == NULL)
 		return 0;
 	pwr = &device->pwrctrl;
-	return snprintf(buf, PAGE_SIZE, "%d\n",
+	return snprintf(buf, PAGE_SIZE, "%u\n",
 			pwr->pwrlevels[pwr->thermal_pwrlevel].gpu_freq);
 }
 
-static int kgsl_pwrctrl_gpuclk_store(struct device *dev,
+static ssize_t kgsl_pwrctrl_gpuclk_store(struct device *dev,
 				     struct device_attribute *attr,
 				     const char *buf, size_t count)
 {
@@ -479,7 +479,7 @@ static int kgsl_pwrctrl_gpuclk_store(struct device *dev,
 	return count;
 }
 
-static int kgsl_pwrctrl_gpuclk_show(struct device *dev,
+static ssize_t kgsl_pwrctrl_gpuclk_show(struct device *dev,
 				    struct device_attribute *attr,
 				    char *buf)
 {
