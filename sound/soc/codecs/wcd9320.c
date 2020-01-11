@@ -553,7 +553,7 @@ static const struct comp_sample_dependent_params comp_samp_params[] = {
 		/* 192 Khz */
 		.peak_det_timeout = 0x0B,
 		.rms_meter_div_fact = 0xC,
-		.rms_meter_resamp_fact = 0xA0,
+		.rms_meter_resamp_fact = 0x50,
 	},
 };
 
@@ -4342,15 +4342,18 @@ static int taiko_prepare(struct snd_pcm_substream *substream,
 		dai->driver->playback.stream_name, taiko_p->dai[dai->id].rate,
 			taiko_p->dai[dai->id].bit_width,
 			taiko_p->comp_enabled[COMPANDER_1]);
-	if (!taiko_p->comp_enabled[COMPANDER_1]) {
+
+	if ((!(taiko_p->dai[dai->id].rate == 192000 ||
+		 taiko_p->dai[dai->id].rate == 96000)) ||
+	    !(taiko_p->dai[dai->id].bit_width == 24) ||
+	    !(taiko_p->comp_enabled[COMPANDER_1])) {
+
 		taiko_p->clsh_d.hs_perf_mode_enabled = false;
 		snd_soc_update_bits(codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20);
+
 		dev_dbg(dai->dev ,"%s(): high performnce mode not needed\n",
-			__func__);
+				__func__);
 		return 0;
-	} else {
-		taiko_p->clsh_d.hs_perf_mode_enabled = true;
-		snd_soc_update_bits(codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x00);
 	}
 
 	paths = snd_soc_dapm_codec_dai_get_playback_connected_widgets(dai, &wlist);
@@ -4382,11 +4385,14 @@ static int taiko_prepare(struct snd_pcm_substream *substream,
 			taiko_p->dai[dai->id].bit_width,
 			taiko_p->comp_enabled[COMPANDER_1]);
 
-	if (taiko_p->comp_enabled[COMPANDER_1]) {
+	if ((taiko_p->dai[dai->id].rate == 192000 ||
+		taiko_p->dai[dai->id].rate == 96000) &&
+	    (taiko_p->dai[dai->id].bit_width == 24) &&
+	    (taiko_p->comp_enabled[COMPANDER_1])) {
+
 		pr_debug("%s(): HS peformance mode enabled", __func__);
 		taiko_p->clsh_d.hs_perf_mode_enabled = true;
 		snd_soc_update_bits(codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x00);
-
 	} else {
 		taiko_p->clsh_d.hs_perf_mode_enabled = false;
 		snd_soc_update_bits(codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20);
@@ -6592,11 +6598,11 @@ static const struct wcd9xxx_reg_mask_val taiko_1_0_reg_defaults[] = {
 	 */
 	TAIKO_REG_VAL(WCD9XXX_A_BUCK_MODE_3, 0xCE),
 	/*Reduce EAR DAC bias to 70% */
-	TAIKO_REG_VAL(TAIKO_A_RX_EAR_BIAS_PA, 0x96),
+	TAIKO_REG_VAL(TAIKO_A_RX_EAR_BIAS_PA, 0x76),
 	/* Reduce LINE DAC bias to 70% */
 	TAIKO_REG_VAL(TAIKO_A_RX_LINE_BIAS_PA, 0x7A),
 	/* Reduce HPH DAC bias to 70% */
-	TAIKO_REG_VAL(TAIKO_A_RX_HPH_BIAS_PA, 0x96),
+	TAIKO_REG_VAL(TAIKO_A_RX_HPH_BIAS_PA, 0x7A),
 
 	/*
 	 * There is a diode to pull down the micbias while doing
@@ -6634,7 +6640,7 @@ static const struct wcd9xxx_reg_mask_val taiko_2_0_reg_defaults[] = {
 	TAIKO_REG_VAL(TAIKO_A_BUCK_CTRL_CCL_4, 0x51),
 	TAIKO_REG_VAL(TAIKO_A_NCP_DTEST, 0x10),
 	TAIKO_REG_VAL(TAIKO_A_RX_HPH_CHOP_CTL, 0xA4),
-	TAIKO_REG_VAL(TAIKO_A_RX_HPH_BIAS_PA, 0x96),
+	TAIKO_REG_VAL(TAIKO_A_RX_HPH_BIAS_PA, 0x7A),
 	TAIKO_REG_VAL(TAIKO_A_RX_HPH_OCP_CTL, 0x6B),
 	TAIKO_REG_VAL(TAIKO_A_RX_HPH_CNP_WG_CTL, 0xDA),
 	TAIKO_REG_VAL(TAIKO_A_RX_HPH_CNP_WG_TIME, 0x15),
@@ -6769,8 +6775,6 @@ static const struct wcd9xxx_reg_mask_val taiko_codec_reg_init_val[] = {
 	/* set MAD input MIC to DMIC1 */
 	{TAIKO_A_CDC_CONN_MAD, 0x0F, 0x08},
 
-	/* set DMIC CLK drive strength to 4mA */
-	{TAIKO_A_HDRIVE_OVERRIDE, 0x07, 0x01},
 };
 
 static void taiko_codec_init_reg(struct snd_soc_codec *codec)
@@ -7168,7 +7172,7 @@ static int taiko_post_reset_cb(struct wcd9xxx *wcd9xxx)
 		ret = wcd9xxx_mbhc_init(&taiko->mbhc, &taiko->resmgr, codec,
 					taiko_enable_mbhc_micbias,
 					&mbhc_cb, &cdc_intr_ids,
-					rco_clk_rate, true);
+					rco_clk_rate, false);
 		if (ret)
 			pr_err("%s: mbhc init failed %d\n", __func__, ret);
 		else
