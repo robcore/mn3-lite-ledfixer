@@ -119,3 +119,4 @@ mxzip/boot.img
 .lastzip
 .starttime
 .endtime
+dmesg-from-freeze.txt
