@@ -80,6 +80,7 @@
 		compatible = "i2c-gpio";
 		gpios = <&msmgpio 87 0 /* sda */
 				&msmgpio 88 0 /* scl */
+		>;
 		#address-cells = <1>;
 		#size-cells = <0>;
 
@@ -110,6 +111,7 @@
 		compatible = "i2c-gpio";
 		gpios = <&msmgpio 95 0 /* sda */
 		&msmgpio 96 0 /* scl */
+		>;
 		#address-cells = <1>;
 		#size-cells = <0>;
 
@@ -134,6 +136,7 @@
 		compatible = "i2c-gpio";
 		gpios = <&msmgpio 109 0 /* sda */
 		&msmgpio 108 0 /* scl */
+		>;
 
 		barcode_emul_ice4@19 {
 			compatible = "barcode_hlte,barcode_emul_hlte";
@@ -155,6 +158,7 @@
 		compatible = "i2c-gpio";
 		gpios = <&msmgpio 60 0 /* sda */
 		&msmgpio 61 0 /* scl */
+		>;
 	};
 
 	qcom,hdmi_tx@fd922100 {
