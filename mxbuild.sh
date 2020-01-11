@@ -400,15 +400,15 @@ create_zip() {
 
 	echo "Compressing to TWRP flashable zip file..."
 	cd "$ZIPFOLDER" || warnandfail "Failed to cd to $ZIPFOLDER"
-	rm -f "$ZIPFOLDER"/system/lib/modules/*
-	for MXMODS in $(find "$RDIR/build/" -iname '*.ko')
-	do
-		if [ -f "$MXMODS" ]
-		then
-			echo "Copying $MXMODS to zip"
-			cp -pa "$MXMODS" "$ZIPFOLDER/system/lib/modules/" || warnandfail "Failed to copy new modules to zip!"
-		fi
-	done
+	#[ -d "$ZIPFOLDER/system/lib/modules" ] && rm -rf "$ZIPFOLDER/system/lib/modules"
+	#for MXMODS in $(find "$RDIR/build/" -iname '*.ko')
+	#do
+	#	if [ -f "$MXMODS" ]
+	#	then
+	#		echo "Copying $MXMODS to zip"
+	#		cp -pa "$MXMODS" "$ZIPFOLDER/system/lib/modules/" || warnandfail "Failed to copy new modules to zip!"
+	#	fi
+	#done
 	zip -r -9 - * > "$RDIR/$MX_KERNEL_VERSION.zip"
 	echo "Kernel $MX_KERNEL_VERSION.zip finished"
 	echo "Filepath: "
