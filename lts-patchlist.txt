@@ -1,7 +1,3 @@
-/root/linux-stable/patches/1807-regulator-wm831x-Set-the-new-rather-than-old-value-f.patch
-/root/linux-stable/patches/1808-ath5k-fix-tx-path-skb-leaks.patch
-/root/linux-stable/patches/1809-bcma-mips-fix-clearing-device-IRQ.patch
-/root/linux-stable/patches/1810-powerpc-Fix-CONFIG_RELOCATABLE-y-CONFIG_CRASH_DUMP-n.patch
 /root/linux-stable/patches/1811-powerpc-vdso-Remove-redundant-locking-in-update_vsys.patch
 /root/linux-stable/patches/1812-powerpc-Add-missing-NULL-terminator-to-avoid-boot-pa.patch
 /root/linux-stable/patches/1813-KVM-Fix-user-memslot-overlap-check.patch
