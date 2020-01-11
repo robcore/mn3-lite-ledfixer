@@ -2,39 +2,48 @@
 
 PATCHFILE="/root/mn3lite/lts-patchlist.txt"
 
-localpause() {
+animatepause() {
 
-	read -r -p "PAUSE! Press [ENTER] to continue."
-
-}
-
-reversepause() {
-
-	printf "%s\n" "ltspatcher : $1"
-	printf "%s\n" "Patch can be reversed! Probably already applied!"
-	localpause
-
-}
-
-failpause() {
-
-	printf "%s\n" "ltspatcher : $1"
-	localpause
-
-}
-
-pcheckrs() {
-
-	if patch -p1 -R --dry-run < "$1" &>/dev/null
-	then
-		reversepause "$1 failed"
-	elif patch -p1 --dry-run < "$1" &>/dev/null
-	then
-		patch -p1 --dry-run < "$1"
-		echo "$1 Applied Cleanly."
-	else
-		failpause "$1 Does not apply cleanly"
-	fi
+	printf "%s\r" "----------SHELL-IS-PAUSED----------"; \
+	sleep 0.1; \
+	printf "%s\r" "--------- SHELL IS PAUSED ---------"; \
+	sleep 0.1; \
+	printf "%s\r" "--------  SHELL IS PAUSED  --------"; \
+	sleep 0.1; \
+	printf "%s\r" "-------   SHELL IS PAUSED   -------"; \
+	sleep 0.1; \
+	printf "%s\r" "------    SHELL IS PAUSED    ------"; \
+	sleep 0.1; \
+	printf "%s\r" "-----     SHELL IS PAUSED     -----"; \
+	sleep 0.1; \
+	printf "%s\r" "----      SHELL IS PAUSED      ----"; \
+	sleep 0.1; \
+	printf "%s\r" "---       SHELL IS PAUSED       ---"; \
+	sleep 0.1; \
+	printf "%s\r" "--        SHELL IS PAUSED        --"; \
+	sleep 0.1; \
+	printf "%s\r" "-         SHELL IS PAUSED         -"; \
+	sleep 0.1; \
+	printf "%s\r" "          SHELL IS PAUSED          "; \
+	sleep 0.1; \
+	printf "%s\r" "-         SHELL IS PAUSED         -"; \
+	sleep 0.1; \
+	printf "%s\r" "--        SHELL IS PAUSED        --"; \
+	sleep 0.1; \
+	printf "%s\r" "---       SHELL IS PAUSED       ---"; \
+	sleep 0.1; \
+	printf "%s\r" "----      SHELL IS PAUSED      ----"; \
+	sleep 0.1; \
+	printf "%s\r" "-----     SHELL IS PAUSED     -----"; \
+	sleep 0.1; \
+	printf "%s\r" "------    SHELL IS PAUSED    ------"; \
+	sleep 0.1; \
+	printf "%s\r" "-------   SHELL IS PAUSED   -------"; \
+	sleep 0.1; \
+	printf "%s\r" "--------  SHELL IS PAUSED  --------"; \
+	sleep 0.1; \
+	printf "%s\r" "--------- SHELL IS PAUSED ---------"; \
+	sleep 0.1; \
 
 }
 
@@ -144,9 +153,44 @@ do
 	   [ "$PATCHLINE" = "/root/linux-stable/patches/5929-Linux-3.4.113.patch" ]
 	then
 		echo "$PATCHLINE reached"
-		localpause
+		while true
+		do
+			animatepause
+		done
+		printf "%s\r" "                                   "; \
+		printf "%s\n" " "
+		printf "%s" "Press [Enter] key to continue..."
+		read -p "$*"
 	else
-		pcheckrs "$PATCHLINE"
+		patch -p1 -R --dry-run < "$PATCHLINE" &>/dev/null
+		if [ "$?" -eq 0 ]
+		then
+			printf "%s\n" "Patch can be reversed! Probably already applied!"
+			while true
+			do
+				animatepause
+			done
+			printf "%s\r" "                                   "; \
+			printf "%s\n" " "
+			printf "%s" "Press [Enter] key to continue..."
+			read -p "$*"
+		else
+			patch -p1 --dry-run < "$PATCHLINE" &>/dev/null
+			if [ "$?" -eq 0 ]
+			then
+				patch -p1 --dry-run < "$PATCHLINE"
+				echo "$PATCHLINE Applied Cleanly."
+			else
+				printf "%s\n" "Dry run failed! pausing..."
+				while true
+				do
+					animatepause
+				done
+				printf "%s\r" "                                   "; \
+				printf "%s\n" " "
+				printf "%s" "Press [Enter] key to continue..."
+				read -p "$*"
+			fi
+		fi
 	fi
-
 done < "$PATCHFILE"
