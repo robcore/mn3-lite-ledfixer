@@ -1864,25 +1864,6 @@
 		qti,latency-level = "regular";
 	};
 
-	qcom,msm-pcm {
-		compatible = "qcom,msm-pcm-dsp";
-		qcom,msm-pcm-dsp-id = <0>;
-	};
-
-	qcom,msm-pcm-low-latency {
-		compatible = "qcom,msm-pcm-dsp";
-		qcom,msm-pcm-dsp-id = <1>;
-		qcom,msm-pcm-low-latency;
-		qcom,latency-level = "regular";
-	};
-
-	qcom,msm-pcm-jack-low-latency {
-		compatible = "qcom,msm-pcm-dsp";
-		qcom,msm-pcm-dsp-id = <2>;
-		qcom,msm-pcm-low-latency;
-		qcom,latency-level = "regular";
-	};
-
 	qcom,msm-pcm-routing {
 		compatible = "qcom,msm-pcm-routing";
 	};
@@ -1930,10 +1911,6 @@
 
 	qti,msm-pcm-loopback {
 		compatible = "qti,msm-pcm-loopback";
-	};
-
-	qcom,msm-pcm-loopback {
-		compatible = "qcom,msm-pcm-loopback";
 	};
 
 	qcom,msm-voice-svc {
@@ -2458,12 +2435,12 @@
 	qcom,msm-thermal {
 		compatible = "qcom,msm-thermal";
 		qcom,sensor-id = <5>;
-		qcom,poll-ms = <240>;
+		qcom,poll-ms = <250>;
 		qcom,limit-temp = <80>;
 		qcom,temp-hysteresis = <10>;
 		qcom,freq-step = <2>;
 		qcom,freq-control-mask = <0xf>;
-		qcom,core-limit-temp = <90>;
+		qcom,core-limit-temp = <85>;
 		qcom,core-temp-hysteresis = <10>;
 		qcom,core-control-mask = <0xe>;
 		qcom,hotplug-temp = <110>;
