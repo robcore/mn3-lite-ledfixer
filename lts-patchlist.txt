@@ -6,7 +6,6 @@
 /root/linux-stable/patches/2063-drm-radeon-prevent-crash-in-the-ring-space-allocatio.patch
 /root/linux-stable/patches/2064-drm-radeon-Calling-object_unrefer-when-creating-fb-f.patch
 /root/linux-stable/patches/2065-x86-64-Replace-left-over-sti-cli-in-ia32-audit-exit-.patch
-/root/linux-stable/patches/2066-sched-rt-Use-root_domain-of-rt_rq-not-current-proces.patch
 /root/linux-stable/patches/2067-nilfs2-fix-fix-very-long-mount-time-issue.patch
 /root/linux-stable/patches/2068-drivers-rtc-rtc-isl1208.c-call-rtc_update_irq-from-t.patch
 /root/linux-stable/patches/2069-USB-ftdi_sio-add-Zolix-FTDI-PID.patch
