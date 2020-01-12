@@ -265,7 +265,8 @@ static struct snd_soc_codec *direct_codec;
 static unsigned int wcd9xxx_hw_revision;
 static bool hpwidget = false;
 static bool spkwidget = false;
-static unsigned int  uhqa_mode = 1;
+static unsigned int uhqa_control = 0;
+static unsigned int  uhqa_mode = 0;
 static unsigned int hph_pa_enabled = 0;
 u8 hphl_cached_gain = 0;
 u8 hphr_cached_gain = 0;
@@ -3395,8 +3396,9 @@ static int taiko_codec_enable_anc(struct snd_soc_dapm_widget *w,
 }
 
 static void update_uhqa_mode(void) {
-	if (!hpwidget)
-	return;
+	if (!hpwidget || !uhqa_control)
+		return;
+
 	if (uhqa_mode) {
 		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_L_PA_CTL, 0x48);
 		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_R_PA_CTL, 0x48);
@@ -3405,7 +3407,7 @@ static void update_uhqa_mode(void) {
 	} else {
 		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_L_PA_CTL, 0x40);
 		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_R_PA_CTL, 0x40);
-		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_BIAS_PA,  0x55);
+		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_BIAS_PA,  0x7A);
 		snd_soc_update_bits(direct_codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20);
 	}
 }
@@ -4343,7 +4345,10 @@ static int taiko_prepare(struct snd_pcm_substream *substream,
 			taiko_p->dai[dai->id].bit_width,
 			taiko_p->comp_enabled[COMPANDER_1]);
 
-	if ((!(taiko_p->dai[dai->id].rate == 192000 ||
+	if (taiko_p->comp_enabled[COMPANDER_1] && uhqa_control && uhqa_mode) {
+		taiko_p->clsh_d.hs_perf_mode_enabled = true;
+		update_uhqa_mode();
+	} else if ((!(taiko_p->dai[dai->id].rate == 192000 ||
 		 taiko_p->dai[dai->id].rate == 96000)) ||
 	    !(taiko_p->dai[dai->id].bit_width == 24) ||
 	    !(taiko_p->comp_enabled[COMPANDER_1])) {
@@ -4385,7 +4390,10 @@ static int taiko_prepare(struct snd_pcm_substream *substream,
 			taiko_p->dai[dai->id].bit_width,
 			taiko_p->comp_enabled[COMPANDER_1]);
 
-	if ((taiko_p->dai[dai->id].rate == 192000 ||
+	if (taiko_p->comp_enabled[COMPANDER_1] && uhqa_control && uhqa_mode) {
+		taiko_p->clsh_d.hs_perf_mode_enabled = true;
+		update_uhqa_mode();
+	} else if ((taiko_p->dai[dai->id].rate == 192000 ||
 		taiko_p->dai[dai->id].rate == 96000) &&
 	    (taiko_p->dai[dai->id].bit_width == 24) &&
 	    (taiko_p->comp_enabled[COMPANDER_1])) {
@@ -7424,6 +7432,26 @@ static ssize_t uhqa_mode_store(struct kobject *kobj,
 	return count;
 }
 
+static ssize_t uhqa_control_show(struct kobject *kobj,
+		struct kobj_attribute *attr, char *buf) {
+	return sprintf(buf, "%d\n", uhqa_control);
+}
+
+static ssize_t uhqa_control_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count) {
+	int uval;
+
+	sscanf(buf, "%d", &uval);
+
+	if (uval < 0)
+		uval = 0;
+	if (uval > 1)
+		uval = 1;
+
+	uhqa_control = uval;
+	return count;
+}
+
 static ssize_t headphone_pa_gain_raw_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf) {
 	int wcd_hphl, wcd_hphr;
@@ -7491,6 +7519,11 @@ static struct kobj_attribute uhqa_mode_attribute =
 		uhqa_mode_show,
 		uhqa_mode_store);
 
+static struct kobj_attribute uhqa_control_attribute =
+	__ATTR(uhqa_control, 0644,
+		uhqa_control_show,
+		uhqa_control_store);
+
 //static struct kobj_attribute headphone_pa_gain_attribute =
 //	__ATTR(headphone_pa_gain, 0644,
 //		headphone_pa_gain_show,
@@ -7505,6 +7538,7 @@ static struct attribute *sound_control_attrs[] = {
 		&headphone_gain_attribute.attr,
 		&speaker_gain_attribute.attr,
 		&uhqa_mode_attribute.attr,
+		&uhqa_control_attribute.attr,
 		//&headphone_pa_gain_attribute.attr,
 		&headphone_pa_gain_raw_attribute.attr,
 		NULL,
