@@ -484,17 +484,12 @@ void __show_regs(struct pt_regs *regs)
 	buf[3] = flags & PSR_V_BIT ? 'V' : 'v';
 	buf[4] = '\0';
 
-#ifndef CONFIG_CPU_V7M
 	printk("Flags: %s  IRQs o%s  FIQs o%s  Mode %s  ISA %s  Segment %s\n",
 		buf, interrupts_enabled(regs) ? "n" : "ff",
 		fast_interrupts_enabled(regs) ? "n" : "ff",
 		processor_modes[processor_mode(regs)],
 		isa_modes[isa_mode(regs)],
 		get_fs() == get_ds() ? "kernel" : "user");
-#else
-	printk("xPSR: %08lx\n", regs->ARM_cpsr);
-#endif
-
 #ifdef CONFIG_CPU_CP15
 	{
 		unsigned int ctrl;
