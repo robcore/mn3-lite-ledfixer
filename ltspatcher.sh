@@ -1,6 +1,14 @@
 #!/bin/bash
 
-PATCHFILE="/root/mn3lite/lts-patchlist.txt"
+PATCHFILE="/root/mn3lite/ltspatchlistforscript.txt"
+
+#oldpause() {
+#
+#	printf "%s\r" "                                   "; \
+#	printf "%s\n" " "
+#	printf "%s" "Press [Enter] key to continue..."
+#	read -p $*
+#}
 
 animatepause() {
 
@@ -49,33 +57,7 @@ animatepause() {
 
 while IFS= read -r PATCHLINE
 do
-	if
-	   [ "$PATCHLINE" = "/root/linux-stable/patches/1038-Linux-3.4.12.patch" ] || \
-	   [ "$PATCHLINE" = "/root/linux-stable/patches/1091-Linux-3.4.13.patch" ] || \
-	   [ "$PATCHLINE" = "/root/linux-stable/patches/1212-Linux-3.4.14.patch" ] || \
-	   [ "$PATCHLINE" = "/root/linux-stable/patches/1275-Linux-3.4.15.patch" ] || \
-	   [ "$PATCHLINE" = "/root/linux-stable/patches/1318-Linux-3.4.16.patch" ] || \
-	   [ "$PATCHLINE" = "/root/linux-stable/patches/1373-Linux-3.4.17.patch" ] || \
-	   [ "$PATCHLINE" = "/root/linux-stable/patches/1386-Linux-3.4.18.patch" ] || \
-	   [ "$PATCHLINE" = "/root/linux-stable/patches/1446-Linux-3.4.19.patch" ] || \
-	   [ "$PATCHLINE" = "/root/linux-stable/patches/1617-Linux-3.4.20.patch" ] || \
-	   [ "$PATCHLINE" = "/root/linux-stable/patches/1674-Linux-3.4.21.patch" ] || \
-	   [ "$PATCHLINE" = "/root/linux-stable/patches/1676-Linux-3.4.22.patch" ] || \
-	   [ "$PATCHLINE" = "/root/linux-stable/patches/1696-Linux-3.4.23.patch" ] || \
-	   [ "$PATCHLINE" = "/root/linux-stable/patches/1725-Linux-3.4.24.patch" ] || \
-	   [ "$PATCHLINE" = "/root/linux-stable/patches/1806-Linux-3.4.25.patch" ] || \
-	   [ "$PATCHLINE" = "/root/linux-stable/patches/1978-Linux-3.4.26.patch" ] || \
-	   [ "$PATCHLINE" = "/root/linux-stable/patches/2000-Linux-3.4.27.patch" ] || \
-	   [ "$PATCHLINE" = "/root/linux-stable/patches/2023-Linux-3.4.28.patch" ] || \
-	   [ "$PATCHLINE" = "/root/linux-stable/patches/2057-Linux-3.4.29.patch" ] || \
-	   [ "$PATCHLINE" = "/root/linux-stable/patches/2084-Linux-3.4.30.patch" ] || \
-	   [ "$PATCHLINE" = "/root/linux-stable/patches/2121-Linux-3.4.31.patch" ] || \
-	   [ "$PATCHLINE" = "/root/linux-stable/patches/2130-Linux-3.4.32.patch" ] || \
-	   [ "$PATCHLINE" = "/root/linux-stable/patches/2218-Linux-3.4.34.patch" ] || \
-	   [ "$PATCHLINE" = "/root/linux-stable/patches/2265-Linux-3.4.35.patch" ] || \
-	   [ "$PATCHLINE" = "/root/linux-stable/patches/2306-Linux-3.4.36.patch" ] || \
-	   [ "$PATCHLINE" = "/root/linux-stable/patches/2355-Linux-3.4.37.patch" ] || \
-	   [ "$PATCHLINE" = "/root/linux-stable/patches/2428-Linux-3.4.38.patch" ] || \
+	if [ "$PATCHLINE" = "/root/linux-stable/patches/2428-Linux-3.4.38.patch" ] || \
 	   [ "$PATCHLINE" = "/root/linux-stable/patches/2498-Linux-3.4.39.patch" ] || \
 	   [ "$PATCHLINE" = "/root/linux-stable/patches/2528-Linux-3.4.40.patch" ] || \
 	   [ "$PATCHLINE" = "/root/linux-stable/patches/2547-Linux-3.4.41.patch" ] || \
@@ -152,45 +134,38 @@ do
 	   [ "$PATCHLINE" = "/root/linux-stable/patches/5797-Linux-3.4.112.patch" ] || \
 	   [ "$PATCHLINE" = "/root/linux-stable/patches/5929-Linux-3.4.113.patch" ]
 	then
-		echo "$PATCHLINE reached"
-		while true
+		BCOUNT="$(echo $PATCHLINE | wc -c)"
+		if [ "$BCOUNT" -eq 51 ]
+		then
+			echo "$(echo $PATCHLINE | cut --bytes=33-44) reached"
+		elif [ "$BCOUNT" -eq 52 ]
+			echo "$(echo $PATCHLINE | cut --bytes=33-45) reached"
+		else
+			echo "$PATCHLINE reached"
+		fi
+		while :
 		do
 			animatepause
 		done
-		printf "%s\r" "                                   "; \
-		printf "%s\n" " "
-		printf "%s" "Press [Enter] key to continue..."
-		read -p "$*"
+	elif patch -p1 -R --dry-run < "$PATCHLINE" &> /dev/null
+	then
+		echo "$PATCHLINE was already applied! Doing Nothing!"
+		echo ""
+		while :
+		do
+			animatepause
+		done
+	elif patch -p1 --dry-run < "$PATCHLINE" &> /dev/null
+	then
+		echo "Dry Run Succeeded!"
+		echo "Applying $PATCHLINE"
+		echo ""
+		patch -p1 < "$PATCHLINE"
 	else
-		patch -p1 -R --dry-run < "$PATCHLINE" &>/dev/null
-		if [ "$?" -eq 0 ]
-		then
-			printf "%s\n" "Patch can be reversed! Probably already applied!"
-			while true
-			do
-				animatepause
-			done
-			printf "%s\r" "                                   "; \
-			printf "%s\n" " "
-			printf "%s" "Press [Enter] key to continue..."
-			read -p "$*"
-		else
-			patch -p1 --dry-run < "$PATCHLINE" &>/dev/null
-			if [ "$?" -eq 0 ]
-			then
-				patch -p1 --dry-run < "$PATCHLINE"
-				echo "$PATCHLINE Applied Cleanly."
-			else
-				printf "%s\n" "Dry run failed! pausing..."
-				while true
-				do
-					animatepause
-				done
-				printf "%s\r" "                                   "; \
-				printf "%s\n" " "
-				printf "%s" "Press [Enter] key to continue..."
-				read -p "$*"
-			fi
-		fi
+		printf "%s\n" "Dry run failed!"
+		while :
+		do
+			animatepause
+		done
 	fi
 done < "$PATCHFILE"
