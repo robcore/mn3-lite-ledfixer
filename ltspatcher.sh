@@ -227,6 +227,10 @@ do
 	then
 		echo "This would patch /drivers/hid/ ignoring!"
 		animatepausedbg
+	elif grep '/drivers/bluetooth/' "$PATCHLINE"
+	then
+		echo "This would patch /drivers/bluetooth/ ignoring!"
+		animatepausedbg
 	elif patch -p1 -R --dry-run < "$PATCHLINE" &> /dev/null
 	then
 		echo "$PATCHLINE was already applied! Doing Nothing!"
@@ -346,6 +350,10 @@ do
 	elif grep '/drivers/hid/' "$PATCHLINE"
 	then
 		echo "This would patch /drivers/hid/ ignoring!"
+		animatepause
+	elif grep '/drivers/bluetooth/' "$PATCHLINE"
+	then
+		echo "This would patch /drivers/bluetooth/ ignoring!"
 		animatepause
 	elif patch -p1 -R --dry-run < "$PATCHLINE" &> /dev/null
 	then
