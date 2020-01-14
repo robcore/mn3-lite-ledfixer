@@ -21,92 +21,95 @@ animatepausedbg() {
 
 while :
 do
-	printf "%s\r" "----------SHELL-IS-PAUSED----------"; \
-	sleep 0.1; \
-	printf "%s\r" "--------- SHELL IS PAUSED ---------"; \
-	sleep 0.1; \
-	printf "%s\r" "--------  SHELL IS PAUSED  --------"; \
-	sleep 0.1; \
-	printf "%s\r" "-------   SHELL IS PAUSED   -------"; \
-	sleep 0.1; \
-	printf "%s\r" "------    SHELL IS PAUSED    ------"; \
-	sleep 0.1; \
-	printf "%s\r" "-----     SHELL IS PAUSED     -----"; \
-	sleep 0.1; \
-	printf "%s\r" "----      SHELL IS PAUSED      ----"; \
-	sleep 0.1; \
-	printf "%s\r" "---       SHELL IS PAUSED       ---"; \
-	sleep 0.1; \
-	printf "%s\r" "--        SHELL IS PAUSED        --"; \
-	sleep 0.1; \
-	printf "%s\r" "-         SHELL IS PAUSED         -"; \
-	sleep 0.1; \
-	printf "%s\r" "          SHELL IS PAUSED          "; \
-	sleep 0.1; \
-	printf "%s\r" "-         SHELL IS PAUSED         -"; \
-	sleep 0.1; \
-	printf "%s\r" "--        SHELL IS PAUSED        --"; \
-	sleep 0.1; \
-	printf "%s\r" "---       SHELL IS PAUSED       ---"; \
-	sleep 0.1; \
-	printf "%s\r" "----      SHELL IS PAUSED      ----"; \
-	sleep 0.1; \
-	printf "%s\r" "-----     SHELL IS PAUSED     -----"; \
-	sleep 0.1; \
-	printf "%s\r" "------    SHELL IS PAUSED    ------"; \
-	sleep 0.1; \
-	printf "%s\r" "-------   SHELL IS PAUSED   -------"; \
-	sleep 0.1; \
-	printf "%s\r" "--------  SHELL IS PAUSED  --------"; \
-	sleep 0.1; \
-	printf "%s\r" "--------- SHELL IS PAUSED ---------"; \
-	sleep 0.1;
+	printf "%s\r" "----------SHELL-IS-PAUSED----------"
+	sleep 0.1
+	printf "%s\r" "--------- SHELL IS PAUSED ---------"
+	sleep 0.1
+	printf "%s\r" "--------  SHELL IS PAUSED  --------"
+	sleep 0.1
+	printf "%s\r" "-------   SHELL IS PAUSED   -------"
+	sleep 0.1
+	printf "%s\r" "------    SHELL IS PAUSED    ------"
+	sleep 0.1
+	printf "%s\r" "-----     SHELL IS PAUSED     -----"
+	sleep 0.1
+	printf "%s\r" "----      SHELL IS PAUSED      ----"
+	sleep 0.1
+	printf "%s\r" "---       SHELL IS PAUSED       ---"
+	sleep 0.1
+	printf "%s\r" "--        SHELL IS PAUSED        --"
+	sleep 0.1
+	printf "%s\r" "-         SHELL IS PAUSED         -"
+	sleep 0.1
+	printf "%s\r" "          SHELL IS PAUSED          "
+	sleep 0.1
+	printf "%s\r" "-         SHELL IS PAUSED         -"
+	sleep 0.1
+	printf "%s\r" "--        SHELL IS PAUSED        --"
+	sleep 0.1
+	printf "%s\r" "---       SHELL IS PAUSED       ---"
+	sleep 0.1
+	printf "%s\r" "----      SHELL IS PAUSED      ----"
+	sleep 0.1
+	printf "%s\r" "-----     SHELL IS PAUSED     -----"
+	sleep 0.1
+	printf "%s\r" "------    SHELL IS PAUSED    ------"
+	sleep 0.1
+	printf "%s\r" "-------   SHELL IS PAUSED   -------"
+	sleep 0.1
+	printf "%s\r" "--------  SHELL IS PAUSED  --------"
+	sleep 0.1
+	printf "%s\r" "--------- SHELL IS PAUSED ---------"
+	sleep 0.1
 done
 
 }
 
 animatepause() {
 
-	printf "%s\r" "----------SHELL-IS-PAUSED----------"; \
-	sleep 0.1; \
-	printf "%s\r" "--------- SHELL IS PAUSED ---------"; \
-	sleep 0.1; \
-	printf "%s\r" "--------  SHELL IS PAUSED  --------"; \
-	sleep 0.1; \
-	printf "%s\r" "-------   SHELL IS PAUSED   -------"; \
-	sleep 0.1; \
-	printf "%s\r" "------    SHELL IS PAUSED    ------"; \
-	sleep 0.1; \
-	printf "%s\r" "-----     SHELL IS PAUSED     -----"; \
-	sleep 0.1; \
-	printf "%s\r" "----      SHELL IS PAUSED      ----"; \
-	sleep 0.1; \
-	printf "%s\r" "---       SHELL IS PAUSED       ---"; \
-	sleep 0.1; \
-	printf "%s\r" "--        SHELL IS PAUSED        --"; \
-	sleep 0.1; \
-	printf "%s\r" "-         SHELL IS PAUSED         -"; \
-	sleep 0.1; \
-	printf "%s\r" "          SHELL IS PAUSED          "; \
-	sleep 0.1; \
-	printf "%s\r" "-         SHELL IS PAUSED         -"; \
-	sleep 0.1; \
-	printf "%s\r" "--        SHELL IS PAUSED        --"; \
-	sleep 0.1; \
-	printf "%s\r" "---       SHELL IS PAUSED       ---"; \
-	sleep 0.1; \
-	printf "%s\r" "----      SHELL IS PAUSED      ----"; \
-	sleep 0.1; \
-	printf "%s\r" "-----     SHELL IS PAUSED     -----"; \
-	sleep 0.1; \
-	printf "%s\r" "------    SHELL IS PAUSED    ------"; \
-	sleep 0.1; \
-	printf "%s\r" "-------   SHELL IS PAUSED   -------"; \
-	sleep 0.1; \
-	printf "%s\r" "--------  SHELL IS PAUSED  --------"; \
-	sleep 0.1; \
-	printf "%s\r" "--------- SHELL IS PAUSED ---------"; \
-	sleep 0.1;
+while :
+do
+	printf "%s\r" "----------SHELL-IS-PAUSED----------"
+	sleep 0.1
+	printf "%s\r" "--------- SHELL IS PAUSED ---------"
+	sleep 0.1
+	printf "%s\r" "--------  SHELL IS PAUSED  --------"
+	sleep 0.1
+	printf "%s\r" "-------   SHELL IS PAUSED   -------"
+	sleep 0.1
+	printf "%s\r" "------    SHELL IS PAUSED    ------"
+	sleep 0.1
+	printf "%s\r" "-----     SHELL IS PAUSED     -----"
+	sleep 0.1
+	printf "%s\r" "----      SHELL IS PAUSED      ----"
+	sleep 0.1
+	printf "%s\r" "---       SHELL IS PAUSED       ---"
+	sleep 0.1
+	printf "%s\r" "--        SHELL IS PAUSED        --"
+	sleep 0.1
+	printf "%s\r" "-         SHELL IS PAUSED         -"
+	sleep 0.1
+	printf "%s\r" "          SHELL IS PAUSED          "
+	sleep 0.1
+	printf "%s\r" "-         SHELL IS PAUSED         -"
+	sleep 0.1
+	printf "%s\r" "--        SHELL IS PAUSED        --"
+	sleep 0.1
+	printf "%s\r" "---       SHELL IS PAUSED       ---"
+	sleep 0.1
+	printf "%s\r" "----      SHELL IS PAUSED      ----"
+	sleep 0.1
+	printf "%s\r" "-----     SHELL IS PAUSED     -----"
+	sleep 0.1
+	printf "%s\r" "------    SHELL IS PAUSED    ------"
+	sleep 0.1
+	printf "%s\r" "-------   SHELL IS PAUSED   -------"
+	sleep 0.1
+	printf "%s\r" "--------  SHELL IS PAUSED  --------"
+	sleep 0.1
+	printf "%s\r" "--------- SHELL IS PAUSED ---------"
+	sleep 0.1
+done
 
 }
 
@@ -114,6 +117,8 @@ if [ "$DODEBUG" = "YES" ] || [ "$1" = "debug" ]
 then
 while IFS= read -r PATCHLINE
 do
+	printf "%s\n"
+	printf "%s\n" "Assessing: $PATCHLINE"
 	if [ "$PATCHLINE" = "/root/linux-stable/patches/2428-Linux-3.4.38.patch" ] || \
 	   [ "$PATCHLINE" = "/root/linux-stable/patches/2498-Linux-3.4.39.patch" ] || \
 	   [ "$PATCHLINE" = "/root/linux-stable/patches/2528-Linux-3.4.40.patch" ] || \
@@ -232,6 +237,8 @@ done < "$PATCHFILE"
 else
 while IFS= read -r PATCHLINE
 do
+	printf "%s\n"
+	printf "%s\n" "Assessing: $PATCHLINE"
 	if [ "$PATCHLINE" = "/root/linux-stable/patches/2428-Linux-3.4.38.patch" ] || \
 	   [ "$PATCHLINE" = "/root/linux-stable/patches/2498-Linux-3.4.39.patch" ] || \
 	   [ "$PATCHLINE" = "/root/linux-stable/patches/2528-Linux-3.4.40.patch" ] || \
@@ -318,39 +325,24 @@ do
 		else
 			echo "$PATCHLINE reached"
 		fi
-		while :
-		do
-			animatepause
-		done
+		animatepause
 	elif grep '/drivers/usb/' "$PATCHLINE"
 	then
 		echo "This would patch /drivers/usb/ ignoring!"
-		while :
-		do
-			animatepause
-		done
+		animatepause
 	elif grep '/drivers/mmc/' "$PATCHLINE"
 	then
 		echo "This would patch /drivers/mmc/ ignoring!"
-		while :
-		do
-			animatepause
-		done
+		animatepause
 	elif grep '/drivers/hid/' "$PATCHLINE"
 	then
 		echo "This would patch /drivers/hid/ ignoring!"
-		while :
-		do
-			animatepause
-		done
+		animatepause
 	elif patch -p1 -R --dry-run < "$PATCHLINE" &> /dev/null
 	then
 		echo "$PATCHLINE was already applied! Doing Nothing!"
 		echo ""
-		while :
-		do
-			animatepause
-		done
+		animatepause
 	elif patch -p1 --dry-run < "$PATCHLINE" &> /dev/null
 	then
 		echo "Dry Run Succeeded!"
@@ -359,10 +351,7 @@ do
 		patch -p1 < "$PATCHLINE"
 	else
 		printf "%s\n" "Dry run failed!"
-		while :
-		do
-			animatepause
-		done
+		animatepause
 	fi
 done < "$PATCHFILE"
 fi
