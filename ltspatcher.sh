@@ -1,7 +1,6 @@
 #!/bin/bash
 
 PATCHFILE="/root/mn3lite/ltspatchlistforscript.txt"
-alias ppd='patch -p1 --dry-run <'
 
 warnandfail() {
 
@@ -219,7 +218,7 @@ do
 	else
 		echo "Dry Run Fail!"
 		echo "Here is the output"
-		ppd "$PATCHLINE"
+		patch -p1 --dry-run < "$PATCHLINE"
 		animatepause
 	fi
 done < "$PATCHFILE"
