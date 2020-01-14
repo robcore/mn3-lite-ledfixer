@@ -13,7 +13,6 @@
 #include <linux/init.h>
 #include <linux/module.h>
 #include <linux/slab.h>
-#include <linux/vmalloc.h>
 
 #define	DM_MSG_PREFIX	"thin"
 
@@ -150,7 +149,9 @@ static struct bio_prison *prison_create(unsigned nr_cells)
 {
 	unsigned i;
 	uint32_t nr_buckets = calc_nr_buckets(nr_cells);
-	struct bio_prison *prison = kmalloc(sizeof(*prison), GFP_KERNEL);
+	size_t len = sizeof(struct bio_prison) +
+		(sizeof(struct hlist_head) * nr_buckets);
+	struct bio_prison *prison = kmalloc(len, GFP_KERNEL);
 
 	if (!prison)
 		return NULL;
@@ -163,15 +164,9 @@ static struct bio_prison *prison_create(unsigned nr_cells)
 		return NULL;
 	}
 
-	prison->cells = vmalloc(sizeof(*prison->cells) * nr_buckets);
-	if (!prison->cells) {
-		mempool_destroy(prison->cell_pool);
-		kfree(prison);
-		return NULL;
-	}
-
 	prison->nr_buckets = nr_buckets;
 	prison->hash_mask = nr_buckets - 1;
+	prison->cells = (struct hlist_head *) (prison + 1);
 	for (i = 0; i < nr_buckets; i++)
 		INIT_HLIST_HEAD(prison->cells + i);
 
@@ -180,7 +175,6 @@ static struct bio_prison *prison_create(unsigned nr_cells)
 
 static void prison_destroy(struct bio_prison *prison)
 {
-	vfree(prison->cells);
 	mempool_destroy(prison->cell_pool);
 	kfree(prison);
 }
@@ -1452,9 +1446,9 @@ static void process_deferred_bios(struct pool *pool)
 		 */
 		if (ensure_next_mapping(pool)) {
 			spin_lock_irqsave(&pool->lock, flags);
-			bio_list_add(&pool->deferred_bios, bio);
 			bio_list_merge(&pool->deferred_bios, &bios);
 			spin_unlock_irqrestore(&pool->lock, flags);
+
 			break;
 		}
 
@@ -2467,7 +2461,7 @@ static struct target_type pool_target = {
 	.name = "thin-pool",
 	.features = DM_TARGET_SINGLETON | DM_TARGET_ALWAYS_WRITEABLE |
 		    DM_TARGET_IMMUTABLE,
-	.version = {1, 1, 1},
+	.version = {1, 1, 0},
 	.module = THIS_MODULE,
 	.ctr = pool_ctr,
 	.dtr = pool_dtr,
@@ -2740,7 +2734,7 @@ static void thin_io_hints(struct dm_target *ti, struct queue_limits *limits)
 
 static struct target_type thin_target = {
 	.name = "thin",
-	.version = {1, 1, 1},
+	.version = {1, 1, 0},
 	.module	= THIS_MODULE,
 	.ctr = thin_ctr,
 	.dtr = thin_dtr,

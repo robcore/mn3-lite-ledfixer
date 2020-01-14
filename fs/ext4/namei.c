@@ -1502,37 +1502,30 @@ static int make_indexed_dir(handle_t *handle, struct dentry *dentry,
 		hinfo.hash_version += EXT4_SB(dir->i_sb)->s_hash_unsigned;
 	hinfo.seed = EXT4_SB(dir->i_sb)->s_hash_seed;
 	ext4fs_dirhash(name, namelen, &hinfo);
-	memset(frames, 0, sizeof(frames));
 	frame = frames;
 	frame->entries = entries;
 	frame->at = entries;
 	frame->bh = bh;
 	bh = bh2;
 
-	retval = ext4_handle_dirty_metadata(handle, dir, frame->bh);
-	if (retval)
-		goto out_frames;
-	retval = ext4_handle_dirty_metadata(handle, dir, bh);
-	if (retval)
-		goto out_frames;
+	ext4_handle_dirty_metadata(handle, dir, frame->bh);
+	ext4_handle_dirty_metadata(handle, dir, bh);
 
 	de = do_split(handle,dir, &bh, frame, &hinfo, &retval);
 	if (!de) {
-		goto out_frames;
+		/*
+		 * Even if the block split failed, we have to properly write
+		 * out all the changes we did so far. Otherwise we can end up
+		 * with corrupted filesystem.
+		 */
+		ext4_mark_inode_dirty(handle, dir);
+		dx_release(frames);
+		return retval;
 	}
 	dx_release(frames);
 
 	retval = add_dirent_to_buf(handle, dentry, inode, de, bh);
 	brelse(bh);
-	return retval;
-out_frames:
-	/*
-	 * Even if the block split failed, we have to properly write
-	 * out all the changes we did so far. Otherwise we can end up
-	 * with corrupted filesystem.
-	 */
-	ext4_mark_inode_dirty(handle, dir);
-	dx_release(frames);
 	return retval;
 }
 
@@ -1550,7 +1543,7 @@ static int ext4_add_entry(handle_t *handle, struct dentry *dentry,
 			  struct inode *inode)
 {
 	struct inode *dir = dentry->d_parent->d_inode;
-	struct buffer_head *bh = NULL;
+	struct buffer_head *bh;
 	struct ext4_dir_entry_2 *de;
 	struct super_block *sb;
 	int	retval;
@@ -1565,7 +1558,7 @@ static int ext4_add_entry(handle_t *handle, struct dentry *dentry,
 	if (is_dx(dir)) {
 		retval = ext4_dx_add_entry(handle, dentry, inode);
 		if (!retval || (retval != ERR_BAD_DX_DIR))
-			goto out;
+			return retval;
 		ext4_clear_inode_flag(dir, EXT4_INODE_INDEX);
 		dx_fallback++;
 		ext4_mark_inode_dirty(handle, dir);
@@ -1576,15 +1569,14 @@ static int ext4_add_entry(handle_t *handle, struct dentry *dentry,
 		if(!bh)
 			return retval;
 		retval = add_dirent_to_buf(handle, dentry, inode, NULL, bh);
-		if (retval != -ENOSPC)
-			goto out;
+		if (retval != -ENOSPC) {
+			brelse(bh);
+			return retval;
+		}
 
 		if (blocks == 1 && !dx_fallback &&
-		    EXT4_HAS_COMPAT_FEATURE(sb, EXT4_FEATURE_COMPAT_DIR_INDEX)) {
-			retval = make_indexed_dir(handle, dentry, inode, bh);
-			bh = NULL; /* make_indexed_dir releases bh */
-			goto out;
-		}
+		    EXT4_HAS_COMPAT_FEATURE(sb, EXT4_FEATURE_COMPAT_DIR_INDEX))
+			return make_indexed_dir(handle, dentry, inode, bh);
 		brelse(bh);
 	}
 	bh = ext4_append(handle, dir, &block, &retval);
@@ -1594,7 +1586,6 @@ static int ext4_add_entry(handle_t *handle, struct dentry *dentry,
 	de->inode = 0;
 	de->rec_len = ext4_rec_len_to_disk(blocksize, blocksize);
 	retval = add_dirent_to_buf(handle, dentry, inode, de, bh);
-out:
 	brelse(bh);
 	if (retval == 0)
 		ext4_set_inode_state(inode, EXT4_STATE_NEWENTRY);
@@ -2082,7 +2073,7 @@ int ext4_orphan_add(handle_t *handle, struct inode *inode)
 	struct ext4_iloc iloc;
 	int err = 0, rc;
 
-	if (!ext4_handle_valid(handle) || is_bad_inode(inode))
+	if (!ext4_handle_valid(handle))
 		return 0;
 
 	mutex_lock(&EXT4_SB(sb)->s_orphan_lock);
@@ -2157,8 +2148,7 @@ int ext4_orphan_del(handle_t *handle, struct inode *inode)
 	int err = 0;
 
 	/* ext4_handle_valid() assumes a valid handle_t pointer */
-	if (handle && !ext4_handle_valid(handle) &&
-	    !(EXT4_SB(inode->i_sb)->s_mount_state & EXT4_ORPHAN_FS))
+	if (handle && !ext4_handle_valid(handle))
 		return 0;
 
 	mutex_lock(&EXT4_SB(inode->i_sb)->s_orphan_lock);

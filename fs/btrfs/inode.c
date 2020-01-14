@@ -1203,14 +1203,8 @@ next_slot:
 		num_bytes = 0;
 		btrfs_item_key_to_cpu(leaf, &found_key, path->slots[0]);
 
-		if (found_key.objectid > ino)
-			break;
-		if (WARN_ON_ONCE(found_key.objectid < ino) ||
-		    found_key.type < BTRFS_EXTENT_DATA_KEY) {
-			path->slots[0]++;
-			goto next_slot;
-		}
-		if (found_key.type > BTRFS_EXTENT_DATA_KEY ||
+		if (found_key.objectid > ino ||
+		    found_key.type > BTRFS_EXTENT_DATA_KEY ||
 		    found_key.offset > end)
 			break;
 
@@ -3691,8 +3685,7 @@ void btrfs_evict_inode(struct inode *inode)
 		goto no_delete;
 	}
 	/* do we really want it for ->i_nlink > 0 and zero btrfs_root_refs? */
-	if (!special_file(inode->i_mode))
-		btrfs_wait_ordered_range(inode, 0, (u64)-1);
+	btrfs_wait_ordered_range(inode, 0, (u64)-1);
 
 	if (root->fs_info->log_root_recovering) {
 		BUG_ON(!list_empty(&BTRFS_I(inode)->i_orphan));

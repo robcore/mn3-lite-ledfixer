@@ -34,6 +34,7 @@ enum bh_state_bits {
 	BH_Write_EIO,	/* I/O error on write */
 	BH_Unwritten,	/* Buffer is allocated on disk but not written */
 	BH_Quiet,	/* Buffer Error Prinks to be quiet */
+	BH_Sync_Flush,
 
 	BH_PrivateStart,/* not a state bit, but the first bit available
 			 * for private allocation by other entities
@@ -124,6 +125,7 @@ BUFFER_FNS(Delay, delay)
 BUFFER_FNS(Boundary, boundary)
 BUFFER_FNS(Write_EIO, write_io_error)
 BUFFER_FNS(Unwritten, unwritten)
+BUFFER_FNS(Sync_Flush, sync_flush)
 
 #define bh_offset(bh)		((unsigned long)(bh)->b_data & ~PAGE_MASK)
 #define touch_buffer(bh)	mark_page_accessed(bh->b_page)
@@ -141,6 +143,7 @@ BUFFER_FNS(Unwritten, unwritten)
  */
 
 void mark_buffer_dirty(struct buffer_head *bh);
+void mark_buffer_dirty_sync(struct buffer_head *bh);
 void init_buffer(struct buffer_head *, bh_end_io_t *, void *);
 void set_bh_page(struct buffer_head *bh,
 		struct page *page, unsigned long offset);
@@ -155,6 +158,7 @@ void end_buffer_async_write(struct buffer_head *bh, int uptodate);
 
 /* Things to do with buffers at mapping->private_list */
 void mark_buffer_dirty_inode(struct buffer_head *bh, struct inode *inode);
+void mark_buffer_dirty_inode_sync(struct buffer_head *bh, struct inode *inode);
 int inode_has_buffers(struct inode *);
 void invalidate_inode_buffers(struct inode *);
 int remove_inode_buffers(struct inode *inode);
@@ -166,13 +170,12 @@ void __wait_on_buffer(struct buffer_head *);
 wait_queue_head_t *bh_waitq_head(struct buffer_head *bh);
 struct buffer_head *__find_get_block(struct block_device *bdev, sector_t block,
 			unsigned size);
-struct buffer_head *__getblk_gfp(struct block_device *bdev, sector_t block,
-				  unsigned size, gfp_t gfp);
+struct buffer_head *__getblk(struct block_device *bdev, sector_t block,
+			unsigned size);
 void __brelse(struct buffer_head *);
 void __bforget(struct buffer_head *);
 void __breadahead(struct block_device *, sector_t block, unsigned int size);
-struct buffer_head *__bread_gfp(struct block_device *,
-				sector_t block, unsigned size, gfp_t gfp);
+struct buffer_head *__bread(struct block_device *, sector_t block, unsigned size);
 void invalidate_bh_lrus(void);
 struct buffer_head *alloc_buffer_head(gfp_t gfp_flags);
 void free_buffer_head(struct buffer_head * bh);
@@ -287,13 +290,7 @@ static inline void bforget(struct buffer_head *bh)
 static inline struct buffer_head *
 sb_bread(struct super_block *sb, sector_t block)
 {
-	return __bread_gfp(sb->s_bdev, block, sb->s_blocksize, __GFP_MOVABLE);
-}
-
-static inline struct buffer_head *
-sb_bread_unmovable(struct super_block *sb, sector_t block)
-{
-	return __bread_gfp(sb->s_bdev, block, sb->s_blocksize, 0);
+	return __bread(sb->s_bdev, block, sb->s_blocksize);
 }
 
 static inline void
@@ -305,14 +302,7 @@ sb_breadahead(struct super_block *sb, sector_t block)
 static inline struct buffer_head *
 sb_getblk(struct super_block *sb, sector_t block)
 {
-	return __getblk_gfp(sb->s_bdev, block, sb->s_blocksize, __GFP_MOVABLE);
-}
-
-
-static inline struct buffer_head *
-sb_getblk_gfp(struct super_block *sb, sector_t block, gfp_t gfp)
-{
-	return __getblk_gfp(sb->s_bdev, block, sb->s_blocksize, gfp);
+	return __getblk(sb->s_bdev, block, sb->s_blocksize);
 }
 
 static inline struct buffer_head *
@@ -347,36 +337,6 @@ static inline void lock_buffer(struct buffer_head *bh)
 	might_sleep();
 	if (!trylock_buffer(bh))
 		__lock_buffer(bh);
-}
-
-static inline struct buffer_head *getblk_unmovable(struct block_device *bdev,
-						   sector_t block,
-						   unsigned size)
-{
-	return __getblk_gfp(bdev, block, size, 0);
-}
-
-static inline struct buffer_head *__getblk(struct block_device *bdev,
-					   sector_t block,
-					   unsigned size)
-{
-	return __getblk_gfp(bdev, block, size, __GFP_MOVABLE);
-}
-
-/**
- *  __bread() - reads a specified block and returns the bh
- *  @bdev: the block_device to read from
- *  @block: number of block
- *  @size: size (in bytes) to read
- *
- *  Reads a specified block, and returns buffer head that contains it.
- *  The page cache is allocated from movable area so that it can be migrated.
- *  It returns NULL if the block was unreadable.
- */
-static inline struct buffer_head *
-__bread(struct block_device *bdev, sector_t block, unsigned size)
-{
-	return __bread_gfp(bdev, block, size, __GFP_MOVABLE);
 }
 
 extern int __set_page_dirty_buffers(struct page *page);

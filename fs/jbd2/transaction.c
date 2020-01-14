@@ -1122,10 +1122,7 @@ int jbd2_journal_dirty_metadata(handle_t *handle, struct buffer_head *bh)
 		 * once a transaction -bzzz
 		 */
 		jh->b_modified = 1;
-		if (handle->h_buffer_credits <= 0) {
-			ret = -ENOSPC;
-			goto out_unlock_bh;
-		}
+		J_ASSERT_JH(jh, handle->h_buffer_credits > 0);
 		handle->h_buffer_credits--;
 	}
 
@@ -1208,6 +1205,7 @@ out_unlock_bh:
 	jbd2_journal_put_journal_head(jh);
 out:
 	JBUFFER_TRACE(jh, "exit");
+	WARN_ON(ret);	/* All errors are bugs, so dump the stack */
 	return ret;
 }
 
@@ -1894,7 +1892,6 @@ static int journal_unmap_buffer(journal_t *journal, struct buffer_head *bh)
 
 		if (!buffer_dirty(bh)) {
 			/* bdflush has written it.  We can drop it now */
-			__jbd2_journal_remove_checkpoint(jh);
 			goto zap_buffer;
 		}
 
@@ -1932,7 +1929,6 @@ static int journal_unmap_buffer(journal_t *journal, struct buffer_head *bh)
 				/* The orphan record's transaction has
 				 * committed.  We can cleanse this buffer */
 				clear_buffer_jbddirty(bh);
-				__jbd2_journal_remove_checkpoint(jh);
 				goto zap_buffer;
 			}
 		}
