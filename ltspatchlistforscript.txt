@@ -1,8 +1,3 @@
-/root/linux-stable/patches/3040-ALSA-compress-fix-the-return-value-for-SNDRV_COMPRES.patch
-/root/linux-stable/patches/3041-serial-mxs-auart-fix-race-condition-in-interrupt-han.patch
-/root/linux-stable/patches/3042-serial-mxs-auart-increase-time-to-wait-for-transmitt.patch
-/root/linux-stable/patches/3043-ath9k_htc-do-some-initial-hardware-configuration.patch
-/root/linux-stable/patches/3044-nl80211-fix-mgmt-tx-status-and-testmode-reporting-fo.patch
 /root/linux-stable/patches/3045-mac80211-fix-duplicate-retransmission-detection.patch
 /root/linux-stable/patches/3046-ixgbe-Fix-Tx-Hang-issue-with-lldpad-on-82598EB.patch
 /root/linux-stable/patches/3047-rt2x00-fix-stop-queue.patch
