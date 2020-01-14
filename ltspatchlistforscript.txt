@@ -1,5 +1,3 @@
-/root/linux-stable/patches/2499-ASoC-dma-sh7760-Fix-compile-error.patch
-/root/linux-stable/patches/2500-regmap-cache-Fix-regcache-rbtree-sync.patch
 /root/linux-stable/patches/2501-spi-s3c64xx-modified-error-interrupt-handling-and-in.patch
 /root/linux-stable/patches/2502-spi-mpc512x-psc-optionally-keep-PSC-SS-asserted-acro.patch
 /root/linux-stable/patches/2503-UBIFS-make-space-fixup-work-in-the-remount-case.patch
