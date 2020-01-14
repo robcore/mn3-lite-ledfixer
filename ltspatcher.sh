@@ -60,7 +60,7 @@ do
 	printf "%s\r" "--------  SHELL IS PAUSED  --------"; \
 	sleep 0.1; \
 	printf "%s\r" "--------- SHELL IS PAUSED ---------"; \
-	sleep 0.1; \
+	sleep 0.1;
 done
 
 }
@@ -106,11 +106,11 @@ animatepause() {
 	printf "%s\r" "--------  SHELL IS PAUSED  --------"; \
 	sleep 0.1; \
 	printf "%s\r" "--------- SHELL IS PAUSED ---------"; \
-	sleep 0.1; \
+	sleep 0.1;
 
 }
 
-if [ "DODEBUG" = "YES" ] || [ "$1" = "debug" ]
+if [ "$DODEBUG" = "YES" ] || [ "$1" = "debug" ]
 then
 while IFS= read -r PATCHLINE
 do
@@ -191,12 +191,12 @@ do
 	   [ "$PATCHLINE" = "/root/linux-stable/patches/5797-Linux-3.4.112.patch" ] || \
 	   [ "$PATCHLINE" = "/root/linux-stable/patches/5929-Linux-3.4.113.patch" ]
 	then
-		BCOUNT="$(echo $PATCHLINE | wc -c)"
-		if [ "$BCOUNT" -eq 51 ]
+		if [ "${#PATCHLINE}" -eq 50 ]
 		then
-			echo "$(echo $PATCHLINE | cut --bytes=33-44) reached"
-		elif [ "$BCOUNT" -eq 52 ]
-			echo "$(echo $PATCHLINE | cut --bytes=33-45) reached"
+			echo "$(echo "$PATCHLINE" | cut --bytes=33-44) reached"
+		elif [ "${#PATCHLINE}" -eq 51 ]
+		then
+			echo "$(echo "$PATCHLINE" | cut --bytes=33-45) reached"
 		else
 			echo "$PATCHLINE reached"
 		fi
@@ -309,12 +309,12 @@ do
 	   [ "$PATCHLINE" = "/root/linux-stable/patches/5797-Linux-3.4.112.patch" ] || \
 	   [ "$PATCHLINE" = "/root/linux-stable/patches/5929-Linux-3.4.113.patch" ]
 	then
-		BCOUNT="$(echo $PATCHLINE | wc -c)"
-		if [ "$BCOUNT" -eq 51 ]
+		if [ "${#PATCHLINE}" -eq 50 ]
 		then
-			echo "$(echo $PATCHLINE | cut --bytes=33-44) reached"
-		elif [ "$BCOUNT" -eq 52 ]
-			echo "$(echo $PATCHLINE | cut --bytes=33-45) reached"
+			echo "$(echo "$PATCHLINE" | cut --bytes=33-44) reached"
+		elif [ "${#PATCHLINE}" -eq 51 ]
+		then
+			echo "$(echo "$PATCHLINE" | cut --bytes=33-45) reached"
 		else
 			echo "$PATCHLINE reached"
 		fi
