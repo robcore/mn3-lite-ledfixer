@@ -342,24 +342,25 @@ do
 	elif grep '/drivers/usb/' "$PATCHLINE"
 	then
 		echo "This would patch /drivers/usb/ ignoring!"
-		animatepause
+		pc_delete "$PATCHLINE"
 	elif grep '/drivers/mmc/' "$PATCHLINE"
 	then
 		echo "This would patch /drivers/mmc/ ignoring!"
-		animatepause
+		pc_delete "$PATCHLINE"
 	elif grep '/drivers/hid/' "$PATCHLINE"
 	then
 		echo "This would patch /drivers/hid/ ignoring!"
-		animatepause
+		pc_delete "$PATCHLINE"
 	elif grep '/drivers/bluetooth/' "$PATCHLINE"
 	then
 		echo "This would patch /drivers/bluetooth/ ignoring!"
-		animatepause
+		pc_delete "$PATCHLINE"
 	elif patch -p1 -R --dry-run < "$PATCHLINE" &> /dev/null
 	then
+		echo "REVERTED PATCH!"
 		echo "$PATCHLINE was already applied! Doing Nothing!"
 		echo ""
-		animatepause
+		pc_delete "$PATCHLINE"
 	elif patch -p1 --dry-run < "$PATCHLINE" &> /dev/null
 	then
 		echo "Dry Run Succeeded!"
