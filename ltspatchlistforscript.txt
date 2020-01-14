@@ -29,7 +29,6 @@
 /root/linux-stable/patches/2529-ALSA-usb-audio-fix-endianness-bug-in-snd_nativeinstr.patch
 /root/linux-stable/patches/2530-ASoC-wm8903-Fix-the-bypass-to-HP-LINEOUT-when-no-DAC.patch
 /root/linux-stable/patches/2531-tracing-Fix-double-free-when-function-profile-init-f.patch
-/root/linux-stable/patches/2532-PM-reboot-call-syscore_shutdown-after-disable_nonboo.patch
 /root/linux-stable/patches/2533-drm-i915-Use-the-correct-size-of-the-GTT-for-placing.patch
 /root/linux-stable/patches/2534-SCSI-libsas-fix-handling-vacant-phy-in-sas_set_ex_ph.patch
 /root/linux-stable/patches/2535-cifs-Allow-passwords-which-begin-with-a-delimitor.patch
