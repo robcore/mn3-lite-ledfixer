@@ -338,6 +338,7 @@ do
 		else
 			echo "$PATCHLINE reached"
 		fi
+		pc_delete "$PATCHLINE"
 		animatepause
 	elif grep '/drivers/usb/' "$PATCHLINE"
 	then
