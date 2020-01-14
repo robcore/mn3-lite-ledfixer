@@ -9,6 +9,15 @@ fi
 
 PATCHFILE="/root/mn3lite/ltspatchlistforscript.txt"
 
+_quote() {
+	echo "$1" | sed 's/[]\/()$*.^|[]/\\&/g'
+}
+
+pc_delete() {
+	PATTERN=$(_quote "$1")
+	sed -i "/$PATTERN/d" "$PATCHFILE"
+}
+
 #oldpause() {
 #
 #	printf "%s\r" "                                   "; \
@@ -117,7 +126,7 @@ if [ "$DODEBUG" = "YES" ] || [ "$1" = "debug" ]
 then
 while IFS= read -r PATCHLINE
 do
-	printf "%s\n"
+	echo ""
 	printf "%s\n" "Assessing: $PATCHLINE"
 	if [ "$PATCHLINE" = "/root/linux-stable/patches/2428-Linux-3.4.38.patch" ] || \
 	   [ "$PATCHLINE" = "/root/linux-stable/patches/2498-Linux-3.4.39.patch" ] || \
@@ -237,7 +246,7 @@ done < "$PATCHFILE"
 else
 while IFS= read -r PATCHLINE
 do
-	printf "%s\n"
+	echo ""
 	printf "%s\n" "Assessing: $PATCHLINE"
 	if [ "$PATCHLINE" = "/root/linux-stable/patches/2428-Linux-3.4.38.patch" ] || \
 	   [ "$PATCHLINE" = "/root/linux-stable/patches/2498-Linux-3.4.39.patch" ] || \
@@ -349,6 +358,7 @@ do
 		echo "Applying $PATCHLINE"
 		echo ""
 		patch -p1 < "$PATCHLINE"
+		pc_delete "$PATCHLINE"
 	else
 		printf "%s\n" "Dry run failed!"
 		animatepause
