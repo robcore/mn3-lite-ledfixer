@@ -356,6 +356,10 @@ do
 	then
 		echo "This would patch /drivers/bluetooth/ ignoring!"
 		pc_delete "$PATCHLINE"
+	elif grep '/net/bluetooth/' "$PATCHLINE"
+	then
+		echo "This would patch /net/bluetooth/ ignoring!"
+		pc_delete "$PATCHLINE"
 	elif patch -p1 -R --dry-run < "$PATCHLINE" &> /dev/null
 	then
 		echo "REVERTED PATCH!"
