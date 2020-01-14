@@ -1016,11 +1016,9 @@ static int context_struct_to_string(struct context *context, char **scontext, u3
 
 	if (context->len) {
 		*scontext_len = context->len;
-		if (scontext) {
-			*scontext = kstrdup(context->str, GFP_ATOMIC);
-			if (!(*scontext))
-				return -ENOMEM;
-		}
+		*scontext = kstrdup(context->str, GFP_ATOMIC);
+		if (!(*scontext))
+			return -ENOMEM;
 		return 0;
 	}
 
@@ -1621,7 +1619,6 @@ static inline int convert_context_handle_invalid_context(struct context *context
 	u32 len;
 
 	if (!context_struct_to_string(context, &s, &len)) {
-		printk(KERN_WARNING "SELinux:  Context %s would be invalid if enforcing\n", s);
 		kfree(s);
 	}
 	return 0;
@@ -2914,8 +2911,6 @@ int selinux_audit_rule_match(u32 sid, u32 field, u32 op, void *vrule,
 	int match = 0;
 
 	if (!rule) {
-		audit_log(actx, GFP_ATOMIC, AUDIT_SELINUX_ERR,
-			  "selinux_audit_rule_match: missing rule\n");
 		return -ENOENT;
 	}
 
