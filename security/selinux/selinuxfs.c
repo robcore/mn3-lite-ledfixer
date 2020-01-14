@@ -130,7 +130,7 @@ static unsigned long sel_last_ino = SEL_INO_NEXT - 1;
 #define SEL_INO_MASK			0x00ffffff
 
 #define TMPBUFLEN	12
-static unsigned int fake_selinux_enforcing = 1;
+static int fake_selinux_enforcing = 1;
 static ssize_t sel_read_enforce(struct file *filp, char __user *buf,
 				size_t count, loff_t *ppos)
 {
@@ -141,44 +141,7 @@ static ssize_t sel_read_enforce(struct file *filp, char __user *buf,
 	return simple_read_from_buffer(buf, count, ppos, tmpbuf, length);
 }
 
-static ssize_t sel_write_enforce(struct file *file, const char __user *buf,
-				 size_t count, loff_t *ppos)
-
-{
-	char *page = NULL;
-	ssize_t length;
-	int new_value;
-
-	length = -ENOMEM;
-	if (count >= PAGE_SIZE)
-		goto out;
-
-	/* No partial writes. */
-	length = -EINVAL;
-	if (*ppos != 0)
-		goto out;
-
-	length = -ENOMEM;
-	page = (char *)get_zeroed_page(GFP_KERNEL);
-	if (!page)
-		goto out;
-
-	length = -EFAULT;
-	if (copy_from_user(page, buf, count))
-		goto out;
-
-	length = -EINVAL;
-	if (sscanf(page, "%d", &new_value) != 1)
-		goto out;
-
-	if (new_value != fake_selinux_enforcing)
-		fake_selinux_enforcing = new_value;
-
-	length = count;
-out:
-	free_page((unsigned long) page);
-	return length;
-}
+#define sel_write_enforce NULL
 
 static const struct file_operations sel_enforce_ops = {
 	.read		= sel_read_enforce,
@@ -292,6 +255,10 @@ static ssize_t sel_write_disable(struct file *file, const char __user *buf,
 		length = selinux_disable();
 		if (length)
 			goto out;
+		audit_log(current->audit_context, GFP_KERNEL, AUDIT_MAC_STATUS,
+			"selinux=0 auid=%u ses=%u",
+			audit_get_loginuid(current),
+			audit_get_sessionid(current));
 	}
 
 	length = count;
