@@ -1,16 +1,3 @@
-/root/linux-stable/patches/2902-Linux-3.4.52.patch
-/root/linux-stable/patches/2903-libceph-Fix-NULL-pointer-dereference-in-auth-client-.patch
-/root/linux-stable/patches/2904-drivers-cdrom-cdrom.c-use-kzalloc-for-failing-hardwa.patch
-/root/linux-stable/patches/2905-charger-manager-Ensure-event-is-not-used-as-format-s.patch
-/root/linux-stable/patches/2906-hpfs-better-test-for-errors.patch
-/root/linux-stable/patches/2907-block-do-not-pass-disk-names-as-format-strings.patch
-/root/linux-stable/patches/2908-crypto-sanitize-argument-for-format-string.patch
-/root/linux-stable/patches/2909-MAINTAINERS-add-stable_kernel_rules.txt-to-stable-ma.patch
-/root/linux-stable/patches/2910-Revert-serial-8250_pci-add-support-for-another-kind-.patch
-/root/linux-stable/patches/2911-nfsd4-fix-decoding-of-compounds-across-page-boundari.patch
-/root/linux-stable/patches/2912-SCSI-sd-Fix-parsing-of-temporary-cache-mode-prefix.patch
-/root/linux-stable/patches/2913-Revert-sched-Add-missing-call-to-calc_load_exit_idle.patch
-/root/linux-stable/patches/2914-Linux-3.4.53.patch
 /root/linux-stable/patches/2915-CIFS-use-sensible-file-nlink-values-if-unprovided.patch
 /root/linux-stable/patches/2916-rtlwifi-rtl8192cu-Add-new-USB-ID-for-TP-Link-TL-WN82.patch
 /root/linux-stable/patches/2917-rtlwifi-rtl8192cu-Fix-duplicate-if-test.patch
