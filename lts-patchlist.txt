@@ -1,4 +1,3 @@
-/root/linux-stable/patches/2357-sunsu-Fix-panic-in-case-of-nonexistent-port-at-conso.patch
 /root/linux-stable/patches/2358-net-ipv4-Ensure-that-location-of-timestamp-option-is.patch
 /root/linux-stable/patches/2359-netconsole-don-t-call-__netpoll_cleanup-while-atomic.patch
 /root/linux-stable/patches/2360-bonding-don-t-call-update_speed_duplex-under-spinloc.patch
