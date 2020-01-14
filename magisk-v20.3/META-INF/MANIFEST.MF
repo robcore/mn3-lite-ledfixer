@@ -1,0 +1,48 @@
+Manifest-Version: 1.0
+Created-By: 1.0 (Android SignApk)
+
+Name: META-INF/com/google/android/updater-script
+SHA-256-Digest: t/gxJUnR4UN7KGW4ZdgKP5ZvmZ/KXAIPZTeV6PT4lzk=
+
+Name: arm/magiskinit64
+SHA-256-Digest: SsgBACfjIPTCG/AzJRSbWmX/I+24XKW2Zdn2ZmkDWFA=
+
+Name: common/addon.d.sh
+SHA-256-Digest: eqDncT24dsTBUCZ5kmPsRItnHeb5PE/mb4Suvb2xDh4=
+
+Name: META-INF/com/google/android/update-binary
+SHA-256-Digest: v0ytwdg+XZt1hhCxE/OnQYqL8NqeJtL8KIlspx5ROIY=
+
+Name: common/boot_patch.sh
+SHA-256-Digest: it19PKJcZQUl9vAWaNeFnX+bDM2KC7p9SGdEGdE0pGM=
+
+Name: x86/magiskboot
+SHA-256-Digest: 4lfH/M5AQ1Bw9srGAebYYhEoX0gH1zEC+sxph0CyC/M=
+
+Name: chromeos/kernel.keyblock
+SHA-256-Digest: TnCMnsQ6xKXXGEdMlDG6a22j5kqd2mr9KFOp6eMHn/s=
+
+Name: chromeos/futility
+SHA-256-Digest: Kxiqv/ArXa9bfv7D0zv/+4chunvyT95Ygtt/YQIOTkU=
+
+Name: chromeos/kernel_data_key.vbprivk
+SHA-256-Digest: vJ5weoblWpP0I+e82uSiX9RwuGjlOCm5G74sz7xtons=
+
+Name: x86/magiskinit
+SHA-256-Digest: ywAGT/T7paLPslisk9bkANXUsx32NS37bhRCoSEXwwU=
+
+Name: common/util_functions.sh
+SHA-256-Digest: GUdyKHFFxgrvX1rAomfRj2fZSgV+DrROWuX4XCazlCY=
+
+Name: x86/magiskinit64
+SHA-256-Digest: BhX8XTccT9ErhL/+nr7Orovl62g6vYnKCmbOJ2wAKZw=
+
+Name: arm/magiskinit
+SHA-256-Digest: bSJf4q6N9UzDuaW2SbQPhaUTNiyMNvII0l1lnJZK3YI=
+
+Name: common/magisk.apk
+SHA-256-Digest: xE81QSyoP6ge+c1/p3lLi4sgM4NY18GTuBwCApMGGFk=
+
+Name: arm/magiskboot
+SHA-256-Digest: LJNuP+t52/bQ4Fe4Xw3Nt5OjNIf7dmwmvqhiCVbYtCc=
+
