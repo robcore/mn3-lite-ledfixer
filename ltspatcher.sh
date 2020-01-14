@@ -338,7 +338,7 @@ do
 		else
 			echo "$PATCHLINE reached"
 		fi
-		animatepause
+		pc_delete "$PATCHLINE"
 	elif grep '/drivers/usb/' "$PATCHLINE"
 	then
 		echo "This would patch /drivers/usb/ ignoring!"
@@ -370,7 +370,7 @@ do
 		pc_delete "$PATCHLINE"
 	else
 		printf "%s\n" "Dry run failed!"
-		animatepause
+		pc_delete "$PATCHLINE"
 	fi
 done < "$PATCHFILE"
 fi
