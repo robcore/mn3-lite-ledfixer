@@ -564,12 +564,10 @@ static void imxdma_tasklet(unsigned long data)
 
 	if (list_empty(&imxdmac->ld_active)) {
 		/* Someone might have called terminate all */
-		goto out;
+		spin_unlock_irqrestore(&imxdma->lock, flags);
+		return;
 	}
 	desc = list_first_entry(&imxdmac->ld_active, struct imxdma_desc, node);
-
-	if (desc->desc.callback)
-		desc->desc.callback(desc->desc.callback_param);
 
 	/* If we are dealing with a cyclic descriptor keep it on ld_active
 	 * and dont mark the descripor as complete.
@@ -821,7 +819,7 @@ static struct dma_async_tx_descriptor *imxdma_prep_dma_cyclic(
 		kfree(imxdmac->sg_list);
 
 	imxdmac->sg_list = kcalloc(periods + 1,
-			sizeof(struct scatterlist), GFP_KERNEL);
+			sizeof(struct scatterlist), GFP_ATOMIC);
 	if (!imxdmac->sg_list)
 		return NULL;
 
@@ -953,6 +951,10 @@ static void imxdma_issue_pending(struct dma_chan *chan)
 		}
 	}
 	spin_unlock_irqrestore(&imxdma->lock, flags);
+
+	if (desc->desc.callback)
+		desc->desc.callback(desc->desc.callback_param);
+
 }
 
 static int __init imxdma_probe(struct platform_device *pdev)
