@@ -1,14 +1,3 @@
-/root/linux-stable/patches/3055-perf-Use-css_tryget-to-avoid-propping-up-css-refcoun.patch
-/root/linux-stable/patches/3056-arcnet-cleanup-sizeof-parameter.patch
-/root/linux-stable/patches/3057-sysctl-net-Keep-tcp_syn_retries-inside-the-boundary.patch
-/root/linux-stable/patches/3058-sctp-fully-initialize-sctp_outq-in-sctp_outq_init.patch
-/root/linux-stable/patches/3059-ipv6-take-rtnl_lock-and-mark-mrt6-table-as-freed-on-.patch
-/root/linux-stable/patches/3060-usbnet-do-not-pretend-to-support-SG-TSO.patch
-/root/linux-stable/patches/3061-net_sched-Fix-stack-info-leak-in-cbq_dump_wrr.patch
-/root/linux-stable/patches/3062-af_key-more-info-leaks-in-pfkey-messages.patch
-/root/linux-stable/patches/3063-net_sched-info-leak-in-atm_tc_dump_class.patch
-/root/linux-stable/patches/3064-8139cp-Add-dma_mapping_error-checking.patch
-/root/linux-stable/patches/3065-Linux-3.4.57.patch
 /root/linux-stable/patches/3066-SCSI-Don-t-attempt-to-send-extended-INQUIRY-command-.patch
 /root/linux-stable/patches/3067-SCSI-megaraid_sas-megaraid_sas-driver-init-fails-in-.patch
 /root/linux-stable/patches/3068-ext4-make-sure-group-number-is-bumped-after-a-inode-.patch
