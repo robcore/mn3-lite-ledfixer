@@ -1,17 +1,3 @@
-/root/linux-stable/patches/3118-workqueue-fix-possible-stall-on-try_to_grab_pending-.patch
-/root/linux-stable/patches/3119-workqueue-consider-work-function-when-searching-for-.patch
-/root/linux-stable/patches/3120-zd1201-do-not-use-stack-as-URB-transfer_buffer.patch
-/root/linux-stable/patches/3121-xen-events-initialize-local-per-cpu-mask-for-all-pos.patch
-/root/linux-stable/patches/3122-drm-i915-Invalidate-TLBs-for-the-rings-after-a-reset.patch
-/root/linux-stable/patches/3123-of-fdt-fix-memory-initialization-for-expanded-DT.patch
-/root/linux-stable/patches/3124-nilfs2-remove-double-bio_put-in-nilfs_end_bio_write-.patch
-/root/linux-stable/patches/3125-nilfs2-fix-issue-with-counting-number-of-bio-request.patch
-/root/linux-stable/patches/3126-Hostap-copying-wrong-data-prism2_ioctl_giwaplist.patch
-/root/linux-stable/patches/3127-libata-apply-behavioral-quirks-to-sil3826-PMP.patch
-/root/linux-stable/patches/3128-SCSI-zfcp-fix-lock-imbalance-by-reworking-request-qu.patch
-/root/linux-stable/patches/3129-SCSI-zfcp-fix-schedule-inside-lock-in-scsi_device-li.patch
-/root/linux-stable/patches/3130-x86-xen-do-not-identity-map-UNUSABLE-regions-in-the-.patch
-/root/linux-stable/patches/3131-Linux-3.4.60.patch
 /root/linux-stable/patches/3132-jfs-fix-readdir-cookie-incompatibility-with-NFSv4.patch
 /root/linux-stable/patches/3133-ALSA-opti9xx-Fix-conflicting-driver-object-name.patch
 /root/linux-stable/patches/3134-powerpc-Work-around-gcc-miscompilation-of-__pa-on-64.patch
