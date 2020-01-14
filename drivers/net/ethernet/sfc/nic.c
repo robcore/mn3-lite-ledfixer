@@ -126,9 +126,6 @@ int efx_nic_test_registers(struct efx_nic *efx,
 	unsigned address = 0, i, j;
 	efx_oword_t mask, imask, original, reg, buf;
 
-	/* Falcon should be in loopback to isolate the XMAC from the PHY */
-	WARN_ON(!LOOPBACK_INTERNAL(efx));
-
 	for (i = 0; i < n_regs; ++i) {
 		address = regs[i].address;
 		mask = imask = regs[i].mask;
@@ -382,7 +379,8 @@ efx_may_push_tx_desc(struct efx_tx_queue *tx_queue, unsigned int write_count)
 		return false;
 
 	tx_queue->empty_read_count = 0;
-	return ((empty_read_count ^ write_count) & ~EFX_EMPTY_COUNT_VALID) == 0;
+	return ((empty_read_count ^ write_count) & ~EFX_EMPTY_COUNT_VALID) == 0
+		&& tx_queue->write_count - write_count == 1;
 }
 
 /* For each entry inserted into the software descriptor ring, create a
