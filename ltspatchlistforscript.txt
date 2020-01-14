@@ -1,9 +1,3 @@
-/root/linux-stable/patches/2750-Linux-3.4.46.patch
-/root/linux-stable/patches/2751-btrfs-don-t-stop-searching-after-encountering-the-wr.patch
-/root/linux-stable/patches/2752-hwmon-fix-error-return-code-in-abituguru_probe.patch
-/root/linux-stable/patches/2753-i2c-designware-always-clear-interrupts-before-enabli.patch
-/root/linux-stable/patches/2754-drm-radeon-Fix-VRAM-size-calculation-for-VRAM-4GB.patch
-/root/linux-stable/patches/2755-media-mantis-fix-silly-crash-case.patch
 /root/linux-stable/patches/2756-Linux-3.4.47.patch
 /root/linux-stable/patches/2757-avr32-fix-relocation-check-for-signed-18-bit-offset.patch
 /root/linux-stable/patches/2758-ARM-plat-orion-Fix-num_resources-and-id-for-ge10-and.patch
