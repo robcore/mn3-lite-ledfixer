@@ -30,4 +30,4 @@ run_program("/sbin/busybox", "umount", "/system");
 run_program("/sbin/busybox", "umount", "/data");
 run_program("/sbin/busybox", "umount", "/cache");
 ui_print(" ");
-ui_print("Flash Magisk");
+ui_print("Flashed Magisk Patched Kernel");
