@@ -35,14 +35,22 @@ export PATH=${PATH}:/sbin:/system/bin:/system/xbin
 #	/system/xbin/daemonsu --daemon &
 #fi
 
-if [ ! -L "/sbin/ueventd" ] && [ ! -L "/root/ueventd" ] || [ ! -L "/sbin/watchdogd" ] && [ ! -L "/root/watchdogd" ]
+#if [ ! -L "/sbin/ueventd" ] && [ ! -L "/root/ueventd" ] || [ ! -L "/sbin/watchdogd" ] && [ ! -L "/root/watchdogd" ]
+if [ ! -L "/root/ueventd" ] || [ ! -L "/root/watchdogd" ]
 then
-mount -o remount,rw -t auto /
-ln -s /init /sbin/ueventd
-ln -s /init /root/ueventd
+	mount -o remount,rw -t auto /
+fi
 
-ln -s /init /sbin/watchdogd
-ln -s /init /root/watchdogd
+if [ ! -L "/root/ueventd" ]
+then
+	#ln -s /init /sbin/ueventd
+	ln -s /init /root/ueventd
+fi
+
+if [ ! -L "/root/watchdogd" ]
+then
+	#ln -s /init /sbin/watchdogd
+	ln -s /init /root/watchdogd
 fi
 #mount -o remount,rw -t auto /
 #mount -t rootfs -o remount,rw rootfs
@@ -52,7 +60,7 @@ chown 0:0 "/sbin/sqlite3"
 chmod 755 "/sbin/sqlite3"
 chown 0:0 "/sbin/zip"
 chmod 755 "/sbin/zip"
-
+supolicy --live "permissive *"
 
 #busybox ln -sf $(pwd)/sbin/uci $(pwd)/res/synapse/uci
 
@@ -200,34 +208,41 @@ setprop ro.ril.enable.amr.wideband 1
 #done;
 
 #####################################################################
-# Allow untrusted apps to read from debugfs (mitigate SELinux denials)
+#supolicy --live "allow system_server system_file { get_property list_property set_property x_property \
+#property_service get_property list_property set_property domain_no_set_prop property_type km_fips_prop \
+#drs_date_prop tlc_mgmt_prop policy_mgmt_prop prop_device property_data_file	 knox_kap_prop system_prop \
+#mobicore_prop bt_prop container_mgmt_prop csc_prop nfc_prop vpn_prop debug_prop pan_result_prop security_prop \
+#bluetooth_prop ctl_rildaemon_prop system_radio_prop denial_prop ctl_dhcp_pan_prop ctl_bootanim_prop net_radio_prop \
+#freq_prop dhcp_prop audio_prop boot_prop ctl_bugreport_prop logd_prop kies_prop vold_prop user_prop tzdaemon_prop rild_prop \
+#perf_prop digitalpen_prop recovery_prop ctl_fuse_prop good_mgmt_prop seclevel_prop ctl_mdnsd_prop setupwizard_prop \
+#property_socket ctl_default_prop ctl_dumpstate_prop default_prop debuggerd_prop powerctl_prop sdcard_prop radio_prop \
+#properties_device secmm_prop shell_prop camera_prop }"
 
-#if [ -e /su/lib/libsupol.so ]; then
-#/system/xbin/supolicy --live \
-#	"allow untrusted_app debugfs file { open read getattr }" \
-#	"allow untrusted_app sysfs_lowmemorykiller file { open read getattr }" \
-#	"allow untrusted_app sysfs_devices_system_iosched file { open read getattr }" \
-#	"allow untrusted_app persist_file dir { open read getattr }" \
-#	"allow debuggerd gpu_device chr_file { open read getattr }" \
-#	"allow netd netd capability fsetid" \
-#	"allow netd { hostapd dnsmasq } process fork" \
-#	"allow { system_app shell } dalvikcache_data_file file write" \
-#	"allow system_server { rootfs resourcecache_data_file } dir { open read write getattr add_name setattr create remove_name rmdir unlink link }" \
-#	"allow system_server resourcecache_data_file file { open read write getattr add_name setattr create remove_name unlink link }" \
-#	"allow system_server dex2oat_exec file rx_file_perms" \
-#	"allow mediaserver mediaserver_tmpfs file execute" \
-#	"allow drmserver theme_data_file file r_file_perms" \
-#	"allow zygote system_file file write" \
-#	"allow atfwd property_socket sock_file write" \
-#	"allow untrusted_app sysfs_display file { open read write getattr add_name setattr remove_name }" \
-#	"allow debuggerd app_data_file dir search" \
-#	"allow sensors diag_device chr_file { read write open ioctl }" \
-#	"allow sensors sensors capability net_raw" \
-#	"allow netmgrd netmgrd netlink_xfrm_socket nlmsg_write" \
-#	"allow netmgrd netmgrd socket { read write open ioctl }"
-#fi;
+#supolicy --live "allow untrusted_app debugfs file { open read getattr }"
+#supolicy --live "allow untrusted_app sysfs_lowmemorykiller file { open read getattr }"
+#supolicy --live "allow untrusted_app sysfs_devices_system_iosched file { open read getattr }"
+#supolicy --live "allow untrusted_app persist_file dir { open read getattr }"
+#supolicy --live "allow debuggerd gpu_device chr_file { open read getattr }"
+#supolicy --live "allow netd netd capability fsetid"
+#supolicy --live "allow netd { hostapd dnsmasq } process fork"
+#supolicy --live "allow { system_app shell } dalvikcache_data_file file write"
+#supolicy --live "allow system_server { rootfs resourcecache_data_file } dir { open read write getattr add_name setattr create remove_name rmdir unlink link }"
+#supolicy --live "allow system_server resourcecache_data_file file { open read write getattr add_name setattr create remove_name unlink link }"
+#supolicy --live "allow system_server dex2oat_exec file rx_file_perms"
+#supolicy --live "allow mediaserver mediaserver_tmpfs file execute"
+#supolicy --live "allow drmserver theme_data_file file r_file_perms"
+#supolicy --live "allow zygote system_file file write"
+#supolicy --live "allow atfwd property_socket sock_file write"
+#supolicy --live "allow untrusted_app sysfs_display file { open read write getattr add_name setattr remove_name }"
+#supolicy --live "allow debuggerd app_data_file dir search"
+#supolicy --live "allow sensors diag_device chr_file { read write open ioctl }"
+#supolicy --live "allow sensors sensors capability net_raw"
+#supolicy --live "allow netmgrd netmgrd netlink_xfrm_socket nlmsg_write"
+#supolicy --live "allow netmgrd netmgrd socket { read write open ioctl }"
+
 # Init.d
 chown -R 0:0 /system/etc/init.d/
 chmod -R 755 /system/etc/init.d/
+supolicy --live "permissive audioserver"
 #/system/xbin/busybox run-parts /system/etc/init.d/
 #echo "[MACHINEX] INIT.D EXECUTED" | tee /dev/kmsg

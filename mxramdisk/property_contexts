@@ -37,8 +37,8 @@ persist.audio.          u:object_r:audio_prop:s0
 
 # DOLBY_START
 dolby.audio             u:object_r:audio_prop:s0
-dolby.                  u:object_r:system_prop:s0
-dolby.ds                u:object_r:system_prop:s0
+dolby.                  u:object_r:audio_prop:s0
+dolby.ds                u:object_r:audio_prop:s0
 # DOLBY_END
 
 persist.logd.           u:object_r:logd_prop:s0
@@ -143,6 +143,6 @@ qc.sdk.us.digitalpen       u:object_r:digitalpen_prop:s0
 # avc:  denied  { set } for property=persist.translation.assistant scontext=u:r:system_app:s0 tcontext=u:object_r:default_prop:s0 tclass=property_service
 # avc:  denied  { set } for property=min_freq_0 scontext=u:r:init_shell:s0 tcontext=u:object_r:default_prop:s0 tclass=property_service
 #line 1 "vendor/samsung/common/sepolicy/carrier/carrier_spr/property_contexts"
-cdma.home.	u:object_r:radio_prop:s0
-#line 1 "vendor/samsung/common/sepolicy/carrier/carrier_tfntmo/property_contexts"
 #cdma.home.	u:object_r:radio_prop:s0
+#line 1 "vendor/samsung/common/sepolicy/carrier/carrier_tfntmo/property_contexts"
+cdma.home.	u:object_r:radio_prop:s0
