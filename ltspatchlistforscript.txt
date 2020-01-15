@@ -1,15 +1,3 @@
-/root/linux-stable/patches/3298-ALSA-snd-usb-usx2y-remove-bogus-frame-checks.patch
-/root/linux-stable/patches/3299-ALSA-hda-Add-fixup-for-ASUS-N56VZ.patch
-/root/linux-stable/patches/3300-random-run-random_int_secret_init-run-after-all-late.patch
-/root/linux-stable/patches/3301-vfs-allow-O_PATH-file-descriptors-for-fstatfs.patch
-/root/linux-stable/patches/3302-ext4-fix-memory-leak-in-xattr.patch
-/root/linux-stable/patches/3303-KVM-PPC-Book3S-HV-Fix-typo-in-saving-DSCR.patch
-/root/linux-stable/patches/3304-parisc-fix-interruption-handler-to-respect-pagefault.patch
-/root/linux-stable/patches/3305-watchdog-ts72xx_wdt-locking-bug-in-ioctl.patch
-/root/linux-stable/patches/3306-drm-radeon-fix-hw-contexts-for-SUMO2-asics.patch
-/root/linux-stable/patches/3307-mm-mmap-check-for-RLIMIT_AS-before-unmapping.patch
-/root/linux-stable/patches/3308-mm-do-not-grow-the-stack-vma-just-because-of-an-over.patch
-/root/linux-stable/patches/3309-Linux-3.4.67.patch
 /root/linux-stable/patches/3310-tcp-must-unclone-packets-before-mangling-them.patch
 /root/linux-stable/patches/3311-tcp-do-not-forget-FIN-in-tcp_shifted_skb.patch
 /root/linux-stable/patches/3312-net-do-not-call-sock_put-on-TIMEWAIT-sockets.patch
