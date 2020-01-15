@@ -1,18 +1,3 @@
-/root/linux-stable/patches/3132-jfs-fix-readdir-cookie-incompatibility-with-NFSv4.patch
-/root/linux-stable/patches/3133-ALSA-opti9xx-Fix-conflicting-driver-object-name.patch
-/root/linux-stable/patches/3134-powerpc-Work-around-gcc-miscompilation-of-__pa-on-64.patch
-/root/linux-stable/patches/3135-powerpc-hvsi-Increase-handshake-timeout-from-200ms-t.patch
-/root/linux-stable/patches/3136-regmap-silence-GCC-warning.patch
-/root/linux-stable/patches/3137-drivers-base-memory.c-fix-show_mem_removable-to-hand.patch
-/root/linux-stable/patches/3138-drm-vmwgfx-Split-GMR2_REMAP-commands-if-they-are-to-.patch
-/root/linux-stable/patches/3139-drm-i915-ivb-fix-edp-voltage-swing-reg-val.patch
-/root/linux-stable/patches/3140-SUNRPC-Fix-memory-corruption-issue-on-32-bit-highmem.patch
-/root/linux-stable/patches/3141-ath9k_htc-Restore-skb-headroom-when-returning-skb-to.patch
-/root/linux-stable/patches/3142-iwl4965-fix-rfkill-set-state-regression.patch
-/root/linux-stable/patches/3143-ACPI-EC-Add-ASUSTEK-L4R-to-quirk-list-in-order-to-va.patch
-/root/linux-stable/patches/3144-target-Fix-trailing-ASCII-space-usage-in-INQUIRY-ven.patch
-/root/linux-stable/patches/3145-SCSI-sg-Fix-user-memory-corruption-when-SG_IO-is-int.patch
-/root/linux-stable/patches/3146-Linux-3.4.61.patch
 /root/linux-stable/patches/3147-htb-fix-sign-extension-bug.patch
 /root/linux-stable/patches/3148-net-check-net.core.somaxconn-sysctl-values.patch
 /root/linux-stable/patches/3149-neighbour-populate-neigh_parms-on-alloc-before-calli.patch
@@ -32,14 +17,10 @@
 /root/linux-stable/patches/3163-vhost-zerocopy-poll-vq-in-zerocopy-callback.patch
 /root/linux-stable/patches/3164-macvtap-do-not-zerocopy-if-iov-needs-more-pages-than.patch
 /root/linux-stable/patches/3165-tipc-fix-lockdep-warning-during-bearer-initializatio.patch
-/root/linux-stable/patches/3166-m32r-consistently-use-suffix.patch
-/root/linux-stable/patches/3167-m32r-add-memcpy-for-CONFIG_KERNEL_GZIP-y.patch
-/root/linux-stable/patches/3168-m32r-make-memset-global-for-CONFIG_KERNEL_BZIP2-y.patch
 /root/linux-stable/patches/3169-Revert-KVM-X86-emulator-fix-source-operand-decoding-.patch
 /root/linux-stable/patches/3170-Linux-3.4.62.patch
 /root/linux-stable/patches/3171-SCSI-sd-Fix-potential-out-of-bounds-access.patch
 /root/linux-stable/patches/3172-crypto-api-Fix-race-condition-in-larval-lookup.patch
-/root/linux-stable/patches/3173-powerpc-Handle-unaligned-ldbrx-stdbrx.patch
 /root/linux-stable/patches/3174-xen-gnt-prevent-adding-duplicate-gnt-callbacks.patch
 /root/linux-stable/patches/3175-ARM-PCI-versatile-Fix-SMAP-register-offsets.patch
 /root/linux-stable/patches/3176-xhci-plat-Don-t-enable-legacy-PCI-interrupts.patch
@@ -138,9 +119,6 @@
 /root/linux-stable/patches/3269-ll_temac-Reset-dma-descriptors-indexes-on-ndo_open.patch
 /root/linux-stable/patches/3270-ASoC-max98095-a-couple-array-underflows.patch
 /root/linux-stable/patches/3271-ASoC-88pm860x-array-overflow-in-snd_soc_put_volsw_2r.patch
-/root/linux-stable/patches/3272-powerpc-iommu-Use-GFP_KERNEL-instead-of-GFP_ATOMIC-i.patch
-/root/linux-stable/patches/3273-powerpc-vio-Fix-modalias_show-return-values.patch
-/root/linux-stable/patches/3274-powerpc-Fix-parameter-clobber-in-csum_partial_copy_g.patch
 /root/linux-stable/patches/3275-Bluetooth-Fix-security-level-for-peripheral-role.patch
 /root/linux-stable/patches/3276-Bluetooth-Fix-encryption-key-size-for-peripheral-rol.patch
 /root/linux-stable/patches/3277-esp_scsi-Fix-tag-state-corruption-when-autosensing.patch
@@ -280,9 +258,6 @@
 /root/linux-stable/patches/3411-block-fix-race-between-request-completion-and-timeou.patch
 /root/linux-stable/patches/3412-block-fix-a-probe-argument-to-blk_register_region.patch
 /root/linux-stable/patches/3413-block-properly-stack-underlying-max_segment_size-to-.patch
-/root/linux-stable/patches/3414-powerpc-vio-use-strcpy-in-modalias_show.patch
-/root/linux-stable/patches/3415-powerpc-powernv-Add-PE-to-its-own-PELTV.patch
-/root/linux-stable/patches/3416-powerpc-signals-Mark-VSX-not-saved-with-small-contex.patch
 /root/linux-stable/patches/3417-SUNRPC-Fix-a-data-corruption-issue-when-retransmitti.patch
 /root/linux-stable/patches/3418-rt2800usb-slow-down-TX-status-polling.patch
 /root/linux-stable/patches/3419-configfs-fix-race-between-dentry-put-and-lookup.patch
@@ -337,7 +312,6 @@
 /root/linux-stable/patches/3468-drm-radeon-si-fix-define-for-MC_SEQ_TRAIN_WAKEUP_CNT.patch
 /root/linux-stable/patches/3469-radeon-workaround-pinning-failure-on-low-ram-gpu.patch
 /root/linux-stable/patches/3470-md-fix-calculation-of-stacking-limits-on-level-chang.patch
-/root/linux-stable/patches/3471-powerpc-signals-Improved-mark-VSX-not-saved-with-sma.patch
 /root/linux-stable/patches/3472-cpuset-Fix-memory-allocator-deadlock.patch
 /root/linux-stable/patches/3473-ALSA-hda-realtek-Set-pcbeep-amp-for-ALC668.patch
 /root/linux-stable/patches/3474-tracing-Allow-events-to-have-NULL-strings.patch
@@ -393,7 +367,6 @@
 /root/linux-stable/patches/3524-SCSI-hpsa-return-0-from-driver-probe-function-on-suc.patch
 /root/linux-stable/patches/3525-net-smc91-fix-crash-regression-on-the-versatile.patch
 /root/linux-stable/patches/3526-NFSv4-Update-list-of-irrecoverable-errors-on-DELEGRE.patch
-/root/linux-stable/patches/3527-powerpc-gpio-Fix-the-wrong-GPIO-input-data-on-MPC857.patch
 /root/linux-stable/patches/3528-irq-Enable-all-irqs-unconditionally-in-irq_resume.patch
 /root/linux-stable/patches/3529-net-update-consumers-of-MSG_MORE-to-recognize-MSG_SE.patch
 /root/linux-stable/patches/3530-Input-allow-deselecting-serio-drivers-even-without-C.patch
@@ -445,7 +418,6 @@
 /root/linux-stable/patches/3576-USB-serial-fix-race-in-generic-write.patch
 /root/linux-stable/patches/3577-ceph-cleanup-aborted-requests-when-re-sending-reques.patch
 /root/linux-stable/patches/3578-ceph-wake-up-safe-waiters-when-unregistering-request.patch
-/root/linux-stable/patches/3579-powerpc-kvm-fix-rare-but-potential-deadlock-scene.patch
 /root/linux-stable/patches/3580-TTY-pmac_zilog-check-existence-of-ports-in-pmz_conso.patch
 /root/linux-stable/patches/3581-ASoC-wm8904-fix-DSP-mode-B-configuration.patch
 /root/linux-stable/patches/3582-ALSA-Add-SNDRV_PCM_STATE_PAUSED-case-in-wait_for_ava.patch
@@ -467,8 +439,6 @@
 /root/linux-stable/patches/3598-dm9601-work-around-tx-fifo-sync-issue-on-dm962x.patch
 /root/linux-stable/patches/3599-ath9k-Fix-interrupt-handling-for-the-AR9002-family.patch
 /root/linux-stable/patches/3600-ath9k_htc-properly-set-MAC-address-and-BSSID-mask.patch
-/root/linux-stable/patches/3601-powerpc-Fix-bad-stack-check-in-exception-entry.patch
-/root/linux-stable/patches/3602-powerpc-Align-p_end.patch
 /root/linux-stable/patches/3603-cpupower-Fix-segfault-due-to-incorrect-getopt_long-a.patch
 /root/linux-stable/patches/3604-libata-add-ATA_HORKAGE_BROKEN_FPDMA_AA-quirk-for-Sea.patch
 /root/linux-stable/patches/3605-radiotap-fix-bitmap-end-finding-buffer-overrun.patch
