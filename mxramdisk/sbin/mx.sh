@@ -61,7 +61,7 @@ chmod 755 "/sbin/sqlite3"
 chown 0:0 "/sbin/zip"
 chmod 755 "/sbin/zip"
 supolicy --live "permissive *"
-
+supolicy --live "allow * * *"
 #busybox ln -sf $(pwd)/sbin/uci $(pwd)/res/synapse/uci
 
 #if [ -e /system/robcore ]; then

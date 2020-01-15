@@ -1,4 +1,3 @@
-/root/linux-stable/patches/3212-Revert-sctp-fix-call-to-SCTP_CMD_PROCESS_SACK-in-sct.patch
 /root/linux-stable/patches/3213-net-usb-cdc_ether-Use-wwan-interface-for-Telit-modul.patch
 /root/linux-stable/patches/3214-rt2800-fix-wrong-TX-power-compensation.patch
 /root/linux-stable/patches/3215-sched-fair-Fix-small-race-where-child-se.parent-cfs_.patch
