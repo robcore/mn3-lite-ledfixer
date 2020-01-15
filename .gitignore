@@ -120,3 +120,5 @@ mxzip/boot.img
 .starttime
 .endtime
 dmesg-from-freeze.txt
+oldconfigs
+oldconfigs/*
