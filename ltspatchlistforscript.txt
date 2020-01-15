@@ -1,15 +1,3 @@
-/root/linux-stable/patches/3370-xen-netback-use-jiffies_64-value-to-calculate-credit.patch
-/root/linux-stable/patches/3371-net-flow_dissector-fail-on-evil-iph-ihl.patch
-/root/linux-stable/patches/3372-PCI-fix-truncation-of-resource-size-to-32-bits.patch
-/root/linux-stable/patches/3373-USB-add-new-zte-3g-dongle-s-pid-to-option.c.patch
-/root/linux-stable/patches/3374-ALSA-hda-Move-one-time-init-codes-from-generic_hdmi_.patch
-/root/linux-stable/patches/3375-netfilter-nf_ct_sip-don-t-drop-packets-with-offsets-.patch
-/root/linux-stable/patches/3376-tracing-Fix-potential-out-of-bounds-in-trace_get_use.patch
-/root/linux-stable/patches/3377-ARM-7668-1-fix-memset-related-crashes-caused-by-rece.patch
-/root/linux-stable/patches/3378-ARM-7670-1-fix-the-memset-fix.patch
-/root/linux-stable/patches/3379-PCI-PM-Clear-state_saved-during-suspend.patch
-/root/linux-stable/patches/3380-usb-fix-cleanup-after-failure-in-hub_configure.patch
-/root/linux-stable/patches/3381-Linux-3.4.70.patch
 /root/linux-stable/patches/3382-vfs-proc-guarantee-unique-inodes-in-proc.patch
 /root/linux-stable/patches/3383-nfs-don-t-allow-nfs_find_actor-to-match-inodes-of-th.patch
 /root/linux-stable/patches/3384-libertas-potential-oops-in-debugfs.patch
