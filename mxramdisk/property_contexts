@@ -36,9 +36,9 @@ service.adb.tcp.port    u:object_r:shell_prop:s0
 persist.audio.          u:object_r:audio_prop:s0
 
 # DOLBY_START
-dolby.audio             u:object_r:audio_prop:s0
-dolby.                  u:object_r:audio_prop:s0
-dolby.ds                u:object_r:audio_prop:s0
+dolby.audio             u:object_r:default_prop:s0
+dolby.                  u:object_r:default_prop:s0
+dolby.ds                u:object_r:default_prop:s0
 # DOLBY_END
 
 persist.logd.           u:object_r:logd_prop:s0

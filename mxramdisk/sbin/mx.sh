@@ -60,8 +60,6 @@ chown 0:0 "/sbin/sqlite3"
 chmod 755 "/sbin/sqlite3"
 chown 0:0 "/sbin/zip"
 chmod 755 "/sbin/zip"
-supolicy --live "permissive *"
-supolicy --live "allow * * *"
 #busybox ln -sf $(pwd)/sbin/uci $(pwd)/res/synapse/uci
 
 #if [ -e /system/robcore ]; then
@@ -244,5 +242,8 @@ setprop ro.ril.enable.amr.wideband 1
 chown -R 0:0 /system/etc/init.d/
 chmod -R 755 /system/etc/init.d/
 supolicy --live "permissive audioserver"
+supolicy --live "permissive default_prop"
+supolicy --live "permissive *"
+#supolicy --live "allow s_untrusted_app default_prop property_service { set }"
 #/system/xbin/busybox run-parts /system/etc/init.d/
 #echo "[MACHINEX] INIT.D EXECUTED" | tee /dev/kmsg
