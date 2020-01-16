@@ -1,3 +1,15 @@
+/root/linux-stable/patches/3483-net-Fix-ip-rule-delete-table-256.patch
+/root/linux-stable/patches/3484-ipv6-use-rt6_get_dflt_router-to-get-default-router-i.patch
+/root/linux-stable/patches/3485-random32-fix-off-by-one-in-seeding-requirement.patch
+/root/linux-stable/patches/3486-bonding-don-t-permit-to-use-ARP-monitoring-in-802.3a.patch
+/root/linux-stable/patches/3487-6lowpan-Uncompression-of-traffic-class-field-was-inc.patch
+/root/linux-stable/patches/3488-bonding-fix-two-race-conditions-in-bond_store_updela.patch
+/root/linux-stable/patches/3489-isdnloop-use-strlcpy-instead-of-strcpy.patch
+/root/linux-stable/patches/3490-connector-improved-unaligned-access-error-fix.patch
+/root/linux-stable/patches/3491-ipv4-fix-possible-seqlock-deadlock.patch
+/root/linux-stable/patches/3492-inet-prevent-leakage-of-uninitialized-memory-to-user.patch
+/root/linux-stable/patches/3493-net-rework-recvmsg-handler-msg_name-and-msg_namelen-.patch
+/root/linux-stable/patches/3494-net-add-BUG_ON-if-kernel-advertises-msg_namelen-size.patch
 /root/linux-stable/patches/3495-inet-fix-addr_len-msg-msg_namelen-assignment-in-recv.patch
 /root/linux-stable/patches/3496-net-clamp-msg_namelen-instead-of-returning-an-error.patch
 /root/linux-stable/patches/3497-ipv6-fix-leaking-uninitialized-port-number-of-offend.patch
