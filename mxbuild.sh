@@ -272,14 +272,23 @@ takeouttrash() {
 
 clean_build() {
 
-
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
-	echo -ne "Cleaning build         \r"; \
-	make clean &>/dev/null
-	echo -ne "Cleaning build.        \r"; \
-	make distclean &>/dev/null
-	echo -ne "Cleaning build..       \r"; \
-	make mrproper &>/dev/null
+	if [ "$1" = "standalone" ]
+	then
+		echo -ne "Cleaning build         \r"; \
+		make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -j"$CORECOUNT" clean
+		echo -ne "Cleaning build.        \r"; \
+		make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -j"$CORECOUNT" distclean
+		echo -ne "Cleaning build..       \r"; \
+		make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -j"$CORECOUNT" mrproper
+	else
+		echo -ne "Cleaning build         \r"; \
+		make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -j"$CORECOUNT" clean &>/dev/null
+		echo -ne "Cleaning build.        \r"; \
+		make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -j"$CORECOUNT" distclean &>/dev/null
+		echo -ne "Cleaning build..       \r"; \
+		make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -j"$CORECOUNT" mrproper &>/dev/null
+	fi
 	echo -ne "Cleaning build...      \r"; \
 	takeouttrash &>/dev/null
 	echo -ne "Cleaning build....     \r"; \
@@ -545,7 +554,7 @@ do
 	    	;;
 
 	     -c|--clean)
-	    	clean_build
+	    	clean_build "standalone"
 	    	break
 	    	;;
 
