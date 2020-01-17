@@ -81,6 +81,7 @@ done
 
 }
 
+dothething() {
 while IFS= read -r PATCHLINE
 do
 	if [ "$(pwd)" != "/root/mn3lite" ]
@@ -166,15 +167,19 @@ do
 	   [ "$PATCHLINE" = "/root/linux-stable/patches/5797-Linux-3.4.112.patch" ] || \
 	   [ "$PATCHLINE" = "/root/linux-stable/patches/5929-Linux-3.4.113.patch" ]
 	then
+		local LTSKVERS
 		if [ "${#PATCHLINE}" -eq 50 ]
 		then
-			echo "$(echo "$PATCHLINE" | cut --bytes=33-44) reached"
+			LTSKVER="$(echo "$PATCHLINE" | cut --bytes=33-44)"
 		elif [ "${#PATCHLINE}" -eq 51 ]
 		then
-			echo "$(echo "$PATCHLINE" | cut --bytes=33-45) reached"
+			LTSKVER="$(echo "$PATCHLINE" | cut --bytes=33-45)"
 		else
-			echo "$PATCHLINE reached"
+			LTSKVER="$PATCHLINE"
 		fi
+		echo "$LTSKVER Reached!"
+		echo "Committing to Git"
+		git add -u && git add . && git add -A && git commit -a -m "$LTSKVER"
 		pc_delete "$PATCHLINE"
 		animatepause
 	elif grep '/drivers/usb/' "$PATCHLINE"
@@ -222,3 +227,7 @@ do
 		animatepause
 	fi
 done < "$PATCHFILE"
+}
+
+dothething
+
