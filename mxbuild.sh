@@ -348,7 +348,7 @@ build_kernel_config() {
 build_kernel() {
 
 	echo "Backing up .config to config.$QUICKDATE"
-	cp "build/.config" "config.$QUICKDATE"
+	cp "$RDIR/build/.config" "$RDIR/oldconfigs/config.$QUICKDATE"
 	echo "Snapshot of current environment variables:"
 	env
 	echo "Starting build..."
