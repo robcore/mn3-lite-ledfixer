@@ -1,9 +1,3 @@
-/root/linux-stable/patches/3924-staging-speakup-Prefix-externally-visible-symbols.patch
-/root/linux-stable/patches/3925-ext4-atomically-set-inode-i_flags-in-ext4_set_inode_.patch
-/root/linux-stable/patches/3926-Input-synaptics-add-manual-min-max-quirk.patch
-/root/linux-stable/patches/3927-Input-synaptics-add-manual-min-max-quirk-for-ThinkPa.patch
-/root/linux-stable/patches/3928-x86-fix-boot-on-uniprocessor-systems.patch
-/root/linux-stable/patches/3929-netfilter-nf_conntrack_dccp-fix-skb_header_pointer-A.patch
 /root/linux-stable/patches/3930-Linux-3.4.86.patch
 /root/linux-stable/patches/3931-proc-pid-status-show-all-supplementary-groups.patch
 /root/linux-stable/patches/3932-idr-fix-top-layer-handling.patch
