@@ -22,7 +22,6 @@
 /root/linux-stable/patches/3931-proc-pid-status-show-all-supplementary-groups.patch
 /root/linux-stable/patches/3932-idr-fix-top-layer-handling.patch
 /root/linux-stable/patches/3933-audit-wait_for_auditd-should-use-TASK_UNINTERRUPTIBL.patch
-/root/linux-stable/patches/3934-printk-Fix-rq-lock-vs-logbuf_lock-unlock-lock-invers.patch
 /root/linux-stable/patches/3935-workqueue-cond_resched-after-processing-each-work-it.patch
 /root/linux-stable/patches/3936-compiler-gcc.h-Add-gcc-recommended-GCC_VERSION-macro.patch
 /root/linux-stable/patches/3937-compiler-gcc4-Add-quirk-for-asm-goto-miscompilation-.patch
