@@ -1,17 +1,3 @@
-/root/linux-stable/patches/3910-ALSA-compress-Pass-through-return-value-of-open-ops-.patch
-/root/linux-stable/patches/3911-libceph-resend-all-writes-after-the-osdmap-loses-the.patch
-/root/linux-stable/patches/3912-iwlwifi-Complete-backport-of-iwlwifi-always-copy-fir.patch
-/root/linux-stable/patches/3913-x86-bpf_jit-support-negative-offsets.patch
-/root/linux-stable/patches/3914-deb-pkg-Fix-cross-building-linux-headers-package.patch
-/root/linux-stable/patches/3915-p54-clamp-properly-instead-of-just-truncating.patch
-/root/linux-stable/patches/3916-i7300_edac-Fix-device-reference-count.patch
-/root/linux-stable/patches/3917-ARM-move-outer_cache-declaration-out-of-ifdef.patch
-/root/linux-stable/patches/3918-Input-elantech-improve-clickpad-detection.patch
-/root/linux-stable/patches/3919-KVM-MMU-handle-invalid-root_hpa-at-__direct_map.patch
-/root/linux-stable/patches/3920-KVM-VMX-fix-use-after-free-of-vmx-loaded_vmcs.patch
-/root/linux-stable/patches/3921-xhci-Fix-resume-issues-on-Renesas-chips-in-Samsung-l.patch
-/root/linux-stable/patches/3922-ipc-msg-fix-race-around-refcount.patch
-/root/linux-stable/patches/3923-Linux-3.4.85.patch
 /root/linux-stable/patches/3924-staging-speakup-Prefix-externally-visible-symbols.patch
 /root/linux-stable/patches/3925-ext4-atomically-set-inode-i_flags-in-ext4_set_inode_.patch
 /root/linux-stable/patches/3926-Input-synaptics-add-manual-min-max-quirk.patch
