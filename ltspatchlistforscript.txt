@@ -1,13 +1,3 @@
-/root/linux-stable/patches/3647-KVM-x86-Convert-vapic-synchronization-to-_cached-fun.patch
-/root/linux-stable/patches/3648-staging-comedi-8255_pci-fix-for-newer-PCI-DIO48H.patch
-/root/linux-stable/patches/3649-perf-x86-amd-ibs-Fix-waking-up-from-S3-for-AMD-famil.patch
-/root/linux-stable/patches/3650-mm-memory-failure.c-recheck-PageHuge-after-hugetlb-p.patch
-/root/linux-stable/patches/3651-hwmon-coretemp-Fix-truncated-name-of-alarm-attribute.patch
-/root/linux-stable/patches/3652-SELinux-Fix-possible-NULL-pointer-dereference-in-sel.patch
-/root/linux-stable/patches/3653-nilfs2-fix-segctor-bug-that-causes-file-system-corru.patch
-/root/linux-stable/patches/3654-md-raid10-fix-bug-when-raid10-recovery-fails-to-reco.patch
-/root/linux-stable/patches/3655-md-raid10-fix-two-bugs-in-handling-of-known-bad-bloc.patch
-/root/linux-stable/patches/3656-Linux-3.4.78.patch
 /root/linux-stable/patches/3657-md-raid5-fix-long-standing-problem-with-bitmap-handl.patch
 /root/linux-stable/patches/3658-mm-hugetlbfs-fix-hugetlbfs-optimization.patch
 /root/linux-stable/patches/3659-e752x_edac-Fix-pci_dev-usage-count.patch
