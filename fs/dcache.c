@@ -57,7 +57,7 @@
  *   - d_count
  *   - d_unhashed()
  *   - d_parent and d_subdirs
- *   - childrens' d_child and d_parent
+ *   - childrens' d_u.d_child and d_parent
  *   - d_alias, d_inode
  *
  * Ordering:
@@ -1082,7 +1082,7 @@ ascend:
 		while (unlikely(child->d_flags & DCACHE_DENTRY_KILLED)) {
 			if (next == &this_parent->d_subdirs)
 				goto ascend;
-			child = list_entry(next, struct dentry, d_child);
+			child = list_entry(next, struct dentry, d_u.d_child);
 			next = next->next;
 		}
 		rcu_read_unlock();
@@ -1208,7 +1208,7 @@ ascend:
 		while (unlikely(child->d_flags & DCACHE_DENTRY_KILLED)) {
 			if (next == &this_parent->d_subdirs)
 				goto ascend;
-			child = list_entry(next, struct dentry, d_child);
+			child = list_entry(next, struct dentry, d_u.d_child);
 			next = next->next;
 		}
 		rcu_read_unlock();
@@ -2983,7 +2983,7 @@ ascend:
 		while (unlikely(child->d_flags & DCACHE_DENTRY_KILLED)) {
 			if (next == &this_parent->d_subdirs)
 				goto ascend;
-			child = list_entry(next, struct dentry, d_child);
+			child = list_entry(next, struct dentry, d_u.d_child);
 			next = next->next;
 		}
 		rcu_read_unlock();
