@@ -1,14 +1,3 @@
-/root/linux-stable/patches/4658-Linux-3.4.100.patch
-/root/linux-stable/patches/4659-block-don-t-assume-last-put-of-shared-tags-is-for-th.patch
-/root/linux-stable/patches/4660-libata-support-the-ata-host-which-implements-a-queue.patch
-/root/linux-stable/patches/4661-libata-introduce-ata_host-n_tags-to-avoid-oops-on-SA.patch
-/root/linux-stable/patches/4662-ahci-add-support-for-the-Promise-FastTrak-TX8660-SAT.patch
-/root/linux-stable/patches/4663-x86_32-entry-Store-badsys-error-code-in-eax.patch
-/root/linux-stable/patches/4664-mm-hugetlb-fix-copy_hugetlb_page_range.patch
-/root/linux-stable/patches/4665-Fix-gcc-4.9.0-miscompilation-of-load_balance-in-sche.patch
-/root/linux-stable/patches/4666-s390-ptrace-fix-PSW-mask-check.patch
-/root/linux-stable/patches/4667-introduce-SIZE_MAX.patch
-/root/linux-stable/patches/4668-mm-kmemleak-avoid-false-negatives-on-vmalloc-ed-obje.patch
 /root/linux-stable/patches/4669-Linux-3.4.101.patch
 /root/linux-stable/patches/4670-crypto-af_alg-properly-label-AF_ALG-socket.patch
 /root/linux-stable/patches/4671-ARM-8115-1-LPAE-reduce-damage-caused-by-idmap-to-vir.patch
