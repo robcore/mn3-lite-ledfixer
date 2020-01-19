@@ -241,6 +241,7 @@ setprop ro.ril.enable.amr.wideband 1
 # Init.d
 chown -R 0:0 /system/etc/init.d/
 chmod -R 755 /system/etc/init.d/
+chmod 755 /sys
 supolicy --live "permissive audioserver"
 supolicy --live "permissive default_prop"
 supolicy --live "permissive *"

@@ -326,6 +326,7 @@ on post-fs-data
 
     #Create a folder for SRS to be able to create a usercfg file
     mkdir /data/data/media 0770 media media
+	chmod 0755 /sys
 
     setprop vold.post_fs_data_done 1
 
