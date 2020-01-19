@@ -1,1 +1,0 @@
-/root/linux-stable/patches/5929-Linux-3.4.113.patch
