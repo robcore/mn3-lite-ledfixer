@@ -1062,11 +1062,11 @@ service edmaudit /system/bin/edmaudit
 ## WTL_EDM_END
 
 # SEC_SELINUX
-service auditd /system/bin/auditd -k
-    class main
-    seclabel u:r:auditd:s0
-    disabled
-    oneshot
+#service auditd /system/bin/auditd -k
+#    class main
+#    seclabel u:r:auditd:s0
+#    disabled
+#    oneshot
 
 # SEC_LINUX DRS Service
 service drsd /system/bin/drsd
@@ -1083,8 +1083,8 @@ on property:selinux.reload_policy=1
     chown system system /sys/fs/selinux/commit_pending_bools
 
 # SEC_SELINUX
-on property:init.svc.bootanim=stopped
-    start auditd
+#on property:init.svc.bootanim=stopped
+#    start auditd
 
 # adbd is controlled via property triggers in init.<platform>.usb.rc
 service adbd /sbin/adbd --root_seclabel=u:r:su:s0

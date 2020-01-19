@@ -1,4 +1,3 @@
-/root/linux-stable/patches/4713-Linux-3.4.103.patch
 /root/linux-stable/patches/4714-stable_kernel_rules-Add-pointer-to-netdev-FAQ-for-ne.patch
 /root/linux-stable/patches/4715-ASoC-pxa-ssp-drop-SNDRV_PCM_FMTBIT_S24_LE.patch
 /root/linux-stable/patches/4716-ibmveth-Fix-endian-issues-with-rx_no_buffer-statisti.patch
