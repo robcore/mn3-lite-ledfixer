@@ -498,7 +498,7 @@ on boot
     chmod 0644 /sys/module/lowmemorykiller/parameters/minfree
 
     # Tweak background writeout
-    #write /proc/sys/vm/dirty_expire_centisecs 18
+    #write /proc/sys/vm/dirty_expire_centisecs 200
     #write /proc/sys/vm/dirty_background_ratio  5
 
     # Permissions for System Server and daemons.
@@ -1076,16 +1076,11 @@ service drsd /system/bin/drsd
 on property:ro.debuggable=1
     start console
 
-service pcon /system/bin/sh /sbin/pcon.sh
-    disabled
-    oneshot
-
 # SEC_SELINUX
 on property:selinux.reload_policy=1
     chown system system /sys/fs/selinux/enforce
     chown -R system system /sys/fs/selinux/booleans
     chown system system /sys/fs/selinux/commit_pending_bools
-	restart pcon
 
 # SEC_SELINUX
 #on property:init.svc.bootanim=stopped
@@ -1326,13 +1321,13 @@ service bugreport /system/bin/dumpstate -d -p -B \
     keycodes 114 115 116
 
 
-#service mdnsd /system/bin/mdnsd
-#    class main
-#    user mdnsr
-#    group inet net_raw
-#    socket mdnsd stream 0660 mdnsr inet
-#    disabled
-#    oneshot
+service mdnsd /system/bin/mdnsd
+    class main
+    user mdnsr
+    group inet net_raw
+    socket mdnsd stream 0660 mdnsr inet
+    disabled
+    oneshot
 
 # Vibetonz
 service immvibed /system/bin/immvibed
