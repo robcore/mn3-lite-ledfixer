@@ -135,12 +135,12 @@ service qgesturesvr /system/bin/mm-gesture-daemon
     user system
     group system camera input graphics net_bt_stack
 
-service qrngd /system/bin/qrngd -f
-    class main
-    user root
-    group root
+#service qrngd /system/bin/qrngd -f
+#    class main
+#    user root
+#    group root
 
-service qrngp /system/bin/qrngp
+service qrngd /system/bin/qrngd
     class main
     user root
     group root
@@ -148,7 +148,7 @@ service qrngp /system/bin/qrngp
     disabled
 
 on property:sys.boot_completed=1
-    start qrngp
+    start qrngd
 
 service qseecomd /system/bin/qseecomd
    class core
