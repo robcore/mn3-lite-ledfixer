@@ -1679,7 +1679,7 @@ static int sec_charger_parse_dt(struct max77803_charger_data *charger)
 
 static ssize_t max_ac_current_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf) {
-	return sprintf(buf, "%d\n", max_ac_current);
+	return sprintf(buf, "%u\n", max_ac_current);
 }
 
 static ssize_t max_ac_current_store(struct kobject *kobj,
