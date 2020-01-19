@@ -28,6 +28,19 @@
 #define SLOW_CHARGING_CURRENT_STANDARD MINIMUM_INPUT_CURRENT
 
 static unsigned int max_ac_current = 2100;
+module_param(max_ac_current, uint, 0644);
+
+static unsigned int get_max_ac_current(void) {
+	unsigned int mxaccurr;
+	if (max_ac_current < 500)
+		mxaccurr = 500;
+	else if (max_ac_current > 2500)
+		mxaccurr = 2500;
+	else
+		mxaccurr = max_ac_current;
+
+	return mxaccurr;
+}
 
 struct max77803_charger_data {
 	struct max77803_dev	*max77803;
@@ -968,12 +981,12 @@ static int sec_chg_set_property(struct power_supply *psy,
 					case POWER_SUPPLY_TYPE_USB_ACA:
 					case POWER_SUPPLY_TYPE_CARDOCK:
 					case POWER_SUPPLY_TYPE_OTG:	/* These are USB connections, apply custom USB current for all of them */
-									charger->charging_current_max = max_ac_current;
+									charger->charging_current_max = get_max_ac_current();
 									charger->charging_current     = 1200;
 									break;
 					case POWER_SUPPLY_TYPE_MAINS:	/* These are AC connections, apply custom AC current for all of them */
-									charger->charging_current_max = max_ac_current;
-									charger->charging_current     = max_ac_current; //min(ac_charge_level+300, MAX_CHARGE_LEVEL); /* Keep the 300mA/h delta, but never go above 2.1A/h */
+									charger->charging_current_max = get_max_ac_current();
+									charger->charging_current     = get_max_ac_current(); //min(ac_charge_level+300, MAX_CHARGE_LEVEL); /* Keep the 300mA/h delta, but never go above 2.1A/h */
 									break;
 					default:			/* Don't do anything for any other kind of connections and don't touch when type is unknown */
 									break;
@@ -987,8 +1000,8 @@ static int sec_chg_set_property(struct power_supply *psy,
 					set_charging_current < usb_charging_current)
 				set_charging_current = usb_charging_current;
 			if (set_charging_current > usb_charging_current &&
-					set_charging_current < max_ac_current)
-				set_charging_current = max_ac_current;
+					set_charging_current < get_max_ac_current())
+				set_charging_current = get_max_ac_current();
 
 				set_charging_current_max =
 						charger->charging_current_max;
@@ -1056,15 +1069,15 @@ static int sec_chg_set_property(struct power_supply *psy,
 
 			if (charger->cable_type == POWER_SUPPLY_TYPE_MAINS) {
 				if (charger->siop_level < 100 ) {
-					set_charging_current_max = max_ac_current;
+					set_charging_current_max = get_max_ac_current();
 				} else {
 					set_charging_current_max =
 						charger->charging_current_max;
 				}
 
 				if (charger->siop_level < 100 &&
-						current_now > max_ac_current)
-					current_now = max_ac_current;
+						current_now > get_max_ac_current())
+					current_now = get_max_ac_current();
 				max77803_set_input_current(charger,
 					set_charging_current_max);
 			}
@@ -1677,42 +1690,6 @@ static int sec_charger_parse_dt(struct max77803_charger_data *charger)
 }
 #endif
 
-static ssize_t max_ac_current_show(struct kobject *kobj,
-		struct kobj_attribute *attr, char *buf) {
-	return sprintf(buf, "%d\n", max_ac_current);
-}
-
-static ssize_t max_ac_current_store(struct kobject *kobj,
-			   struct kobj_attribute *attr, const char *buf, size_t count) {
-	int uval;
-
-	sscanf(buf, "%d", &uval);
-
-	if (uval < 500)
-		uval = 500;
-	if (uval > 2500)
-		uval = 2500;
-
-	max_ac_current = uval;
-	return count;
-}
-
-static struct kobj_attribute max_ac_current_attribute =
-	__ATTR(max_ac_current, 0644,
-		max_ac_current_show,
-		max_ac_current_store);
-
-static struct attribute *fast_charge_attrs[] = {
-		&max_ac_current_attribute.attr,
-		NULL,
-};
-
-static struct attribute_group fast_charge_attr_group = {
-		.attrs = fast_charge_attrs,
-};
-
-static struct kobject *fast_charge_kobj;
-
 static __devinit int max77803_charger_probe(struct platform_device *pdev)
 {
 	struct max77803_dev *iodev = dev_get_drvdata(pdev->dev.parent);
@@ -1865,13 +1842,6 @@ static __devinit int max77803_charger_probe(struct platform_device *pdev)
 	if (ret < 0)
 		pr_err("%s: fail to request bypass IRQ: %d: %d\n",
 				__func__, charger->irq_bypass, ret);
-	if (fast_charge_kobj) {
-		ret = sysfs_create_group(fast_charge_kobj, &fast_charge_attr_group);
-        if (ret)
-			pr_err("%s sysfs file create failed!\n", __func__);
-	} else {
-		pr_err("%s kobject create failed!\n", __func__);
-	}
 	return 0;
 err_wc_irq:
 	free_irq(charger->pdata->chg_irq, NULL);
