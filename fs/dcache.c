@@ -1078,7 +1078,7 @@ ascend:
 		/* might go back up the wrong parent if we have had a rename */
 		if (!locked && read_seqretry(&rename_lock, seq))
 			goto rename_retry;
-		next = child->d_child.next;
+		next = child->d_u.d_child.next;
 		while (unlikely(child->d_flags & DCACHE_DENTRY_KILLED)) {
 			if (next == &this_parent->d_subdirs)
 				goto ascend;
