@@ -112,7 +112,7 @@ const char dhd_version[] = "Dongle Host Driver, version " EPI_VERSION_STR
 	DHD_COMPILED " on " __DATE__ " at " __TIME__;
 #else
 const char dhd_version[] = "\nDongle Host Driver, version " EPI_VERSION_STR "\nCompiled from ";
-#endif 
+#endif
 
 void dhd_set_timer(void *bus, uint wdtick);
 
@@ -1240,7 +1240,10 @@ wl_host_event(dhd_pub_t *dhd_pub, int *ifidx, void *pktdata,
 	switch (type) {
 #ifdef PROP_TXSTATUS
 	case WLC_E_FIFO_CREDIT_MAP:
-		dhd_wlfc_enable(dhd_pub);
+		if (dhd_wlfc_enable(dhd_pub) != BCME_OK) {
+			DHD_ERROR(("%s: dhd_wlfc_enable failed\n", __FUNCTION__));
+			return (BCME_ERROR);
+		}
 		dhd_wlfc_FIFOcreditmap_event(dhd_pub, event_data);
 		WLFC_DBGMESG(("WLC_E_FIFO_CREDIT_MAP:(AC0,AC1,AC2,AC3),(BC_MC),(OTHER): "
 			"(%d,%d,%d,%d),(%d),(%d)\n", event_data[0], event_data[1],
@@ -1251,7 +1254,7 @@ wl_host_event(dhd_pub_t *dhd_pub, int *ifidx, void *pktdata,
 	case WLC_E_BCMC_CREDIT_SUPPORT:
 		dhd_wlfc_BCMCCredit_support_event(dhd_pub);
 		break;
-#endif
+#endif /* PROP_TXSTATUS */
 
 	case WLC_E_IF: {
 		struct wl_event_data_if *ifevent = (struct wl_event_data_if *)event_data;
@@ -1340,7 +1343,7 @@ wl_host_event(dhd_pub_t *dhd_pub, int *ifidx, void *pktdata,
 	case WLC_E_PFN_BEST_BATCHING:
 		dhd_pno_event_handler(dhd_pub, event, (void *)event_data);
 		break;
-#endif 
+#endif
 		/* These are what external supplicant/authenticator wants */
 		/* fall through */
 	case WLC_E_LINK:
