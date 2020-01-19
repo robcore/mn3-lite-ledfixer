@@ -968,7 +968,7 @@ static int sec_chg_set_property(struct power_supply *psy,
 					case POWER_SUPPLY_TYPE_USB_ACA:
 					case POWER_SUPPLY_TYPE_CARDOCK:
 					case POWER_SUPPLY_TYPE_OTG:	/* These are USB connections, apply custom USB current for all of them */
-									charger->charging_current_max = max_ac_current;
+									charger->charging_current_max = 1200;
 									charger->charging_current     = 1200;
 									break;
 					case POWER_SUPPLY_TYPE_MAINS:	/* These are AC connections, apply custom AC current for all of them */
@@ -1865,13 +1865,6 @@ static __devinit int max77803_charger_probe(struct platform_device *pdev)
 	if (ret < 0)
 		pr_err("%s: fail to request bypass IRQ: %d: %d\n",
 				__func__, charger->irq_bypass, ret);
-	if (fast_charge_kobj) {
-		ret = sysfs_create_group(fast_charge_kobj, &fast_charge_attr_group);
-        if (ret)
-			pr_err("%s sysfs file create failed!\n", __func__);
-	} else {
-		pr_err("%s kobject create failed!\n", __func__);
-	}
 	return 0;
 err_wc_irq:
 	free_irq(charger->pdata->chg_irq, NULL);
@@ -1957,6 +1950,10 @@ static struct platform_driver max77803_charger_driver = {
 static int __init max77803_charger_init(void)
 {
 	pr_info("func:%s\n", __func__);
+	if (!fast_charge_kobj)
+		pr_err("%s fast_charge_kobj create failed!\n", __func__); 
+	if (sysfs_create_group(fast_charge_kobj, &fast_charge_attr_group))
+		pr_err("%s fast_charge_attr_group sysfs file create failed!\n", __func__);
 	return platform_driver_register(&max77803_charger_driver);
 }
 module_init(max77803_charger_init);
