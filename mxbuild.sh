@@ -440,7 +440,9 @@ create_zip() {
 		then
 			echo "Device is Connected via Usb!"
 			echo "$SAMSTRING"
+			adb usb || warnandfail "Failed to start ADB server in usb mode!"
 			adb push "$RDIR/$MX_KERNEL_VERSION.zip" /sdcard/Download || warnandfail "Failed to push $RDIR/$MX_KERNEL_VERSION.zip to device over ADB!"
+			adb kill-server || warnandfail "Failed to kill ADB server!"
 		fi
 		timerdiff
 	else
