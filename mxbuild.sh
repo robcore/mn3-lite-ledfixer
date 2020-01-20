@@ -436,7 +436,8 @@ create_zip() {
 		echo "Checking if Device is Connected..."
 		local SAMSTRING
 		SAMSTRING="$(lsusb | grep '04e8:6860')"
-		if [ -n "$SAMSTRING" ]
+		RECOVSTRING="$(lsusb | grep '18d1:4ee2')"
+		if [ -n "$SAMSTRING" ] || [ -n "$RECOVSTRING" ]
 		then
 			echo "Device is Connected via Usb!"
 			echo "$SAMSTRING"
