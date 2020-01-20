@@ -51,7 +51,7 @@ static char *policycap_names[] = {
 	"open_perms"
 };
 
-unsigned int selinux_checkreqprot = CONFIG_SECURITY_SELINUX_CHECKREQPROT_VALUE;
+unsigned int selinux_checkreqprot = 0;
 
 static int __init checkreqprot_setup(char *str)
 {
@@ -130,14 +130,14 @@ static unsigned long sel_last_ino = SEL_INO_NEXT - 1;
 #define SEL_INO_MASK			0x00ffffff
 
 #define TMPBUFLEN	12
-static int fake_selinux_enforcing = 1;
+static int fake_selinux_enforcing = 0;
 static ssize_t sel_read_enforce(struct file *filp, char __user *buf,
 				size_t count, loff_t *ppos)
 {
 	char tmpbuf[TMPBUFLEN];
 	ssize_t length;
 
-	length = scnprintf(tmpbuf, TMPBUFLEN, "%d", fake_selinux_enforcing);
+	length = scnprintf(tmpbuf, TMPBUFLEN, "%d", 0);
 	return simple_read_from_buffer(buf, count, ppos, tmpbuf, length);
 }
 
