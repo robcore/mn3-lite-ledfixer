@@ -8,6 +8,7 @@ menu "File systems"
 config DCACHE_WORD_ACCESS
        bool
 
+# klaatu@sec
 config LOW_ORDER_SEQ_MALLOC
 	bool "Let seq_file allocation only low order page memory"
 	default y

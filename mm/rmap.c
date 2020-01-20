@@ -739,8 +739,6 @@ int page_mapped_in_vma(struct page *page, struct vm_area_struct *vma)
 	address = __vma_address(page, vma);
 	if (unlikely(address < vma->vm_start || address >= vma->vm_end))
 		return 0;
-	if (address == -EFAULT)		/* out of vma range */
-		return 0;
 	pte = page_check_address(page, vma->vm_mm, address, &ptl, 1);
 	if (!pte)			/* the page is not in this mm */
 		return 0;
@@ -844,8 +842,6 @@ static int page_referenced_anon(struct page *page,
 	list_for_each_entry(avc, &anon_vma->head, same_anon_vma) {
 		struct vm_area_struct *vma = avc->vma;
 		unsigned long address = vma_address(page, vma);
-		if (address == -EFAULT)
-			continue;
 		/*
 		 * If we are reclaiming on behalf of a cgroup, skip
 		 * counting on behalf of references from different
@@ -912,8 +908,6 @@ static int page_referenced_file(struct page *page,
 
 	vma_prio_tree_foreach(vma, &iter, &mapping->i_mmap, pgoff, pgoff) {
 		unsigned long address = vma_address(page, vma);
-		if (address == -EFAULT)
-			continue;
 		/*
 		 * If we are reclaiming on behalf of a cgroup, skip
 		 * counting on behalf of references from different
@@ -1018,8 +1012,6 @@ static int page_mkclean_file(struct address_space *mapping, struct page *page)
 	vma_prio_tree_foreach(vma, &iter, &mapping->i_mmap, pgoff, pgoff) {
 		if (vma->vm_flags & VM_SHARED) {
 			unsigned long address = vma_address(page, vma);
-			if (address == -EFAULT)
-				continue;
 			ret += page_mkclean_one(page, vma, address);
 		}
 	}
@@ -1599,8 +1591,6 @@ static int try_to_unmap_anon(struct page *page, enum ttu_flags flags)
 			continue;
 
 		address = vma_address(page, vma);
-		if (address == -EFAULT)
-			continue;
 		ret = try_to_unmap_one(page, vma, address, flags);
 		if (ret != SWAP_AGAIN || !page_mapped(page))
 			break;
@@ -1640,8 +1630,6 @@ static int try_to_unmap_file(struct page *page, enum ttu_flags flags)
 	mutex_lock(&mapping->i_mmap_mutex);
 	vma_prio_tree_foreach(vma, &iter, &mapping->i_mmap, pgoff, pgoff) {
 		unsigned long address = vma_address(page, vma);
-		if (address == -EFAULT)
-			continue;
 		ret = try_to_unmap_one(page, vma, address, flags);
 		if (ret != SWAP_AGAIN || !page_mapped(page))
 			goto out;
@@ -1814,8 +1802,6 @@ static int rmap_walk_anon(struct page *page, int (*rmap_one)(struct page *,
 	list_for_each_entry(avc, &anon_vma->head, same_anon_vma) {
 		struct vm_area_struct *vma = avc->vma;
 		unsigned long address = vma_address(page, vma);
-		if (address == -EFAULT)
-			continue;
 		ret = rmap_one(page, vma, address, arg);
 		if (ret != SWAP_AGAIN)
 			break;
@@ -1838,8 +1824,6 @@ static int rmap_walk_file(struct page *page, int (*rmap_one)(struct page *,
 	mutex_lock(&mapping->i_mmap_mutex);
 	vma_prio_tree_foreach(vma, &iter, &mapping->i_mmap, pgoff, pgoff) {
 		unsigned long address = vma_address(page, vma);
-		if (address == -EFAULT)
-			continue;
 		ret = rmap_one(page, vma, address, arg);
 		if (ret != SWAP_AGAIN)
 			break;
