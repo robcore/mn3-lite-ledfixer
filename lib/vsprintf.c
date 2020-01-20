@@ -104,9 +104,8 @@ int skip_atoi(const char **s)
 {
 	int i = 0;
 
-	do {
+	while (isdigit(**s))
 		i = i*10 + *((*s)++) - '0';
-	} while (isdigit(**s));
 
 	return i;
 }
@@ -1187,24 +1186,6 @@ qualifier:
 	return ++fmt - start;
 }
 
-static void
-set_field_width(struct printf_spec *spec, int width)
-{
-	spec->field_width = width;
-	if (WARN_ONCE(spec->field_width != width, "field width %d too large", width)) {
-		spec->field_width = clamp(width, -FIELD_WIDTH_MAX, FIELD_WIDTH_MAX);
-	}
-}
-
-static void
-set_precision(struct printf_spec *spec, int prec)
-{
-	spec->precision = prec;
-	if (WARN_ONCE(spec->precision != prec, "precision %d too large", prec)) {
-		spec->precision = clamp(prec, 0, PRECISION_MAX);
-	}
-}
-
 /**
  * vsnprintf - Format a string and place it in a buffer
  * @buf: The buffer to place the result into
@@ -1249,7 +1230,7 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
 
 	/* Reject out-of-range values early.  Large positive sizes are
 	   used for unknown buffer sizes. */
-	if (WARN_ON_ONCE(size > INT_MAX))
+	if (WARN_ON_ONCE((int) size < 0))
 		return 0;
 
 	str = buf;
@@ -1280,11 +1261,11 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
 		}
 
 		case FORMAT_TYPE_WIDTH:
-			set_field_width(&spec, va_arg(args, int));
+			spec.field_width = va_arg(args, int);
 			break;
 
 		case FORMAT_TYPE_PRECISION:
-			set_precision(&spec, va_arg(args, int));
+			spec.precision = va_arg(args, int);
 			break;
 
 		case FORMAT_TYPE_CHAR: {
@@ -1328,15 +1309,10 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
 			break;
 
 		case FORMAT_TYPE_INVALID:
-			/*
-			 * Presumably the arguments passed gcc's type
-			 * checking, but there is no safe or sane way
-			 * for us to continue parsing the format and
-			 * fetching from the va_list; the remaining
-			 * specifiers and arguments would be out of
-			 * sync.
-			 */
-			goto out;
+			if (str < end)
+				*str = '%';
+			++str;
+			break;
 
 		case FORMAT_TYPE_NRCHARS: {
 			u8 qualifier = spec.qualifier;
@@ -1366,10 +1342,7 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
 				num = va_arg(args, long);
 				break;
 			case FORMAT_TYPE_SIZE_T:
-				if (spec.flags & SIGN)
-					num = va_arg(args, ssize_t);
-				else
-					num = va_arg(args, size_t);
+				num = va_arg(args, size_t);
 				break;
 			case FORMAT_TYPE_PTRDIFF:
 				num = va_arg(args, ptrdiff_t);
@@ -1397,7 +1370,6 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
 		}
 	}
 
-out:
 	if (size > 0) {
 		if (str < end)
 			*str = '\0';
@@ -1551,7 +1523,7 @@ EXPORT_SYMBOL(sprintf);
  * @args: Arguments for the format string
  *
  * The format follows C99 vsnprintf, except %n is ignored, and its argument
- * is skipped.
+ * is skiped.
  *
  * The return value is the number of words(32bits) which would be generated for
  * the given input.
@@ -1595,10 +1567,9 @@ do {									\
 
 		switch (spec.type) {
 		case FORMAT_TYPE_NONE:
+		case FORMAT_TYPE_INVALID:
 		case FORMAT_TYPE_PERCENT_CHAR:
 			break;
-		case FORMAT_TYPE_INVALID:
-			goto out;
 
 		case FORMAT_TYPE_WIDTH:
 		case FORMAT_TYPE_PRECISION:
@@ -1673,7 +1644,6 @@ do {									\
 		}
 	}
 
-out:
 	return (u32 *)(PTR_ALIGN(str, sizeof(u32))) - bin_buf;
 #undef save_arg
 }
@@ -1707,7 +1677,7 @@ int bstr_printf(char *buf, size_t size, const char *fmt, const u32 *bin_buf)
 	char *str, *end;
 	const char *args = (const char *)bin_buf;
 
-	if (WARN_ON_ONCE(size > INT_MAX))
+	if (WARN_ON_ONCE((int) size < 0))
 		return 0;
 
 	str = buf;
@@ -1753,11 +1723,11 @@ int bstr_printf(char *buf, size_t size, const char *fmt, const u32 *bin_buf)
 		}
 
 		case FORMAT_TYPE_WIDTH:
-			set_field_width(&spec, get_arg(int));
+			spec.field_width = get_arg(int);
 			break;
 
 		case FORMAT_TYPE_PRECISION:
-			set_precision(&spec, get_arg(int));
+			spec.precision = get_arg(int);
 			break;
 
 		case FORMAT_TYPE_CHAR: {
@@ -1790,12 +1760,13 @@ int bstr_printf(char *buf, size_t size, const char *fmt, const u32 *bin_buf)
 		}
 
 		case FORMAT_TYPE_PTR:
-			str = pointer(fmt, str, end, get_arg(void *), spec);
+			str = pointer(fmt+1, str, end, get_arg(void *), spec);
 			while (isalnum(*fmt))
 				fmt++;
 			break;
 
 		case FORMAT_TYPE_PERCENT_CHAR:
+		case FORMAT_TYPE_INVALID:
 			if (str < end)
 				*str = '%';
 			++str;
@@ -1804,9 +1775,6 @@ int bstr_printf(char *buf, size_t size, const char *fmt, const u32 *bin_buf)
 		case FORMAT_TYPE_NRCHARS:
 			/* skip */
 			break;
-
-		case FORMAT_TYPE_INVALID:
-			goto out;
 
 		default: {
 			unsigned long long num;
@@ -1850,7 +1818,6 @@ int bstr_printf(char *buf, size_t size, const char *fmt, const u32 *bin_buf)
 		} /* switch(spec.type) */
 	} /* while(*fmt) */
 
-out:
 	if (size > 0) {
 		if (str < end)
 			*str = '\0';

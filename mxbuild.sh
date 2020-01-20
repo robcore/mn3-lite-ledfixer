@@ -63,6 +63,68 @@ timerdiff() {
 
 }
 
+cleanupfail() {
+
+	echo -n "MX ERROR on Line ${BASH_LINENO[0]}"
+	echo "!!!"
+	local ISTRING
+	ISTRING="$1"
+	if [ -n "$ISTRING" ]
+	then
+		printf "%s\n" "$ISTRING"
+	fi
+	exit 1
+
+}
+
+takeouttrash() {
+	rm $RDIR/.starttime &> /dev/null
+	rm $RDIR/.endtime &> /dev/null
+
+	find . -type f \( -iname \*.rej \
+			-o -iname \*.orig \
+			-o -iname \*.bkp \
+			-o -iname \*.ko \) \
+			| parallel rm -fv {};
+
+}
+
+clean_build() {
+
+	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
+	if [ "$1" = "standalone" ]
+	then
+		echo -ne "Cleaning build         \r"; \
+		make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -j"$CORECOUNT" clean
+		echo -ne "Cleaning build.        \r"; \
+		make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -j"$CORECOUNT" distclean
+		echo -ne "Cleaning build..       \r"; \
+		make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -j"$CORECOUNT" mrproper
+	else
+		echo -ne "Cleaning build         \r"; \
+		make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -j"$CORECOUNT" clean &>/dev/null
+		echo -ne "Cleaning build.        \r"; \
+		make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -j"$CORECOUNT" distclean &>/dev/null
+		echo -ne "Cleaning build..       \r"; \
+		make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -j"$CORECOUNT" mrproper &>/dev/null
+	fi
+	echo -ne "Cleaning build...      \r"; \
+	takeouttrash &>/dev/null
+	echo -ne "Cleaning build....     \r"; \
+	rm -rf "$RDIR/build" &>/dev/null
+	echo -ne "Cleaning build.....    \r"; \
+	rm "$ZIPFOLDER/boot.img" &>/dev/null
+	echo -ne "Cleaning build......   \r"; \
+	make -C "$RDIR/scripts/mkqcdtbootimg" clean &>/dev/null
+	echo -ne "Cleaning build.......  \r"; \
+	rm -rf "$RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg" &>/dev/null
+	echo -ne "Cleaning build........ \r"; \
+	echo -ne "                       \r"; \
+	echo -ne "Cleaned                \r"; \
+	echo -e "\n"
+
+}
+
 warnandfail() {
 
 	echo -n "MX ERROR on Line ${BASH_LINENO[0]}"
@@ -73,6 +135,7 @@ warnandfail() {
 	then
 		printf "%s\n" "$ISTRING"
 	fi
+	clean_build
 	exit 1
 
 }
@@ -255,54 +318,6 @@ rebuild() {
 	rm -f "$RDIR/$MX_KERNEL_VERSION.zip"
 	echo "Kernel version is: $MX_KERNEL_VERSION"
 	echo "--------------------------------"
-
-}
-
-takeouttrash() {
-	rm $RDIR/.starttime &> /dev/null
-	rm $RDIR/.endtime &> /dev/null
-
-	find . -type f \( -iname \*.rej \
-			-o -iname \*.orig \
-			-o -iname \*.bkp \
-			-o -iname \*.ko \) \
-			| parallel rm -fv {};
-
-}
-
-clean_build() {
-
-	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
-	if [ "$1" = "standalone" ]
-	then
-		echo -ne "Cleaning build         \r"; \
-		make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -j"$CORECOUNT" clean
-		echo -ne "Cleaning build.        \r"; \
-		make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -j"$CORECOUNT" distclean
-		echo -ne "Cleaning build..       \r"; \
-		make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -j"$CORECOUNT" mrproper
-	else
-		echo -ne "Cleaning build         \r"; \
-		make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -j"$CORECOUNT" clean &>/dev/null
-		echo -ne "Cleaning build.        \r"; \
-		make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -j"$CORECOUNT" distclean &>/dev/null
-		echo -ne "Cleaning build..       \r"; \
-		make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -j"$CORECOUNT" mrproper &>/dev/null
-	fi
-	echo -ne "Cleaning build...      \r"; \
-	takeouttrash &>/dev/null
-	echo -ne "Cleaning build....     \r"; \
-	rm -rf "$RDIR/build" &>/dev/null
-	echo -ne "Cleaning build.....    \r"; \
-	rm "$ZIPFOLDER/boot.img" &>/dev/null
-	echo -ne "Cleaning build......   \r"; \
-	make -C "$RDIR/scripts/mkqcdtbootimg" clean &>/dev/null
-	echo -ne "Cleaning build.......  \r"; \
-	rm -rf "$RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg" &>/dev/null
-	echo -ne "Cleaning build........ \r"; \
-	echo -ne "                       \r"; \
-	echo -ne "Cleaned                \r"; \
-	echo -e "\n"
 
 }
 
