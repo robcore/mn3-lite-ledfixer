@@ -433,6 +433,15 @@ create_zip() {
 		/bin/bash /root/google-drive-upload/upload.sh "$RDIR/$MX_KERNEL_VERSION.zip" || warnandfail "$RDIR/$MX_KERNEL_VERSION.zip failed to upload!"
 		echo -n "$MX_KERNEL_VERSION.zip" > "$RDIR/.lastzip"
 		#/bin/bash /bin/robmail "$MX_KERNEL_VERSION.zip uploaded!"
+		echo "Checking if Device is Connected..."
+		local SAMSTRING
+		SAMSTRING="$(lsusb | grep '04e8:6860')"
+		if [ -n "$SAMSTRING" ]
+		then
+			echo "Device is Connected via Usb!"
+			echo "$SAMSTRING"
+			adb push "$RDIR/$MX_KERNEL_VERSION.zip" /sdcard/Download || warnandfail "Failed to push $RDIR/$MX_KERNEL_VERSION.zip to device over ADB!"
+		fi
 		timerdiff
 	else
 		warnandfail "$RDIR/$MX_KERNEL_VERSION.zip is 0 bytes, something is wrong!"
