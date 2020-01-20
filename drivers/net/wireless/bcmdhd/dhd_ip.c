@@ -150,7 +150,7 @@ typedef struct {
 	tdata_psh_info_t *tdata_psh_info_pool;	/* Pointer to tdata_psh_info elements pool */
 	tdata_psh_info_t *tdata_psh_info_free;	/* free tdata_psh_info elements chain in pool */
 #ifdef DHDTCPACK_SUP_DBG
-	int psh_info_enq_num;	/* Number of free TCP PSH DATA info elements in pool */
+	unsigned int psh_info_enq_num;	/* Number of free TCP PSH DATA info elements in pool */
 #endif /* DHDTCPACK_SUP_DBG */
 } tcpack_sup_module_t;
 
@@ -172,7 +172,8 @@ _tdata_psh_info_pool_enq(tcpack_sup_module_t *tcpack_sup_mod,
 	tdata_psh_info->next = tcpack_sup_mod->tdata_psh_info_free;
 	tcpack_sup_mod->tdata_psh_info_free = tdata_psh_info;
 #ifdef DHDTCPACK_SUP_DBG
-	tcpack_sup_mod->psh_info_enq_num++;
+	if (tcpack_sup_mod->psh_info_enq_num < (TCPDATA_PSH_INFO_MAXNUM - 1))
+		tcpack_sup_mod->psh_info_enq_num++;
 #endif
 }
 
@@ -181,24 +182,25 @@ _tdata_psh_info_pool_deq(tcpack_sup_module_t *tcpack_sup_mod)
 {
 	tdata_psh_info_t *tdata_psh_info = NULL;
 
-	if (tcpack_sup_mod == NULL) {
-		DHD_ERROR(("%s %d: ERROR %p\n", __FUNCTION__, __LINE__,
-			tcpack_sup_mod));
+	if (tcpack_sup_mod == NULL)
 		return NULL;
-	}
 
 	tdata_psh_info = tcpack_sup_mod->tdata_psh_info_free;
-	if (tdata_psh_info == NULL)
-		DHD_ERROR(("%s %d: Out of tdata_disc_grp\n", __FUNCTION__, __LINE__));
-	else {
-		tcpack_sup_mod->tdata_psh_info_free = tdata_psh_info->next;
-		tdata_psh_info->next = NULL;
+	if (tdata_psh_info) {
+		if (tdata_psh_info->next) {
+			tcpack_sup_mod->tdata_psh_info_free = tdata_psh_info->next;
+			tdata_psh_info->next = NULL;
 #ifdef DHDTCPACK_SUP_DBG
-		tcpack_sup_mod->psh_info_enq_num--;
+			if (tcpack_sup_mod->psh_info_enq_num > 0)
+				tcpack_sup_mod->psh_info_enq_num--;
 #endif /* DHDTCPACK_SUP_DBG */
+			return tdata_psh_info;
+		} else {
+			tcpack_sup_mod->tdata_psh_info_free
+		}
 	}
 
-	return tdata_psh_info;
+	return NULL;
 }
 
 static int _tdata_psh_info_pool_init(dhd_pub_t *dhdp,
@@ -226,7 +228,7 @@ static int _tdata_psh_info_pool_init(dhd_pub_t *dhdp,
 #endif /* DHDTCPACK_SUP_DBG */
 
 	/* Enqueue newly allocated tcpdata psh info elements to the pool */
-	for (i = 0; i < (TCPDATA_PSH_INFO_MAXNUM + 1); i++)
+	for (i = 0; i < (TCPDATA_PSH_INFO_MAXNUM - 1); i++)
 		_tdata_psh_info_pool_enq(tcpack_sup_mod, &tdata_psh_info_pool[i]);
 
 	ASSERT(tcpack_sup_mod->tdata_psh_info_free != NULL);
@@ -932,7 +934,6 @@ dhd_tcpdata_info_get(dhd_pub_t *dhdp, void *pkt)
 #endif /* DHDTCPACK_SUP_DBG */
 
 	if (tdata_psh_info == NULL) {
-		DHD_ERROR(("%s %d: No more free tdata_psh_info!!\n", __FUNCTION__, __LINE__));
 		ret = BCME_ERROR;
 		dhd_os_tcpackunlock(dhdp);
 		goto exit;
