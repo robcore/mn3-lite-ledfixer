@@ -273,7 +273,7 @@ static void journal_kill_thread(journal_t *journal)
  * IO is in progress. do_get_write_access() handles this.
  *
  * The function returns a pointer to the buffer_head to be used for IO.
- * 
+ *
  *
  * Return value:
  *  <0: Error
@@ -497,7 +497,7 @@ int __jbd2_log_start_commit(journal_t *journal, tid_t target)
 		WARN_ONCE(1, "JBD2: bad log_start_commit: %u %u %u %u\n",
 			  journal->j_commit_request,
 			  journal->j_commit_sequence,
-			  target, journal->j_running_transaction ? 
+			  target, journal->j_running_transaction ?
 			  journal->j_running_transaction->t_tid : 0);
 	return 0;
 }
@@ -708,7 +708,7 @@ int jbd2_journal_next_log_block(journal_t *journal, unsigned long long *retp)
 }
 
 /* print bh for debugging if journal mount fails */
-void journal_print_block_data(journal_superblock_t *sb, sector_t blocknr, 
+void journal_print_block_data(journal_superblock_t *sb, sector_t blocknr,
 				unsigned char *data_to_dump, int start, int len)
 {
 	int i, j;
@@ -723,7 +723,7 @@ void journal_print_block_data(journal_superblock_t *sb, sector_t blocknr,
 			, sb->s_uuid, sb->s_start, sb->s_maxlen);
 	else
 		printk(KERN_ERR " [j.info] journal sb is null!\n");
-		
+
 	printk(KERN_ERR " dump block# : %llu, start offset(byte) :", blocknr);
 	printk(KERN_ERR " %d, length(byte) : %d\n", start, len);
 	printk(KERN_ERR "-------------------------------------------------\n");
@@ -2622,4 +2622,3 @@ static void __exit journal_exit(void)
 MODULE_LICENSE("GPL");
 module_init(journal_init);
 module_exit(journal_exit);
-
