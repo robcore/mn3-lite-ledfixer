@@ -41,7 +41,7 @@
 
 #include <linux/blkdev.h>
 
-#define THERE_IS_MBR        0
+#define THERE_IS_MBR        0 
 
 #if (THERE_IS_MBR == 1)
 #include "exfat_part.h"
@@ -106,7 +106,7 @@ static UINT8 free_bit[] = {
 	0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 6, 0, 1, 0, 2, 0, 1, 0, 3,
 	0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2,
 	0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4,
-	0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0
+	0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0          
 };
 
 static UINT8 used_bit[] = {
@@ -122,7 +122,7 @@ static UINT8 used_bit[] = {
 	4, 5, 5, 6, 4, 5, 5, 6, 5, 6, 6, 7, 2, 3, 3, 4, 3, 4, 4, 5,
 	3, 4, 4, 5, 4, 5, 5, 6, 3, 4, 4, 5, 4, 5, 5, 6, 4, 5, 5, 6,
 	5, 6, 6, 7, 3, 4, 4, 5, 4, 5, 5, 6, 4, 5, 5, 6, 5, 6, 6, 7,
-	4, 5, 5, 6, 5, 6, 6, 7, 5, 6, 6, 7, 6, 7, 7, 8
+	4, 5, 5, 6, 5, 6, 6, 7, 5, 6, 6, 7, 6, 7, 7, 8        
 };
 
 INT32 ffsInit(void)
@@ -256,14 +256,14 @@ INT32 ffsMountVol(struct super_block *sb, INT32 drv)
 		bdev_close(sb);
 		return FFS_MEDIAERR;
 	}
-
+	
 	return FFS_SUCCESS;
-}
+} 
 
 INT32 ffsUmountVol(struct super_block *sb)
 {
 	FS_INFO_T *p_fs = &(EXFAT_SB(sb)->fs_info);
-
+	
 	fs_sync(sb, 0);
 	fs_set_vol_flags(sb, VOL_CLEAN);
 
@@ -281,7 +281,7 @@ INT32 ffsUmountVol(struct super_block *sb)
 		return FFS_MEDIAERR;
 
 	return FFS_SUCCESS;
-}
+} 
 
 INT32 ffsGetVolInfo(struct super_block *sb, VOL_INFO_T *info)
 {
@@ -470,9 +470,9 @@ INT32 ffsReadFile(struct inode *inode, FILE_ID_T *fid, void *buffer, UINT64 coun
 		fid->hint_last_off = (INT32)(fid->rwoffset >> p_fs->cluster_size_bits);
 		fid->hint_last_clu = clu;
 
-		offset = (INT32)(fid->rwoffset & (p_fs->cluster_size-1));
-		sec_offset = offset >> p_bd->sector_size_bits;
-		offset &= p_bd->sector_size_mask;
+		offset = (INT32)(fid->rwoffset & (p_fs->cluster_size-1)); 
+		sec_offset = offset >> p_bd->sector_size_bits;           
+		offset &= p_bd->sector_size_mask;                       
 
 		LogSector = START_SECTOR(clu) + sec_offset;
 
@@ -606,8 +606,8 @@ INT32 ffsWriteFile(struct inode *inode, FILE_ID_T *fid, void *buffer, UINT64 cou
 		fid->hint_last_clu = clu;
 
 		offset = (INT32)(fid->rwoffset & (p_fs->cluster_size-1));
-		sec_offset = offset >> p_bd->sector_size_bits;
-		offset &= p_bd->sector_size_mask;
+		sec_offset = offset >> p_bd->sector_size_bits;          
+		offset &= p_bd->sector_size_mask;                      
 
 		LogSector = START_SECTOR(clu) + sec_offset;
 
@@ -814,7 +814,7 @@ INT32 ffsTruncateFile(struct inode *inode, UINT64 old_size, UINT64 new_size)
 		return FFS_MEDIAERR;
 
 	return FFS_SUCCESS;
-}
+} 
 
 static void update_parent_info( FILE_ID_T *fid, struct inode *parent_inode)
 {
@@ -827,7 +827,7 @@ static void update_parent_info( FILE_ID_T *fid, struct inode *parent_inode)
 
 		fid->dir.dir = parent_fid->start_clu;
 		fid->dir.flags = parent_fid->flags;
-		fid->dir.size = ((parent_fid->size + (p_fs->cluster_size-1))
+		fid->dir.size = ((parent_fid->size + (p_fs->cluster_size-1)) 
 						>> p_fs->cluster_size_bits);
 	}
 }
@@ -1102,7 +1102,7 @@ INT32 ffsGetStat(struct inode *inode, DIR_ENTRY_T *info)
 			dir.dir = p_fs->root_dir;
 			dir.flags = 0x01;
 
-			if (p_fs->root_dir == CLUSTER_32(0))
+			if (p_fs->root_dir == CLUSTER_32(0)) 
 				info->Size = p_fs->dentries_in_root << DENTRY_SIZE_BITS;
 			else
 				info->Size = count_num_clusters(sb, &dir) << p_fs->cluster_size_bits;
@@ -1381,7 +1381,7 @@ INT32 ffsMapCluster(struct inode *inode, INT32 clu_offset, UINT32 *clu)
 		return FFS_MEDIAERR;
 
 	return FFS_SUCCESS;
-}
+} 
 
 INT32 ffsCreateDir(struct inode *inode, UINT8 *path, FILE_ID_T *fid)
 {
@@ -1540,7 +1540,7 @@ INT32 ffsReadDir(struct inode *inode, DIR_ENTRY_T *dir_entry)
 
 			dir_entry->Size = p_fs->fs_func->get_entry_size(ep);
 
-			if (dir.dir == CLUSTER_32(0)) {
+			if (dir.dir == CLUSTER_32(0)) { 
 			} else {
 				fid->hint_last_off = dentry >> dentries_per_clu_bits;
 				fid->hint_last_clu = clu.dir;
@@ -1765,7 +1765,7 @@ INT32 clear_cluster(struct super_block *sb, UINT32 clu)
 	FS_INFO_T *p_fs = &(EXFAT_SB(sb)->fs_info);
 	BD_INFO_T *p_bd = &(EXFAT_SB(sb)->bd_info);
 
-	if (clu == CLUSTER_32(0)) {
+	if (clu == CLUSTER_32(0)) { 
 		s = p_fs->root_start_sector;
 		n = p_fs->data_start_sector;
 	} else {
@@ -1784,7 +1784,7 @@ INT32 clear_cluster(struct super_block *sb, UINT32 clu)
 
 	brelse(tmp_bh);
 	return ret;
-}
+} 
 
 INT32 fat_alloc_cluster(struct super_block *sb, INT32 num_alloc, CHAIN_T *p_chain)
 {
@@ -1856,7 +1856,7 @@ INT32 exfat_alloc_cluster(struct super_block *sb, INT32 num_alloc, CHAIN_T *p_ch
 	}
 
 	__set_sb_dirty(sb);
-
+	
 	p_chain->dir = CLUSTER_32(~0);
 
 	while ((new_clu = test_alloc_bitmap(sb, hint_clu-2)) != CLUSTER_32(~0)) {
@@ -1927,21 +1927,21 @@ void fat_free_cluster(struct super_block *sb, CHAIN_T *p_chain, INT32 do_relse)
 		return;
 	__set_sb_dirty(sb);
 	clu = p_chain->dir;
-
+	
 	if (p_chain->size <= 0)
 		return;
 
 	do {
 		if (p_fs->dev_ejected)
 			break;
-
+		
 		if (do_relse) {
 			sector = START_SECTOR(clu);
 			for (i = 0; i < p_fs->sectors_per_clu; i++) {
 				buf_release(sb, sector+i);
 			}
 		}
-
+		
 		prev = clu;
 		if (FAT_read(sb, clu, &clu) == -1)
 			break;
@@ -1985,7 +1985,7 @@ void exfat_free_cluster(struct super_block *sb, CHAIN_T *p_chain, INT32 do_relse
 					buf_release(sb, sector+i);
 				}
 			}
-
+			
 			if (clr_alloc_bitmap(sb, clu-2) != FFS_SUCCESS)
 				break;
 			clu++;
@@ -1996,14 +1996,14 @@ void exfat_free_cluster(struct super_block *sb, CHAIN_T *p_chain, INT32 do_relse
 		do {
 			if (p_fs->dev_ejected)
 				break;
-
+			
 			if (do_relse) {
 				sector = START_SECTOR(clu);
 				for (i = 0; i < p_fs->sectors_per_clu; i++) {
 					buf_release(sb, sector+i);
 				}
 			}
-
+			
 			if (clr_alloc_bitmap(sb, clu-2) != FFS_SUCCESS)
 				break;
 
@@ -2035,7 +2035,7 @@ UINT32 find_last_cluster(struct super_block *sb, CHAIN_T *p_chain)
 	}
 
 	return(clu);
-}
+} 
 
 INT32 count_num_clusters(struct super_block *sb, CHAIN_T *p_chain)
 {
@@ -2077,7 +2077,7 @@ INT32 fat_count_used_clusters(struct super_block *sb)
 	}
 
 	return(count);
-}
+} 
 
 INT32 exfat_count_used_clusters(struct super_block *sb)
 {
@@ -2183,7 +2183,7 @@ INT32 load_alloc_bitmap(struct super_block *sb)
 	}
 
 	return FFS_FORMATERR;
-}
+} 
 
 void free_alloc_bitmap(struct super_block *sb)
 {
@@ -2215,7 +2215,7 @@ INT32 set_alloc_bitmap(struct super_block *sb, UINT32 clu)
 	Bitmap_set((UINT8 *) p_fs->vol_amap[i]->b_data, b);
 
 	return (sector_write(sb, sector, p_fs->vol_amap[i], 0));
-}
+} 
 
 INT32 clr_alloc_bitmap(struct super_block *sb, UINT32 clu)
 {
