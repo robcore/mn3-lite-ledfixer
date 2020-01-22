@@ -27,18 +27,19 @@
 #define MINIMUM_INPUT_CURRENT	500
 #define SLOW_CHARGING_CURRENT_STANDARD MINIMUM_INPUT_CURRENT
 
-static unsigned int max_ac_current = 2100;
+static unsigned int max_ac_current = 1900;
 module_param(max_ac_current, uint, 0644);
 
 static unsigned int get_max_ac_current(void) {
 	unsigned int mxaccurr;
 	if (max_ac_current < 500)
 		mxaccurr = 500;
-	else if (max_ac_current > 2500)
-		mxaccurr = 2500;
+	else if (max_ac_current > 2000)
+		mxaccurr = 2000;
 	else
 		mxaccurr = max_ac_current;
 
+	max_ac_current = mxaccurr;
 	return mxaccurr;
 }
 
