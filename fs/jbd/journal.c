@@ -1241,7 +1241,7 @@ int journal_destroy(journal_t *journal)
 {
 	int err = 0;
 
-	
+
 	/* Wait for the commit thread to wake up and die. */
 	journal_kill_thread(journal);
 
@@ -2050,4 +2050,3 @@ static void __exit journal_exit(void)
 MODULE_LICENSE("GPL");
 module_init(journal_init);
 module_exit(journal_exit);
-
