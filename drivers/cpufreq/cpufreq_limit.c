@@ -44,13 +44,15 @@ struct cpufreq_limit_handle *cpufreq_limit_get(unsigned long min_freq,
 		unsigned long max_freq, char *label)
 {
 	struct cpufreq_limit_handle *handle;
-	int i, found;
+	int i;
+	unsigned int found = 0;
 
 	if (max_freq && max_freq < min_freq)
 		return ERR_PTR(-EINVAL);
 
-	mutex_lock(&cpufreq_limit_lock);
-	found = 0;
+	if (!mutex_lock(&cpufreq_limit_lock))
+		return ERR_PTR(-EBUSY);
+
 	list_for_each_entry(handle, &cpufreq_limit_requests, node) {
 		if (!strncmp(handle->label, label, strlen(handle->label))) {
 			found = 1;
@@ -67,9 +69,7 @@ struct cpufreq_limit_handle *cpufreq_limit_get(unsigned long min_freq,
 			mutex_unlock(&cpufreq_limit_lock);
 			return handle;
 		}
-	}
-
-	if (!found) {
+	} else {
 		handle = kzalloc(sizeof(*handle), GFP_KERNEL);
 		if (!handle) {
 			pr_err("%s: alloc fail for %s .\n", __func__, label);
@@ -142,7 +142,8 @@ static int cpufreq_limit_notifier_policy(struct notifier_block *nb,
 	if (val != CPUFREQ_ADJUST)
 		goto done;
 
-	mutex_lock(&cpufreq_limit_lock);
+	if (!mutex_lock(&cpufreq_limit_lock))
+		return 0;
 	list_for_each_entry(handle, &cpufreq_limit_requests, node) {
 		if (handle->min > min)
 			min = handle->min;
