@@ -788,7 +788,7 @@ static int ext4_mb_init_cache(struct page *page, char *incore)
 	int first_block;
 	struct super_block *sb;
 	struct buffer_head *bhs;
-	struct buffer_head **bh;
+	struct buffer_head **bh = NULL;
 	struct inode *inode;
 	char *data;
 	char *bitmap;
@@ -852,8 +852,6 @@ static int ext4_mb_init_cache(struct page *page, char *incore)
 
 	first_block = page->index * blocks_per_page;
 	for (i = 0; i < blocks_per_page; i++) {
-		int group;
-
 		group = (first_block + i) >> 1;
 		if (group >= ngroups)
 			break;
@@ -1004,6 +1002,7 @@ int ext4_mb_init_group(struct super_block *sb, ext4_group_t group)
 	struct page *page;
 	int ret = 0;
 
+	might_sleep();
 	mb_debug(1, "init group %u\n", group);
 	this_grp = ext4_get_group_info(sb, group);
 	/*
@@ -1075,6 +1074,7 @@ ext4_mb_load_buddy(struct super_block *sb, ext4_group_t group,
 	struct ext4_sb_info *sbi = EXT4_SB(sb);
 	struct inode *inode = sbi->s_buddy_cache;
 
+	might_sleep();
 	mb_debug(1, "load group %u\n", group);
 
 	blocks_per_page = PAGE_CACHE_SIZE / sb->s_blocksize;
