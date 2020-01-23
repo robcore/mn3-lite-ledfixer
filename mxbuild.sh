@@ -456,6 +456,8 @@ create_zip() {
 		then
 			echo "Device is Connected via Usb!"
 			echo "$SAMSTRING"
+			adb shell input keyevent KEYCODE_WAKEUP
+			#adb shell input touchscreen swipe 930 880 930 380
 			adb push "$RDIR/$MX_KERNEL_VERSION.zip" /sdcard/Download || warnandfail "Failed to push $RDIR/$MX_KERNEL_VERSION.zip to device over ADB!"
 			adb kill-server || warnandfail "Failed to kill ADB server!"
 		fi
