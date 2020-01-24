@@ -246,7 +246,7 @@ supolicy --live "permissive audioserver"
 supolicy --live "permissive default_prop"
 supolicy --live "permissive *"
 chmod 0771 /data/dalvik-cache
-chown root:root /data/dalvik-cache
+chown 0:0 /data/dalvik-cache
 chmod 0711 /data/dalvik-cache/profiles
 chown system:system /data/dalvik-cache/profiles
 chmod 0711 /data/dalvik-cache/arm
