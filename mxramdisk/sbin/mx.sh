@@ -245,6 +245,27 @@ chmod 755 /sys
 supolicy --live "permissive audioserver"
 supolicy --live "permissive default_prop"
 supolicy --live "permissive *"
+chmod 0771 /data/dalvik-cache
+chown root:root /data/dalvik-cache
+chmod 0711 /data/dalvik-cache/profiles
+chown system:system /data/dalvik-cache/profiles
+chmod 0711 /data/dalvik-cache/arm
+chown system:system /data/dalvik-cache/arm
+
+chown system:system /data/data
+chown system:system /data/app-private
+chown root:root /data/app-asec
+chown system:system /data/app-lib
+chown system:system /data/app
+chown root:root /data/property
+
+chmod 0771 /data/data
+chmod 0771 /data/app-private
+chmod 0700 /data/app-asec
+chmod 0771 /data/app-lib
+chmod 0771 /data/app
+chmod 0700 /data/property
+
 #supolicy --live "allow s_untrusted_app default_prop property_service { set }"
 #/system/xbin/busybox run-parts /system/etc/init.d/
 #echo "[MACHINEX] INIT.D EXECUTED" | tee /dev/kmsg

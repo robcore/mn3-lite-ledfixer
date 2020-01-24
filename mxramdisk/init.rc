@@ -354,7 +354,19 @@ on post-fs-data
     mkdir /data/app 0771 system system
     mkdir /data/property 0700 root root
 
-    
+    chown system system /data/data
+    chown system system /data/app-private
+    chown root root /data/app-asec
+    chown system system /data/app-lib
+    chown system system /data/app
+    chown root root /data/property
+
+    chmod 0771 /data/data
+    chmod 0771 /data/app-private
+    chmod 0700 /data/app-asec
+    chmod 0771 /data/app-lib
+    chmod 0771 /data/app
+    chmod 0700 /data/property
 
     # SA, System SW, SAMSUNG
     # create log directory
