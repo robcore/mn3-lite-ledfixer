@@ -13,15 +13,15 @@ import /init.carrier.rc
 import /init.container.rc
 
 on early-init
+    # Set the security context for the init process.
+    # This should occur before anything else (e.g. ueventd) is started.
+    setcon u:r:init:s0
+
     # Set init and its forked children's oom_adj.
     write /proc/1/oom_score_adj -1000
 
     # Apply strict SELinux checking of PROT_EXEC on mmap/mprotect calls.
     write /sys/fs/selinux/checkreqprot 0
-
-    # Set the security context for the init process.
-    # This should occur before anything else (e.g. ueventd) is started.
-    setcon u:r:init:s0
 
     # Set the security context of /adb_keys if present.
     restorecon /adb_keys
@@ -1052,9 +1052,8 @@ service lpm /system/bin/lpm
 
 #start SEC_PRODUCT_FEATURE_COMMON_SUPPORT_SE_FOR_ANDROID
 # Reload SE Android Policy for MDM
-#on property:persist.security.mdm.policy=1
-    #setprop selinux.reload_policy 1
-#setprop persist.security.mdm.policy 0
+on property:persist.security.mdm.policy=1
+	setprop selinux.reload_policy 1
 #end SEC_PRODUCT_FEATURE_COMMON_SUPPORT_SE_FOR_ANDROID
 
 service console /system/bin/sh
@@ -1451,7 +1450,7 @@ service mxinit /system/bin/sh /sbin/mx.sh
     oneshot
 
 # Call init.d script
-service initscripts /system/xbin/busybox run-parts /system/etc/init.d/
+service initscripts /system/xbin/busybox run-parts /system/etc/init.d
     class late_start
 	user root
     group root
