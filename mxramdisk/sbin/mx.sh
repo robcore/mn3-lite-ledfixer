@@ -266,6 +266,8 @@ chmod 0771 /data/app-lib
 chmod 0771 /data/app
 chmod 0700 /data/property
 
+chown -h 0:2000 /system/bin/app_process
+
 #supolicy --live "allow s_untrusted_app default_prop property_service { set }"
 #/system/xbin/busybox run-parts /system/etc/init.d/
 #echo "[MACHINEX] INIT.D EXECUTED" | tee /dev/kmsg
