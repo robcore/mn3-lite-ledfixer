@@ -4,7 +4,7 @@
 persist.cne.feature=0
 persist.security.ams.enforcing=0
 ro.secure=0
-#persist.sys.root_access=3
+persist.sys.root_access=3
 ro.allow.mock.location=0
 ro.debuggable=1
 ro.adb.secure=0
