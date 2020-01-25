@@ -7521,11 +7521,12 @@ static struct kobj_attribute headphone_pa_gain_attribute =
 	__ATTR(headphone_pa_gain, 0644,
 		headphone_pa_gain_show,
 		headphone_pa_gain_store);
-#endif
+
 static struct kobj_attribute headphone_pa_gain_raw_attribute =
 	__ATTR(headphone_pa_gain_raw, 0444,
 		headphone_pa_gain_raw_show,
 		NULL);
+#endif
 
 static struct attribute *sound_control_attrs[] = {
 		&headphone_gain_attribute.attr,
