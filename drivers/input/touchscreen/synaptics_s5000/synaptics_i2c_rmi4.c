@@ -551,14 +551,14 @@ static int synaptics_rmi4_i2c_read(struct synaptics_rmi4_data *rmi4_data,
 			retval = length;
 			break;
 		}
-		dev_err(&rmi4_data->i2c_client->dev,
+		pr_debug(
 				"%s: I2C retry %d\n",
 				__func__, retry + 1);
 		msleep(20);
 	}
 
 	if (retry == SYN_I2C_RETRY_TIMES) {
-		dev_err(&rmi4_data->i2c_client->dev,
+		pr_debug(
 				"%s: I2C read over retry limit\n",
 				__func__);
 		retval = -EIO;
@@ -609,14 +609,14 @@ static int synaptics_rmi4_i2c_write(struct synaptics_rmi4_data *rmi4_data,
 			retval = length;
 			break;
 		}
-		dev_err(&rmi4_data->i2c_client->dev,
+		pr_debug(
 				"%s: I2C retry %d\n",
 				__func__, retry + 1);
 		msleep(20);
 	}
 
 	if (retry == SYN_I2C_RETRY_TIMES) {
-		dev_err(&rmi4_data->i2c_client->dev,
+		pr_debug(
 				"%s: I2C write over retry limit\n",
 				__func__);
 		retval = -EIO;
@@ -802,7 +802,7 @@ static void synaptics_rmi4_f1a_report(struct synaptics_rmi4_data *rmi4_data,
 			f1a->button_data_buffer,
 			f1a->button_bitmask_size);
 	if (retval < 0) {
-		dev_err(&rmi4_data->i2c_client->dev,
+		pr_debug(
 				"%s: Failed to read button data registers\n",
 				__func__);
 		return;
@@ -1090,7 +1090,7 @@ static int synaptics_rmi4_irq_enable(struct synaptics_rmi4_data *rmi4_data,
 
 		intr_status = kzalloc(rmi4_data->num_of_intr_regs, GFP_KERNEL);
 		if (!intr_status) {
-			dev_err(&rmi4_data->i2c_client->dev,
+			pr_debug(
 					"%s: Failed to alloc memory\n",
 					__func__);
 			return -ENOMEM;
@@ -1205,7 +1205,7 @@ static int synaptics_rmi4_f1a_alloc_mem(struct synaptics_rmi4_data *rmi4_data,
 
 	f1a = kzalloc(sizeof(*f1a), GFP_KERNEL);
 	if (!f1a) {
-		dev_err(&rmi4_data->i2c_client->dev,
+		pr_debug(
 				"%s: Failed to alloc mem for function handle\n",
 				__func__);
 		return -ENOMEM;
@@ -1218,7 +1218,7 @@ static int synaptics_rmi4_f1a_alloc_mem(struct synaptics_rmi4_data *rmi4_data,
 			f1a->button_query.data,
 			sizeof(f1a->button_query.data));
 	if (retval < 0) {
-		dev_err(&rmi4_data->i2c_client->dev,
+		pr_debug(
 				"%s: Failed to read query registers\n",
 				__func__);
 		return retval;
@@ -1230,7 +1230,7 @@ static int synaptics_rmi4_f1a_alloc_mem(struct synaptics_rmi4_data *rmi4_data,
 	f1a->button_data_buffer = kcalloc(f1a->button_bitmask_size,
 			sizeof(*(f1a->button_data_buffer)), GFP_KERNEL);
 	if (!f1a->button_data_buffer) {
-		dev_err(&rmi4_data->i2c_client->dev,
+		pr_debug(
 				"%s: Failed to alloc mem for data buffer\n",
 				__func__);
 		return -ENOMEM;
@@ -1239,7 +1239,7 @@ static int synaptics_rmi4_f1a_alloc_mem(struct synaptics_rmi4_data *rmi4_data,
 	f1a->button_map = kcalloc(f1a->button_count,
 			sizeof(*(f1a->button_map)), GFP_KERNEL);
 	if (!f1a->button_map) {
-		dev_err(&rmi4_data->i2c_client->dev,
+		pr_debug(
 				"%s: Failed to alloc mem for button map\n",
 				__func__);
 		return -ENOMEM;
@@ -1257,13 +1257,13 @@ static int synaptics_rmi4_capacitance_button_map(
 	const struct synaptics_rmi4_platform_data *pdata = rmi4_data->board;
 
 	if (!pdata->capacitance_button_map) {
-		dev_err(&rmi4_data->i2c_client->dev,
+		pr_debug(
 				"%s: capacitance_button_map is" \
 				"NULL in board file\n",
 				__func__);
 		return -ENODEV;
 	} else if (!pdata->capacitance_button_map->map) {
-		dev_err(&rmi4_data->i2c_client->dev,
+		pr_debug(
 				"%s: Button map is missing in board file\n",
 				__func__);
 		return -ENODEV;
@@ -1404,7 +1404,7 @@ static int synaptics_rmi4_query_device_info(
 	memcpy(rmi->product_id_string, &f01_query[11], 10);
 
 	if (rmi->manufacturer_id != 1) {
-		dev_err(&rmi4_data->i2c_client->dev,
+		pr_debug(
 				"%s: Non-Synaptics device found, manufacturer ID = %d\n",
 				__func__, rmi->manufacturer_id);
 	}
@@ -1414,7 +1414,7 @@ static int synaptics_rmi4_query_device_info(
 			rmi->build_id,
 			sizeof(rmi->build_id));
 	if (retval < 0) {
-		dev_err(&rmi4_data->i2c_client->dev,
+		pr_debug(
 				"%s: Failed to read firmware build id (code %d)\n",
 				__func__, retval);
 		return retval;
@@ -1528,7 +1528,7 @@ static int synaptics_rmi4_query_device(struct synaptics_rmi4_data *rmi4_data)
 				retval = synaptics_rmi4_alloc_fh(&fhandler,
 						&rmi_fd, page_number);
 				if (retval < 0) {
-					dev_err(&rmi4_data->i2c_client->dev,
+					pr_debug(
 							"%s: Failed to alloc for F%d\n",
 							__func__,
 							rmi_fd.fn_number);
@@ -1548,7 +1548,7 @@ static int synaptics_rmi4_query_device(struct synaptics_rmi4_data *rmi4_data)
 				retval = synaptics_rmi4_alloc_fh(&fhandler,
 						&rmi_fd, page_number);
 				if (retval < 0) {
-					dev_err(&rmi4_data->i2c_client->dev,
+					pr_debug(
 							"%s: Failed to alloc for F%d\n",
 							__func__,
 							rmi_fd.fn_number);
@@ -1651,7 +1651,7 @@ static int synaptics_rmi4_reset_command(struct synaptics_rmi4_data *rmi4_data)
 			}
 		}
 		if (done) {
-			dev_info(&rmi4_data->i2c_client->dev,
+			dev_dbg(&rmi4_data->i2c_client->dev,
 				"%s: Find F01 in page description table 0x%x\n",
 				__func__, rmi4_data->f01_cmd_base_addr);
 			break;
@@ -1659,7 +1659,7 @@ static int synaptics_rmi4_reset_command(struct synaptics_rmi4_data *rmi4_data)
 	}
 
 	if (!done) {
-		dev_err(&rmi4_data->i2c_client->dev,
+		pr_debug(
 			"%s: Cannot find F01 in page description table\n",
 			__func__);
 		return -EINVAL;
@@ -1670,7 +1670,7 @@ static int synaptics_rmi4_reset_command(struct synaptics_rmi4_data *rmi4_data)
 			&command,
 			sizeof(command));
 	if (retval < 0) {
-		dev_err(&rmi4_data->i2c_client->dev,
+		pr_debug(
 				"%s: Failed to issue reset command, error = %d\n",
 				__func__, retval);
 		return retval;
@@ -1690,7 +1690,7 @@ static int synaptics_rmi4_reset_device(struct synaptics_rmi4_data *rmi4_data)
 
 	retval = synaptics_rmi4_reset_command(rmi4_data);
 	if (retval < 0) {
-		dev_err(&rmi4_data->i2c_client->dev,
+		pr_debug(
 			"%s: Failed to send command reset\n",
 			__func__);
 		return retval;
@@ -1708,7 +1708,7 @@ static int synaptics_rmi4_reset_device(struct synaptics_rmi4_data *rmi4_data)
 
 	retval = synaptics_rmi4_query_device(rmi4_data);
 	if (retval < 0) {
-		dev_err(&rmi4_data->i2c_client->dev,
+		pr_debug(
 				"%s: Failed to query device\n",
 				__func__);
 		return retval;
@@ -1836,7 +1836,7 @@ static int synaptics_rmi4_regulator_configure(struct synaptics_rmi4_data
 		rmi4_data->vdd = regulator_get(&rmi4_data->i2c_client->dev,
 						"vdd");
 		if (IS_ERR(rmi4_data->vdd)) {
-			dev_err(&rmi4_data->i2c_client->dev,
+			pr_debug(
 					"%s: Failed to get vdd regulator\n",
 					__func__);
 			return PTR_ERR(rmi4_data->vdd);
@@ -1846,7 +1846,7 @@ static int synaptics_rmi4_regulator_configure(struct synaptics_rmi4_data
 			retval = regulator_set_voltage(rmi4_data->vdd,
 				RMI4_VTG_MIN_UV, RMI4_VTG_MAX_UV);
 			if (retval) {
-				dev_err(&rmi4_data->i2c_client->dev,
+				pr_debug(
 					"regulator set_vtg failed retval =%d\n",
 					retval);
 				goto err_set_vtg_vdd;
@@ -1858,7 +1858,7 @@ static int synaptics_rmi4_regulator_configure(struct synaptics_rmi4_data
 		rmi4_data->vcc_i2c = regulator_get(&rmi4_data->i2c_client->dev,
 						"vcc_i2c");
 		if (IS_ERR(rmi4_data->vcc_i2c)) {
-			dev_err(&rmi4_data->i2c_client->dev,
+			pr_debug(
 					"%s: Failed to get i2c regulator\n",
 					__func__);
 			retval = PTR_ERR(rmi4_data->vcc_i2c);
@@ -1869,7 +1869,7 @@ static int synaptics_rmi4_regulator_configure(struct synaptics_rmi4_data
 			retval = regulator_set_voltage(rmi4_data->vcc_i2c,
 				RMI4_I2C_VTG_MIN_UV, RMI4_I2C_VTG_MAX_UV);
 			if (retval) {
-				dev_err(&rmi4_data->i2c_client->dev,
+				pr_debug(
 					"reg set i2c vtg failed retval =%d\n",
 					retval);
 			goto err_set_vtg_i2c;
@@ -1918,7 +1918,7 @@ static int synaptics_rmi4_power_on(struct synaptics_rmi4_data *rmi4_data,
 		retval = reg_set_optimum_mode_check(rmi4_data->vdd,
 			RMI4_ACTIVE_LOAD_UA);
 		if (retval < 0) {
-			dev_err(&rmi4_data->i2c_client->dev,
+			pr_debug(
 				"Regulator vdd set_opt failed rc=%d\n",
 				retval);
 			return retval;
@@ -1926,7 +1926,7 @@ static int synaptics_rmi4_power_on(struct synaptics_rmi4_data *rmi4_data,
 
 		retval = regulator_enable(rmi4_data->vdd);
 		if (retval) {
-			dev_err(&rmi4_data->i2c_client->dev,
+			pr_debug(
 				"Regulator vdd enable failed rc=%d\n",
 				retval);
 			goto error_reg_en_vdd;
@@ -1937,7 +1937,7 @@ static int synaptics_rmi4_power_on(struct synaptics_rmi4_data *rmi4_data,
 		retval = reg_set_optimum_mode_check(rmi4_data->vcc_i2c,
 			RMI4_I2C_LOAD_UA);
 		if (retval < 0) {
-			dev_err(&rmi4_data->i2c_client->dev,
+			pr_debug(
 				"Regulator vcc_i2c set_opt failed rc=%d\n",
 				retval);
 			goto error_reg_opt_i2c;
@@ -1945,7 +1945,7 @@ static int synaptics_rmi4_power_on(struct synaptics_rmi4_data *rmi4_data,
 
 		retval = regulator_enable(rmi4_data->vcc_i2c);
 		if (retval) {
-			dev_err(&rmi4_data->i2c_client->dev,
+			pr_debug(
 				"Regulator vcc_i2c enable failed rc=%d\n",
 				retval);
 			goto error_reg_en_vcc_i2c;
@@ -2511,7 +2511,7 @@ static int synaptics_rmi4_regulator_lpm(struct synaptics_rmi4_data *rmi4_data,
 
 	retval = reg_set_optimum_mode_check(rmi4_data->vdd, RMI4_LPM_LOAD_UA);
 	if (retval < 0) {
-		dev_err(&rmi4_data->i2c_client->dev,
+		pr_debug(
 			"Regulator vcc_ana set_opt failed rc=%d\n",
 			retval);
 		goto fail_regulator_lpm;
@@ -2521,7 +2521,7 @@ static int synaptics_rmi4_regulator_lpm(struct synaptics_rmi4_data *rmi4_data,
 		retval = reg_set_optimum_mode_check(rmi4_data->vcc_i2c,
 			RMI4_I2C_LOAD_UA);
 		if (retval < 0) {
-			dev_err(&rmi4_data->i2c_client->dev,
+			pr_debug(
 				"Regulator vcc_i2c set_opt failed rc=%d\n",
 				retval);
 			goto fail_regulator_lpm;
@@ -2535,7 +2535,7 @@ regulator_hpm:
 	retval = reg_set_optimum_mode_check(rmi4_data->vdd,
 				RMI4_ACTIVE_LOAD_UA);
 	if (retval < 0) {
-		dev_err(&rmi4_data->i2c_client->dev,
+		pr_debug(
 			"Regulator vcc_ana set_opt failed rc=%d\n",
 			retval);
 		goto fail_regulator_hpm;
@@ -2545,7 +2545,7 @@ regulator_hpm:
 		retval = reg_set_optimum_mode_check(rmi4_data->vcc_i2c,
 			RMI4_I2C_LOAD_UA);
 		if (retval < 0) {
-			dev_err(&rmi4_data->i2c_client->dev,
+			pr_debug(
 				"Regulator vcc_i2c set_opt failed rc=%d\n",
 				retval);
 			goto fail_regulator_hpm;
