@@ -51,7 +51,7 @@ static char *policycap_names[] = {
 	"open_perms"
 };
 
-unsigned int selinux_checkreqprot = CONFIG_SECURITY_SELINUX_CHECKREQPROT_VALUE;
+unsigned int selinux_checkreqprot = 0;
 
 static int __init checkreqprot_setup(char *str)
 {
@@ -136,11 +136,11 @@ static ssize_t sel_read_enforce(struct file *filp, char __user *buf,
 	char tmpbuf[TMPBUFLEN];
 	ssize_t length;
 
-	length = scnprintf(tmpbuf, TMPBUFLEN, "%d", selinux_enforcing);
+	length = scnprintf(tmpbuf, TMPBUFLEN, "%d", 0);
 	return simple_read_from_buffer(buf, count, ppos, tmpbuf, length);
 }
 
-#ifdef CONFIG_SECURITY_SELINUX_DEVELOP
+#if 0
 static ssize_t sel_write_enforce(struct file *file, const char __user *buf,
 				 size_t count, loff_t *ppos)
 
@@ -1941,12 +1941,6 @@ static struct kobject *selinuxfs_kobj;
 static int __init init_sel_fs(void)
 {
 	int err;
-
-#ifdef CONFIG_ALWAYS_ENFORCE
-	selinux_enabled = 1;
-#endif
-	if (!selinux_enabled)
-		return 0;
 
 	selinuxfs_kobj = kobject_create_and_add("selinux", fs_kobj);
 	if (!selinuxfs_kobj)

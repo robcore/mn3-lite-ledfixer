@@ -163,7 +163,7 @@ static int32_t ImmVibeSPI_ForceOut_AmpDisable(u_int8_t nActuatorIndex)
 #endif
 			}
 		}
-		printk(KERN_DEBUG "tspdrv: %s\n", __func__);
+		pr_debug("tspdrv: %s\n", __func__);
 #if defined(CONFIG_MOTOR_DRV_MAX77803)
 		max77803_vibtonz_en(0);
 #elif defined(CONFIG_MOTOR_DRV_MAX77804K)
@@ -220,7 +220,7 @@ static int32_t ImmVibeSPI_ForceOut_AmpEnable(u_int8_t nActuatorIndex)
 #endif
 			}
 		}
-		printk(KERN_DEBUG "tspdrv: %s\n", __func__);
+		pr_debug("tspdrv: %s\n", __func__);
 #if defined(CONFIG_MOTOR_DRV_MAX77803)
 		max77803_vibtonz_en(1);
 #elif defined(CONFIG_MOTOR_DRV_MAX77804K)
@@ -248,7 +248,6 @@ static int32_t ImmVibeSPI_ForceOut_AmpEnable(u_int8_t nActuatorIndex)
 static int32_t ImmVibeSPI_ForceOut_Initialize(void)
 {
 	int ret;
-	DbgOut((KERN_DEBUG "ImmVibeSPI_ForceOut_Initialize.\n"));
 	/* to force ImmVibeSPI_ForceOut_AmpDisable disabling the amp */
 	g_bampenabled = true;
 
@@ -265,14 +264,12 @@ static int32_t ImmVibeSPI_ForceOut_Initialize(void)
 			ret = gpio_request(vibrator_drvdata.vib_pwm_gpio, \
 				"vib pwm");
 			if (ret < 0) {
-				printk(KERN_ERR"vib pwm gpio_request is failed\n");
 				goto err2;
 			}
 
 			ret = pm8xxx_gpio_config(vibrator_drvdata.vib_pwm_gpio,\
 					&vib_pwm);
 			if (ret < 0) {
-				printk(KERN_ERR "failed to configure vib pwm pmic gpio\n");
 				goto err2;
 			}
 		} else { //AP PWM
@@ -290,7 +287,6 @@ static int32_t ImmVibeSPI_ForceOut_Initialize(void)
 	if (!vibrator_drvdata.is_pmic_vib_en) {
 		ret = gpio_request(vibrator_drvdata.vib_en_gpio,"vib enable");
 		if (ret < 0) {
-			printk(KERN_ERR "vib enable gpio_request is failed\n");
 			goto err2;
 		}
 	}
@@ -316,8 +312,6 @@ err2:
 */
 static int32_t ImmVibeSPI_ForceOut_Terminate(void)
 {
-	DbgOut((KERN_DEBUG "ImmVibeSPI_ForceOut_Terminate.\n"));
-
 	/*
 	** Disable amp.
 	** If multiple actuators are supported, please make sure to call
@@ -342,8 +336,6 @@ int vib_config_pwm_device(void)
 #endif
 
 	if (IS_ERR_OR_NULL(vibrator_drvdata.pwm_dev)) {
-		pr_err("could not acquire PWM Channel 0, "
-						"error %ld\n",PTR_ERR(vibrator_drvdata.pwm_dev));
 		vibrator_drvdata.pwm_dev = NULL;
 		return -ENODEV;
 	}
@@ -354,18 +346,15 @@ int vib_config_pwm_device(void)
 					 vibrator_drvdata.duty_us,
 					 vibrator_drvdata.pwm_period_us); 
 	if (ret) {
-		pr_err("pwm_config in vibrator enable failed %d\n", ret);
 		return ret;
 	}
 	ret = pwm_enable(vibrator_drvdata.pwm_dev);	
 	if (ret < 0) {
-		pr_err("pwm_enable in vibrator  failed %d\n", ret);
 		return ret;
 	}
 	} else {
 		ret = pwm_enable(vibrator_drvdata.pwm_dev); 
 		if (ret < 0) {
-			pr_err("pwm_enable in vibrator  failed %d\n", ret);
 			return ret;
 		}
 	}
@@ -400,9 +389,6 @@ static int32_t ImmVibeSPI_ForceOut_SetSamples(u_int8_t nActuatorIndex,
 	case 8:
 		/* pForceOutputBuffer is expected to contain 1 byte */
 		if (nBufferSizeInBytes != 1) {
-			DbgOut(KERN_ERR
-			"[ImmVibeSPI] ImmVibeSPI_ForceOut_SetSamples nBufferSizeInBytes =  %d\n",
-			nBufferSizeInBytes);
 			return VIBE_E_FAIL;
 		}
 		nforce = pForceOutputBuffer[0];

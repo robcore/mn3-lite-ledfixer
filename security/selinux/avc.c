@@ -358,7 +358,7 @@ static int avc_latest_notif_update(int seqno, int is_insert)
 	spin_lock_irqsave(&notif_lock, flag);
 	if (is_insert) {
 		if (seqno < avc_cache.latest_notif) {
-			printk(KERN_WARNING "SELinux: avc:  seqno %d < latest_notif %d\n",
+			pr_debug("SELinux: avc:  seqno %d < latest_notif %d\n",
 			       seqno, avc_cache.latest_notif);
 			ret = -EAGAIN;
 		}
@@ -767,13 +767,10 @@ static noinline int avc_denied(u32 ssid, u32 tsid,
 			 unsigned flags,
 			 struct av_decision *avd)
 {
-	if (flags & AVC_STRICT)
+	if (selinux_enforcing && flags & AVC_STRICT)
 		return -EACCES;
-#ifdef CONFIG_ALWAYS_ENFORCE
-	if (!(avd->flags & AVD_FLAGS_PERMISSIVE))
-#else
+
 	if (selinux_enforcing && !(avd->flags & AVD_FLAGS_PERMISSIVE))
-#endif
 		return -EACCES;
 
 	avc_update_node(AVC_CALLBACK_GRANT, requested, ssid,
