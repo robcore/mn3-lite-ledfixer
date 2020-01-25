@@ -126,7 +126,7 @@ static struct pm_gpio tkey_sleep_int = {
 };
 #endif
 
-#ifdef TSP_BOOSTER
+#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT_USERSPACE)
 static void cypress_change_dvfs_lock(struct work_struct *work)
 {
 	struct cypress_touchkey_info *info =
@@ -756,7 +756,7 @@ static irqreturn_t cypress_touchkey_interrupt(int irq, void *dev_id)
 	}
 
 	input_sync(info->input_dev);
-#ifdef TSP_BOOSTER
+#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT_USERSPACE)
 	cypress_set_dvfs_lock(info, !!press);
 #endif
 
@@ -1448,7 +1448,7 @@ static ssize_t cypress_touchkey_flip_cover_mode_enable(struct device *dev,
 #endif
 
 
-#ifdef TSP_BOOSTER
+#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT_USERSPACE)
 static ssize_t boost_level_store(struct device *dev,
 				   struct device_attribute *attr,
 				   const char *buf, size_t count)
@@ -1551,7 +1551,7 @@ static DEVICE_ATTR(glove_mode, S_IRUGO | S_IWUSR | S_IWGRP, NULL,
 static DEVICE_ATTR(flip_mode, S_IRUGO | S_IWUSR | S_IWGRP, NULL,
 		cypress_touchkey_flip_cover_mode_enable);
 #endif
-#ifdef TSP_BOOSTER
+#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT_USERSPACE)
 static DEVICE_ATTR(boost_level,
 		   S_IWUSR | S_IWGRP, NULL, boost_level_store);
 #endif
@@ -1589,7 +1589,7 @@ static struct attribute *touchkey_attributes[] = {
 #ifdef TKEY_FLIP_MODE
 	&dev_attr_flip_mode.attr,
 #endif
-#ifdef TSP_BOOSTER
+#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT_USERSPACE)
 	&dev_attr_boost_level.attr,
 #endif
 	NULL,
@@ -2023,7 +2023,7 @@ static int __devinit cypress_touchkey_probe(struct i2c_client *client,
 	dev_info(&info->client->dev, "gpio_to_irq IRQ %d\n",
 			client->irq);
 
-#ifdef TSP_BOOSTER
+#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT_USERSPACE)
 	cypress_init_dvfs(info);
 #endif
 
@@ -2153,7 +2153,7 @@ static int cypress_touchkey_suspend(struct device *dev)
 	struct cypress_touchkey_info *info = i2c_get_clientdata(client);
 	int ret = 0;
 
-#ifdef TSP_BOOSTER
+#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT_USERSPACE)
 	cypress_set_dvfs_lock(info, 2);
 	dev_info(&info->client->dev,
 			"%s: dvfs_lock free.\n", __func__);

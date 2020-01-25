@@ -28,7 +28,7 @@
 #define CONFIG_SAMSUNG_KERNEL_DEBUG_USER
 #endif
 
-#ifdef WACOM_BOOSTER
+#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT_USERSPACE)
 static void wacom_change_dvfs_lock(struct work_struct *work)
 {
 	struct wacom_i2c *wac_i2c =
@@ -891,7 +891,7 @@ void wacom_i2c_softkey(struct wacom_i2c *wac_i2c, s16 key, s16 pressed)
 			keycode[key], pressed);
 	input_sync(wac_i2c->input_dev);
 
-#ifdef WACOM_BOOSTER
+#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT_USERSPACE)
 	wacom_set_dvfs_lock(wac_i2c, pressed);
 #endif
 
@@ -1002,7 +1002,7 @@ int wacom_i2c_coord(struct wacom_i2c *wac_i2c)
 			}
 #endif
 
-#ifdef WACOM_BOOSTER
+#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT_USERSPACE)
 			wacom_set_dvfs_lock(wac_i2c, 1);
 #endif
 			wac_i2c->pen_prox = 1;
@@ -1206,7 +1206,7 @@ int wacom_i2c_coord(struct wacom_i2c *wac_i2c)
 		wac_i2c->last_x = 0;
 		wac_i2c->last_y = 0;
 
-#ifdef WACOM_BOOSTER
+#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT_USERSPACE)
 		wacom_set_dvfs_lock(wac_i2c, 0);
 #endif
 	}

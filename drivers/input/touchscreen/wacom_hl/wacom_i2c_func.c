@@ -286,7 +286,7 @@ void forced_release(struct wacom_i2c *wac_i2c)
 	wac_i2c->side_pressed = 0;
 	/*wac_i2c->pen_pdct = PDCT_NOSIGNAL;*/
 
-#if defined(WACOM_BOOSTER) || defined(WACOM_BOOSTER_DVFS)
+#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT_USERSPACE)
 	if (wac_i2c->last_x == 0 && wac_i2c->last_y == 0)
 		wacom_set_dvfs_lock(wac_i2c, 0);
 #endif
@@ -882,7 +882,7 @@ static int keycode[] = {
 void wacom_i2c_softkey(struct wacom_i2c *wac_i2c, s16 key, s16 pressed)
 {
 
-#if defined(WACOM_BOOSTER) || defined(WACOM_BOOSTER_DVFS)
+#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT_USERSPACE)
 	wacom_set_dvfs_lock(wac_i2c, pressed);
 #endif
 		input_report_key(wac_i2c->input_dev,
@@ -990,7 +990,7 @@ int wacom_i2c_coord(struct wacom_i2c *wac_i2c)
 			}
 #endif
 
-#if defined(WACOM_BOOSTER) || defined(WACOM_BOOSTER_DVFS)
+#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT_USERSPACE)
 			wacom_set_dvfs_lock(wac_i2c, 1);
 #endif
 #ifdef CONFIG_INPUT_BOOSTER
@@ -1174,7 +1174,7 @@ int wacom_i2c_coord(struct wacom_i2c *wac_i2c)
 		wac_i2c->last_x = 0;
 		wac_i2c->last_y = 0;
 
-#if defined(WACOM_BOOSTER) || defined(WACOM_BOOSTER_DVFS)
+#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT_USERSPACE)
 		wacom_set_dvfs_lock(wac_i2c, 0);
 #endif
 	}

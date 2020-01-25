@@ -18,8 +18,7 @@ extern int poweroff_charging;
 #endif
 
 /* DVFS feature : TOUCH BOOSTER */
-#define TSP_BOOSTER
-#ifdef TSP_BOOSTER
+#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT_USERSPACE)
 #include <linux/cpufreq.h>
 
 #define DVFS_STAGE_DUAL		2
@@ -307,7 +306,7 @@ struct cypress_touchkey_info {
 	bool enabled_1mm;
 #endif
 
-#ifdef TSP_BOOSTER
+#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT_USERSPACE)
 	struct delayed_work	work_dvfs_off;
 	struct delayed_work	work_dvfs_chg;
 	struct mutex		dvfs_lock;
