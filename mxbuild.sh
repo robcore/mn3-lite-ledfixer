@@ -330,7 +330,7 @@ build_new_config() {
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
 	MX_KERNEL_VERSION="dummyconfigbuild"
 	mkdir -p "$RDIR/build" || warnandfail "Failed to make $RDIR/build directory!"
-	cat "$RDIR/msm8974_sec_hlte_tmo_defconfig" "$RDIR/msm8974_sec_defconfig" "$RDIR/selinux_defconfig" > "$RDIR/arch/arm/configs/mxconfig"
+	cat "$RDIR/arch/arm/configs/msm8974_sec_hlte_tmo_defconfig" "$RDIR/arch/arm/configs/msm8974_sec_defconfig" "$RDIR/arch/arm/configs/selinux_defconfig" > "$RDIR/arch/arm/configs/mxconfig"
 	cp "$MXCONFIG" "$RDIR/build/.config" || warnandfail "Config Copy Error!"
 	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -C "$RDIR" O="$RDIR/build" menuconfig
 
