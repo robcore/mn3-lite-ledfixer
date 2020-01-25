@@ -2218,6 +2218,15 @@ dput_out:
 	return retval;
 }
 
+/*
+ * Assign a sequence number so we can detect when we attempt to bind
+ * mount a reference to an older mount namespace into the current
+ * mount namespace, preventing reference counting loops.  A 64bit
+ * number incrementing at 10Ghz will take 12,427 years to wrap which
+ * is effectively never, so we can ignore the possibility.
+ */
+static atomic64_t mnt_ns_seq = ATOMIC64_INIT(1);
+
 static struct mnt_namespace *alloc_mnt_ns(void)
 {
 	struct mnt_namespace *new_ns;
@@ -2225,6 +2234,7 @@ static struct mnt_namespace *alloc_mnt_ns(void)
 	new_ns = kmalloc(sizeof(struct mnt_namespace), GFP_KERNEL);
 	if (!new_ns)
 		return ERR_PTR(-ENOMEM);
+	new_ns->seq = atomic64_add_return(1, &mnt_ns_seq);
 	atomic_set(&new_ns->count, 1);
 	new_ns->root = NULL;
 	INIT_LIST_HEAD(&new_ns->list);
