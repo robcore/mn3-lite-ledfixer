@@ -321,6 +321,18 @@ rebuild() {
 
 }
 
+build_new_config() {
+
+	echo "Creating kernel config..."
+	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
+	MX_KERNEL_VERSION="dummyconfigbuild"
+	mkdir -p "$RDIR/build" || warnandfail "Failed to make $RDIR/build directory!"
+	cat "$RDIR/msm8974_sec_hlte_tmo_defconfig" "$RDIR/msm8974_sec_defconfig" "$RDIR/selinux_defconfig" > "$RDIR/arch/arm/configs/mxconfig"
+	cp "$MXCONFIG" "$RDIR/build/.config" || warnandfail "Config Copy Error!"
+	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -C "$RDIR" O="$RDIR/build" menuconfig
+
+}
+
 build_menuconfig() {
 
 	echo "Creating kernel config..."
@@ -495,10 +507,11 @@ Common options:
  -r|--rebuildme      Same as --all but defaults to rebuilding previous version
  -b|--bsd            Build single driver (path/to/folder/ | path/to/file.o)
  -c|--clean          Remove everything this build script has done
+-nc|--newconfig)     Concatecate samsung defconfigs & enter menuconfig
  -m|--menu           Setup an environment for and enter menuconfig
  -k|--kernel         Try the build again starting at compiling the kernel
  -o|--kernel-only    Recompile only the kernel, nothing else
- -rd|--ramdisk       Try the build again starting at the ramdisk
+-rd|--ramdisk        Try the build again starting at the ramdisk
  -t|--tests          Testing playground
 EOF
 
@@ -535,6 +548,12 @@ bsdwrapper() {
 	[ -z "$1" ] && warnandfail "Build Single Driver: Missing path/to/folder/ or path/to/file.o"
 	clean_build && build_single_config && build_single_driver "$1"
 	clean_build
+
+}
+
+build_nc() {
+
+	build_new_config
 
 }
 
@@ -585,7 +604,10 @@ do
 	    	clean_build "standalone"
 	    	break
 	    	;;
-
+		 -nc|--newconfig)
+			build_nc
+			break
+			;;
 		 -m|--menu)
 			build_mc
 			break
