@@ -4167,8 +4167,15 @@ int mdss_mdp_ad_input(struct msm_fb_data_type *mfd,
 	u32 bl;
 
 	ret = mdss_mdp_get_ad(mfd, &ad);
-	if (ret)
+	if (ret == -ENODEV || ret == -EPERM) {
+		pr_err("AD not supported on device, disp num %d\n",
+			mfd->index);
 		return ret;
+	} else if (ret || !ad) {
+		pr_err("Failed to get ad info: ret = %d, ad = 0x%pK\n",
+			ret, ad);
+		return ret;
+	}
 
 	mutex_lock(&ad->lock);
 	if ((!PP_AD_STATE_IS_INITCFG(ad->state)) &&
