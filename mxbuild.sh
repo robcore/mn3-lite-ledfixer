@@ -186,9 +186,12 @@ pc_delete() {
 
 }
 
-if [ ! -f "$MXCONFIG" ]
+if [ "$1" != "-nc" ] && [ "$1" != "--newconfig" ]
 then
-	warnandfail "$MXCONFIG not found in arm configs!"
+	if [ ! -f "$MXCONFIG" ]
+	then
+		warnandfail "$MXCONFIG not found in arm configs!"
+	fi
 fi
 
 if [ ! -d "$RAMDISKFOLDER" ]
