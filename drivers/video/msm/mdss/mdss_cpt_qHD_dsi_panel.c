@@ -366,7 +366,7 @@ static void mdss_dsi_panel_cabc_dcs(struct mdss_dsi_ctrl_pdata *ctrl, int siop_s
 	mdss_dsi_cmdlist_put(ctrl, &cmdreq);
 }
 #endif
-extern unsigned int system_rev;
+extern int system_rev;
 void mdss_dsi_cpt_panel_reset(struct mdss_panel_data *pdata, int enable)
 {
 	struct mdss_dsi_ctrl_pdata *ctrl_pdata = NULL;

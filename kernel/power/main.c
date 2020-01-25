@@ -1182,8 +1182,7 @@ static ssize_t cpufreq_table_store(struct kobject *kobj,
 power_attr(cpufreq_max_limit);
 power_attr(cpufreq_min_limit);
 power_attr(cpufreq_table);
-#endif /*CONFIG_SEC_DVFS*/
-
+#endif
 static struct attribute *g[] = {
 	&state_attr.attr,
 #ifdef CONFIG_PM_TRACE

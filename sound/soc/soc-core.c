@@ -2031,7 +2031,7 @@ void snd_soc_free_ac97_codec(struct snd_soc_codec *codec)
 }
 EXPORT_SYMBOL_GPL(snd_soc_free_ac97_codec);
 
-int snd_soc_read(struct snd_soc_codec *codec, unsigned int reg)
+unsigned int snd_soc_read(struct snd_soc_codec *codec, unsigned int reg)
 {
 	unsigned int ret;
 
@@ -2047,7 +2047,7 @@ int snd_soc_read(struct snd_soc_codec *codec, unsigned int reg)
 }
 EXPORT_SYMBOL_GPL(snd_soc_read);
 
-int snd_soc_write(struct snd_soc_codec *codec,
+unsigned int snd_soc_write(struct snd_soc_codec *codec,
 			   unsigned int reg, unsigned int val)
 {
 	if (unlikely(!snd_card_is_online_state(codec->card->snd_card))) {
@@ -2078,34 +2078,13 @@ EXPORT_SYMBOL_GPL(snd_soc_bulk_write_raw);
  *
  * Returns 1 for change, 0 for no change, or negative error code.
  */
-#ifndef TAIKO_A_RX_HPH_L_GAIN
-#define TAIKO_A_RX_HPH_L_GAIN (0x1AE)
-#endif
-#ifndef TAIKO_A_RX_HPH_R_GAIN
-#define TAIKO_A_RX_HPH_R_GAIN (0x1B4)
-#endif
-
 int snd_soc_update_bits(struct snd_soc_codec *codec, unsigned short reg,
 				unsigned int mask, unsigned int value)
 {
 	bool change;
-	bool debughard;
-	unsigned int old, new, leftside, rightside;
+	unsigned int old, new;
 	int ret;
 
-	if ((reg == TAIKO_A_RX_HPH_L_GAIN) || (reg == TAIKO_A_RX_HPH_R_GAIN))
-		debughard = true;
-	else
-		debughard = false;
-
-	if (debughard) {
-		if (reg == TAIKO_A_RX_HPH_L_GAIN)
-			pr_info("%s, Reg name : TAIKO_A_RX_HPH_L_GAIN", __func__);
-		else if (reg == TAIKO_A_RX_HPH_R_GAIN)
-			pr_info("%s, Reg name : TAIKO_A_RX_HPH_R_GAIN", __func__);
-
-		pr_info("%s, Reg: %u Mask: %u Gain Value: %u\n", __func__, reg, mask, value);
-	}
 	if (codec->using_regmap) {
 		ret = regmap_update_bits_check(codec->control_data, reg,
 					       mask, value, &change);
@@ -2116,21 +2095,9 @@ int snd_soc_update_bits(struct snd_soc_codec *codec, unsigned short reg,
 
 		old = ret;
 		new = (old & ~mask) | (value & mask);
-
-		if (debughard) {
-			pr_info("%s, old gain value:%u\n", __func__, old);
-			pr_info("%s, new gain value: %u", __func__, new);
-		}
-
 		change = old != new;
-		if (change) {
+		if (change)
 			ret = snd_soc_write(codec, reg, new);
-			if (debughard)
-				pr_info("%s, change = true\n", __func__);
-		} else {
-			if (debughard)
-				pr_info("%s, change = false\n", __func__);
-		}
 	}
 
 	if (ret < 0)

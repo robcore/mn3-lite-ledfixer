@@ -28,7 +28,7 @@
 #include "mdss_dsi.h"
 #include "mdss_samsung_dsi_panel.h"
 #include "mdss_fb.h"
-#include <linux/sysfs_helpers.h>
+
 #if defined(CONFIG_MDNIE_LITE_TUNING)
 #include "mdnie_lite_tuning.h"
 #endif
@@ -1992,18 +1992,13 @@ static ssize_t mipi_samsung_disp_partial_disp_store(struct device *dev,
 }
 #endif
 
-static unsigned int force_hbm;
 #if defined(FORCE_500CD)
 static ssize_t mipi_samsung_force_500cd_show(struct device *dev,
 		struct device_attribute *attr, char *buf)
 {
-	int rc;
+	pr_info("Node for make brightness as 500Cd \n");
 
-	rc = snprintf((char *)buf, PAGE_SIZE, "%d\n",
-					force_hbm);
-	pr_info("%d\n", *buf);
-
-	return rc;
+	return 0;
 }
 
 static ssize_t mipi_samsung_force_500cd_store(struct device *dev,
@@ -2013,8 +2008,6 @@ static ssize_t mipi_samsung_force_500cd_store(struct device *dev,
 	sscanf(buf, "%d " , &input);
 	pr_info("%s: input = %d\n", __func__, input);
 
-	sanitize_min_max(input, 0, 1);
-	force_hbm = input;
 
 	if (msd.dstat.on) {
 		if(input) {
@@ -3127,8 +3120,6 @@ static int mdss_dsi_panel_on(struct mdss_panel_data *pdata)
 		enable_irq(gpio_to_irq(lcd_crack_gpio));
 	}
 #endif
-	if (force_hbm == 1)
-		mipi_samsung_disp_send_cmd(PANEl_FORCE_500CD, true);
 	return 0;
 }
 

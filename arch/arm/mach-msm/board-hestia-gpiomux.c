@@ -1026,7 +1026,7 @@ static struct msm_gpiomux_config msm_chg_configs[] = {
 
 #endif
 
-extern unsigned int system_rev;
+extern int system_rev;
 
 /*NC GPIOs configuration*/
 static struct msm_gpiomux_config nc_gpio_cfgs[] __initdata = {

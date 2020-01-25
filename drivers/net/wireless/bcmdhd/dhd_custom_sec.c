@@ -1610,13 +1610,13 @@ uint32 sec_save_wlinfo(char *firm_ver, char *dhd_ver, char *nvram_p)
 		if (strlen(temp_buf)) {
 			nvram_buf = temp_buf;
 			bcmstrtok(&nvram_buf, "\n", 0);
-			DHD_INFO(("[WIFI_SEC] nvram tolkening : %s(%zu) \n",
+			DHD_INFO(("[WIFI_SEC] nvram tolkening : %s(%d) \n",
 				temp_buf, strlen(temp_buf)));
 			snprintf(version_info+str_len, tstr_len(temp_buf, NV_PREFIX),
 				NV_PREFIX " %s\n", temp_buf);
 			str_len = strlen(version_info);
 			DHD_INFO(("[WIFI_SEC] NVRAM version_info : %s\n", version_info));
-			DHD_INFO(("[WIFI_SEC] NVRAM version_info len : %d, nvram len : %zu\n",
+			DHD_INFO(("[WIFI_SEC] NVRAM version_info len : %d, nvram len : %d\n",
 				str_len, strlen(temp_buf)));
 		} else {
 			DHD_ERROR(("[WIFI_SEC] NVRAM info is missing.\n"));
@@ -1625,7 +1625,7 @@ uint32 sec_save_wlinfo(char *firm_ver, char *dhd_ver, char *nvram_p)
 		DHD_ERROR(("[WIFI_SEC] Not exist nvram path\n"));
 	}
 
-	DHD_INFO(("[WIFI_SEC] version_info : %s, strlen : %zu\n",
+	DHD_INFO(("[WIFI_SEC] version_info : %s, strlen : %d\n",
 		version_info, strlen(version_info)));
 
 	fp = filp_open(filepath, O_RDONLY, 0);

@@ -18,6 +18,7 @@ extern int poweroff_charging;
 #endif
 
 #define TC300K_DEVICE	"sec_touchkey" //"tc300k"
+#define TSP_BOOSTER 
 #ifdef TSP_BOOSTER
 #include <linux/cpufreq.h>
 
@@ -30,7 +31,7 @@ extern int poweroff_charging;
 
 extern struct class *sec_class;
 extern int touch_is_pressed;
-extern unsigned int system_rev;
+extern int system_rev;
 
 struct tc300k_platform_data {
 	u8	enable;

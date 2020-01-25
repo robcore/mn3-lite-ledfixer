@@ -154,7 +154,8 @@ extern unsigned int system_rev;
 
 #define EPEN_B713_ORG_X 676
 #define EPEN_B713_ORG_Y 724
-#if 0
+
+#define WACOM_BOOSTER
 #ifdef WACOM_BOOSTER
 #define DVFS_STAGE_TRIPLE	3
 #define DVFS_STAGE_DUAL		2
@@ -163,7 +164,7 @@ extern unsigned int system_rev;
 #define TOUCH_BOOSTER_OFF_TIME	500
 #define TOUCH_BOOSTER_CHG_TIME	130
 #endif
-#endif
+
 #define BATTERY_SAVING_MODE
 #define WACOM_CONNECTION_CHECK
 /**************/
@@ -226,7 +227,6 @@ struct wacom_i2c {
 #if defined(CONFIG_SEC_LT03_PROJECT) || defined(CONFIG_SEC_VIENNA_PROJECT)
 	struct mutex irq_lock;
 #endif
-#if 0
 #ifdef WACOM_BOOSTER
 	struct delayed_work	work_dvfs_off;
 	struct delayed_work	work_dvfs_chg;
@@ -236,7 +236,7 @@ struct wacom_i2c {
 	int dvfs_boost_mode;
 	int dvfs_freq;
 #endif
-#endif
+
 	struct device	*dev;
 	int irq;
 #ifdef WACOM_PDCT_WORK_AROUND

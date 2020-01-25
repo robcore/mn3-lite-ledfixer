@@ -128,14 +128,10 @@ typedef struct _tdata_psh_info_t {
 } tdata_psh_info_t;
 
 typedef struct {
-	struct {
-		uint8 src[IPV4_ADDR_LEN];	/* SRC ip addrs of this TCP stream */
-		uint8 dst[IPV4_ADDR_LEN];	/* DST ip addrs of this TCP stream */
-	} ip_addr;
-	struct {
-		uint8 src[TCP_PORT_LEN];	/* SRC tcp ports of this TCP stream */
-		uint8 dst[TCP_PORT_LEN];	/* DST tcp ports of this TCP stream */
-	} tcp_port;
+	uint8 src_ip_addr[IPV4_ADDR_LEN];	/* SRC ip addrs of this TCP stream */
+	uint8 dst_ip_addr[IPV4_ADDR_LEN];	/* DST ip addrs of this TCP stream */
+	uint8 src_tcp_port[TCP_PORT_LEN];	/* SRC tcp ports of this TCP stream */
+	uint8 dst_tcp_port[TCP_PORT_LEN];	/* DST tcp ports of this TCP stream */
 	tdata_psh_info_t *tdata_psh_info_head;	/* Head of received TCP PSH DATA chain */
 	tdata_psh_info_t *tdata_psh_info_tail;	/* Tail of received TCP PSH DATA chain */
 	uint32 last_used_time;	/* The last time this tcpdata_info was used(in ms) */
@@ -150,7 +146,7 @@ typedef struct {
 	tdata_psh_info_t *tdata_psh_info_pool;	/* Pointer to tdata_psh_info elements pool */
 	tdata_psh_info_t *tdata_psh_info_free;	/* free tdata_psh_info elements chain in pool */
 #ifdef DHDTCPACK_SUP_DBG
-	unsigned int psh_info_enq_num;	/* Number of free TCP PSH DATA info elements in pool */
+	int psh_info_enq_num;	/* Number of free TCP PSH DATA info elements in pool */
 #endif /* DHDTCPACK_SUP_DBG */
 } tcpack_sup_module_t;
 
@@ -172,8 +168,7 @@ _tdata_psh_info_pool_enq(tcpack_sup_module_t *tcpack_sup_mod,
 	tdata_psh_info->next = tcpack_sup_mod->tdata_psh_info_free;
 	tcpack_sup_mod->tdata_psh_info_free = tdata_psh_info;
 #ifdef DHDTCPACK_SUP_DBG
-	if (tcpack_sup_mod->psh_info_enq_num < (TCPDATA_PSH_INFO_MAXNUM - 1))
-		tcpack_sup_mod->psh_info_enq_num++;
+	tcpack_sup_mod->psh_info_enq_num++;
 #endif
 }
 
@@ -182,25 +177,24 @@ _tdata_psh_info_pool_deq(tcpack_sup_module_t *tcpack_sup_mod)
 {
 	tdata_psh_info_t *tdata_psh_info = NULL;
 
-	if (tcpack_sup_mod == NULL)
+	if (tcpack_sup_mod == NULL) {
+		DHD_ERROR(("%s %d: ERROR %p\n", __FUNCTION__, __LINE__,
+			tcpack_sup_mod));
 		return NULL;
-
-	tdata_psh_info = tcpack_sup_mod->tdata_psh_info_free;
-	if (tdata_psh_info) {
-		if (tdata_psh_info->next) {
-			tcpack_sup_mod->tdata_psh_info_free = tdata_psh_info->next;
-			tdata_psh_info->next = NULL;
-#ifdef DHDTCPACK_SUP_DBG
-			if (tcpack_sup_mod->psh_info_enq_num > 0)
-				tcpack_sup_mod->psh_info_enq_num--;
-#endif /* DHDTCPACK_SUP_DBG */
-			return tdata_psh_info;
-		} else {
-			tcpack_sup_mod->tdata_psh_info_free
-		}
 	}
 
-	return NULL;
+	tdata_psh_info = tcpack_sup_mod->tdata_psh_info_free;
+	if (tdata_psh_info == NULL)
+		DHD_ERROR(("%s %d: Out of tdata_disc_grp\n", __FUNCTION__, __LINE__));
+	else {
+		tcpack_sup_mod->tdata_psh_info_free = tdata_psh_info->next;
+		tdata_psh_info->next = NULL;
+#ifdef DHDTCPACK_SUP_DBG
+		tcpack_sup_mod->psh_info_enq_num--;
+#endif /* DHDTCPACK_SUP_DBG */
+	}
+
+	return tdata_psh_info;
 }
 
 static int _tdata_psh_info_pool_init(dhd_pub_t *dhdp,
@@ -228,7 +222,7 @@ static int _tdata_psh_info_pool_init(dhd_pub_t *dhdp,
 #endif /* DHDTCPACK_SUP_DBG */
 
 	/* Enqueue newly allocated tcpdata psh info elements to the pool */
-	for (i = 0; i < (TCPDATA_PSH_INFO_MAXNUM - 1); i++)
+	for (i = 0; i < TCPDATA_PSH_INFO_MAXNUM; i++)
 		_tdata_psh_info_pool_enq(tcpack_sup_mod, &tdata_psh_info_pool[i]);
 
 	ASSERT(tcpack_sup_mod->tdata_psh_info_free != NULL);
@@ -469,20 +463,20 @@ static INLINE bool dhd_tcpdata_psh_acked(dhd_pub_t *dhdp, uint8 *ip_hdr,
 		tcpdata_info_t *tcpdata_info_tmp = &tcpack_sup_mod->tcpdata_info_tbl[i];
 		DHD_TRACE(("%s %d: data info[%d], IP addr "IPV4_ADDR_STR" "IPV4_ADDR_STR
 			" TCP port %d %d\n", __FUNCTION__, __LINE__, i,
-			IPV4_ADDR_TO_STR(ntoh32_ua(tcpdata_info_tmp->ip_addr.src)),
-			IPV4_ADDR_TO_STR(ntoh32_ua(tcpdata_info_tmp->ip_addr.dst)),
-			ntoh16_ua(tcpdata_info_tmp->tcp_port.src),
-			ntoh16_ua(tcpdata_info_tmp->tcp_port.dst)));
+			IPV4_ADDR_TO_STR(ntoh32_ua(tcpdata_info_tmp->src_ip_addr)),
+			IPV4_ADDR_TO_STR(ntoh32_ua(tcpdata_info_tmp->dst_ip_addr)),
+			ntoh16_ua(tcpdata_info_tmp->src_tcp_port),
+			ntoh16_ua(tcpdata_info_tmp->dst_tcp_port)));
 
 		/* If either IP address or TCP port number does not match, skip. */
 		if (memcmp(&ip_hdr[IPV4_SRC_IP_OFFSET],
-			tcpdata_info_tmp->ip_addr.dst, IPV4_ADDR_LEN) == 0 &&
+			tcpdata_info_tmp->dst_ip_addr, IPV4_ADDR_LEN) == 0 &&
 			memcmp(&ip_hdr[IPV4_DEST_IP_OFFSET],
-			tcpdata_info_tmp->ip_addr.src, IPV4_ADDR_LEN) == 0 &&
+			tcpdata_info_tmp->src_ip_addr, IPV4_ADDR_LEN) == 0 &&
 			memcmp(&tcp_hdr[TCP_SRC_PORT_OFFSET],
-			tcpdata_info_tmp->tcp_port.dst, TCP_PORT_LEN) == 0 &&
+			tcpdata_info_tmp->dst_tcp_port, TCP_PORT_LEN) == 0 &&
 			memcmp(&tcp_hdr[TCP_DEST_PORT_OFFSET],
-			tcpdata_info_tmp->tcp_port.src, TCP_PORT_LEN) == 0) {
+			tcpdata_info_tmp->src_tcp_port, TCP_PORT_LEN) == 0) {
 			tcpdata_info = tcpdata_info_tmp;
 			break;
 		}
@@ -663,10 +657,7 @@ dhd_tcpack_suppress(dhd_pub_t *dhdp, void *pkt)
 			ntoh16_ua(&old_tcp_hdr[TCP_SRC_PORT_OFFSET]),
 			ntoh16_ua(&old_tcp_hdr[TCP_DEST_PORT_OFFSET])));
 
-		/* If either of IP address or TCP port number does not match, skip.
-		 * Note that src/dst addr fields in ip header are contiguous being 8 bytes in total.
-		 * Also, src/dst port fields in TCP header are contiguous being 4 bytes in total.
-		 */
+		/* If either of IP address or TCP port number does not match, skip. */
 		if (memcmp(&new_ip_hdr[IPV4_SRC_IP_OFFSET],
 			&old_ip_hdr[IPV4_SRC_IP_OFFSET], IPV4_ADDR_LEN * 2) ||
 			memcmp(&new_tcp_hdr[TCP_SRC_PORT_OFFSET],
@@ -834,19 +825,16 @@ dhd_tcpdata_info_get(dhd_pub_t *dhdp, void *pkt)
 		uint32 now_in_ms = OSL_SYSUPTIME();
 		DHD_TRACE(("%s %d: data info[%d], IP addr "IPV4_ADDR_STR" "IPV4_ADDR_STR
 			" TCP port %d %d\n", __FUNCTION__, __LINE__, i,
-			IPV4_ADDR_TO_STR(ntoh32_ua(tdata_info_tmp->ip_addr.src)),
-			IPV4_ADDR_TO_STR(ntoh32_ua(tdata_info_tmp->ip_addr.dst)),
-			ntoh16_ua(tdata_info_tmp->tcp_port.src),
-			ntoh16_ua(tdata_info_tmp->tcp_port.dst)));
+			IPV4_ADDR_TO_STR(ntoh32_ua(tdata_info_tmp->src_ip_addr)),
+			IPV4_ADDR_TO_STR(ntoh32_ua(tdata_info_tmp->dst_ip_addr)),
+			ntoh16_ua(tdata_info_tmp->src_tcp_port),
+			ntoh16_ua(tdata_info_tmp->dst_tcp_port)));
 
-		/* If both IP address and TCP port number match, we found it so break.
-		 * Note that src/dst addr fields in ip header are contiguous being 8 bytes in total.
-		 * Also, src/dst port fields in TCP header are contiguous being 4 bytes in total.
-		 */
+		/* If both IP address and TCP port number match, we found it so break. */
 		if (memcmp(&ip_hdr[IPV4_SRC_IP_OFFSET],
-			(void *)&tdata_info_tmp->ip_addr, IPV4_ADDR_LEN * 2) == 0 &&
+			(void *)tdata_info_tmp->src_ip_addr, IPV4_ADDR_LEN * 2) == 0 &&
 			memcmp(&tcp_hdr[TCP_SRC_PORT_OFFSET],
-			(void *)&tdata_info_tmp->tcp_port, TCP_PORT_LEN * 2) == 0) {
+			(void *)tdata_info_tmp->src_tcp_port, TCP_PORT_LEN * 2) == 0) {
 			tcpdata_info = tdata_info_tmp;
 			tcpdata_info->last_used_time = now_in_ms;
 			break;
@@ -913,12 +901,10 @@ dhd_tcpdata_info_get(dhd_pub_t *dhdp, void *pkt)
 			IPV4_ADDR_TO_STR(ntoh32_ua(&ip_hdr[IPV4_DEST_IP_OFFSET])),
 			ntoh16_ua(&tcp_hdr[TCP_SRC_PORT_OFFSET]),
 			ntoh16_ua(&tcp_hdr[TCP_DEST_PORT_OFFSET])));
-		/* Note that src/dst addr fields in ip header are contiguous being 8 bytes in total.
-		 * Also, src/dst port fields in TCP header are contiguous being 4 bytes in total.
-		 */
-		bcopy(&ip_hdr[IPV4_SRC_IP_OFFSET], (void *)&tcpdata_info->ip_addr,
+
+		bcopy(&ip_hdr[IPV4_SRC_IP_OFFSET], (void *)tcpdata_info->src_ip_addr,
 			IPV4_ADDR_LEN * 2);
-		bcopy(&tcp_hdr[TCP_SRC_PORT_OFFSET], (void *)&tcpdata_info->tcp_port,
+		bcopy(&tcp_hdr[TCP_SRC_PORT_OFFSET], (void *)tcpdata_info->src_tcp_port,
 			TCP_PORT_LEN * 2);
 
 		tcpdata_info->last_used_time = OSL_SYSUPTIME();
@@ -934,6 +920,7 @@ dhd_tcpdata_info_get(dhd_pub_t *dhdp, void *pkt)
 #endif /* DHDTCPACK_SUP_DBG */
 
 	if (tdata_psh_info == NULL) {
+		DHD_ERROR(("%s %d: No more free tdata_psh_info!!\n", __FUNCTION__, __LINE__));
 		ret = BCME_ERROR;
 		dhd_os_tcpackunlock(dhdp);
 		goto exit;

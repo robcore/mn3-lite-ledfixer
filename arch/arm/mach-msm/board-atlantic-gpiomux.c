@@ -1130,7 +1130,7 @@ static struct msm_gpiomux_config msm_chg_det_configs[] = {
 
 #endif
 
-extern unsigned int system_rev;
+extern int system_rev;
 
 /*NC GPIOs configuration*/
 #if defined(CONFIG_MACH_ATLANTICLTE_ATT)

@@ -1277,7 +1277,7 @@ static void msm_gpiomux_sdc3_install(void)
 static void msm_gpiomux_sdc3_install(void) {}
 #endif /* CONFIG_MMC_MSM_SDC3_SUPPORT */
 
-extern unsigned int system_rev;
+extern int system_rev;
 
 extern int poweroff_charging;
 

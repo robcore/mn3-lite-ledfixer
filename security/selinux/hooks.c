@@ -101,18 +101,41 @@ extern struct security_operations *security_ops;
 /* SECMARK reference count */
 static atomic_t selinux_secmark_refcount = ATOMIC_INIT(0);
 
-int selinux_enforcing = 0;
+#ifdef CONFIG_SECURITY_SELINUX_DEVELOP
+int selinux_enforcing;
 
 static int __init enforcing_setup(char *str)
 {
 	unsigned long enforcing;
 	if (!strict_strtoul(str, 0, &enforcing))
-		selinux_enforcing = 0;
+#ifdef CONFIG_ALWAYS_ENFORCE
+		selinux_enforcing = 1;
+#else
+		selinux_enforcing = enforcing ? 1 : 0;
+#endif
 	return 1;
 }
 __setup("enforcing=", enforcing_setup);
+#endif
 
+#ifdef CONFIG_SECURITY_SELINUX_BOOTPARAM
+int selinux_enabled = CONFIG_SECURITY_SELINUX_BOOTPARAM_VALUE;
+
+static int __init selinux_enabled_setup(char *str)
+{
+	unsigned long enabled;
+	if (!strict_strtoul(str, 0, &enabled))
+#ifdef CONFIG_ALWAYS_ENFORCE
+		selinux_enabled = 1;
+#else
+		selinux_enabled = enabled ? 1 : 0;
+#endif
+	return 1;
+}
+__setup("selinux=", selinux_enabled_setup);
+#else
 int selinux_enabled = 1;
+#endif
 
 static struct kmem_cache *sel_inode_cache;
 
@@ -403,11 +426,8 @@ static int sb_finish_set_opts(struct super_block *sb)
 	    sbsec->behavior > ARRAY_SIZE(labeling_behaviors))
 		sbsec->flags &= ~SE_SBLABELSUPP;
 
-	/* Special handling. Is genfs but also has in-core setxattr handler*/
-	if (!strcmp(sb->s_type->name, "sysfs") ||
-	    !strcmp(sb->s_type->name, "pstore") ||
-	    !strcmp(sb->s_type->name, "debugfs") ||
-	    !strcmp(sb->s_type->name, "rootfs"))
+	/* Special handling for sysfs. Is genfs but also has setxattr handler*/
+	if (strncmp(sb->s_type->name, "sysfs", sizeof("sysfs")) == 0)
 		sbsec->flags |= SE_SBLABELSUPP;
 
 	/* Initialize the root inode. */
@@ -424,7 +444,6 @@ next_inode:
 				list_entry(sbsec->isec_head.next,
 					   struct inode_security_struct, list);
 		struct inode *inode = isec->inode;
-		list_del_init(&isec->list);
 		spin_unlock(&sbsec->isec_lock);
 		inode = igrab(inode);
 		if (inode) {
@@ -433,6 +452,7 @@ next_inode:
 			iput(inode);
 		}
 		spin_lock(&sbsec->isec_lock);
+		list_del_init(&isec->list);
 		goto next_inode;
 	}
 	spin_unlock(&sbsec->isec_lock);
@@ -1000,7 +1020,7 @@ static void selinux_write_opts(struct seq_file *m,
 		seq_puts(m, prefix);
 		if (has_comma)
 			seq_putc(m, '\"');
-		seq_escape(m, opts->mnt_opts[i], "\"\n\\");
+		seq_puts(m, opts->mnt_opts[i]);
 		if (has_comma)
 			seq_putc(m, '\"');
 	}
@@ -2245,7 +2265,7 @@ static inline void flush_unauthorized_files(const struct cred *cred,
 		int fd;
 
 		j++;
-		i = j * BITS_PER_LONG;
+		i = j * __NFDBITS;
 		fdt = files_fdtable(files);
 		if (i >= fdt->max_fds)
 			break;
@@ -3885,6 +3905,7 @@ static int sock_has_perm(struct task_struct *task, struct sock *sk, u32 perms)
 	u32 tsid = task_sid(task);
 
 	if (unlikely(!sksec)){
+		printk(KERN_CRIT "[SELinux] sksec is NULL, socket is already freed. \n");
 		return -EINVAL;
 	}
 
@@ -4348,10 +4369,8 @@ static int selinux_socket_sock_rcv_skb(struct sock *sk, struct sk_buff *skb)
 		}
 		err = avc_has_perm(sk_sid, peer_sid, SECCLASS_PEER,
 				   PEER__RECV, &ad);
-		if (err) {
+		if (err)
 			selinux_netlbl_err(skb, err, 0);
-			return err;
-		}
 	}
 
 	if (secmark_active) {
@@ -4642,8 +4661,12 @@ static int selinux_nlmsg_perm(struct sock *sk, struct sk_buff *skb)
 				  "SELinux:  unrecognized netlink message"
 				  " type=%hu for sclass=%hu\n",
 				  nlh->nlmsg_type, sksec->sclass);
-			err = 0;
-			goto out;
+#ifdef CONFIG_ALWAYS_ENFORCE
+			if (security_get_allow_unknown())
+#else
+			if (!selinux_enforcing || security_get_allow_unknown())
+#endif
+				err = 0;
 		}
 
 		/* Ignore */
@@ -5886,6 +5909,13 @@ static __init int selinux_init(void)
 
 	if (register_security(&selinux_ops))
 		panic("SELinux: Unable to register with kernel.\n");
+#ifdef CONFIG_ALWAYS_ENFORCE
+	selinux_enforcing = 1;
+#endif
+	if (selinux_enforcing)
+		printk(KERN_DEBUG "SELinux:  Starting in enforcing mode\n");
+	else
+		printk(KERN_DEBUG "SELinux:  Starting in permissive mode\n");
 
 	return 0;
 }

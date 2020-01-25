@@ -309,7 +309,6 @@ static int init_ring_common(struct intel_ring_buffer *ring)
 		ring->head = I915_READ_HEAD(ring);
 		ring->tail = I915_READ_TAIL(ring) & TAIL_ADDR;
 		ring->space = ring_space(ring);
-		ring->last_retired_head = -1;
 	}
 
 	return 0;
@@ -757,18 +756,6 @@ void intel_ring_setup_status_page(struct intel_ring_buffer *ring)
 
 	I915_WRITE(mmio, (u32)ring->status_page.gfx_addr);
 	POSTING_READ(mmio);
-
-	/* Flush the TLB for this page */
-	if (INTEL_INFO(dev)->gen >= 6) {
-		u32 reg = RING_INSTPM(ring->mmio_base);
-		I915_WRITE(reg,
-			   _MASKED_BIT_ENABLE(INSTPM_TLB_INVALIDATE |
-					      INSTPM_SYNC_FLUSH));
-		if (wait_for((I915_READ(reg) & INSTPM_SYNC_FLUSH) == 0,
-			     1000))
-			DRM_ERROR("%s: wait for SyncFlush to complete for TLB invalidation timed out\n",
-				  ring->name);
-	}
 }
 
 static int
@@ -1038,10 +1025,6 @@ int intel_init_ring_buffer(struct drm_device *dev,
 	ret = i915_gem_object_pin(obj, PAGE_SIZE, true);
 	if (ret)
 		goto err_unref;
-
-	ret = i915_gem_object_set_to_gtt_domain(obj, true);
-	if (ret)
-		goto err_unpin;
 
 	ring->map.size = ring->size;
 	ring->map.offset = dev->agp->base + obj->gtt_offset;

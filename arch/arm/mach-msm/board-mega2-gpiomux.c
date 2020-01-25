@@ -978,7 +978,7 @@ static struct msm_gpiomux_config tsp_id_configs[] __initdata = {
 	},
 };
 #endif
-extern unsigned int system_rev;
+extern int system_rev;
 
 /*NC GPIOs configuration*/
 static struct msm_gpiomux_config gpio_nc_configs[] __initdata = {

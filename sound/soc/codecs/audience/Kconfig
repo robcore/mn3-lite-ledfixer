@@ -34,6 +34,27 @@ config SND_SOC_ES515
 
         NOTE: Only one configuration should be enabled.
 
+if SND_SOC_ES515
+menu "eS515 Bus Interface"
+
+config SND_SOC_ES_SLIM
+	tristate "SLIMbus" if SLIMBUS
+
+config SND_SOC_ES_I2C
+	tristate "I2C command bus"
+
+config SND_SOC_ES_SPI
+	tristate "SPI command bus"
+
+config SND_SOC_ES_UART
+	tristate "UART command transport"
+
+config SND_SOC_ES_I2S
+	tristate "I2S audio data bus"
+
+endmenu
+endif
+
 config SND_SOC_ES_CDEV
         tristate "Character device interface for eS515"
         ---help---

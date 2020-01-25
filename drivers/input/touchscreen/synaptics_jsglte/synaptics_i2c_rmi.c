@@ -658,7 +658,7 @@ static struct synaptics_rmi4_platform_data rmi4_platformdata = {
 #endif
 
 static int touch_sleep_time;
-extern unsigned int system_rev;
+extern int system_rev;
 
 static struct list_head exp_fn_list;
 

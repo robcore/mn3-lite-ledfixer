@@ -321,7 +321,7 @@ static int matrix_keypad_resume(struct device *dev)
 static const SIMPLE_DEV_PM_OPS(matrix_keypad_pm_ops,
 				matrix_keypad_suspend, matrix_keypad_resume);
 #endif
-extern unsigned int system_rev;
+extern int system_rev;
 static int __devinit init_matrix_gpio(struct platform_device *pdev,
 					struct matrix_keypad *keypad)
 {

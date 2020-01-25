@@ -68,8 +68,6 @@
 #include <linux/shmem_fs.h>
 #include <linux/slab.h>
 #include <linux/perf_event.h>
-#include <linux/random.h>
-#include <linux/s_funcs.h>
 #ifdef CONFIG_TIMA_RKP_COHERENT_TT
 #include <linux/memblock.h>
 #endif
@@ -390,15 +388,8 @@ static inline void smp_prepare_cpus(unsigned int maxcpus) { }
  */
 static void __init setup_command_line(char *command_line)
 {
-	replace_str(boot_command_line, "androidboot.warranty_bit=1", "androidboot.warranty_bit=0");
-	replace_str(command_line, "androidboot.warranty_bit=1", "androidboot.warranty_bit=0");
-
-	/*Again because we get two copies*/
-	replace_str(boot_command_line, "androidboot.warranty_bit=1", "androidboot.warranty_bit=0");
-	replace_str(command_line, "androidboot.warranty_bit=1", "androidboot.warranty_bit=0");
-
-	saved_command_line = alloc_bootmem(strlen(boot_command_line) + 1);
-	static_command_line = alloc_bootmem(strlen(command_line) + 1 );
+	saved_command_line = alloc_bootmem(strlen (boot_command_line)+1);
+	static_command_line = alloc_bootmem(strlen (command_line)+1);
 	strcpy (saved_command_line, boot_command_line);
 	strcpy (static_command_line, command_line);
 }
@@ -665,7 +656,7 @@ asmlinkage void __init start_kernel(void)
 	parse_early_param();
 	parse_args("Booting kernel", static_command_line, __start___param,
 		   __stop___param - __start___param,
-		   -1, -1, &unknown_bootoption);
+		   0, 0, &unknown_bootoption);
 
 	jump_label_init();
 
@@ -722,6 +713,9 @@ asmlinkage void __init start_kernel(void)
 				 "enabled early\n");
 	early_boot_irqs_disabled = false;
 	local_irq_enable();
+
+	/* Interrupts are enabled now so all GFP allocations are safe. */
+	gfp_allowed_mask = __GFP_BITS_MASK;
 
 	kmem_cache_init_late();
 
@@ -939,7 +933,6 @@ static void __init do_basic_setup(void)
 	do_ctors();
 	usermodehelper_enable();
 	do_initcalls();
-	random_int_secret_init();
 }
 
 static void __init do_pre_smp_initcalls(void)
@@ -1041,10 +1034,6 @@ static int __init kernel_init(void * unused)
 	 * Wait until kthreadd is all set-up.
 	 */
 	wait_for_completion(&kthreadd_done);
-
-	/* Now the scheduler is fully set up and can do blocking allocations */
-	gfp_allowed_mask = __GFP_BITS_MASK;
-
 	/*
 	 * init can allocate pages on any node
 	 */

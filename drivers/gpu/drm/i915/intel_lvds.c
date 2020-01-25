@@ -408,7 +408,13 @@ static void intel_lvds_prepare(struct drm_encoder *encoder)
 {
 	struct intel_lvds *intel_lvds = to_intel_lvds(encoder);
 
-	intel_lvds_disable(intel_lvds);
+	/*
+	 * Prior to Ironlake, we must disable the pipe if we want to adjust
+	 * the panel fitter. However at all other times we can just reset
+	 * the registers regardless.
+	 */
+	if (!HAS_PCH_SPLIT(encoder->dev) && intel_lvds->pfit_dirty)
+		intel_lvds_disable(intel_lvds);
 }
 
 static void intel_lvds_commit(struct drm_encoder *encoder)
@@ -535,7 +541,6 @@ static int intel_lid_notify(struct notifier_block *nb, unsigned long val,
 
 	mutex_lock(&dev->mode_config.mutex);
 	drm_helper_resume_force_mode(dev);
-	i915_redisable_vga(dev);
 	mutex_unlock(&dev->mode_config.mutex);
 
 	return NOTIFY_OK;
@@ -621,7 +626,7 @@ static const struct drm_encoder_funcs intel_lvds_enc_funcs = {
 	.destroy = intel_encoder_destroy,
 };
 
-static int intel_no_lvds_dmi_callback(const struct dmi_system_id *id)
+static int __init intel_no_lvds_dmi_callback(const struct dmi_system_id *id)
 {
 	DRM_DEBUG_KMS("Skipping LVDS initialization for %s\n", id->ident);
 	return 1;
@@ -742,14 +747,6 @@ static const struct dmi_system_id intel_no_lvds[] = {
 	},
 	{
 		.callback = intel_no_lvds_dmi_callback,
-		.ident = "Hewlett-Packard HP t5740",
-		.matches = {
-			DMI_MATCH(DMI_BOARD_VENDOR, "Hewlett-Packard"),
-			DMI_MATCH(DMI_PRODUCT_NAME, " t5740"),
-		},
-	},
-	{
-		.callback = intel_no_lvds_dmi_callback,
 		.ident = "Hewlett-Packard t5745",
 		.matches = {
 			DMI_MATCH(DMI_BOARD_VENDOR, "Hewlett-Packard"),
@@ -770,30 +767,6 @@ static const struct dmi_system_id intel_no_lvds[] = {
 		.matches = {
 			DMI_MATCH(DMI_BOARD_VENDOR, "MICRO-STAR INTERNATIONAL CO., LTD"),
 			DMI_MATCH(DMI_BOARD_NAME, "MS-7469"),
-		},
-	},
-	{
-		.callback = intel_no_lvds_dmi_callback,
-		.ident = "ZOTAC ZBOXSD-ID12/ID13",
-		.matches = {
-			DMI_MATCH(DMI_BOARD_VENDOR, "ZOTAC"),
-			DMI_MATCH(DMI_BOARD_NAME, "ZBOXSD-ID12/ID13"),
-		},
-	},
-	{
-		.callback = intel_no_lvds_dmi_callback,
-		.ident = "Gigabyte GA-D525TUD",
-		.matches = {
-			DMI_MATCH(DMI_BOARD_VENDOR, "Gigabyte Technology Co., Ltd."),
-			DMI_MATCH(DMI_BOARD_NAME, "D525TUD"),
-		},
-	},
-	{
-		.callback = intel_no_lvds_dmi_callback,
-		.ident = "Supermicro X7SPA-H",
-		.matches = {
-			DMI_MATCH(DMI_SYS_VENDOR, "Supermicro"),
-			DMI_MATCH(DMI_PRODUCT_NAME, "X7SPA-H"),
 		},
 	},
 
@@ -934,17 +907,6 @@ bool intel_lvds_init(struct drm_device *dev)
 	int pipe;
 	u8 pin;
 
-	/*
-	 * Unlock registers and just leave them unlocked. Do this before
-	 * checking quirk lists to avoid bogus WARNINGs.
-	 */
-	if (HAS_PCH_SPLIT(dev)) {
-		I915_WRITE(PCH_PP_CONTROL,
-			   I915_READ(PCH_PP_CONTROL) | PANEL_UNLOCK_REGS);
-	} else {
-		I915_WRITE(PP_CONTROL,
-			   I915_READ(PP_CONTROL) | PANEL_UNLOCK_REGS);
-	}
 	if (!intel_lvds_supported(dev))
 		return false;
 
@@ -1121,6 +1083,19 @@ out:
 		pwm = I915_READ(BLC_PWM_PCH_CTL1);
 		pwm |= PWM_PCH_ENABLE;
 		I915_WRITE(BLC_PWM_PCH_CTL1, pwm);
+		/*
+		 * Unlock registers and just
+		 * leave them unlocked
+		 */
+		I915_WRITE(PCH_PP_CONTROL,
+			   I915_READ(PCH_PP_CONTROL) | PANEL_UNLOCK_REGS);
+	} else {
+		/*
+		 * Unlock registers and just
+		 * leave them unlocked
+		 */
+		I915_WRITE(PP_CONTROL,
+			   I915_READ(PP_CONTROL) | PANEL_UNLOCK_REGS);
 	}
 	dev_priv->lid_notifier.notifier_call = intel_lid_notify;
 	if (acpi_lid_notifier_register(&dev_priv->lid_notifier)) {

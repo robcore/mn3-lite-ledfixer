@@ -225,7 +225,7 @@ static int system_suspend_handler(struct notifier_block *nb,
 #ifdef CONFIG_SEC_SMART_MGR_RUNQUEUE_AVG
 		{
 			pr_err("system_suspend_handler PM_POST_SUSPEND");
-			run_queue_avg_ignore_count = 2;
+			run_queue_avg_ignore_count =2;
 		}
 #endif
 		break;
@@ -438,6 +438,12 @@ static int __init msm_rq_stats_init(void)
 	int i;
 	struct cpufreq_policy cpu_policy;
 
+#ifndef CONFIG_SMP
+	/* Bail out if this is not an SMP Target */
+	rq_info.init = 0;
+	return -ENOSYS;
+#endif
+
 	rq_wq = create_singlethread_workqueue("rq_stats");
 	BUG_ON(!rq_wq);
 	INIT_WORK(&rq_info.def_timer_work, def_work_fn);
@@ -472,6 +478,12 @@ late_initcall(msm_rq_stats_init);
 
 static int __init msm_rq_stats_early_init(void)
 {
+#ifndef CONFIG_SMP
+	/* Bail out if this is not an SMP Target */
+	rq_info.init = 0;
+	return -ENOSYS;
+#endif
+
 	pm_notifier(system_suspend_handler, 0);
 	return 0;
 }

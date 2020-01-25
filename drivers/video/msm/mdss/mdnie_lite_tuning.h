@@ -144,10 +144,6 @@
 #define SIG_MDNIE_BROWSER_TONE3	42
 #endif
 
-#define MDNIE_VERSION "1.1 by Yank555.lu"
-#define HIJACK_DISABLED	0
-#define HIJACK_ENABLED	1
-
 enum SCENARIO {
 	mDNIe_UI_MODE,
 	mDNIe_VIDEO_MODE,

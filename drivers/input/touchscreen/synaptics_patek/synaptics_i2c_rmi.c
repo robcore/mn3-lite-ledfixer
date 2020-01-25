@@ -14,7 +14,7 @@
 #include "synaptics_i2c_rmi.h"
 
 extern int boot_mode_recovery;
-extern unsigned int system_rev;
+extern int system_rev;
 static struct list_head exp_fn_list;
 
 #ifdef TSP_PATTERN_TRACKING_METHOD

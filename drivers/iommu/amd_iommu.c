@@ -450,27 +450,12 @@ static void dump_command(unsigned long phys_addr)
 
 static void iommu_print_event(struct amd_iommu *iommu, void *__evt)
 {
-	int type, devid, domid, flags;
-	volatile u32 *event = __evt;
-	int count = 0;
-	u64 address;
-
-retry:
-	type    = (event[1] >> EVENT_TYPE_SHIFT)  & EVENT_TYPE_MASK;
-	devid   = (event[0] >> EVENT_DEVID_SHIFT) & EVENT_DEVID_MASK;
-	domid   = (event[1] >> EVENT_DOMID_SHIFT) & EVENT_DOMID_MASK;
-	flags   = (event[1] >> EVENT_FLAGS_SHIFT) & EVENT_FLAGS_MASK;
-	address = (u64)(((u64)event[3]) << 32) | event[2];
-
-	if (type == 0) {
-		/* Did we hit the erratum? */
-		if (++count == LOOP_TIMEOUT) {
-			pr_err("AMD-Vi: No event written to event log\n");
-			return;
-		}
-		udelay(1);
-		goto retry;
-	}
+	u32 *event = __evt;
+	int type  = (event[1] >> EVENT_TYPE_SHIFT)  & EVENT_TYPE_MASK;
+	int devid = (event[0] >> EVENT_DEVID_SHIFT) & EVENT_DEVID_MASK;
+	int domid = (event[1] >> EVENT_DOMID_SHIFT) & EVENT_DOMID_MASK;
+	int flags = (event[1] >> EVENT_FLAGS_SHIFT) & EVENT_FLAGS_MASK;
+	u64 address = (u64)(((u64)event[3]) << 32) | event[2];
 
 	printk(KERN_ERR "AMD-Vi: Event logged [");
 
@@ -523,17 +508,12 @@ retry:
 	default:
 		printk(KERN_ERR "UNKNOWN type=0x%02x]\n", type);
 	}
-
-	memset(__evt, 0, 4 * sizeof(u32));
 }
 
 static void iommu_poll_events(struct amd_iommu *iommu)
 {
 	u32 head, tail;
 	unsigned long flags;
-
-	/* enable event interrupts again */
-	writel(MMIO_STATUS_EVT_INT_MASK, iommu->mmio_base + MMIO_STATUS_OFFSET);
 
 	spin_lock_irqsave(&iommu->lock, flags);
 
@@ -1272,10 +1252,6 @@ static unsigned long iommu_unmap_page(struct protection_domain *dom,
 
 			/* Large PTE found which maps this address */
 			unmap_size = PTE_PAGE_SIZE(*pte);
-
-			/* Only unmap from the first pte in the page */
-			if ((unmap_size - 1) & bus_addr)
-				break;
 			count      = PAGE_SIZE_PTE_COUNT(unmap_size);
 			for (i = 0; i < count; i++)
 				pte[i] = 0ULL;
@@ -1285,7 +1261,7 @@ static unsigned long iommu_unmap_page(struct protection_domain *dom,
 		unmapped += unmap_size;
 	}
 
-	BUG_ON(unmapped && !is_power_of_2(unmapped));
+	BUG_ON(!is_power_of_2(unmapped));
 
 	return unmapped;
 }
@@ -1894,8 +1870,8 @@ static void set_dte_entry(u16 devid, struct protection_domain *domain, bool ats)
 static void clear_dte_entry(u16 devid)
 {
 	/* remove entry from the device table seen by the hardware */
-	amd_iommu_dev_table[devid].data[0]  = IOMMU_PTE_P | IOMMU_PTE_TV;
-	amd_iommu_dev_table[devid].data[1] &= DTE_FLAG_MASK;
+	amd_iommu_dev_table[devid].data[0] = IOMMU_PTE_P | IOMMU_PTE_TV;
+	amd_iommu_dev_table[devid].data[1] = 0;
 
 	amd_iommu_apply_erratum_63(devid);
 }
@@ -2059,20 +2035,20 @@ out_err:
 }
 
 /* FIXME: Move this to PCI code */
-#define PCI_PRI_TLP_OFF		(1 << 15)
+#define PCI_PRI_TLP_OFF		(1 << 2)
 
 bool pci_pri_tlp_required(struct pci_dev *pdev)
 {
-	u16 status;
+	u16 control;
 	int pos;
 
 	pos = pci_find_ext_capability(pdev, PCI_EXT_CAP_ID_PRI);
 	if (!pos)
 		return false;
 
-	pci_read_config_word(pdev, pos + PCI_PRI_STATUS, &status);
+	pci_read_config_word(pdev, pos + PCI_PRI_CTRL, &control);
 
-	return (status & PCI_PRI_TLP_OFF) ? true : false;
+	return (control & PCI_PRI_TLP_OFF) ? true : false;
 }
 
 /*
@@ -2241,18 +2217,6 @@ static int device_change_notifier(struct notifier_block *nb,
 	case BUS_NOTIFY_ADD_DEVICE:
 
 		iommu_init_device(dev);
-
-		/*
-		 * dev_data is still NULL and
-		 * got initialized in iommu_init_device
-		 */
-		dev_data = get_dev_data(dev);
-
-		if (iommu_pass_through || dev_data->iommu_v2) {
-			dev_data->passthrough = true;
-			attach_device(dev, pt_domain);
-			break;
-		}
 
 		domain = domain_for_device(dev);
 
@@ -2989,16 +2953,14 @@ free_domains:
 
 static void cleanup_domain(struct protection_domain *domain)
 {
-	struct iommu_dev_data *entry;
+	struct iommu_dev_data *dev_data, *next;
 	unsigned long flags;
 
 	write_lock_irqsave(&amd_iommu_devtable_lock, flags);
 
-	while (!list_empty(&domain->dev_list)) {
-		entry = list_first_entry(&domain->dev_list,
-					 struct iommu_dev_data, list);
-		__detach_device(entry);
-		atomic_set(&entry->bind, 0);
+	list_for_each_entry_safe(dev_data, next, &domain->dev_list, list) {
+		__detach_device(dev_data);
+		atomic_set(&dev_data->bind, 0);
 	}
 
 	write_unlock_irqrestore(&amd_iommu_devtable_lock, flags);

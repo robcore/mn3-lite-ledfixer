@@ -1157,7 +1157,7 @@ long diagchar_ioctl(struct file *filp,
 int silent_log_panic_handler(void)
 {
 	int ret = 0;
-	if(driver && driver->silent_log_pid) {
+	if(driver->silent_log_pid) {
 		pr_info("%s: killing slient log...\n", __func__);
 		kill_pid(driver->silent_log_pid, SIGTERM, 1);
 		driver->silent_log_pid = NULL;

@@ -1185,11 +1185,6 @@ out:
 	case 0:
 	case -ERESTARTSYS:
 	case -EINTR:
-	case -EBUSY:
-		/*
-		 * EBUSY is ok: this just means that another thread
-		 * already did the job.
-		 */
 		return VM_FAULT_NOPAGE;
 	case -ENOMEM:
 		return VM_FAULT_OOM;
@@ -2192,13 +2187,6 @@ static int sandybridge_write_fence_reg(struct drm_i915_gem_object *obj,
 	int regnum = obj->fence_reg;
 	uint64_t val;
 
-	/* Adjust fence size to match tiled area */
-	if (obj->tiling_mode != I915_TILING_NONE) {
-		uint32_t row_size = obj->stride *
-			(obj->tiling_mode == I915_TILING_Y ? 32 : 8);
-		size = (size / row_size) * row_size;
-	}
-
 	val = (uint64_t)((obj->gtt_offset + size - 4096) &
 			 0xfffff000) << 32;
 	val |= obj->gtt_offset & 0xfffff000;
@@ -2235,13 +2223,6 @@ static int i965_write_fence_reg(struct drm_i915_gem_object *obj,
 	u32 size = obj->gtt_space->size;
 	int regnum = obj->fence_reg;
 	uint64_t val;
-
-	/* Adjust fence size to match tiled area */
-	if (obj->tiling_mode != I915_TILING_NONE) {
-		uint32_t row_size = obj->stride *
-			(obj->tiling_mode == I915_TILING_Y ? 32 : 8);
-		size = (size / row_size) * row_size;
-	}
 
 	val = (uint64_t)((obj->gtt_offset + size - 4096) &
 		    0xfffff000) << 32;
@@ -3423,14 +3404,13 @@ i915_gem_pin_ioctl(struct drm_device *dev, void *data,
 		goto out;
 	}
 
-	if (obj->user_pin_count == 0) {
+	obj->user_pin_count++;
+	obj->pin_filp = file;
+	if (obj->user_pin_count == 1) {
 		ret = i915_gem_object_pin(obj, args->alignment, true);
 		if (ret)
 			goto out;
 	}
-
-	obj->user_pin_count++;
-	obj->pin_filp = file;
 
 	/* XXX - flush the CPU caches for pinned objects
 	 * as the X server doesn't manage domains yet

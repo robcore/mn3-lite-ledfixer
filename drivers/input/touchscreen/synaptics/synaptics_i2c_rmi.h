@@ -45,7 +45,7 @@
 #define DEFAULT_DISABLE	0
 
 /* feature define */
-
+#define TSP_BOOSTER	/* DVFS feature : TOUCH BOOSTER */
 #define USE_OPEN_CLOSE	/* Use when CONFIG_HAS_EARLYSUSPEND is disabled */
 #define REPORT_2D_W
 #define REDUCE_I2C_DATA_LENGTH
@@ -59,7 +59,7 @@
 #define USE_RECENT_TOUCHKEY
 #define PROXIMITY
 #define EDGE_SWIPE
-//#define TKEY_BOOSTER
+#define TKEY_BOOSTER
 #define SYNAPTICS_DEVICE_NAME	"T320"
 #define USE_PALM_REJECTION_KERNEL
 
@@ -208,7 +208,7 @@
 #define TOUCHKEY_BACKLIGHT "button-backlight"
 #endif
 
-#if 0
+#if defined(TSP_BOOSTER) || defined(TKEY_BOOSTER)
 #define DVFS_STAGE_NINTH	9
 #define DVFS_STAGE_PENTA	5
 #define DVFS_STAGE_TRIPLE	3
@@ -510,7 +510,7 @@
 #define HOVER_PRESSED		0x5
 #define GLOVE_PRESSED		0x6
 
-#ifdef ENABLE_F12_OBJTYPE
+#ifdef ENABLE_F12_OBJTYPE 
 /* Define for object type report enable Mask(F12_2D_CTRL23) */
 #define OBJ_TYPE_FINGER			(1 << 0)
 #define OBJ_TYPE_PASSIVE_STYLUS	(1 << 1)
@@ -551,7 +551,7 @@
 #endif
 
 
-extern unsigned int system_rev;
+extern int system_rev;
 
 struct synaptics_rmi4_f01_device_status {
 	union {
@@ -1216,7 +1216,7 @@ struct synaptics_rmi4_data {
 	int bootmode;
 #endif
 
-#if 0
+#ifdef TSP_BOOSTER
 	struct delayed_work	work_dvfs_off;
 	struct delayed_work	work_dvfs_chg;
 	struct mutex		dvfs_lock;
@@ -1225,7 +1225,7 @@ struct synaptics_rmi4_data {
 	int dvfs_boost_mode;
 	int dvfs_freq;
 #endif
-#if 0
+#ifdef TKEY_BOOSTER
 	struct delayed_work	work_tkey_dvfs_off;
 	struct delayed_work	work_tkey_dvfs_chg;
 	struct mutex		tkey_dvfs_lock;

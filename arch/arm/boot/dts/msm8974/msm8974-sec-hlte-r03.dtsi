@@ -129,8 +129,6 @@
 	};
 
 	i2c@22 {
-		#address-cells = <1>;
-		#size-cells = <0>;
 		cell-index = <22>;
 		compatible = "i2c-gpio";
 		gpios = <&msmgpio 109 0 /* sda */
@@ -161,8 +159,6 @@
 	};
 
 	actuator1: qcom,actuator@36 {
-		#address-cells = <1>;
-		#size-cells = <1>;
 		compatible = "qcom,actuator";
 		cell-index = <1>;
 		reg = <0x36>;

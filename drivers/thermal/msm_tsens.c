@@ -165,7 +165,7 @@ static int tsens_tz_set_mode(struct thermal_zone_device *thermal,
 		return -EINVAL;
 
 	if (mode != tm_sensor->mode) {
-		pr_debug("%s: mode: %d --> %d\n", __func__, tm_sensor->mode,
+		pr_info("%s: mode: %d --> %d\n", __func__, tm_sensor->mode,
 									 mode);
 
 		reg = readl(TSENS_CNTL_ADDR);
@@ -549,14 +549,14 @@ static int __devinit tsens_tm_probe(struct platform_device *pdev)
 		calib_data = calib_data_backup;
 
 	if (!calib_data) {
-		pr_debug("%s: No temperature sensor data for calibration"
+		pr_err("%s: No temperature sensor data for calibration"
 						" in QFPROM!\n", __func__);
 		return -ENODEV;
 	}
 
 	tmdev = kzalloc(sizeof(struct tsens_tm_device), GFP_KERNEL);
 	if (tmdev == NULL) {
-		pr_debug("%s: kzalloc() failed.\n", __func__);
+		pr_err("%s: kzalloc() failed.\n", __func__);
 		return -ENOMEM;
 	}
 
@@ -594,7 +594,7 @@ static int __devinit tsens_tm_probe(struct platform_device *pdev)
 				TSENS_TRIP_NUM, &tmdev->sensor[i],
 				&tsens_thermal_zone_ops, 0, 0, 0, 0);
 		if (tmdev->sensor[i].tz_dev == NULL) {
-			pr_debug("%s: thermal_zone_device_register() failed.\n",
+			pr_err("%s: thermal_zone_device_register() failed.\n",
 			__func__);
 			kfree(tmdev);
 			return -ENODEV;
@@ -606,7 +606,7 @@ static int __devinit tsens_tm_probe(struct platform_device *pdev)
 	rc = request_threaded_irq(TSENS_UPPER_LOWER_INT, tsens_isr,
 		tsens_isr_thread, 0, "tsens", tmdev);
 	if (rc < 0) {
-		pr_debug("%s: request_irq FAIL: %d\n", __func__, rc);
+		pr_err("%s: request_irq FAIL: %d\n", __func__, rc);
 		kfree(tmdev);
 		return rc;
 	}

@@ -409,10 +409,7 @@ static inline
 				struct b43_dmadesc_meta *meta)
 {
 	if (meta->skb) {
-		if (ring->tx)
-			ieee80211_free_txskb(ring->dev->wl->hw, meta->skb);
-		else
-			dev_kfree_skb_any(meta->skb);
+		dev_kfree_skb_any(meta->skb);
 		meta->skb = NULL;
 	}
 }
@@ -1457,7 +1454,7 @@ int b43_dma_tx(struct b43_wldev *dev, struct sk_buff *skb)
 	if (unlikely(err == -ENOKEY)) {
 		/* Drop this packet, as we don't have the encryption key
 		 * anymore and must not transmit it unencrypted. */
-		ieee80211_free_txskb(dev->wl->hw, skb);
+		dev_kfree_skb_any(skb);
 		err = 0;
 		goto out;
 	}
@@ -1690,25 +1687,6 @@ drop_recycle_buffer:
 	/* Poison and recycle the RX buffer. */
 	b43_poison_rx_buffer(ring, skb);
 	sync_descbuffer_for_device(ring, dmaaddr, ring->rx_buffersize);
-}
-
-void b43_dma_handle_rx_overflow(struct b43_dmaring *ring)
-{
-	int current_slot, previous_slot;
-
-	B43_WARN_ON(ring->tx);
-
-	/* Device has filled all buffers, drop all packets and let TCP
-	 * decrease speed.
-	 * Decrement RX index by one will let the device to see all slots
-	 * as free again
-	 */
-	/*
-	*TODO: How to increase rx_drop in mac80211?
-	*/
-	current_slot = ring->ops->get_current_rxslot(ring);
-	previous_slot = prev_slot(ring, current_slot);
-	ring->ops->set_current_rxslot(ring, previous_slot);
 }
 
 void b43_dma_rx(struct b43_dmaring *ring)

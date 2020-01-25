@@ -111,30 +111,17 @@ static int __wcd9xxx_reg_read(
 
 int wcd9xxx_reg_read(
 	struct wcd9xxx_core_resource *core_res,
-	unsigned short reg) {
+	unsigned short reg)
+{
 	struct wcd9xxx *wcd9xxx = (struct wcd9xxx *) core_res->parent;
 	return __wcd9xxx_reg_read(wcd9xxx, reg);
 
 }
 EXPORT_SYMBOL(wcd9xxx_reg_read);
 
-static unsigned int sound_control_override = 0;
-void lock_sound_control(struct wcd9xxx_core_resource *core_res,
-						unsigned int lockval) {
-	struct wcd9xxx *wcd9xxx = (struct wcd9xxx *) core_res->parent;
-	if (unlikely(lockval <= 0))
-		lockval = 0;
-	if (unlikely(lockval >= 1))
-		lockval = 1;
-
-	mutex_lock(&wcd9xxx->io_lock);
-	sound_control_override = lockval;
-	mutex_unlock(&wcd9xxx->io_lock);
-}
-EXPORT_SYMBOL(lock_sound_control);
-
 static int wcd9xxx_write(struct wcd9xxx *wcd9xxx, unsigned short reg,
-			int bytes, void *src, bool interface_reg) {
+			int bytes, void *src, bool interface_reg)
+{
 	int i;
 
 	if (bytes <= 0) {
@@ -142,72 +129,30 @@ static int wcd9xxx_write(struct wcd9xxx *wcd9xxx, unsigned short reg,
 		return -EINVAL;
 	}
 
-	if (!sound_control_override) {
-		switch (reg) {
-			case 0x2B7:
-			case 0x2BF:
-			case 0x2E7:
-				return 0;
-			default:
-				break;
-		}
-	}
-/*
-	if (reg == 0x1AE)
-		pr_info("%s: HPH Left PA write: %u\n", __func__, (u8 *)src);
-	if (reg == 0x1B4)
-		pr_info("%s: HPH Right PA write: %u\n", __func__, (u8 *)src);
-*/
-/*
 	for (i = 0; i < bytes; i++)
 		dev_dbg(wcd9xxx->dev, "Write %02x to 0x%x\n", ((u8 *)src)[i],
 			reg + i);
-*/
+
 	return wcd9xxx->write_dev(wcd9xxx, reg, bytes, src, interface_reg);
 }
-extern u8 hphl_cached_gain;
-extern u8 hphr_cached_gain;
-extern u8 speaker_cached_gain;
-static int __wcd9xxx_reg_write(struct wcd9xxx *wcd9xxx,
-							   unsigned short reg, u8 val) {
+
+static int __wcd9xxx_reg_write(
+	struct wcd9xxx *wcd9xxx,
+	unsigned short reg, u8 val)
+{
 	int ret;
-	bool need_fixup = false;
 
 	mutex_lock(&wcd9xxx->io_lock);
-	if ((!sound_control_override) &&
-	   (reg == 0x2E7 || reg == 0x2B7 || reg == 0x2BF)) {
-		mutex_unlock(&wcd9xxx->io_lock);
-		need_fixup = true;
-	} else {
-		ret = wcd9xxx_write(wcd9xxx, reg, 1, &val, false);
-		mutex_unlock(&wcd9xxx->io_lock);
-	}
-
-	if (need_fixup) {
-		lock_sound_control(&wcd9xxx->core_res, 1);
-		mutex_lock(&wcd9xxx->io_lock);
-		switch (reg) {
-			case 0x2B7:
-				ret = wcd9xxx_write(wcd9xxx, reg, 1, &hphl_cached_gain, false);
-				break;
-			case 0x2BF:
-				ret = wcd9xxx_write(wcd9xxx, reg, 1, &hphr_cached_gain, false);
-				break;
-			case 0x2E7:
-				ret = wcd9xxx_write(wcd9xxx, reg, 1, &speaker_cached_gain, false);
-				break;
-			default:
-				break;
-		}
-		mutex_unlock(&wcd9xxx->io_lock);
-		lock_sound_control(&wcd9xxx->core_res, 0);
-	}
+	ret = wcd9xxx_write(wcd9xxx, reg, 1, &val, false);
+	mutex_unlock(&wcd9xxx->io_lock);
 
 	return ret;
 }
 
-int wcd9xxx_reg_write(struct wcd9xxx_core_resource *core_res,
-					  unsigned short reg, u8 val) {
+int wcd9xxx_reg_write(
+	struct wcd9xxx_core_resource *core_res,
+	unsigned short reg, u8 val)
+{
 	struct wcd9xxx *wcd9xxx = (struct wcd9xxx *) core_res->parent;
 	return __wcd9xxx_reg_write(wcd9xxx, reg, val);
 }
