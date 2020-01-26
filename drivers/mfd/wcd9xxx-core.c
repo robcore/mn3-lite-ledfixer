@@ -170,7 +170,7 @@ extern u8 hphr_cached_gain;
 extern u8 speaker_cached_gain;
 static int __wcd9xxx_reg_write(struct wcd9xxx *wcd9xxx,
 							   unsigned short reg, u8 val) {
-	int ret;
+	int ret = 0;
 	bool need_fixup = false;
 
 	mutex_lock(&wcd9xxx->io_lock);
