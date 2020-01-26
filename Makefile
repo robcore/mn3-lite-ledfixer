@@ -378,7 +378,7 @@ LINUXINCLUDE    := -I$(srctree)/arch/$(hdr-arch)/include \
 KBUILD_CPPFLAGS := -D__KERNEL__
 
 KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
-		   -Wno-unused-variable -Wno-maybe-uninitialized \
+		   -Wno-unused-variable -Wmaybe-uninitialized \
 		   -Werror-implicit-function-declaration \
 		   -fno-strict-aliasing -fno-common \
 		   -std=gnu89 \
