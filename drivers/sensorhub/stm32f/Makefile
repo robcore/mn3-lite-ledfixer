@@ -1,7 +1,7 @@
 #
 # Makefile for the sensor drivers.
 #
-
+EXTRA_CFLAGS += -Wno-maybe-uninitialized
 # Each configuration option enables a list of files.
 obj-$(CONFIG_SENSORS_SSP)		+= ssp_dev.o ssp_i2c.o ssp_data.o ssp_sysfs.o\
 						ssp_input.o ssp_firmware.o ssp_debug.o ssp_iio_ring.o ssp_iio_trigger.o
