@@ -994,8 +994,8 @@ static struct dsi_cmd_desc pkt_size_cmd = {
 int mdss_dsi_cmds_rx(struct mdss_dsi_ctrl_pdata *ctrl,
 			struct dsi_cmd_desc *cmds, int rlen)
 {
-	int data_byte, rx_byte, dlen, end;
-	int short_response, diff, pkt_size, ret = 0;
+	int data_byte = 0, rx_byte = 0, dlen = 0, end = 0;
+	int short_response = 0, diff = 0, pkt_size = 0, ret = 0;
 	int i;
 
 	struct dsi_buf *tp, *rp;
