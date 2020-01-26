@@ -1595,7 +1595,7 @@ static int wacom_i2c_probe(struct i2c_client *client,
 
 #ifdef USE_WACOM_BLOCK_KEYEVENT
 	INIT_DELAYED_WORK(&wac_i2c->touch_pressed_work, wacom_i2c_touch_pressed_work);
-	wac_i2c->key_delay_time = 100;
+	wac_i2c->key_delay_time = 10;
 #endif
 
 #ifdef USE_WACOM_LCD_WORKAROUND
