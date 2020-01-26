@@ -24,24 +24,40 @@ if test $# -ne 2; then
 	exit 1
 fi
 
-vmlinux_var=$1
-system_map_var=$2
-
-if [[ -z "$vmlinux_var" || -z "$system_map_var" || -z "$READELF" || -z "$HOSTCC" ]]; then
+if [ -z "$1" ] || [ -z "$2" ];
+then
 	echo "$0 : variables not set"
 	exit 1
 fi
 
-if [[ ! -f $vmlinux_var || ! -f $system_map_var  ]]; then
-	echo "$0 : files does not exist"
+vmlinux_var=$1
+system_map_var=$2
+
+if [ ! -f "$vmlinux_var" ] || [ ! -f "$system_map_var"  ];
+then
+	echo "$0 : filenames provided do not exist"
 	exit 1
+else
+	echo "$0 : files provided are $vmlinux_var and $system_map_var"
 fi
 
-rm -f vmlinux.elf
-$READELF -S $vmlinux_var > vmlinux.elf
+if [ -z "$READELF" ];
+then
+	READELF="/opt/toolchains/arm-cortex_a15-linux-gnueabihf_5.3/bin/arm-cortex_a15-linux-gnueabihf-readelf"
+fi
 
-retval=$?
-if [ $retval -ne 0 ]; then
+echo "$0 : READELF is $READELF"
+
+if [ -z "$HOSTCC" ];
+then
+	HOSTCC="/opt/toolchains/arm-cortex_a15-linux-gnueabihf_5.3/bin/arm-cortex_a15-linux-gnueabihf-gcc-5.3.0"
+fi
+
+echo "$0 : HOSTCC is $HOSTCC"
+
+rm -f vmlinux.elf
+"$READELF" -S "$vmlinux_var" > "vmlinux.elf"
+if [ $? -ne 0 ]; then
 	echo "$0 : $READELF returned error"
 	exit 1
 fi
@@ -138,15 +154,14 @@ fi
 rm -f builtime_bytes.txt #used for debugging
 rm -f builtime_bytes.bin #used for calculating hmac 
 
-date_var=`date`
+date_var=$(date)
 echo "Created on : " $date_var > builtime_bytes.txt
 
 #Using offsets_sizes.txt, dump crypto bytes from vmlinux file into builtime_bytes.bin
 #Also gather printf's into builtime_bytes.txt, for debugging if required
 while read args; do
 	./fips_crypto_utils -g $vmlinux_var $args builtime_bytes.bin >> builtime_bytes.txt
-	retval=$?
-	if [ $retval -ne 0 ]; then
+	if [ $? -ne 0 ]; then
 	    echo "$0 : fips_crypto_utils : unable to gather crypto bytes from vmlinux"
 	    exit 1
 	fi
@@ -158,7 +173,7 @@ if [[ ! -f builtime_bytes.bin ]]; then
 	exit 1
 fi
 
-file_size=`cat builtime_bytes.bin| wc -c`
+file_size=$(cat builtime_bytes.bin | wc -c)
 
 # Make sure that file size of crypto_hmac.bin is as expected
 if [ $total_bytes -ne $file_size ]; then
@@ -170,16 +185,14 @@ key="The quick brown fox jumps over the lazy dog"
 
 # Now, generate the hmac.
 openssl dgst -sha256 -hmac "$key" -binary -out crypto_hmac.bin builtime_bytes.bin
-retval=$?
-if [ $retval -ne 0 ]; then
+if [ $? -ne 0 ]; then
 	echo "$0 : openssl dgst command returned error"
 	exit 1
 fi
 
 # Just, for debugging, print the same hmac on console
 openssl dgst -sha256 -hmac "$key" builtime_bytes.bin
-retval=$?
-if [ $retval -ne 0 ]; then
+if [ $? -ne 0 ]; then
 	echo "$0 : openssl dgst command returned error"
 	exit 1
 fi
@@ -189,7 +202,7 @@ if [[ ! -f crypto_hmac.bin ]]; then
 	exit 1
 fi
 
-file_size=`cat crypto_hmac.bin| wc -c`
+file_size=$(cat crypto_hmac.bin | wc -c)
 
 # hmac(sha256) produces 32 bytes of hmac 
 if [ $file_size -ne 32 ]; then
@@ -203,7 +216,7 @@ fi
 # This variable has a place holder 32 bytes that will be over-written with generated hmac.
 # This way, this build time hmac, will be available as a read-only variable at run-time.
 
-first_addr=`cat $system_map_var|grep -w "builtime_crypto_hmac"|awk '{print $1}' `
+first_addr=$(cat $system_map_var | grep -w "builtime_crypto_hmac" | awk '{print $1}')
 if  [[ ! $first_addr =~ $reg ]]; then echo "$0 : first_addr of hmac variable invalid"; exit 1; fi
 
 start_addr=`cat vmlinux.elf |grep -w ".rodata"|grep PROGBITS|awk '{print $5}' `
