@@ -24,40 +24,24 @@ if test $# -ne 2; then
 	exit 1
 fi
 
-if [ -z "$1" ] || [ -z "$2" ];
-then
+vmlinux_var=$1
+system_map_var=$2
+
+if [[ -z "$vmlinux_var" || -z "$system_map_var" || -z "$READELF" || -z "$HOSTCC" ]]; then
 	echo "$0 : variables not set"
 	exit 1
 fi
 
-vmlinux_var=$1
-system_map_var=$2
-
-if [ ! -f "$vmlinux_var" ] || [ ! -f "$system_map_var"  ];
-then
-	echo "$0 : filenames provided do not exist"
+if [[ ! -f $vmlinux_var || ! -f $system_map_var  ]]; then
+	echo "$0 : files does not exist"
 	exit 1
-else
-	echo "$0 : files provided are $vmlinux_var and $system_map_var"
 fi
-
-if [ -z "$READELF" ];
-then
-	READELF="/opt/toolchains/arm-cortex_a15-linux-gnueabihf_5.3/bin/arm-cortex_a15-linux-gnueabihf-readelf"
-fi
-
-echo "$0 : READELF is $READELF"
-
-if [ -z "$HOSTCC" ];
-then
-	HOSTCC="/opt/toolchains/arm-cortex_a15-linux-gnueabihf_5.3/bin/arm-cortex_a15-linux-gnueabihf-gcc-5.3.0"
-fi
-
-echo "$0 : HOSTCC is $HOSTCC"
 
 rm -f vmlinux.elf
-"$READELF" -S "$vmlinux_var" > "vmlinux.elf"
-if [ $? -ne 0 ]; then
+$READELF -S $vmlinux_var > vmlinux.elf
+
+retval=$?
+if [ $retval -ne 0 ]; then
 	echo "$0 : $READELF returned error"
 	exit 1
 fi
@@ -80,10 +64,10 @@ array[7]=".exit.text first_crypto_asm_exit last_crypto_asm_exit \$4 \$5"
 rm -f offsets_sizes.txt
 
 #Addresses retrieved must be a valid hex
-reg="^[0-9A-Fa-f]+$"
+reg='^[0-9A-Fa-f]+$'
 
 #Total bytes of all crypto sections scanned. Used later for error checking
-total_bytes=0
+total_bytes=0;
 
 # For each type of Section : 
 # first_addr  = Address of first_crypto_text, first_crypto_rodata, etc.
@@ -111,31 +95,31 @@ for i in "${array[@]}"; do
 		let k+=1	
 	done
 
-	first_addr=$(cat $system_map_var|grep -w $var2|awk '{print $1}')
+	first_addr=`cat $system_map_var|grep -w $var2|awk '{print $1}'`
 	if  [[ ! $first_addr =~ $reg ]]; then echo "$0 : first_addr invalid"; exit 1; fi
 
-	last_addr=$(cat $system_map_var|grep -w $var3|awk '{print $1}')
+	last_addr=`cat $system_map_var|grep -w $var3|awk '{print $1}'`
 	if  [[ ! $last_addr =~ $reg ]]; then echo "$0 : last_addr invalid"; exit 1; fi
 
-	start_addr=$(cat vmlinux.elf |grep -w $var1|grep PROGBITS|awk '{print '$var4'}')
+	start_addr=`cat vmlinux.elf |grep -w $var1|grep PROGBITS|awk '{print '$var4'}'`
 	if  [[ ! $start_addr =~ $reg ]]; then echo "$0 : start_addr invalid"; exit 1; fi
 
-	offset=$(cat vmlinux.elf |grep -w $var1|grep PROGBITS|awk '{print '$var5'}')
+	offset=`cat vmlinux.elf |grep -w $var1|grep PROGBITS|awk '{print '$var5'}'`
 	if  [[ ! $offset =~ $reg ]]; then echo "$0 : offset invalid"; exit 1; fi
 
 	if [[ $((16#$first_addr)) -lt $((16#$start_addr)) ]]; then echo "$0 : first_addr < start_addr"; exit 1; fi
 
 	if [[ $((16#$last_addr)) -le $((16#$first_addr)) ]]; then echo "$0 : last_addr <= first_addr"; exit 1; fi
 
-	file_offset=$(expr $((16#$offset)) + $((16#$first_addr)) - $((16#$start_addr)))
+	file_offset=`expr $((16#$offset)) + $((16#$first_addr)) - $((16#$start_addr))`
 	if  [[ $file_offset -le 0 ]]; then echo "$0 : file_offset invalid"; exit 1; fi
 
-	size=$(expr $((16#$last_addr)) - $((16#$first_addr)))
+	size=`expr $((16#$last_addr)) - $((16#$first_addr))`
 	if  [[ $size -le 0 ]]; then echo "$0 : crypto section size invalid"; exit 1; fi
 
 	echo "$var1 " $file_offset " " $size >> offsets_sizes.txt
 
-	let "total_bytes += $(expr $((16#$last_addr)) - $((16#$first_addr)))"
+	let "total_bytes += `expr $((16#$last_addr)) - $((16#$first_addr))`"
 done
 
 if [[ ! -f offsets_sizes.txt ]]; then
@@ -154,14 +138,15 @@ fi
 rm -f builtime_bytes.txt #used for debugging
 rm -f builtime_bytes.bin #used for calculating hmac 
 
-date_var=$(date)
+date_var=`date`
 echo "Created on : " $date_var > builtime_bytes.txt
 
 #Using offsets_sizes.txt, dump crypto bytes from vmlinux file into builtime_bytes.bin
 #Also gather printf's into builtime_bytes.txt, for debugging if required
 while read args; do
 	./fips_crypto_utils -g $vmlinux_var $args builtime_bytes.bin >> builtime_bytes.txt
-	if [ $? -ne 0 ]; then
+	retval=$?
+	if [ $retval -ne 0 ]; then
 	    echo "$0 : fips_crypto_utils : unable to gather crypto bytes from vmlinux"
 	    exit 1
 	fi
@@ -173,7 +158,7 @@ if [[ ! -f builtime_bytes.bin ]]; then
 	exit 1
 fi
 
-file_size=$(cat builtime_bytes.bin | wc -c)
+file_size=`cat builtime_bytes.bin| wc -c`
 
 # Make sure that file size of crypto_hmac.bin is as expected
 if [ $total_bytes -ne $file_size ]; then
@@ -185,14 +170,16 @@ key="The quick brown fox jumps over the lazy dog"
 
 # Now, generate the hmac.
 openssl dgst -sha256 -hmac "$key" -binary -out crypto_hmac.bin builtime_bytes.bin
-if [ $? -ne 0 ]; then
+retval=$?
+if [ $retval -ne 0 ]; then
 	echo "$0 : openssl dgst command returned error"
 	exit 1
 fi
 
 # Just, for debugging, print the same hmac on console
 openssl dgst -sha256 -hmac "$key" builtime_bytes.bin
-if [ $? -ne 0 ]; then
+retval=$?
+if [ $retval -ne 0 ]; then
 	echo "$0 : openssl dgst command returned error"
 	exit 1
 fi
@@ -202,7 +189,7 @@ if [[ ! -f crypto_hmac.bin ]]; then
 	exit 1
 fi
 
-file_size=$(cat crypto_hmac.bin | wc -c)
+file_size=`cat crypto_hmac.bin| wc -c`
 
 # hmac(sha256) produces 32 bytes of hmac 
 if [ $file_size -ne 32 ]; then
@@ -216,18 +203,18 @@ fi
 # This variable has a place holder 32 bytes that will be over-written with generated hmac.
 # This way, this build time hmac, will be available as a read-only variable at run-time.
 
-first_addr=$(cat $system_map_var | grep -w "builtime_crypto_hmac" | awk '{print $1}')
+first_addr=`cat $system_map_var|grep -w "builtime_crypto_hmac"|awk '{print $1}' `
 if  [[ ! $first_addr =~ $reg ]]; then echo "$0 : first_addr of hmac variable invalid"; exit 1; fi
 
-start_addr=$(cat vmlinux.elf |grep -w ".rodata"|grep PROGBITS|awk '{print $5}' )
+start_addr=`cat vmlinux.elf |grep -w ".rodata"|grep PROGBITS|awk '{print $5}' `
 if  [[ ! $start_addr =~ $reg ]]; then echo "$0 : start_addr of .rodata invalid"; exit 1; fi
 
-offset=$(cat vmlinux.elf |grep -w ".rodata"|grep PROGBITS| awk '{print $6}' )
+offset=`cat vmlinux.elf |grep -w ".rodata"|grep PROGBITS| awk '{print $6}' `
 if  [[ ! $offset =~ $reg ]]; then echo "$0 : offset of .rodata invalid"; exit 1; fi
 
 if [[ $((16#$first_addr)) -le $((16#$start_addr)) ]]; then echo "$0 : hmac var first_addr <= start_addr"; exit 1; fi
 
-hmac_offset=$(expr $((16#$offset)) + $((16#$first_addr)) - $((16#$start_addr)))
+hmac_offset=`expr $((16#$offset)) + $((16#$first_addr)) - $((16#$start_addr))`
 if  [[ $hmac_offset -le 0 ]]; then echo "$0 : hmac_offset invalid"; exit 1; fi
 
 # This does the actual update of hmac into vmlinux file, at given offset
@@ -238,12 +225,11 @@ if [ $retval -ne 0 ]; then
 	exit 1
 fi
 
-echo "$0 : fips_crypto_utils : updated hmac in vmlinux"
-rm -f crypto_hmac.bin &>/dev/null
-rm -f builtime_bytes.txt &>/dev/null
-rm -f builtime_bytes.bin &>/dev/null
-rm -f fips_crypto_utils &>/dev/null
-rm -f vmlinux.elf &>/dev/null
-rm -f offsets_sizes.txt &>/dev/null
+rm -f crypto_hmac.bin
+rm -f builtime_bytes.txt
+rm -f builtime_bytes.bin
+rm -f fips_crypto_utils
+rm -f vmlinux.elf
+rm -f offsets_sizes.txt
 
 # And we are done...

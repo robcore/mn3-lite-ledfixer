@@ -2198,7 +2198,6 @@ fail_set_buffers:
 	kfree(binfo);
 fail_kzalloc:
 	msm_comm_smem_free(inst, handle);
-	binfo = NULL;
 err_no_mem:
 	return rc;
 }
@@ -3575,11 +3574,10 @@ struct msm_smem *msm_comm_smem_alloc(struct msm_vidc_inst *inst,
 			enum hal_buffer buffer_type, int map_kernel)
 {
 	if (!inst) {
-		pr_err("%s: invalid inst: %p\n", __func__, inst);
+		dprintk(VIDC_ERR, "%s: invalid inst: %p\n", __func__, inst);
 		return NULL;
 	}
 	if (power_on_for_smem(inst))
-		pr_err("%s: power_on_for_smem failed!", __func__);
 		return NULL;
 
 	return msm_smem_alloc(inst->mem_client, size, align,
