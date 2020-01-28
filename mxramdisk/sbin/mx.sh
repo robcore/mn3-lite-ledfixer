@@ -55,11 +55,25 @@ fi
 #mount -o remount,rw -t auto /
 #mount -t rootfs -o remount,rw rootfs
 #mount -o remount,rw /system
+if [ -f "/root/sqlite3" ]
+then
+	chown 0:0 "/root/sqlite3"
+	chmod 755 "/root/sqlite3"
+elif [ -f "/sbin/sqlite3" ]
+then
+	chown 0:0 "/sbin/sqlite3"
+	chmod 755 "/sbin/sqlite3"
+fi
+if [ -f "/root/zip" ]
+then
+	chown 0:0 "/root/zip"
+	chmod 755 "/root/zip"
+elif [ -f "/sbin/zip" ]
+then
+	chown 0:0 "/sbin/zip"
+	chmod 755 "/sbin/zip"
+fi
 
-chown 0:0 "/sbin/sqlite3"
-chmod 755 "/sbin/sqlite3"
-chown 0:0 "/sbin/zip"
-chmod 755 "/sbin/zip"
 #busybox ln -sf $(pwd)/sbin/uci $(pwd)/res/synapse/uci
 
 #if [ -e /system/robcore ]; then
@@ -245,28 +259,28 @@ chmod 755 /sys
 supolicy --live "permissive audioserver"
 supolicy --live "permissive default_prop"
 supolicy --live "permissive *"
-chmod 0771 /data/dalvik-cache
-chown 0:0 /data/dalvik-cache
-chmod 0711 /data/dalvik-cache/profiles
-chown system:system /data/dalvik-cache/profiles
-chmod 0711 /data/dalvik-cache/arm
-chown system:system /data/dalvik-cache/arm
+#chmod 0771 /data/dalvik-cache
+#chown 0:0 /data/dalvik-cache
+#chmod 0711 /data/dalvik-cache/profiles
+#chown system:system /data/dalvik-cache/profiles
+#chmod 0711 /data/dalvik-cache/arm
+#chown system:system /data/dalvik-cache/arm
 
-chown system:system /data/data
-chown system:system /data/app-private
-chown root:root /data/app-asec
-chown system:system /data/app-lib
-chown system:system /data/app
-chown root:root /data/property
+#chown system:system /data/data
+#chown system:system /data/app-private
+#chown root:root /data/app-asec
+#chown system:system /data/app-lib
+#chown system:system /data/app
+#chown root:root /data/property
 
-chmod 0771 /data/data
-chmod 0771 /data/app-private
-chmod 0700 /data/app-asec
-chmod 0771 /data/app-lib
-chmod 0771 /data/app
-chmod 0700 /data/property
+#chmod 0771 /data/data
+#chmod 0771 /data/app-private
+#chmod 0700 /data/app-asec
+#chmod 0771 /data/app-lib
+#chmod 0771 /data/app
+#chmod 0700 /data/property
 
-chown -h 0:2000 /system/bin/app_process
+#chown -h 0:2000 /system/bin/app_process
 
 #supolicy --live "allow s_untrusted_app default_prop property_service { set }"
 #/system/xbin/busybox run-parts /system/etc/init.d/
