@@ -84,22 +84,15 @@ static int is_system_server(void) {
 // is_conatiner_app(current.uid);
 static int is_container_app(void) {
 	uid_t uid = current_uid();
+	int userid;
 
-	switch(uid) {
-
-	case 0: //root
-		DEK_LOGD("allowing root to access SDP device files\n");
+	if (uid == 0)
 		return 1;
 
-	default:
-	{
-		int userid = uid / PER_USER_RANGE;
-
-		if(userid >= 100)
-			return 1;
-	}
-	}
-
+	userid = uid / PER_USER_RANGE;
+	if(userid >= 100)
+		return 1;
+	
 	return 0;
 }
 
