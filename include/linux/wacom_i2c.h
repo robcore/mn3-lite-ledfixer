@@ -156,7 +156,7 @@ extern unsigned int system_rev;
 #define EPEN_B713_ORG_Y 724
 
 #define WACOM_BOOSTER
-#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT_USERSPACE)
+#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT)
 #define DVFS_STAGE_TRIPLE	3
 #define DVFS_STAGE_DUAL		2
 #define DVFS_STAGE_SINGLE		1
@@ -227,7 +227,7 @@ struct wacom_i2c {
 #if defined(CONFIG_SEC_LT03_PROJECT) || defined(CONFIG_SEC_VIENNA_PROJECT)
 	struct mutex irq_lock;
 #endif
-#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT_USERSPACE)
+#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT)
 	struct delayed_work	work_dvfs_off;
 	struct delayed_work	work_dvfs_chg;
 	struct mutex		dvfs_lock;

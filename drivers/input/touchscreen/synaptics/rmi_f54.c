@@ -1166,7 +1166,7 @@ int synaptics_rmi4_glove_mode_enables(struct synaptics_rmi4_data *rmi4_data);
 #ifdef TOUCHKEY_ENABLE
 static void run_deltacap_read(void);
 #endif
-#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT_USERSPACE)
+#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT)
 static void boost_level(void);
 #endif
 #ifdef SIDE_TOUCH
@@ -1235,7 +1235,7 @@ struct ft_cmd ft_cmds[] = {
 	{FT_CMD("get_glove_sensitivity", get_glove_sensitivity),},
 	{FT_CMD("fast_glove_mode", fast_glove_mode),},
 #endif
-#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT_USERSPACE)
+#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT)
 	{FT_CMD("boost_level", boost_level),},
 #endif
 #ifdef SIDE_TOUCH
@@ -4022,7 +4022,7 @@ static void get_glove_sensitivity(void)
 }
 #endif
 
-#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT_USERSPACE)
+#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT)
 static void boost_level(void)
 {
 	struct factory_data *data = f54->factory_data;

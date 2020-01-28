@@ -1016,7 +1016,7 @@ static void fast_glove_mode(void);
 #ifdef SECURE_TSP
 static void secure_mode(void);
 #endif
-#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT_USERSPACE)
+#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT)
 static void boost_level(void);
 #endif
 static void not_support_cmd(void);
@@ -1054,7 +1054,7 @@ struct ft_cmd ft_cmds[] = {
 #ifdef SECURE_TSP
 	{FT_CMD("secure_mode", secure_mode),},
 #endif
-#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT_USERSPACE)
+#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT)
 	{FT_CMD("boost_level", boost_level),},
 #endif
 	{FT_CMD("not_support_cmd", not_support_cmd),},
@@ -3325,7 +3325,7 @@ static void secure_mode(void)
 }
 #endif
 
-#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT_USERSPACE)
+#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT)
 static void boost_level(void)
 {
 	struct factory_data *data = f54->factory_data;

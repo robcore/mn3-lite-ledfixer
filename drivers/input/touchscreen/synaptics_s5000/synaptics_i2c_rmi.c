@@ -691,7 +691,7 @@ static ssize_t synaptics_rmi4_full_pm_cycle_store(struct device *dev,
 }
 #endif
 
-#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT_USERSPACE)
+#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT)
 static void synaptics_change_dvfs_lock(struct work_struct *work)
 {
 	struct synaptics_rmi4_data *rmi4_data =
@@ -1579,7 +1579,7 @@ static int synaptics_rmi4_f12_abs_report(struct synaptics_rmi4_data *rmi4_data,
 
 	input_sync(rmi4_data->input_dev);
 
-#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT_USERSPACE)
+#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT)
 	if (touch_count)
 		synaptics_set_dvfs_lock(rmi4_data, touch_count);
 	else
@@ -3525,7 +3525,7 @@ static void synaptics_rmi4_release_all_finger(
 	rmi4_data->f51_finger = false;
 #endif
 
-#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT_USERSPACE)
+#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT)
 	synaptics_set_dvfs_lock(rmi4_data, -1);
 	pr_debug(
 			"%s: dvfs_lock free.\n", __func__);
@@ -4110,7 +4110,7 @@ err_tsp_reboot:
 	synaptics_power_ctrl(rmi4_data,true);
 	msleep(SYNAPTICS_POWER_MARGIN_TIME);
 
-#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT_USERSPACE)
+#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT)
 	synaptics_init_dvfs(rmi4_data);
 #endif
 

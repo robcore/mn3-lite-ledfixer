@@ -794,7 +794,7 @@ static ssize_t synaptics_rmi4_fast_detect_enable_store(struct device *dev,
 }
 #endif
 
-#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT_USERSPACE)
+#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT)
 static void synaptics_change_dvfs_lock(struct work_struct *work)
 {
 	struct synaptics_rmi4_data *rmi4_data =
@@ -1784,7 +1784,7 @@ static int synaptics_rmi4_f12_abs_report(struct synaptics_rmi4_data *rmi4_data,
 		rmi4_data->tsp_booster->dvfs_set(rmi4_data->tsp_booster, touch_count);
 #endif
 
-#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT_USERSPACE)
+#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT)
 	if (touch_count)
 		synaptics_set_dvfs_lock(rmi4_data, touch_count);
 	else
@@ -4340,7 +4340,7 @@ int synaptics_rmi4_free_fingers(struct synaptics_rmi4_data *rmi4_data)
 		rmi4_data->tsp_booster->dvfs_set(rmi4_data->tsp_booster, -1);
 #endif
 
-#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT_USERSPACE)
+#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT)
 	synaptics_set_dvfs_lock(rmi4_data, -1);
 #endif
 #ifdef TKEY_BOOSTER
@@ -5236,7 +5236,7 @@ err_tsp_reboot:
 	synaptics_power_ctrl(rmi4_data, true);
 	msleep(SYNAPTICS_POWER_MARGIN_TIME);
 
-#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT_USERSPACE)
+#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT)
 	synaptics_init_dvfs(rmi4_data);
 #endif
 #ifdef TKEY_BOOSTER

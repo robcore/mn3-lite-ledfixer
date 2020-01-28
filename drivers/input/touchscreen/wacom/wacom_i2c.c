@@ -103,7 +103,7 @@ static int wacom_stop(struct wacom_i2c *wac_i2c)
 
 	gpio_direction_output(wac_i2c->wac_pdata->vdd_en, 0);
 
-#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT_USERSPACE)
+#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT)
 	if (wac_i2c->dvfs_lock_status)
 		wacom_set_dvfs_lock(wac_i2c, -1);
 #endif
@@ -950,7 +950,7 @@ static ssize_t epen_saving_mode_store(struct device *dev,
 	return count;
 }
 #endif
-#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT_USERSPACE)
+#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT)
 static ssize_t boost_level_store(struct device *dev,
 				   struct device_attribute *attr,
 				   const char *buf, size_t count)
@@ -1065,7 +1065,7 @@ static DEVICE_ATTR(epen_connection,
 static DEVICE_ATTR(epen_saving_mode,
 		   S_IWUSR | S_IWGRP, NULL, epen_saving_mode_store);
 #endif
-#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT_USERSPACE)
+#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT)
 static DEVICE_ATTR(boost_level,
 		   S_IWUSR | S_IWGRP, NULL, boost_level_store);
 #endif
@@ -1099,7 +1099,7 @@ static struct attribute *epen_attributes[] = {
 #ifdef BATTERY_SAVING_MODE
 	&dev_attr_epen_saving_mode.attr,
 #endif
-#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT_USERSPACE)
+#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT)
 	&dev_attr_boost_level.attr,
 #endif
 	NULL,
@@ -1374,7 +1374,7 @@ static int wacom_i2c_remove(struct i2c_client *client)
 #endif
 
 	cancel_delayed_work_sync(&wac_i2c->pen_insert_dwork);
-#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT_USERSPACE)
+#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT)
 	cancel_delayed_work_sync(&wac_i2c->work_dvfs_off);
 	cancel_delayed_work_sync(&wac_i2c->work_dvfs_chg);
 
@@ -1588,7 +1588,7 @@ static int wacom_i2c_probe(struct i2c_client *client,
 	mutex_init(&wac_i2c->irq_lock);
 #endif
 
-#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT_USERSPACE)
+#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT)
 	wacom_init_dvfs(wac_i2c);
 #endif
 	INIT_DELAYED_WORK(&wac_i2c->resume_work, wacom_i2c_resume_work);
@@ -1741,7 +1741,7 @@ err_input_allocate_device:
 #ifdef WACOM_RESETPIN_DELAY
 	cancel_delayed_work_sync(&wac_i2c->work_wacom_reset);
 #endif
-#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT_USERSPACE)
+#if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT)
 	cancel_delayed_work_sync(&wac_i2c->work_dvfs_off);
 	cancel_delayed_work_sync(&wac_i2c->work_dvfs_chg);
 	mutex_destroy(&wac_i2c->dvfs_lock);
