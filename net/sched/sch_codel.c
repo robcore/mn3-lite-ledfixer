@@ -46,7 +46,6 @@
 #include <linux/kernel.h>
 #include <linux/errno.h>
 #include <linux/skbuff.h>
-#include <linux/prefetch.h>
 #include <net/pkt_sched.h>
 #include <net/codel.h>
 
@@ -77,8 +76,8 @@ static struct sk_buff *codel_qdisc_dequeue(struct Qdisc *sch)
 	struct codel_sched_data *q = qdisc_priv(sch);
 	struct sk_buff *skb;
 
-	skb = codel_dequeue(sch, &q->params, &q->vars, &q->stats, dequeue);
-
+	skb = codel_dequeue(sch, &q->params, &q->vars, &q->stats,
+			    dequeue, &sch->qstats.backlog);
 	/* We cant call qdisc_tree_decrease_qlen() if our qlen is 0,
 	 * or HTB crashes. Defer it for next round.
 	 */

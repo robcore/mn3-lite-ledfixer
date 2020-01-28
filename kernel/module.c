@@ -2561,15 +2561,12 @@ static void dynamic_debug_remove(struct _ddebug *debug)
 
 void * __weak module_alloc(unsigned long size)
 {
-	return vmalloc_exec(size);
+	return size == 0 ? NULL : vmalloc_exec(size);
 }
 
 static void *module_alloc_update_bounds(unsigned long size)
 {
-	void *ret = NULL;
-
-	if (size)
-		ret = module_alloc(size);
+	void *ret = module_alloc(size);
 
 	if (ret) {
 		mutex_lock(&module_mutex);
