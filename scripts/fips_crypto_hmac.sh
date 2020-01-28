@@ -80,10 +80,10 @@ array[7]=".exit.text first_crypto_asm_exit last_crypto_asm_exit \$4 \$5"
 rm -f offsets_sizes.txt
 
 #Addresses retrieved must be a valid hex
-reg='^[0-9A-Fa-f]+$'
+reg="^[0-9A-Fa-f]+$"
 
 #Total bytes of all crypto sections scanned. Used later for error checking
-total_bytes=0;
+total_bytes=0
 
 # For each type of Section : 
 # first_addr  = Address of first_crypto_text, first_crypto_rodata, etc.
@@ -111,31 +111,31 @@ for i in "${array[@]}"; do
 		let k+=1	
 	done
 
-	first_addr=`cat $system_map_var|grep -w $var2|awk '{print $1}'`
+	first_addr=$(cat $system_map_var|grep -w $var2|awk '{print $1}')
 	if  [[ ! $first_addr =~ $reg ]]; then echo "$0 : first_addr invalid"; exit 1; fi
 
-	last_addr=`cat $system_map_var|grep -w $var3|awk '{print $1}'`
+	last_addr=$(cat $system_map_var|grep -w $var3|awk '{print $1}')
 	if  [[ ! $last_addr =~ $reg ]]; then echo "$0 : last_addr invalid"; exit 1; fi
 
-	start_addr=`cat vmlinux.elf |grep -w $var1|grep PROGBITS|awk '{print '$var4'}'`
+	start_addr=$(cat vmlinux.elf |grep -w $var1|grep PROGBITS|awk '{print '$var4'}')
 	if  [[ ! $start_addr =~ $reg ]]; then echo "$0 : start_addr invalid"; exit 1; fi
 
-	offset=`cat vmlinux.elf |grep -w $var1|grep PROGBITS|awk '{print '$var5'}'`
+	offset=$(cat vmlinux.elf |grep -w $var1|grep PROGBITS|awk '{print '$var5'}')
 	if  [[ ! $offset =~ $reg ]]; then echo "$0 : offset invalid"; exit 1; fi
 
 	if [[ $((16#$first_addr)) -lt $((16#$start_addr)) ]]; then echo "$0 : first_addr < start_addr"; exit 1; fi
 
 	if [[ $((16#$last_addr)) -le $((16#$first_addr)) ]]; then echo "$0 : last_addr <= first_addr"; exit 1; fi
 
-	file_offset=`expr $((16#$offset)) + $((16#$first_addr)) - $((16#$start_addr))`
+	file_offset=$(expr $((16#$offset)) + $((16#$first_addr)) - $((16#$start_addr)))
 	if  [[ $file_offset -le 0 ]]; then echo "$0 : file_offset invalid"; exit 1; fi
 
-	size=`expr $((16#$last_addr)) - $((16#$first_addr))`
+	size=$(expr $((16#$last_addr)) - $((16#$first_addr)))
 	if  [[ $size -le 0 ]]; then echo "$0 : crypto section size invalid"; exit 1; fi
 
 	echo "$var1 " $file_offset " " $size >> offsets_sizes.txt
 
-	let "total_bytes += `expr $((16#$last_addr)) - $((16#$first_addr))`"
+	let "total_bytes += $(expr $((16#$last_addr)) - $((16#$first_addr)))"
 done
 
 if [[ ! -f offsets_sizes.txt ]]; then
@@ -219,15 +219,15 @@ fi
 first_addr=$(cat $system_map_var | grep -w "builtime_crypto_hmac" | awk '{print $1}')
 if  [[ ! $first_addr =~ $reg ]]; then echo "$0 : first_addr of hmac variable invalid"; exit 1; fi
 
-start_addr=`cat vmlinux.elf |grep -w ".rodata"|grep PROGBITS|awk '{print $5}' `
+start_addr=$(cat vmlinux.elf |grep -w ".rodata"|grep PROGBITS|awk '{print $5}' )
 if  [[ ! $start_addr =~ $reg ]]; then echo "$0 : start_addr of .rodata invalid"; exit 1; fi
 
-offset=`cat vmlinux.elf |grep -w ".rodata"|grep PROGBITS| awk '{print $6}' `
+offset=$(cat vmlinux.elf |grep -w ".rodata"|grep PROGBITS| awk '{print $6}' )
 if  [[ ! $offset =~ $reg ]]; then echo "$0 : offset of .rodata invalid"; exit 1; fi
 
 if [[ $((16#$first_addr)) -le $((16#$start_addr)) ]]; then echo "$0 : hmac var first_addr <= start_addr"; exit 1; fi
 
-hmac_offset=`expr $((16#$offset)) + $((16#$first_addr)) - $((16#$start_addr))`
+hmac_offset=$(expr $((16#$offset)) + $((16#$first_addr)) - $((16#$start_addr)))
 if  [[ $hmac_offset -le 0 ]]; then echo "$0 : hmac_offset invalid"; exit 1; fi
 
 # This does the actual update of hmac into vmlinux file, at given offset
@@ -238,11 +238,12 @@ if [ $retval -ne 0 ]; then
 	exit 1
 fi
 
-rm -f crypto_hmac.bin
-rm -f builtime_bytes.txt
-rm -f builtime_bytes.bin
-rm -f fips_crypto_utils
-rm -f vmlinux.elf
-rm -f offsets_sizes.txt
+echo "$0 : fips_crypto_utils : updated hmac in vmlinux"
+rm -f crypto_hmac.bin &>/dev/null
+rm -f builtime_bytes.txt &>/dev/null
+rm -f builtime_bytes.bin &>/dev/null
+rm -f fips_crypto_utils &>/dev/null
+rm -f vmlinux.elf &>/dev/null
+rm -f offsets_sizes.txt &>/dev/null
 
 # And we are done...
