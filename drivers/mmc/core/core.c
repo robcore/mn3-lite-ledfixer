@@ -77,8 +77,11 @@ static struct workqueue_struct *workqueue;
  * performance cost, and for other reasons may not always be desired.
  * So we allow it it to be disabled.
  */
-bool use_spi_crc = false;
-module_param(use_spi_crc, bool, 644);
+bool use_spi_crc = 0;
+module_param_named(use_spi_crc, use_spi_crc, bool, 0644);
+MODULE_PARM_DESC(
+	use_spi_crc,
+	"Software CRC's are useful for stability, but bad for performance");
 
 /*
  * We normally treat cards as removed during suspend if they are not
