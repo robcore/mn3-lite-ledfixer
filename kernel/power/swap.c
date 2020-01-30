@@ -631,12 +631,6 @@ static int save_image_lzo(struct swap_map_handle *handle,
 	}
 
 	/*
-	 * Adjust number of free pages after all allocations have been done.
-	 * We don't want to run out of pages when writing.
-	 */
-	handle->reqd_free_pages = reqd_free_pages();
-
-	/*
 	 * Start the CRC32 thread.
 	 */
 	init_waitqueue_head(&crc->go);
@@ -656,6 +650,12 @@ static int save_image_lzo(struct swap_map_handle *handle,
 		ret = -ENOMEM;
 		goto out_clean;
 	}
+
+	/*
+	 * Adjust the number of required free pages after all allocations have
+	 * been done. We don't want to run out of pages when writing.
+	 */
+	handle->reqd_free_pages = reqd_free_pages();
 
 	printk(KERN_INFO
 		"PM: Using %u thread(s) for compression.\n"
@@ -1067,7 +1067,7 @@ static int load_image_lzo(struct swap_map_handle *handle,
 	unsigned i, thr, run_threads, nr_threads;
 	unsigned ring = 0, pg = 0, ring_size = 0,
 	         have = 0, want, need, asked = 0;
-	unsigned long read_pages;
+	unsigned long read_pages = 0;
 	unsigned char **page = NULL;
 	struct dec_data *data = NULL;
 	struct crc_data *crc = NULL;
