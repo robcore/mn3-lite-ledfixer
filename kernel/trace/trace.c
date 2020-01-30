@@ -2932,7 +2932,6 @@ tracing_ctrl_write(struct file *filp, const char __user *ubuf,
 	if (tracer_enabled ^ val) {
 
 		/* Only need to warn if this is used to change the state */
-		WARN_ONCE(1, "tracing_enabled is deprecated. Use tracing_on");
 
 		if (val) {
 			tracer_enabled = 1;
