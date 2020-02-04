@@ -383,7 +383,7 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fno-strict-aliasing -fno-common \
 		   -std=gnu89 \
 		   -Wno-unused-function -Wno-unused-label \
-		   -Wno-format-security \
+		   -Wno-format-security -Wno-format-truncation \
 		   -fno-delete-null-pointer-checks
 KBUILD_AFLAGS_KERNEL :=
 KBUILD_CFLAGS_KERNEL :=
