@@ -53,6 +53,7 @@ static unsigned int *l2_khz;
 static bool is_clk;
 static bool is_sync;
 static unsigned long *mem_bw;
+static bool hotplug_ready;
 
 struct cpufreq_work_struct {
 	struct work_struct work;
@@ -253,7 +254,7 @@ static int msm_cpufreq_target(struct cpufreq_policy *policy,
 				unsigned int target_freq,
 				unsigned int relation)
 {
-	int ret = -EFAULT;
+	int ret = 0;
 	int index;
 	struct cpufreq_frequency_table *table;
 
@@ -261,17 +262,19 @@ static int msm_cpufreq_target(struct cpufreq_policy *policy,
 
 	mutex_lock(&per_cpu(cpufreq_suspend, policy->cpu).suspend_mutex);
 
+	if (target_freq == policy->cur)
+		goto done; 
+
 	if (per_cpu(cpufreq_suspend, policy->cpu).device_suspended) {
 		pr_debug("cpufreq: cpu%d scheduling frequency change "
 				"in suspend.\n", policy->cpu);
-		ret = -EFAULT;
 		goto done;
 	}
 
 	table = cpufreq_frequency_get_table(policy->cpu);
 	if (cpufreq_frequency_table_target(policy, table, target_freq, relation,
 			&index)) {
-		pr_err("cpufreq: invalid target_freq: %d\n", target_freq);
+		pr_err("cpufreq: cpu%d invalid target_freq: %d\n", policy->cpu, target_freq);
 		ret = -EINVAL;
 		goto done;
 	}
@@ -398,6 +401,10 @@ static int __cpuinit msm_cpufreq_cpu_callback(struct notifier_block *nfb,
 {
 	unsigned int cpu = (unsigned long)hcpu;
 	int rc;
+
+	/* Fail hotplug until this driver can get CPU clocks */
+	if (!hotplug_ready)
+		return NOTIFY_BAD;
 
 	switch (action & ~CPU_TASKS_FROZEN) {
 	case CPU_ONLINE:
@@ -658,6 +665,7 @@ static int __init msm_cpufreq_probe(struct platform_device *pdev)
 
 	if (!cpu_clk[0])
 		return -ENODEV;
+	hotplug_ready = true;
 
 	ret = cpufreq_parse_dt(dev);
 	if (ret)
@@ -712,4 +720,4 @@ static int __init msm_cpufreq_register(void)
 	return cpufreq_register_driver(&msm_cpufreq_driver);
 }
 
-device_initcall(msm_cpufreq_register);
+subsys_initcall(msm_cpufreq_register);

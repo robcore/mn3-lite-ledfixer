@@ -27,7 +27,7 @@ config ANDROID_LOGGER
 
 config LOGCAT_SIZE
 	int "Adjust android log buffer sizes"
-	default 512
+	default 256
 	depends on ANDROID_LOGGER
 	help
 	  Set logger buffer size. Enter a number greater than zero.
@@ -97,7 +97,6 @@ config SEC_OOM_KILLER
 
 config SEC_DEBUG_LMK_MEMINFO
 	bool "Show Meminfo when lmk invoked"
-	depends on !SAMSUNG_PRODUCT_SHIP
 	default n
 	help
 	  Show memory information when lmk kills process
