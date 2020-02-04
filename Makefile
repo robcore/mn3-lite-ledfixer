@@ -384,6 +384,7 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -std=gnu89 \
 		   -Wno-unused-function -Wno-unused-label \
 		   -Wno-format-security -Wno-format-truncation \
+		   --Wno-misleading-indentation \
 		   -fno-delete-null-pointer-checks
 KBUILD_AFLAGS_KERNEL :=
 KBUILD_CFLAGS_KERNEL :=
