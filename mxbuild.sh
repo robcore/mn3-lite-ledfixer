@@ -23,7 +23,7 @@ CORECOUNT="$(grep processor /proc/cpuinfo | wc -l)"
 KDIR="$RDIR/build/arch/arm/boot"
 #TOOLCHAIN="/opt/toolchains/arm-cortex_a15-linux-gnueabihf_5.3/bin/arm-cortex_a15-linux-gnueabihf-"
 #TOOLCHAIN="/opt/toolchains/gcc-linaro-7.5.0-2019.12-x86_64_arm-linux-gnueabihf/bin/arm-linux-gnueabihf-"
-TOOLCHAIN="/root/gcc-linaro-7.5.0-2019.12-x86_64_arm-linux-gnueabihf/bin/arm-linux-gnueabihf-"
+TOOLCHAIN="/opt/arm-cortex_a15-linux-gnueabihf-linaro_4.9.4-2015.06/bin/arm-cortex_a15-linux-gnueabihf-"
 echo -n "$(date +%s)" > "$RDIR/.starttime"
 STARTTIME="$(cat $RDIR/.starttime)"
 
