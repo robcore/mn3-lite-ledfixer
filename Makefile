@@ -379,7 +379,7 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -Werror-implicit-function-declaration \
 		   -fno-strict-aliasing -fno-common \
 		   -std=gnu89 \
-		   -Wno-unused-function -Wno-unused-label \
+		   -Wno-unused-function -Wno-unused-label -Wno-array-bounds \
 		   -Wno-format-security -Wno-format-truncation \
 		   -Wno-misleading-indentation -Wno-int-in-bool-context \
 		   -Wno-bool-compare -Wno-tautological-compare \
