@@ -143,22 +143,22 @@ static int samsung_kbd_input_mapping(struct hid_device *hdev,
 		usage->hid & HID_USAGE);
 
 	if (HID_UP_KEYBOARD == (usage->hid & HID_USAGE_PAGE)) {
-		switch (usage->hid & HID_USAGE) {
 		set_bit(EV_REP, hi->input->evbit);
-		/* Only for UK keyboard */
-		/* key found */
 #ifdef CONFIG_HID_KK_UPGRADE
-		case 0x32: samsung_kbd_mouse_map_key_clear(KEY_KBDILLUMTOGGLE); break;
-		case 0x64: samsung_kbd_mouse_map_key_clear(KEY_BACKSLASH); break;
+		if ((usage->hid & HID_USAGE) == 0x32)
+			samsung_kbd_mouse_map_key_clear(KEY_KBDILLUMTOGGLE);
+		else if ((usage->hid & HID_USAGE) == 0x64)
+			samsung_kbd_mouse_map_key_clear(KEY_BACKSLASH);
 #else
-		case 0x32: samsung_kbd_mouse_map_key_clear(KEY_BACKSLASH); break;
-		case 0x64: samsung_kbd_mouse_map_key_clear(KEY_102ND); break;
+		if ((usage->hid & HID_USAGE) == 0x32)
+			samsung_kbd_mouse_map_key_clear(KEY_BACKSLASH);
+		else if ((usage->hid & HID_USAGE) == 0x64)
+			samsung_kbd_mouse_map_key_clear(KEY_102ND);
 #endif
-		/* Only for BR keyboard */
-		case 0x87: samsung_kbd_mouse_map_key_clear(KEY_RO); break;
-		default:
+		else if ((usage->hid & HID_USAGE) == 0x87)
+			samsung_kbd_mouse_map_key_clear(KEY_RO);
+		else
 			return 0;
-		}
 	}
 
 	if (HID_UP_CONSUMER == (usage->hid & HID_USAGE_PAGE)) {
@@ -276,22 +276,24 @@ static int samsung_universal_kbd_input_mapping(struct hid_device *hdev,
 		usage->hid & HID_USAGE);
 
 	if (HID_UP_KEYBOARD == (usage->hid & HID_USAGE_PAGE)) {
-		switch (usage->hid & HID_USAGE) {
 		set_bit(EV_REP, hi->input->evbit);
 		/* Only for UK keyboard */
 		/* key found */
 #ifdef CONFIG_HID_KK_UPGRADE
-		case 0x32: samsung_kbd_mouse_map_key_clear(KEY_KBDILLUMTOGGLE); break;
-		case 0x64: samsung_kbd_mouse_map_key_clear(KEY_BACKSLASH); break;
+		if ((usage->hid & HID_USAGE) == 0x32)
+			samsung_kbd_mouse_map_key_clear(KEY_KBDILLUMTOGGLE);
+		else if ((usage->hid & HID_USAGE) == 0x64)
+			samsung_kbd_mouse_map_key_clear(KEY_BACKSLASH);
 #else
-		case 0x32: samsung_kbd_mouse_map_key_clear(KEY_BACKSLASH); break;
-		case 0x64: samsung_kbd_mouse_map_key_clear(KEY_102ND); break;
+		if ((usage->hid & HID_USAGE) == 0x32)
+			samsung_kbd_mouse_map_key_clear(KEY_BACKSLASH);
+		else if ((usage->hid & HID_USAGE) == 0x64)
+			samsung_kbd_mouse_map_key_clear(KEY_102ND);
 #endif
-		/* Only for BR keyboard */
-		case 0x87: samsung_kbd_mouse_map_key_clear(KEY_RO); break;
-		default:
+		else if ((usage->hid & HID_USAGE) == 0x87)
+			samsung_kbd_mouse_map_key_clear(KEY_RO);
+		else
 			return 0;
-		}
 	}
 
 	if (HID_UP_CONSUMER == (usage->hid & HID_USAGE_PAGE)) {
