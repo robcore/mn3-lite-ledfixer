@@ -1022,7 +1022,7 @@ static void __ref do_core_control(long temp)
 				continue;
 			if (cpus_offlined & BIT(i) && !cpu_online(i))
 				continue;
-			pr_info("Set Offline: CPU%d Temp: %ld\n",
+			pr_debug("Set Offline: CPU%d Temp: %ld\n",
 					i, temp);
 			ret = cpu_down(i);
 			if (ret)
@@ -1038,7 +1038,7 @@ static void __ref do_core_control(long temp)
 			if (!(cpus_offlined & BIT(i)))
 				continue;
 			cpus_offlined &= ~BIT(i);
-			pr_info("Allow Online CPU%d Temp: %ld\n",
+			pr_debug("Allow Online CPU%d Temp: %ld\n",
 					i, temp);
 			/*
 			 * If this core is already online, then bring up the
@@ -1309,7 +1309,7 @@ static void __ref do_freq_control(long temp)
 		max_freq = table[limit_idx].frequency;
 
 #ifdef CONFIG_SEC_PM_DEBUG
-		pr_info("%s: down Limit=%d Temp: %ld\n",
+		pr_debug("%s: down Limit=%d Temp: %ld\n",
 				KBUILD_MODNAME, limit_idx, temp);
 #endif
 	} else if (temp < msm_thermal_info.limit_temp_degC -
@@ -1325,7 +1325,7 @@ static void __ref do_freq_control(long temp)
 			max_freq = table[limit_idx].frequency;
 
 #ifdef CONFIG_SEC_PM_DEBUG
-		pr_info("%s: up Limit=%d Temp: %ld\n",
+		pr_debug("%s: up Limit=%d Temp: %ld\n",
 				KBUILD_MODNAME, limit_idx, temp);
 #endif
 	}
@@ -1338,7 +1338,7 @@ static void __ref do_freq_control(long temp)
 	for_each_possible_cpu(cpu) {
 		if (!(msm_thermal_info.bootup_freq_control_mask & BIT(cpu)))
 			continue;
-		pr_info("Limiting CPU%d max frequency to %u. Temp:%ld\n",
+		pr_debug("Limiting CPU%d max frequency to %u. Temp:%ld\n",
 			cpu, max_freq, temp);
 		cpus[cpu].limited_max_freq = max_freq;
 		update_cpu_freq(cpu);
@@ -1393,7 +1393,6 @@ static void __ref msm_therm_temp_log(struct work_struct *work)
 
 	if(!tsens_get_max_sensor_num(&max_sensors))
 	{
-		pr_info( "Debug Temp for Sensor: ");
 		for(i=0;i<max_sensors;i++)
 		{
 			tsens_dev.sensor_num = i;
@@ -1401,7 +1400,6 @@ static void __ref msm_therm_temp_log(struct work_struct *work)
 			ret = sprintf(buffer + added, "(%d --- %ld)", i, temp);
 			added += ret;						
 		}
-		pr_info("%s", buffer);
 	}
 	schedule_delayed_work(&temp_log_work,
 				HZ*5); //For every 5 seconds log the temperature values of all the msm thermistors.
@@ -1467,7 +1465,7 @@ static int hotplug_notify(enum thermal_trip_type type, int temp, void *data)
 {
 	struct cpu_info *cpu_node = (struct cpu_info *)data;
 
-	pr_info("%s reach temp threshold: %d\n", cpu_node->sensor_type, temp);
+	pr_debug("%s reach temp threshold: %d\n", cpu_node->sensor_type, temp);
 
 	if (!(msm_thermal_info.core_control_mask & BIT(cpu_node->cpu)))
 		return 0;
@@ -1634,7 +1632,7 @@ static int freq_mitigation_notify(enum thermal_trip_type type,
 	switch (type) {
 	case THERMAL_TRIP_CONFIGURABLE_HI:
 		if (!cpu_node->max_freq) {
-			pr_info("Mitigating CPU%d frequency to %d\n",
+			pr_debug("Mitigating CPU%d frequency to %d\n",
 				cpu_node->cpu,
 				msm_thermal_info.freq_limit);
 
@@ -1643,7 +1641,7 @@ static int freq_mitigation_notify(enum thermal_trip_type type,
 		break;
 	case THERMAL_TRIP_CONFIGURABLE_LOW:
 		if (cpu_node->max_freq) {
-			pr_info("Removing frequency mitigation for CPU%d\n",
+			pr_debug("Removing frequency mitigation for CPU%d\n",
 				cpu_node->cpu);
 
 			cpu_node->max_freq = false;
@@ -1969,7 +1967,7 @@ static void __ref disable_msm_thermal(void)
 		if (cpus[cpu].limited_max_freq == UINT_MAX &&
 			cpus[cpu].limited_min_freq == 0)
 			continue;
-		pr_info("Max frequency reset for CPU%d\n", cpu);
+		pr_debug("Max frequency reset for CPU%d\n", cpu);
 		cpus[cpu].limited_max_freq = UINT_MAX;
 		cpus[cpu].limited_min_freq = 0;
 		update_cpu_freq(cpu);
@@ -1984,7 +1982,7 @@ static void interrupt_mode_init(void)
 		return;
 	}
 	if (polling_enabled) {
-		pr_info("Interrupt mode init\n");
+		pr_debug("Interrupt mode init\n");
 		polling_enabled = 0;
 		disable_msm_thermal();
 		hotplug_init();
@@ -2001,10 +1999,10 @@ static int __ref set_enabled(const char *val, const struct kernel_param *kp)
 	if (!enabled)
 		interrupt_mode_init();
 	else
-		pr_info("no action for enabled = %d\n",
+		pr_debug("no action for enabled = %d\n",
 			enabled);
 
-	pr_info("enabled = %d\n", enabled);
+	pr_debug("enabled = %d\n", enabled);
 
 	return ret;
 }
@@ -2040,14 +2038,14 @@ static ssize_t __ref store_cc_enabled(struct kobject *kobj,
 
 	core_control_enabled = !!val;
 	if (core_control_enabled) {
-		pr_info("Core control enabled\n");
+		pr_debug("Core control enabled\n");
 		register_cpu_notifier(&msm_thermal_cpu_notifier);
 		if (hotplug_task)
 			complete(&hotplug_notify_complete);
 		else
 			pr_err("Hotplug task is not initialized\n");
 	} else {
-		pr_info("Core control disabled\n");
+		pr_debug("Core control disabled\n");
 		unregister_cpu_notifier(&msm_thermal_cpu_notifier);
 	}
 
@@ -2349,7 +2347,7 @@ static int vdd_restriction_reg_init(struct platform_device *pdev)
 			if (freq_table_get)
 				ret = vdd_restriction_apply_freq(&rails[i], 0);
 			else
-				pr_info("Defer vdd rstr freq init.\n");
+				pr_debug("Defer vdd rstr freq init.\n");
 		} else {
 			rails[i].reg = devm_regulator_get(&pdev->dev,
 					rails[i].name);
@@ -2363,7 +2361,7 @@ static int vdd_restriction_reg_init(struct platform_device *pdev)
 					rails[i].curr_level = -2;
 					return ret;
 				}
-				pr_info("Defer regulator %s probe\n",
+				pr_debug("Defer regulator %s probe\n",
 					rails[i].name);
 				return ret;
 			}
@@ -2395,7 +2393,7 @@ static int psm_reg_init(struct platform_device *pdev)
 				psm_rails[i].reg = NULL;
 				goto psm_reg_exit;
 			}
-			pr_info("Defer regulator %s probe\n",
+			pr_debug("Defer regulator %s probe\n",
 					psm_rails[i].name);
 			return ret;
 		}
@@ -2963,7 +2961,7 @@ static int probe_ocr(struct device_node *node, struct msm_thermal_data *data,
 	char *key = NULL;
 
 	if (ocr_probed) {
-		pr_info("%s: Nodes already probed\n",
+		pr_debug("%s: Nodes already probed\n",
 			__func__);
 		goto read_ocr_exit;
 	}
@@ -3001,7 +2999,7 @@ static int probe_ocr(struct device_node *node, struct msm_thermal_data *data,
 	if (ocr_rail_cnt) {
 		ret = ocr_reg_init(pdev);
 		if (ret) {
-			pr_info("%s:Failed to get regulators. KTM continues.\n",
+			pr_debug("%s:Failed to get regulators. KTM continues.\n",
 					__func__);
 			goto read_ocr_fail;
 		}

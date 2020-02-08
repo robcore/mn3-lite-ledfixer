@@ -424,8 +424,6 @@ static void suspend_helper(struct work_struct *work)
 	suspend_state_t state;
 	int error = 0;
 
-	pr_info("[suspend helper] %s: start!\n", __func__);
-
 	error = pm_autosleep_lock();
 	if (error) {
 		goto out_nolock;
@@ -451,8 +449,6 @@ out_nolock:
 	// set result and notify completion
 	data->result = error;
 	complete(&data->done);
-
-	pr_info("[suspend helper] %s: result = %d\n", __func__, error);
 }
 
 static ssize_t state_store_helper(struct kobject *kobj, struct kobj_attribute *attr,
@@ -465,8 +461,6 @@ static ssize_t state_store_helper(struct kobject *kobj, struct kobj_attribute *a
 	if (!freezer_should_skip(current)) {
 		freezable = 1;
 		freezer_do_not_count();
-		pr_info("[suspend helper] %s: freezer should skip me (%s:%d)\n",
-				__func__, current->comm, current->pid);
 	}
 
 	suspend_helper_data->params.buf = buf;
@@ -485,8 +479,6 @@ static ssize_t state_store_helper(struct kobject *kobj, struct kobj_attribute *a
 	}
 
 	error = suspend_helper_data->result;
-	pr_info("[suspend helper] %s: suspend_helper returned %d\n", __func__, error);
-
 	return error ? error : n;
 }
 
@@ -507,23 +499,11 @@ static int suspend_helper_init(void)
 	INIT_WORK(&suspend_helper_data->work, suspend_helper);
 	init_completion(&suspend_helper_data->done);
 
-	pr_info("[suspend helper] %s: init done\n", __func__);
-
 	return 0;
 out_destroy_wq:
 	destroy_workqueue(suspend_helper_wq);
 
 	return ret;
-}
-#endif
-
-#ifdef SUSPEND_WAKEUP_BOOST
-static void pr_sched_state(const char *msg)
-{
-	pr_debug("[sched state] %s: (%s:%d) %pS policy=%d, prio=%d, static_prio=%d, normal_prio=%d, rt_priority=%d\n",
-		msg, current->comm, current->pid,
-		current->sched_class, current->policy,
-		current->prio, current->static_prio, current->normal_prio, current->rt_priority);
 }
 #endif
 
@@ -540,10 +520,8 @@ static ssize_t state_store(struct kobject *kobj, struct kobj_attribute *attr,
 
 #ifdef CONFIG_SUSPEND_HELPER
 	if (suspend_helper_data) {
-		pr_info("[suspend helper] %s: Let our helper do the real work!\n", __func__);
 		return state_store_helper(kobj, attr, buf, n);
 	}
-	pr_info("[suspend helper] %s: helper data not avaialbe.. Fall back to the legacy code..\n", __func__);
 #endif
 
 	error = pm_autosleep_lock();
@@ -556,9 +534,7 @@ static ssize_t state_store(struct kobject *kobj, struct kobj_attribute *attr,
 	}
 
 #ifdef SUSPEND_WAKEUP_BOOST
-	pr_sched_state("before boost");
 	sched_setscheduler_nocheck(current, SCHED_FIFO, &param);
-	pr_sched_state("after boost");
 #endif
 	state = decode_state(buf, n);
 	if (state < PM_SUSPEND_MAX)
@@ -568,11 +544,9 @@ static ssize_t state_store(struct kobject *kobj, struct kobj_attribute *attr,
 	else
 		error = -EINVAL;
 #ifdef SUSPEND_WAKEUP_BOOST
-	pr_sched_state("before restore");
 	param.sched_priority = 0;
 	sched_setscheduler_nocheck(current, orig_policy, &param);
 	set_user_nice(current, orig_nice);
-	pr_sched_state("after restore");
 #endif
  out:
 	pm_autosleep_unlock();
