@@ -187,7 +187,6 @@ int msm_cam_clk_enable(struct device *dev, struct msm_cam_clk_info *clk_info,
 				usleep_range(clk_info[i].delay * 1000,
 					(clk_info[i].delay * 1000) + 1000);
 			}
-			if (qctkd) printk (KERN_ERR "QCTKD: %s[%d:%d] Enable \n", clk_info[i].clk_name, clk_ptr[i]->prepare_count, clk_ptr[i]->count);
 		}
 	} else {
 		for (i = num_clk - 1; i >= 0; i--) {
@@ -198,7 +197,6 @@ int msm_cam_clk_enable(struct device *dev, struct msm_cam_clk_info *clk_info,
 				clk_unprepare(clk_ptr[i]);
 				clk_put(clk_ptr[i]);
 			}
-			if (qctkd) printk (KERN_ERR "QCTKD: %s[%d:%d] Disable\n", clk_info[i].clk_name, clk_ptr[i]->prepare_count, clk_ptr[i]->count);
 		}
 	}
 	return rc;
@@ -472,7 +470,7 @@ int msm_camera_config_single_vreg(struct device *dev,
 			pr_err("%s : can't find reg name", __func__);
 			goto vreg_get_fail;
 		}
-		pr_info("%s enable %s\n", __func__, cam_vreg->reg_name);
+		pr_debug("%s enable %s\n", __func__, cam_vreg->reg_name);
 		*reg_ptr = regulator_get(dev, cam_vreg->reg_name);
 		if (IS_ERR(*reg_ptr)) {
 			pr_err("%s: %s get failed\n", __func__,
@@ -508,7 +506,7 @@ int msm_camera_config_single_vreg(struct device *dev,
 		}
 	} else {
 		if (*reg_ptr) {
-			pr_info("%s disable %s\n", __func__, cam_vreg->reg_name);
+			pr_debug("%s disable %s\n", __func__, cam_vreg->reg_name);
 			regulator_disable(*reg_ptr);
 			if (cam_vreg->type == REG_LDO) {
 				if (cam_vreg->op_mode >= 0)

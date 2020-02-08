@@ -30,7 +30,7 @@ int wacom_i2c_select_flash_code(struct wacom_i2c *wac_i2c)
 {
 	int ret;
 
-	dev_info(&wac_i2c->client->dev, "%s\n", __func__);
+	dev_dbg(&wac_i2c->client->dev, "%s\n", __func__);
 
 	if(wac_i2c->ic_mpu_ver < MPU_W9007)
 		ret = wacom_i2c_flash(wac_i2c);
@@ -56,7 +56,7 @@ int wacom_check_mpu_version(struct wacom_i2c *wac_i2c)
 	else
 		wac_i2c->ic_mpu_ver = MPU_W9001;
 
-	dev_info(&wac_i2c->client->dev,
+	dev_dbg(&wac_i2c->client->dev,
 			"%s: boot mode : %x\n", __func__, buf[1]);
 	return buf[1];
 err_i2c_timeout:
@@ -151,7 +151,7 @@ int wacom_i2c_flash_cmd(struct wacom_i2c *wac_i2c)
 					 __func__);
 			return -ERR_RET;
 		}
-		dev_info(&wac_i2c->client->dev,
+		dev_dbg(&wac_i2c->client->dev,
 				 "%s: flash send?:%d\n", __func__, ret);
 		msleep(270);
 	}
@@ -188,11 +188,11 @@ int wacom_i2c_flash_query(struct wacom_i2c *wac_i2c, u8 query, u8 recvdQuery)
 
 		if (i > RETRY)
 			return -ERR_RET;
-		dev_info(&wac_i2c->client->dev,
+		dev_dbg(&wac_i2c->client->dev,
 				 "%s: ret:%d flashq:%x\n", __func__, ret, flashq);
 	} while (recvdQuery == 0xff && flashq != recvdQuery);
 
-	dev_info(&wac_i2c->client->dev,
+	dev_dbg(&wac_i2c->client->dev,
 			 "%s: query:%x\n", __func__, flashq);
 
 	return flashq;
@@ -214,7 +214,7 @@ int wacom_i2c_flash_end(struct wacom_i2c *wac_i2c)
 	below added for giving firmware enough time to change to user mode*/
 	msleep(1000);
 
-	dev_info(&wac_i2c->client->dev,
+	dev_dbg(&wac_i2c->client->dev,
 			 "%s: Digitizer activated\n", __func__);
 	wac_i2c->boot_mode = false;
 	return 0;
@@ -307,13 +307,13 @@ int wacom_i2c_flash_erase(struct wacom_i2c *wac_i2c, u8 cmd_erase,
 		/*P130312-6278 (flashq == 0xff || flashq != 0x06);*/
 
 		if (printk_timed_ratelimit(&swtich_slot_time, 5000))
-			dev_info(&wac_i2c->client->dev,
+			dev_dbg(&wac_i2c->client->dev,
 					 "%s: Erasing at %d, ", __func__, i);
 		/*sleep */
 		usleep(1*1000);
 	}
 
-	dev_info(&wac_i2c->client->dev,
+	dev_dbg(&wac_i2c->client->dev,
 			"%s: Erasing done\n", __func__);
 	return ret;
 }
@@ -451,13 +451,13 @@ int wacom_i2c_flash_write(struct wacom_i2c *wac_i2c, unsigned long startAddr,
 		/* 2012/07/04 Evaluation if 0x06 or not added by Wacom*/
 
 		if (printk_timed_ratelimit(&swtich_slot_time, 5000))
-			dev_info(&wac_i2c->client->dev,
+			dev_dbg(&wac_i2c->client->dev,
 					 "%s: Written on:0x%lx",
 					 __func__, ulAddr);
 		usleep(1*1000);
 	}
 
-	dev_info(&wac_i2c->client->dev,
+	dev_dbg(&wac_i2c->client->dev,
 			 "%s: Writing done\n", __func__);
 
 	return 0;
@@ -582,12 +582,12 @@ int wacom_i2c_flash_verify(struct wacom_i2c *wac_i2c, unsigned long startAddr,
 		/* 2012/07/04 Evaluation if 0x06 or not added by Wacom*/
 
 		if (printk_timed_ratelimit(&swtich_slot_time, 5000))
-			dev_info(&wac_i2c->client->dev,
+			dev_dbg(&wac_i2c->client->dev,
 					 "%s: Verified:0x%lx", __func__, ulAddr);
 		usleep(1*1000);
 	}
 
-	dev_info(&wac_i2c->client->dev,
+	dev_dbg(&wac_i2c->client->dev,
 			 "%s: Verifying done\n", __func__);
 
 	return 0;
@@ -600,11 +600,11 @@ int wacom_i2c_flash(struct wacom_i2c *wac_i2c)
 	u32 max_addr = 0, cmd_addr = 0;
 
 	if (system_rev >= WACOM_FW_UPDATE_REVISION) {
-		dev_info(&wac_i2c->client->dev,
+		dev_dbg(&wac_i2c->client->dev,
 				"%s: run FW update..\n",
 				__func__);
 	} else {
-		dev_info(&wac_i2c->client->dev,
+		dev_dbg(&wac_i2c->client->dev,
 				"%s: do not update..\n",
 				__func__);
 		return -ERR_RET;
@@ -624,20 +624,20 @@ int wacom_i2c_flash(struct wacom_i2c *wac_i2c)
 	usleep(10*1000);
 
 	ret = wacom_i2c_flash_enter(wac_i2c);
-	dev_info(&wac_i2c->client->dev,
+	dev_dbg(&wac_i2c->client->dev,
 			 "%s: flashEnter:%d\n", __func__, ret);
 	usleep(10*1000);
 
 	blver = wacom_i2c_flash_BLVer(wac_i2c);
-	dev_info(&wac_i2c->client->dev,
+	dev_dbg(&wac_i2c->client->dev,
 			 "%s: blver:%d\n", __func__, blver);
 	usleep(10*1000);
 
 	mcu = wacom_i2c_flash_mcuId(wac_i2c);
-	dev_info(&wac_i2c->client->dev,
+	dev_dbg(&wac_i2c->client->dev,
 			 "%s: mcu:%x\n", __func__, mcu);
 	if (MPU_W9001 != mcu) {
-		dev_info(&wac_i2c->client->dev,
+		dev_dbg(&wac_i2c->client->dev,
 				 "%s: mcu:%x\n", __func__, mcu);
 		ret = -ENXIO;
 		goto mcu_type_error;
@@ -646,7 +646,7 @@ int wacom_i2c_flash(struct wacom_i2c *wac_i2c)
 
 	switch (mcu) {
 	case MPUVER_W8501:
-		dev_info(&wac_i2c->client->dev,
+		dev_dbg(&wac_i2c->client->dev,
 				 "%s: flashing for w8501 started\n",
 				 __func__);
 		max_addr = MAX_ADDR_W8501;
@@ -655,7 +655,7 @@ int wacom_i2c_flash(struct wacom_i2c *wac_i2c)
 		break;
 
 	case MPUVER_514:
-		dev_info(&wac_i2c->client->dev,
+		dev_dbg(&wac_i2c->client->dev,
 				 "%s: Flashing for 514 started\n",
 				 __func__);
 		max_addr = MAX_ADDR_514;
@@ -664,7 +664,7 @@ int wacom_i2c_flash(struct wacom_i2c *wac_i2c)
 		break;
 
 	case MPUVER_505:
-		dev_info(&wac_i2c->client->dev,
+		dev_dbg(&wac_i2c->client->dev,
 				 "%s: Flashing for 505 started\n",
 				 __func__);
 		max_addr = MAX_ADDR_505;
@@ -673,7 +673,7 @@ int wacom_i2c_flash(struct wacom_i2c *wac_i2c)
 		break;
 
 	default:
-		dev_info(&wac_i2c->client->dev,
+		dev_dbg(&wac_i2c->client->dev,
 				 "%s: default called\n",
 				 __func__);
 		break;
@@ -712,18 +712,11 @@ int wacom_i2c_flash(struct wacom_i2c *wac_i2c)
 						 "%s: firmware is not valied\n",
 						 __func__);
 			else if (ret < 0) {
-				dev_info(&wac_i2c->client->dev,
-						 "%s: error - verifying\n",
-						 __func__);
 				continue;
 			} else
 				valid_hex = true;
 		} while ((!valid_hex) && (cnt < 10));
 		/*2012/07/04: Wacom*/
-
-	dev_info(&wac_i2c->client->dev,
-			 "%s: Firmware successfully updated\n",
-			 __func__);
 	}
 	usleep(1*1000);
 
@@ -740,9 +733,6 @@ fw_update_error:
 	/*Reset*/
 	wac_i2c->wac_pdata->reset_platform_hw(wac_i2c);
 	msleep(200);
-	dev_info(&wac_i2c->client->dev,
-			 "%s: Release FWE\n",
-			 __func__);
 #endif
 
 	return ret;
@@ -752,8 +742,6 @@ static int wacom_enter_flash_mode(struct wacom_i2c *wac_i2c)
 {
 	int ret, len = 0;
 	char buf[8];
-
-	dev_info(&wac_i2c->client->dev, "%s\n", __func__);
 
 	memset(buf, 0, 8);
 	strncpy(buf, "\rflash\r", 7);
@@ -847,11 +835,6 @@ int wacom_check_flash_mode(struct wacom_i2c *wac_i2c, int mode)
 		break;
 	}
 
-	dev_info(&wac_i2c->client->dev, "%s, mode = %s\n", __func__,
-			(mode == BOOT_QUERY) ? "BOOT_QUERY" :
-			(mode == BOOT_BLVER) ? "BOOT_BLVER" :
-			(mode == BOOT_MPU) ? "BOOT_MPU" : "Not Support");
-
 	ret = wacom_set_cmd_feature(wac_i2c);
 	if (ret < 0)
 		return ret;
@@ -903,8 +886,6 @@ int wacom_enter_bootloader(struct wacom_i2c *wac_i2c)
 	int ret;
 	int retry = 0;
 
-	dev_info(&wac_i2c->client->dev, "%s\n", __func__);
-
 	ret = wacom_enter_flash_mode(wac_i2c);
 	if (ret < 0)
 		msleep(500);
@@ -930,8 +911,6 @@ static int wacom_flash_end(struct wacom_i2c *wac_i2c)
 {
 	int ret, ECH;
 	unsigned char command[CMD_SIZE];
-
-	dev_info(&wac_i2c->client->dev, "%s\n", __func__);
 
 	command[0] = 4;
 	command[1] = 0;
@@ -963,16 +942,11 @@ static int wacom_flash_erase(struct wacom_i2c *wac_i2c,
 	unsigned char command[CMD_SIZE];
 	unsigned char response[RSP_SIZE];
 
-	dev_info(&wac_i2c->client->dev, "%s\n", __func__);
-
 	for (i = 0; i < num; i++) {
 		/*msleep(500);*/
 retry:
 		ret = wacom_set_cmd_feature(wac_i2c);
 		if (ret < 0) {
-			dev_info(&wac_i2c->client->dev,
-				"%s: set command failed, retry= %d\n",
-				__func__, i);
 			return ret;
 		}
 
@@ -1004,7 +978,7 @@ retry:
 
 		ret = wacom_get_cmd_feature(wac_i2c);
 		if (ret < 0) {
-			dev_info(&wac_i2c->client->dev,
+			dev_dbg(&wac_i2c->client->dev,
 				"%s: get command failed, retry= %d\n",
 				__func__, i);
 			return ret;
@@ -1085,7 +1059,6 @@ static int wacom_flash_write_block(struct wacom_i2c *wac_i2c, const unsigned cha
 	ret = wacom_i2c_send(wac_i2c, command, BOOT_CMD_SIZE,
 			    WACOM_I2C_MODE_BOOT);
 	if (ret < 0) {
-		printk(KERN_DEBUG "epen:1 rv:%d\n", ret);
 		return ret;
 	}
 
@@ -1121,8 +1094,6 @@ static int wacom_flash_write(struct wacom_i2c *wac_i2c,
 	int i;
 	unsigned long pageNo = 0;
 	u8 command_id = 0;
-
-	dev_info(&wac_i2c->client->dev, "%s\n", __func__);
 
 	for (ulAddress = start_address; ulAddress < *max_address;
 	     ulAddress += FLASH_BLOCK_SIZE) {
@@ -1181,7 +1152,6 @@ int wacom_i2c_flash_9007(struct wacom_i2c *wac_i2c)
 	/*Reset*/
 	wac_i2c->wac_pdata->reset_platform_hw(wac_i2c);
 	msleep(200);
-	dev_err(&wac_i2c->client->dev, "%s: Set FWE\n", __func__);
 
 	/*Set start and end address and block numbers*/
 	eraseBlockNum = 0;
@@ -1228,10 +1198,6 @@ int wacom_i2c_flash_9007(struct wacom_i2c *wac_i2c)
 		goto flashing_fw_err;
 	}
 
-	dev_err(&wac_i2c->client->dev,
-				"%s: Successed new Firmware writing\n",
-				__func__);
-
 flashing_fw_err:
 	wac_i2c->wac_pdata->compulsory_flash_mode(wac_i2c, false);
 	/*Reset */
@@ -1249,9 +1215,6 @@ int wacom_fw_load_from_UMS(struct wacom_i2c *wac_i2c)
 	int ret = 0;
 	const struct firmware *firm_data = NULL;
 
-	dev_info(&wac_i2c->client->dev,
-			"%s: Start firmware flashing (UMS).\n", __func__);
-
 	old_fs = get_fs();
 	set_fs(KERNEL_DS);
 
@@ -1266,7 +1229,7 @@ int wacom_fw_load_from_UMS(struct wacom_i2c *wac_i2c)
 	}
 
 	fsize= fp->f_path.dentry->d_inode->i_size;
-	dev_info(&wac_i2c->client->dev,
+	dev_dbg(&wac_i2c->client->dev,
 		"%s: start, file path %s, size %ld Bytes\n",
 		__func__, WACOM_FW_PATH, fsize);
 
@@ -1281,8 +1244,6 @@ int wacom_fw_load_from_UMS(struct wacom_i2c *wac_i2c)
 	nread = vfs_read(fp, (char __user *)firm_data,
 		fsize, &fp->f_pos);
 
-	dev_info(&wac_i2c->client->dev,
-		"%s: nread %ld Bytes\n", __func__, nread);
 	if (nread != fsize) {
 		dev_err(&wac_i2c->client->dev,
 			"%s: failed to read firmware file, nread %ld Bytes\n",
@@ -1313,12 +1274,7 @@ int wacom_load_fw_from_req_fw(struct wacom_i2c *wac_i2c)
 	const struct firmware *firm_data = NULL;
 	char fw_path[WACOM_MAX_FW_PATH];
 
-	dev_info(&wac_i2c->client->dev, "%s\n", __func__);
-
 	/*Obtain MPU type: this can be manually done in user space */
-	dev_info(&wac_i2c->client->dev,
-			"%s: MPU type: %x , BOOT ver: %x\n",
-			__func__, wac_i2c->ic_mpu_ver, wac_i2c->boot_ver);
 
 	memset(&fw_path, 0, WACOM_MAX_FW_PATH);
 	if (wac_i2c->ic_mpu_ver == MPU_W9001) {
@@ -1336,17 +1292,11 @@ int wacom_load_fw_from_req_fw(struct wacom_i2c *wac_i2c)
 			snprintf(fw_path, WACOM_MAX_FW_PATH,
 				"%s", WACOM_FW_NAME_W9010);
 		} else {
-			dev_info(&wac_i2c->client->dev,
-				"%s: B934 PANEL, firmware name is NULL. return -1\n",
-				__func__);
 			ret = -1;
 			goto firm_name_null_err;
 		}
 
 	} else {
-		dev_info(&wac_i2c->client->dev,
-			"%s: Not apply WACOM IC, firmware name is NULL. return -1\n",
-			__func__);
 		ret = -1;
 		goto firm_name_null_err;
 	}
@@ -1359,16 +1309,11 @@ int wacom_load_fw_from_req_fw(struct wacom_i2c *wac_i2c)
 		goto request_firm_err;
 	}
 
-	dev_info(&wac_i2c->client->dev, "%s: firmware name: %s, size: %d\n",
-			__func__, fw_path, firm_data->size);
-
 	/* firmware version check */
 	if (wac_i2c->ic_mpu_ver == MPU_W9010 || wac_i2c->ic_mpu_ver == MPU_W9007)
 		wac_i2c->wac_feature->fw_version = 
 			firm_data->data[FIRM_VER_LB_ADDR_W9007] |(firm_data->data[FIRM_VER_UB_ADDR_W9007] << 8);
-			
-	dev_info(&wac_i2c->client->dev, "%s: firmware version = %x\n",
-			__func__, wac_i2c->wac_feature->fw_version);
+
 	wacom_i2c_set_firm_data((unsigned char *)firm_data->data);
 	release_firmware(firm_data);
 

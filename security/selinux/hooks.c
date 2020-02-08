@@ -5890,10 +5890,6 @@ static __init int selinux_init(void)
 
 	if (register_security(&selinux_ops))
 		panic("SELinux: Unable to register with kernel.\n");
-	if (selinux_enforcing)
-		printk(KERN_DEBUG "SELinux:  Starting in enforcing mode\n");
-	else
-		printk(KERN_DEBUG "SELinux:  Starting in permissive mode\n");
 
 	return 0;
 }

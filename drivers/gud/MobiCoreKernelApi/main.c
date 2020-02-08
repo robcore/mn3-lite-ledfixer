@@ -147,7 +147,7 @@ static int __init mcapi_init(void)
 
 	dev_set_name(mc_kapi, "mcapi");
 
-	dev_info(mc_kapi, "Mobicore API module initialized!\n");
+	dev_dbg(mc_kapi, "Mobicore API module initialized!\n");
 
 	mod_ctx = kzalloc(sizeof(struct mc_kernelapi_ctx), GFP_KERNEL);
 	if (mod_ctx == NULL) {
@@ -178,7 +178,7 @@ static int __init mcapi_init(void)
 
 static void __exit mcapi_exit(void)
 {
-	dev_info(mc_kapi, "Unloading Mobicore API module.\n");
+	dev_dbg(mc_kapi, "Unloading Mobicore API module.\n");
 
 	if (mod_ctx->sk != NULL) {
 		netlink_kernel_release(mod_ctx->sk);

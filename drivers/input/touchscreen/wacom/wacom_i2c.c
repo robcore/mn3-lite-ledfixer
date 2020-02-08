@@ -75,7 +75,7 @@ static void wacom_enable_irq(struct wacom_i2c *wac_i2c, bool enable)
 #endif
 
 #ifdef WACOM_IRQ_DEBUG
-	dev_info(&wac_i2c->client->dev,
+	dev_dbg(&wac_i2c->client->dev,
 			"%s: Enable %d, depth %d\n",
 			__func__, (int)enable, depth);
 #endif
@@ -83,7 +83,7 @@ static void wacom_enable_irq(struct wacom_i2c *wac_i2c, bool enable)
 
 static int wacom_start(struct wacom_i2c *wac_i2c)
 {
-	dev_info(&wac_i2c->client->dev, "%s\n", __func__);
+	dev_dbg(&wac_i2c->client->dev, "%s\n", __func__);
 
 	if (wac_i2c->wac_pdata->gpio_pen_reset_n > 0)
 		gpio_direction_output(wac_i2c->wac_pdata->gpio_pen_reset_n, 1);
@@ -96,7 +96,7 @@ static int wacom_start(struct wacom_i2c *wac_i2c)
 
 static int wacom_stop(struct wacom_i2c *wac_i2c)
 {
-	dev_info(&wac_i2c->client->dev, "%s\n", __func__);
+	dev_dbg(&wac_i2c->client->dev, "%s\n", __func__);
 
 	if (wac_i2c->wac_pdata->gpio_pen_reset_n > 0)
 		gpio_direction_output(wac_i2c->wac_pdata->gpio_pen_reset_n, 0);
@@ -136,7 +136,7 @@ static int wacom_reset_hw(struct wacom_i2c *wac_i2c)
 static void wacom_compulsory_flash_mode(struct wacom_i2c *wac_i2c, bool en)
 {
 	gpio_direction_output(wac_i2c->wac_pdata->gpio_pen_fwe1, en ? 1 : 0);
-	dev_info(&wac_i2c->client->dev, "%s: FWE1 is %s\n",
+	dev_dbg(&wac_i2c->client->dev, "%s: FWE1 is %s\n",
 			__func__, en ? "HIGH" : "LOW");
 }
 #endif
@@ -145,7 +145,7 @@ static void wacom_i2c_enable(struct wacom_i2c *wac_i2c)
 {
 	bool en = true;
 
-	dev_info(&wac_i2c->client->dev,
+	dev_dbg(&wac_i2c->client->dev,
 			"%s\n", __func__);
 
 #ifdef BATTERY_SAVING_MODE
@@ -196,7 +196,7 @@ static irqreturn_t wacom_interrupt_pdct(int irq, void *dev_id)
 
 	wac_i2c->pen_pdct = gpio_get_value(wac_i2c->wac_pdata->gpio_pen_pdct);
 
-	dev_info(&wac_i2c->client->dev, "%s: pdct %d(%d) [%s]\n",
+	dev_dbg(&wac_i2c->client->dev, "%s: pdct %d(%d) [%s]\n",
 			__func__, wac_i2c->pen_pdct, wac_i2c->pen_prox,
 			wac_i2c->pen_pdct ? "Released" : "Pressed");
 #if 0
@@ -222,7 +222,7 @@ static void pen_insert_work(struct work_struct *work)
 		return;
 	wac_i2c->pen_insert = !gpio_get_value(wac_i2c->gpio_pen_insert);
 
-	dev_info(&wac_i2c->client->dev, "%s: pen %s\n",
+	dev_dbg(&wac_i2c->client->dev, "%s: pen %s\n",
 		__func__, wac_i2c->pen_insert ? "instert" : "remove");
 
 	input_report_switch(wac_i2c->input_dev,
@@ -253,7 +253,7 @@ static int wacom_i2c_input_open(struct input_dev *dev)
 {
 	struct wacom_i2c *wac_i2c = input_get_drvdata(dev);
 
-	dev_info(&wac_i2c->client->dev,
+	dev_dbg(&wac_i2c->client->dev,
 			"%s\n", __func__);
 
 	wacom_i2c_enable(wac_i2c);
@@ -265,7 +265,7 @@ static void wacom_i2c_input_close(struct input_dev *dev)
 {
 	struct wacom_i2c *wac_i2c = input_get_drvdata(dev);
 
-	dev_info(&wac_i2c->client->dev,
+	dev_dbg(&wac_i2c->client->dev,
 			"%s\n", __func__);
 
 	wacom_i2c_disable(wac_i2c);
@@ -323,7 +323,7 @@ static int wacom_check_emr_prox(struct wacom_g5_callbacks *cb)
 {
 	struct wacom_i2c *wac = container_of(cb, struct wacom_i2c, callbacks);
 
-	dev_info(&wac_i2c->client->dev,
+	dev_dbg(&wac_i2c->client->dev,
 			"%s\n", __func__);
 
 	return wac->pen_prox;
@@ -346,7 +346,7 @@ static void wacom_i2c_resume_work(struct work_struct *work)
 */
 	wacom_enable_irq(wac_i2c, true);
 
-	dev_info(&wac_i2c->client->dev,
+	dev_dbg(&wac_i2c->client->dev,
 			"%s\n", __func__);
 }
 
@@ -388,20 +388,20 @@ void wacom_i2c_write_vsync(struct wacom_i2c *wac_i2c)
 	int retval;
 
 	if (wac_i2c->wait_done) {
-		dev_info(&wac_i2c->client->dev, "%s write %d\n", __func__, wac_i2c->vsync);
+		dev_dbg(&wac_i2c->client->dev, "%s write %d\n", __func__, wac_i2c->vsync);
 		#if defined(CONFIG_MACH_FRESCOLTESKT) || defined(CONFIG_MACH_FRESCOLTEKTT) || defined(CONFIG_MACH_FRESCOLTELGT)
 			retval = 0; // kyNam_131228_ ldi_fps(wac_i2c->vsync);
 		#else
 			retval = ldi_fps(wac_i2c->vsync);
 		#endif
 		if (!retval)
-			dev_info(&wac_i2c->client->dev, "%s failed\n", __func__);
+			dev_dbg(&wac_i2c->client->dev, "%s failed\n", __func__);
 		wac_i2c->wait_done = false;
 		schedule_delayed_work(&wac_i2c->read_vsync_work,
 					msecs_to_jiffies(wac_i2c->delay_time * 1000));
 
 	} else {
-		dev_info(&wac_i2c->client->dev, "%s vsync waiting time..\n", __func__);
+		dev_dbg(&wac_i2c->client->dev, "%s vsync waiting time..\n", __func__);
 	}
 }
 
@@ -441,7 +441,7 @@ static ssize_t epen_read_freq_data_store(struct device *dev,
 
 	wac_i2c->delay_time = val;
 
-	dev_info(&wac_i2c->client->dev, "%s: lcd noise workaround delay time is  %d\n",
+	dev_dbg(&wac_i2c->client->dev, "%s: lcd noise workaround delay time is  %d\n",
 			__func__, wac_i2c->delay_time);
 
 	return count;
@@ -459,7 +459,7 @@ static ssize_t epen_firm_update_status_show(struct device *dev,
 {
 	struct wacom_i2c *wac_i2c = dev_get_drvdata(dev);
 
-	dev_info(&wac_i2c->client->dev, 
+	dev_dbg(&wac_i2c->client->dev, 
 			"%s:(%d)\n", __func__,
 			wac_i2c->wac_feature->firm_update_status);
 
@@ -478,7 +478,7 @@ static ssize_t epen_firm_version_show(struct device *dev,
 {
 	struct wacom_i2c *wac_i2c = dev_get_drvdata(dev);
 
-	dev_info(&wac_i2c->client->dev,
+	dev_dbg(&wac_i2c->client->dev,
 			"%s: 0x%x|0x%X\n", __func__,
 			wac_i2c->wac_feature->fw_ic_version,
 			wac_i2c->wac_feature->fw_version);
@@ -494,7 +494,7 @@ static ssize_t epen_tuning_version_show(struct device *dev,
 {
 	struct wacom_i2c *wac_i2c = dev_get_drvdata(dev);
 
-	dev_info(&wac_i2c->client->dev,
+	dev_dbg(&wac_i2c->client->dev,
 			"%s: %s\n", __func__,
 			wac_i2c->wac_pdata->basic_model);
 
@@ -518,13 +518,13 @@ static ssize_t epen_rotation_store(struct device *dev,
 	if (val == 100 && !factory_test) {
 		factory_test = true;
 		screen_rotate = 0;
-		dev_info(&wac_i2c->client->dev,
+		dev_dbg(&wac_i2c->client->dev,
 				"%s, enter factory test mode\n",
 				__func__);
 	} else if (val == 200 && factory_test) {
 		factory_test = false;
 		screen_rotate = last_rotation;
-		dev_info(&wac_i2c->client->dev,
+		dev_dbg(&wac_i2c->client->dev,
 				"%s, exit factory test mode\n",
 				__func__);
 	}
@@ -539,7 +539,7 @@ static ssize_t epen_rotation_store(struct device *dev,
 	}
 
 	/* 0: Portrait 0, 1: Landscape 90, 2: Portrait 180 3: Landscape 270 */
-	dev_info(&wac_i2c->client->dev,
+	dev_dbg(&wac_i2c->client->dev,
 			"%s: rotate=%d\n", __func__, screen_rotate);
 
 	return count;
@@ -558,7 +558,7 @@ static ssize_t epen_hand_store(struct device *dev,
 		user_hand = (unsigned char)val;
 
 	/* 0:Left hand, 1:Right Hand */
-	dev_info(&wac_i2c->client->dev,
+	dev_dbg(&wac_i2c->client->dev,
 			"%s: hand=%u\n", __func__, user_hand);
 
 	return count;
@@ -570,7 +570,7 @@ static bool check_update_condition(struct wacom_i2c *wac_i2c, const char buf)
 	u32 fw_ic_ver = wac_i2c->wac_feature->fw_ic_version;
 	bool bUpdate = false;
 
-	dev_info(&wac_i2c->client->dev,
+	dev_dbg(&wac_i2c->client->dev,
 			"%s: system rev is 0x%02x, Dig_rev(0x%02x)\n",
 			__func__, system_rev, WACOM_FW_UPDATE_REVISION);
 
@@ -586,7 +586,7 @@ static bool check_update_condition(struct wacom_i2c *wac_i2c, const char buf)
 			bUpdate = true;
 		break;
 	default:
-		dev_info(&wac_i2c->client->dev,
+		dev_dbg(&wac_i2c->client->dev,
 				"%s: wrong parameter\n", __func__);
 		bUpdate = false;
 		break;
@@ -630,12 +630,12 @@ static ssize_t epen_firmware_update_store(struct device *dev,
 
 	need_update = check_update_condition(wac_i2c, *buf);
 	if (need_update == false) {
-		dev_info(&wac_i2c->client->dev,
+		dev_dbg(&wac_i2c->client->dev,
 				"%s:Pass Update. Cmd %c, IC ver %04x, Ker ver %04x\n",
 				__func__, *buf, fw_ic_ver, wac_i2c->wac_feature->fw_version);
 		return count;
 	} else {
-		dev_info(&wac_i2c->client->dev,
+		dev_dbg(&wac_i2c->client->dev,
 			"%s:Update Start. IC fw ver : 0x%x, new fw ver : 0x%x\n",
 			__func__, wac_i2c->wac_feature->fw_ic_version,
 			wac_i2c->wac_feature->fw_version);
@@ -647,7 +647,7 @@ static ssize_t epen_firmware_update_store(struct device *dev,
 		ret = wacom_fw_load_from_UMS(wac_i2c);
 		if (ret)
 			goto failure;
-		dev_info(&wac_i2c->client->dev,
+		dev_dbg(&wac_i2c->client->dev,
 			"%s: Start firmware flashing (UMS image).\n",
 			__func__);	
 		ums_binary = true;
@@ -664,7 +664,7 @@ static ssize_t epen_firmware_update_store(struct device *dev,
 		ret = wacom_load_fw_from_req_fw(wac_i2c);
 		if (ret)
 			goto failure;
-		dev_info(&wac_i2c->client->dev,
+		dev_dbg(&wac_i2c->client->dev,
 		"%s: Start firmware flashing (kernel image).\n",
 		__func__);
 
@@ -718,7 +718,7 @@ static ssize_t epen_reset_store(struct device *dev,
 
 		wacom_enable_irq(wac_i2c, true);
 
-		dev_info(&wac_i2c->client->dev,
+		dev_dbg(&wac_i2c->client->dev,
 				"%s, result %d\n", __func__,
 		       wac_i2c->query_status);
 	}
@@ -732,11 +732,11 @@ static ssize_t epen_reset_result_show(struct device *dev,
 	struct wacom_i2c *wac_i2c = dev_get_drvdata(dev);
 
 	if (wac_i2c->query_status) {
-		dev_info(&wac_i2c->client->dev,
+		dev_dbg(&wac_i2c->client->dev,
 				"%s, PASS\n", __func__);
 		return sprintf(buf, "PASS\n");
 	} else {
-		dev_info(&wac_i2c->client->dev,
+		dev_dbg(&wac_i2c->client->dev,
 				"%s, FAIL\n", __func__);
 		return sprintf(buf, "FAIL\n");
 	}
@@ -754,7 +754,7 @@ struct device_attribute *attr,
 	sscanf(buf, "%d%d%d%d%d%d", &height, &v1, &v2, &v3, &v4, &v5);
 
 	if (height < 0 || height > 2) {
-		dev_info(&wac_i2c->client->dev,
+		dev_dbg(&wac_i2c->client->dev,
 				"%s: Height err %d\n", __func__, height);
 		return count;
 	}
@@ -765,7 +765,7 @@ struct device_attribute *attr,
 	g_aveLevel_Trs[height] = v4;
 	g_aveLevel_Cor[height] = v5;
 
-	dev_info(&wac_i2c->client->dev,
+	dev_dbg(&wac_i2c->client->dev,
 			"%s: v1 %d v2 %d v3 %d v4 %d\n", __func__,
 			v1, v2, v3, v4);
 
@@ -778,7 +778,7 @@ struct device_attribute *attr,
 {
 	struct wacom_i2c *wac_i2c = dev_get_drvdata(dev);
 
-	dev_info(&wac_i2c->client->dev,
+	dev_dbg(&wac_i2c->client->dev,
 			"%s: %d %d %d %d, %d %d %d %d, %d %d %d %d\n",
 			__func__,
 			g_aveLevel_C[0], g_aveLevel_X[0],
@@ -808,7 +808,7 @@ static ssize_t epen_checksum_store(struct device *dev,
 	sscanf(buf, "%d", &val);
 
 	if (val != 1) {
-	dev_info(&wac_i2c->client->dev,
+	dev_dbg(&wac_i2c->client->dev,
 			"%s: wrong cmd %d\n", __func__, val);
 		return count;
 	}
@@ -817,7 +817,7 @@ static ssize_t epen_checksum_store(struct device *dev,
 		wacom_checksum(wac_i2c);
 		wacom_enable_irq(wac_i2c, true);
 
-	dev_info(&wac_i2c->client->dev,
+	dev_dbg(&wac_i2c->client->dev,
 			"%s: result %d\n",
 			__func__, wac_i2c->checksum_result);
 
@@ -831,11 +831,11 @@ static ssize_t epen_checksum_result_show(struct device *dev,
 	struct wacom_i2c *wac_i2c = dev_get_drvdata(dev);
 
 	if (wac_i2c->checksum_result) {
-		dev_info(&wac_i2c->client->dev,
+		dev_dbg(&wac_i2c->client->dev,
 				"%s: checksum, PASS\n", __func__);
 		return sprintf(buf, "PASS\n");
 	} else {
-		dev_info(&wac_i2c->client->dev,
+		dev_dbg(&wac_i2c->client->dev,
 				"%s: checksum, FAIL\n", __func__);
 		return sprintf(buf, "FAIL\n");
 	}
@@ -898,7 +898,7 @@ static ssize_t epen_connection_show(struct device *dev,
 		}
 	} while (cnt--);
 
-	dev_info(&wac_i2c->client->dev,
+	dev_dbg(&wac_i2c->client->dev,
 			 "%s : status: %x, error code: %x\n",
 		       __func__, buf[0], buf[1]);
 
@@ -937,7 +937,7 @@ static ssize_t epen_saving_mode_store(struct device *dev,
 	if (sscanf(buf, "%u", &val) == 1)
 		wac_i2c->battery_saving_mode = !!val;
 
-	dev_info(&wac_i2c->client->dev, "%s: %s\n",
+	dev_dbg(&wac_i2c->client->dev, "%s: %s\n",
 			__func__, val ? "checked" : "unchecked");
 
 	if (wac_i2c->battery_saving_mode) {
@@ -958,16 +958,16 @@ static ssize_t boost_level_store(struct device *dev,
 	struct wacom_i2c *wac_i2c = dev_get_drvdata(dev);
 	int val, retval;
 
-	dev_info(&wac_i2c->client->dev, "%s\n", __func__);
+	dev_dbg(&wac_i2c->client->dev, "%s\n", __func__);
 	sscanf(buf, "%d", &val);
 
 	if (val != 1 && val != 2 && val != 3 && val != 0) {
-		dev_info(&wac_i2c->client->dev,
+		dev_dbg(&wac_i2c->client->dev,
 			"%s: wrong cmd %d\n", __func__, val);
 		return count;
 	}
 	wac_i2c->dvfs_boost_mode = val;
-	dev_info(&wac_i2c->client->dev,
+	dev_dbg(&wac_i2c->client->dev,
 			"%s: dvfs_boost_mode = %d\n",
 			__func__, wac_i2c->dvfs_boost_mode);
 
@@ -1008,7 +1008,7 @@ static ssize_t epen_delay_time_store(struct device *dev,
 	if (val > 0)
 		wac_i2c->key_delay_time = val;
 
-	dev_info(&wac_i2c->client->dev, "%s: delay time : %d\n",
+	dev_dbg(&wac_i2c->client->dev, "%s: delay time : %d\n",
 			__func__, wac_i2c->key_delay_time);
 	return count;
 }
@@ -1119,7 +1119,7 @@ static int wacom_firmware_update(struct wacom_i2c *wac_i2c)
 
 	if (wac_i2c->wac_feature->fw_ic_version < wac_i2c->wac_feature->fw_version) {	
 		/*start firm update*/
-		dev_info(&wac_i2c->client->dev,
+		dev_dbg(&wac_i2c->client->dev,
 				"%s: Start firmware flashing (kernel image).\n",
 				__func__);		
 		mutex_lock(&wac_i2c->lock);
@@ -1134,7 +1134,7 @@ static int wacom_firmware_update(struct wacom_i2c *wac_i2c)
 		wacom_enable_irq(wac_i2c, true);
 		mutex_unlock(&wac_i2c->lock);
 	} else {
-		dev_info(&wac_i2c->client->dev,
+		dev_dbg(&wac_i2c->client->dev,
 			"%s: firmware update does not need.\n",
 			__func__);
 	}
@@ -1324,19 +1324,19 @@ static int wacom_parse_dt(struct device *dev,
 #else
 	rc = of_property_read_string(np, "wacom,basic_model", &pdata->basic_model);
 	if (rc < 0) {
-		dev_info(dev, "%s: Unable to read wacom,basic_model\n", __func__);
+		dev_dbg(dev, "%s: Unable to read wacom,basic_model\n", __func__);
 		pdata->basic_model = "NULL";
 	}
 #endif
 
 	rc = of_property_read_u32(np, "wacom,ic_mpu_ver", &pdata->ic_mpu_ver);
 	if (rc < 0)
-		dev_info(dev, "%s: Unable to read wacom,ic_mpu_ver\n", __func__);
+		dev_dbg(dev, "%s: Unable to read wacom,ic_mpu_ver\n", __func__);
 
 	/*Change below if irq is needed */
 	rc = of_property_read_u32(np, "wacom,irq_flags", &pdata->irq_flags);
 	if (rc < 0)
-		dev_info(dev, "%s: Unable to read wacom,irq_flags\n", __func__);
+		dev_dbg(dev, "%s: Unable to read wacom,irq_flags\n", __func__);
 
 	printk(KERN_ERR "%s: fwe1: %d, reset_n: %d, pdct: %d, insert: %d, model: %s, mpu: %x, irq_flags=%x \n",
 			__func__, pdata->gpio_pen_fwe1, pdata->gpio_pen_reset_n,
@@ -1398,7 +1398,7 @@ static void wacom_i2c_early_suspend(struct early_suspend *h)
 	struct wacom_i2c *wac_i2c =
 	    container_of(h, struct wacom_i2c, early_suspend);
 
-	dev_info(&wac_i2c->client->dev,
+	dev_dbg(&wac_i2c->client->dev,
 			"%s\n", __func__);
 
 	wacom_i2c_disable(wac_i2c);
@@ -1409,7 +1409,7 @@ static void wacom_i2c_late_resume(struct early_suspend *h)
 	struct wacom_i2c *wac_i2c =
 	    container_of(h, struct wacom_i2c, early_suspend);
 
-	dev_info(&wac_i2c->client->dev,
+	dev_dbg(&wac_i2c->client->dev,
 			"%s\n", __func__);
 
 	wacom_i2c_enable(wac_i2c);
@@ -1550,7 +1550,7 @@ static int wacom_i2c_probe(struct i2c_client *client,
 			pr_err("[E-PEN] wacom_i2c_send failed.\n");
 #endif
 		wac_i2c->ic_mpu_ver = wacom_check_flash_mode(wac_i2c, BOOT_MPU);
-		dev_info(&wac_i2c->client->dev,
+		dev_dbg(&wac_i2c->client->dev,
 			"%s: mpu version: %x\n", __func__, ret);
 
 		if (wac_i2c->ic_mpu_ver == MPU_W9001)
@@ -1559,11 +1559,11 @@ static int wacom_i2c_probe(struct i2c_client *client,
 		else if (wac_i2c->ic_mpu_ver == MPU_W9007) {
 				ret = wacom_enter_bootloader(wac_i2c);
 				if (ret < 0) {
-					dev_info(&wac_i2c->client->dev,
+					dev_dbg(&wac_i2c->client->dev,
 						"%s: failed to get BootLoader version, %d\n", __func__, ret);
 					goto err_wacom_i2c_bootloader_ver;
 			} else {
-				dev_info(&wac_i2c->client->dev,
+				dev_dbg(&wac_i2c->client->dev,
 					"%s: BootLoader version: %x\n", __func__, ret);
 			}
 		}

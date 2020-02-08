@@ -495,13 +495,11 @@ static void dfd_disable(void)
 {
 	dfd_disabled = 1;
 	dfd_flush();
-	pr_info("%s: double free detection is disabled\n", __func__);
 }
 
 static void dfd_enable(void)
 {
 	dfd_disabled = 0;
-	pr_info("%s: double free detection is enabled\n", __func__);
 }
 
 #ifdef DFD_HAS_SHRINKER
@@ -558,7 +556,6 @@ int dfd_shrink(struct shrinker *shrinker, struct shrink_control *sc)
 		KFREE_CIRC_BUF_SIZE);
 	spin_unlock_irqrestore(&circ_buf_lock, flags);
 	if (nr_objs == 0) {
-		pr_info("%s: nothing more to reclaim from here!\n", __func__);
 		nr_objs = -1;
 	}
 
@@ -631,7 +628,6 @@ static void __hexdump(void *mem, unsigned long size)
 		hex_dump_to_buffer((const void *)addr,
 			LINE_SIZE, LINE_SIZE,
 			WORD_SIZE, linebuf, sizeof(linebuf), 1);
-		pr_info(" %lx : %s\n", addr, linebuf);
 	}
 
 }
@@ -932,8 +928,6 @@ static void simulate_bus_hang(void)
 	p = ioremap_nocache(0xFC4B8000, 32);
 	*(unsigned int *)p = *(unsigned int *)p;
 	mb();
-	pr_info("*p = %x\n", *(unsigned int *)p);
-	pr_emerg("Clk may be enabled.Try again if it reaches here!\n");
 }
 #endif
 
@@ -1008,20 +1002,12 @@ static int sec_alloc_virtual_mem(const char *val, struct kernel_param *kp)
 	if(size)
 	{
 		mem = vmalloc(size);
-		if(mem)
-		{
-			pr_info("%s: Allocated virtual memory of size: 0x%X bytes\n", __func__, size);
+		if (mem) {
 			*mem = (int) g_allocated_virt_mem;
 			g_allocated_virt_mem = mem;
 			return 0;
 		}
-		else
-		{
-			pr_info("%s: Failed to allocate virtual memory of size: 0x%X bytes\n", __func__, size);
-		}
 	}
-
-	pr_info("%s: Invalid size: %s bytes\n", __func__, val);
 
 	return -EAGAIN;
 }
@@ -1040,7 +1026,6 @@ static int sec_free_virtual_mem(const char *val, struct kernel_param *kp)
 		}
 		else
 		{
-			pr_info("%s: Invalid free count: %s\n", __func__, val);
 			return -EAGAIN;
 		}
 	}
@@ -1050,7 +1035,6 @@ static int sec_free_virtual_mem(const char *val, struct kernel_param *kp)
 
         if(!g_allocated_virt_mem)
         {
-                pr_info("%s: No virtual memory chunk to free.\n", __func__);
                 return 0;
         }
 
@@ -1061,10 +1045,6 @@ static int sec_free_virtual_mem(const char *val, struct kernel_param *kp)
 		g_allocated_virt_mem = mem;
 	}
 
-	pr_info("%s: Freed previously allocated virtual memory chunks.\n", __func__);
-
-	if(g_allocated_virt_mem)
-		pr_info("%s: Still, some virtual memory chunks are not freed. Try again.\n", __func__);
 
 	return 0;
 }
@@ -1079,18 +1059,11 @@ static int sec_alloc_physical_mem(const char *val, struct kernel_param *kp)
                 mem = kmalloc(size, GFP_KERNEL);
                 if(mem)
                 {
-			pr_info("%s: Allocated physical memory of size: 0x%X bytes\n", __func__, size);
                         *mem = (int) g_allocated_phys_mem;
                         g_allocated_phys_mem = mem;
 			return 0;
                 }
-		else
-		{
-			pr_info("%s: Failed to allocate physical memory of size: 0x%X bytes\n", __func__, size);
-		}
         }
-
-	pr_info("%s: Invalid size: %s bytes\n", __func__, val);
 
         return -EAGAIN;
 }
@@ -1109,7 +1082,6 @@ static int sec_free_physical_mem(const char *val, struct kernel_param *kp)
                 }
                 else
                 {
-                        pr_info("%s: Invalid free count: %s\n", __func__, val);
                         return -EAGAIN;
                 }
         }
@@ -1119,7 +1091,6 @@ static int sec_free_physical_mem(const char *val, struct kernel_param *kp)
 
 	if(!g_allocated_phys_mem)
 	{
-		pr_info("%s: No physical memory chunk to free.\n", __func__);
 		return 0;
 	}
 
@@ -1129,11 +1100,6 @@ static int sec_free_physical_mem(const char *val, struct kernel_param *kp)
                 kfree(g_allocated_phys_mem);
                 g_allocated_phys_mem = mem;
         }
-
-	pr_info("%s: Freed previously allocated physical memory chunks.\n", __func__);
-
-	if(g_allocated_phys_mem)
-                pr_info("%s: Still, some physical memory chunks are not freed. Try again.\n", __func__);
 
 	return 0;
 }
@@ -1147,16 +1113,12 @@ static int dbg_set_cpu_affinity(const char *val, struct kernel_param *kp)
 	long ret;
 	pid = (pid_t)memparse(val, &endptr);
 	if (*endptr != '@') {
-		pr_info("%s: invalid input strin: %s\n", __func__, val);
 		return -EINVAL;
 	}
 	cpu = memparse(++endptr, &endptr);
 	cpumask_clear(&mask);
 	cpumask_set_cpu(cpu, &mask);
-	pr_info("%s: Setting %d cpu affinity to cpu%d\n",
-		__func__, pid, cpu);
 	ret = sched_setaffinity(pid, &mask);
-	pr_info("%s: sched_setaffinity returned %ld\n", __func__, ret);
 	return 0;
 }
 
@@ -1233,7 +1195,6 @@ static unsigned normal_off = 0;
 static int __init power_normal_off(char *val)
 {
 	normal_off = strncmp(val, "1", 1) ? 0 : 1;
-	pr_info("%s, normal_off:%d\n", __func__, normal_off);
         return 1;
 }
 __setup("normal_off=", power_normal_off);
@@ -1241,7 +1202,6 @@ __setup("normal_off=", power_normal_off);
 bool kernel_sec_set_normal_pwroff(int value)
 {
 	int normal_poweroff = value;
-	pr_info(" %s, value :%d\n", __func__, value);
 	sec_set_param(param_index_normal_poweroff, &normal_poweroff);
 
 	return 1;
@@ -1434,7 +1394,6 @@ static void sec_debug_save_context(void)
 extern void set_dload_mode(int on);
 static void sec_debug_set_qc_dload_magic(int on)
 {
-	pr_info("%s: on=%d\n", __func__, on);
 	set_dload_mode(on);
 }
 
@@ -1469,22 +1428,16 @@ static void sec_debug_set_upload_cause(enum sec_debug_upload_cause_t type)
 	per_cpu(sec_debug_upload_cause, smp_processor_id()) = type;
 	__raw_writel(type, upload_cause);
 
-	pr_emerg("(%s) type = 0x%x\n", __func__, type);
-
 #ifdef CONFIG_RESTART_REASON_DDR
 	if(restart_reason_ddr_address) {
 		if(type == UPLOAD_CAUSE_POWER_LONG_PRESS) {
 			/* UPLOAD_CAUSE_POWER_LONG_PRESS magic number to DDR restart reason address */
 			__raw_writel(UPLOAD_CAUSE_POWER_LONG_PRESS, upload_cause_ddr_address);
-			pr_info("%s: Write UPLOAD_CAUSE_POWER_LONG_PRESS to DDR : 0x%x \n",
-					__func__,__raw_readl(upload_cause_ddr_address));
 		}
 		/* if power key is released after pressing, clear the DDR */
 		if(type == UPLOAD_CAUSE_INIT &&
 				(UPLOAD_CAUSE_POWER_LONG_PRESS == __raw_readl(upload_cause_ddr_address))) {
 			__raw_writel(0x0, upload_cause_ddr_address);
-			pr_info("%s: Clear UPLOAD_CAUSE_POWER_LONG_PRESS to DDR : 0x%x \n",
-					__func__, __raw_readl(upload_cause_ddr_address));
 		}
 	}
 #endif
@@ -1629,8 +1582,6 @@ void sec_debug_check_crash_key(unsigned int code, int value)
         static enum { NO, T1, T2, T3} state_tsp = NO;
 #endif
 
-	printk(KERN_ERR "%s code %d value %d state %d enable %d\n", __func__, code, value, state, enable);
-
 	if (code == KEY_POWER) {
 		if (value)
 			sec_debug_set_upload_cause(UPLOAD_CAUSE_POWER_LONG_PRESS);
@@ -1664,7 +1615,6 @@ void sec_debug_check_crash_key(unsigned int code, int value)
 			break;
 		case T3:
 			if (code == KEY_HOMEPAGE && value) {
-				pr_info("[TSP] dump_tsp_log : %d\n", __LINE__ );
 				dump_tsp_log();
 			}
 			break;
@@ -1772,8 +1722,6 @@ static int __init __init_sec_debug_log(void)
 	int size;
 
 	if (secdbg_paddr == 0 || secdbg_size == 0) {
-		pr_info("%s: sec debug buffer not provided. Using kmalloc..\n",
-			__func__);
 		size = sizeof(struct sec_debug_log);
 		vaddr = kmalloc(size, GFP_KERNEL);
 	} else {
@@ -1781,13 +1729,7 @@ static int __init __init_sec_debug_log(void)
 		vaddr = ioremap_nocache(secdbg_paddr, secdbg_size);
 	}
 
-	pr_info("%s: vaddr=0x%x paddr=0x%x size=0x%x "\
-		"sizeof(struct sec_debug_log)=0x%x\n", __func__,
-		(unsigned int)vaddr, secdbg_paddr, secdbg_size,
-		sizeof(struct sec_debug_log));
-
 	if ((vaddr == NULL) || (sizeof(struct sec_debug_log) > size)) {
-		pr_info("%s: ERROR! init failed!\n", __func__);
 		return -EFAULT;
 	}
 
@@ -1826,8 +1768,6 @@ static int __init __init_sec_debug_log(void)
 #endif
 
 	secdbg_log = vaddr;
-
-	pr_info("%s: init done\n", __func__);
 
 	return 0;
 }
@@ -1953,16 +1893,11 @@ int sec_debug_subsys_init(void)
 	last_pet_paddr = 0;
 	last_ns_paddr = 0;
 
-	pr_info("%s: msm_shared_ram_phys=%x SMEM_ID_VENDOR2=%d size=%d\n",
-		__func__, msm_shared_ram_phys,  SMEM_ID_VENDOR2,
-		sizeof(struct sec_debug_subsys));
-
 	secdbg_subsys = (struct sec_debug_subsys *)smem_alloc2(
 		SMEM_ID_VENDOR2,
 		sizeof(struct sec_debug_subsys));
 
 	if (secdbg_subsys == NULL) {
-		pr_info("%s: smem alloc failed!\n", __func__);
 		return -ENOMEM;
 	}
 
@@ -1985,12 +1920,6 @@ int sec_debug_subsys_init(void)
 	secdbg_subsys->dsps = (struct sec_debug_subsys_data *)(
 		(unsigned int)&secdbg_subsys->priv.dsps -
 		(unsigned int)MSM_SHARED_RAM_BASE + msm_shared_ram_phys);
-
-	pr_info("%s: krait(%x) rpm(%x) modem(%x) dsps(%x)\n", __func__,
-		(unsigned int)secdbg_subsys->krait,
-		(unsigned int)secdbg_subsys->rpm,
-		(unsigned int)secdbg_subsys->modem,
-		(unsigned int)secdbg_subsys->dsps);
 
 	strlcpy(secdbg_krait->name, "Krait", sizeof(secdbg_krait->name) + 1);
 	strlcpy(secdbg_krait->state, "Init", sizeof(secdbg_krait->state) + 1);
