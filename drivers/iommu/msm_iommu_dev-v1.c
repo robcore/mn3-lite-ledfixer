@@ -346,9 +346,6 @@ static int __devinit msm_iommu_probe(struct platform_device *pdev)
 	if (ret)
 		return ret;
 
-	dev_info(&pdev->dev, "device %s mapped at %p, with %d ctx banks\n",
-		drvdata->name, drvdata->base, drvdata->ncb);
-
 	platform_set_drvdata(pdev, drvdata);
 
 	pmon_info = msm_iommu_pm_alloc(&pdev->dev);
@@ -491,9 +488,6 @@ static int __devinit msm_iommu_ctx_probe(struct platform_device *pdev)
 	ret = msm_iommu_ctx_parse_dt(pdev, ctx_drvdata);
 	if (!ret) {
 		platform_set_drvdata(pdev, ctx_drvdata);
-
-		dev_info(&pdev->dev, "context %s using bank %d\n",
-			 ctx_drvdata->name, ctx_drvdata->num);
 	}
 
 	return ret;
