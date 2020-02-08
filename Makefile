@@ -384,7 +384,7 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -Wno-misleading-indentation -Wno-int-in-bool-context \
 		   -Wno-bool-compare -Wno-tautological-compare \
 		   -fno-delete-null-pointer-checks -Wno-pointer-compare \
-		   -Wno-switch-unreachable
+		   -Wno-switch-unreachable -Wno-stringop-overflow
 KBUILD_AFLAGS_KERNEL :=
 KBUILD_CFLAGS_KERNEL :=
 KBUILD_AFLAGS   := -D__ASSEMBLY__
