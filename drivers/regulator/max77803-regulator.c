@@ -461,20 +461,17 @@ static __devinit int max77803_pmic_probe(struct platform_device *pdev)
 	dev_info(&pdev->dev, "%s\n", __func__);
 
 	if (!pdata) {
-		pr_info("[%s:%d] !pdata\n", __FILE__, __LINE__);
 		dev_err(pdev->dev.parent, "No platform init data supplied.\n");
 		return -ENODEV;
 	}
 
 	max77803 = kzalloc(sizeof(struct max77803_data), GFP_KERNEL);
 	if (!max77803) {
-		pr_info("[%s:%d] if (!max77803)\n", __FILE__, __LINE__);
 		return -ENOMEM;
 	}
 	size = sizeof(struct regulator_dev *) * pdata->num_regulators;
 	max77803->rdev = kzalloc(size, GFP_KERNEL);
 	if (!max77803->rdev) {
-		pr_info("[%s:%d] if (!max77803->rdev)\n", __FILE__, __LINE__);
 		kfree(max77803);
 		return -ENOMEM;
 	}
@@ -485,14 +482,10 @@ static __devinit int max77803_pmic_probe(struct platform_device *pdev)
 	max77803->num_regulators = pdata->num_regulators;
 	platform_set_drvdata(pdev, max77803);
 	i2c = max77803->iodev->i2c;
-	pr_info("[%s:%d] pdata->num_regulators:%d\n", __FILE__, __LINE__,
-		pdata->num_regulators);
 	for (i = 0; i < pdata->num_regulators; i++) {
 
 		const struct voltage_map_desc *desc;
 		int id = pdata->regulators[i].id;
-		pr_info("[%s:%d] for in pdata->num_regulators:%d\n", __FILE__,
-			__LINE__, pdata->num_regulators);
 		desc = reg_voltage_map[id];
 		if (id == MAX77803_ESAFEOUT1 || id == MAX77803_ESAFEOUT2)
 			regulators[id].n_voltages = 4;
@@ -511,11 +504,9 @@ static __devinit int max77803_pmic_probe(struct platform_device *pdev)
 
 	return 0;
  err:
-	pr_info("[%s:%d] err:\n", __FILE__, __LINE__);
 	for (i = 0; i < max77803->num_regulators; i++)
 		if (rdev[i])
 			regulator_unregister(rdev[i]);
-	pr_info("[%s:%d] err_alloc\n", __FILE__, __LINE__);
 	kfree(max77803->rdev);
 	kfree(max77803);
 
