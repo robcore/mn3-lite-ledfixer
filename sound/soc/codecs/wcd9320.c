@@ -295,6 +295,13 @@ static void update_headphone_gain(void) {
 }
 
 static void set_high_perf_mode(unsigned int enable) {
+	if (!hpwidget) {
+		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_BIAS_PA, hph_bias_pa_default);
+		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_L_PA_CTL, hph_r_pa_ctl_default);
+		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_R_PA_CTL, hph_l_pa_ctl_default);
+		return;
+	}
+
 	if (enable) {
 		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_L_PA_CTL, 0x48);
 		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_R_PA_CTL, 0x48);
@@ -312,6 +319,10 @@ static void set_high_perf_mode(unsigned int enable) {
 }
 
 static void set_uhqa_mode(unsigned int enable) {
+	if (!hpwidget) {
+		snd_soc_update_bits(direct_codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20);
+	}
+
 	if (enable)
 		snd_soc_update_bits(direct_codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x00);
 	else
@@ -3466,6 +3477,10 @@ static int taiko_hph_pa_event(struct snd_soc_dapm_widget *w,
 						 WCD9XXX_CLSH_EVENT_POST_PA);
 		hpwidget = true;
 		update_headphone_gain();
+		if (uhqa_mode)
+			set_uhqa_mode(1);
+		if (high_perf_mode)
+			set_high_perf_mode(1);
 		break;
 	case SND_SOC_DAPM_POST_PMD:
 		usleep_range(pa_settle_time, pa_settle_time + 1000);
@@ -3480,7 +3495,8 @@ static int taiko_hph_pa_event(struct snd_soc_dapm_widget *w,
 						 WCD9XXX_CLSH_REQ_DISABLE,
 						 WCD9XXX_CLSH_EVENT_POST_PA);
 		hpwidget = false;
-
+		set_uhqa_mode(0);
+		set_high_perf_mode(0);
 		break;
 	}
 	return 0;
@@ -4338,50 +4354,25 @@ static int taiko_prepare(struct snd_pcm_substream *substream,
 	struct snd_soc_dapm_widget_list *wlist;
 	struct snd_soc_codec *codec = dai->codec;
 	struct taiko_priv *taiko_p = snd_soc_codec_get_drvdata(codec);
-	int found_hs_pa = 0;
+	unsigned int found_hs_pa = 0;
+	bool is_hpm_condition;
 
 	if (substream->stream)
 		return 0;
 
-	pr_debug("%s(): substream = %s. stream = %d. dai->name = %s."
-		" dai->driver->name = %s. dai stream_name = %s\n",
-		__func__, substream->name, substream->stream,
-		dai->name, dai->driver->name,
-		substream->stream ? dai->driver->capture.stream_name :
-		dai->driver->playback.stream_name);
-
-	pr_debug("%s(): dai AIF widget = %s. dai playback stream_name = %s.\n"
-		"  rate = %u. bit_width = %u.  hs compander_enabled = %u\n",
-		__func__, dai->playback_aif ? dai->playback_aif->name : "NULL",
-		dai->driver->playback.stream_name, taiko_p->dai[dai->id].rate,
-			taiko_p->dai[dai->id].bit_width,
-			taiko_p->comp_enabled[COMPANDER_1]);
-
-	if ((!(taiko_p->dai[dai->id].rate == 192000 ||
-		 taiko_p->dai[dai->id].rate == 96000)) ||
-	    !(taiko_p->dai[dai->id].bit_width == 24) ||
-	    !(taiko_p->comp_enabled[COMPANDER_1])) {
-
+	if (!(taiko_p->comp_enabled[COMPANDER_1])) {
 		taiko_p->clsh_d.hs_perf_mode_enabled = false;
-		snd_soc_update_bits(codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20);
-
-		dev_dbg(dai->dev ,"%s(): high performnce mode not needed\n",
-				__func__);
+		set_uhqa_mode(0);
+		set_high_perf_mode(0);
 		return 0;
 	}
 
 	paths = snd_soc_dapm_codec_dai_get_playback_connected_widgets(dai, &wlist);
 
-	if (!paths) {
-		dev_err(dai->dev, "%s(): found no audio playback paths\n",
-			__func__);
+	if (!paths)
 		return 0;
-	}
 
 	for (i = 0; i < wlist->num_widgets; i++) {
-		dev_dbg(dai->dev, " dai stream_name = %s, widget name = %s\n",
-			dai->driver->playback.stream_name, wlist->widgets[i]->name);
-
 		if (!strcmp(wlist->widgets[i]->name, "HPHL") ||
 		    !strcmp(wlist->widgets[i]->name, "HPHR")) {
 			found_hs_pa = 1;
@@ -4394,24 +4385,25 @@ static int taiko_prepare(struct snd_pcm_substream *substream,
 	if (!found_hs_pa)
 		return 0;
 
-
-
 	if (taiko_p->comp_enabled[COMPANDER_1]) {
 		if ((taiko_p->dai[dai->id].rate == 192000) ||
 			(taiko_p->dai[dai->id].rate == 96000 &&
 		    taiko_p->dai[dai->id].bit_width == 24) ||
 			(uhqa_mode)) {
-				taiko_p->clsh_d.hs_perf_mode_enabled = true;
-				set_uhqa_mode(1);
-				return 0;
+				is_hpm_condition = true;
 		}
-		if (high_perf_mode)
-			set_high_perf_mode(1);
 	}
 
-	taiko_p->clsh_d.hs_perf_mode_enabled = false;
-	set_uhqa_mode(0);
-	set_high_perf_mode(0);
+	if (is_hpm_condition) {
+		taiko_p->clsh_d.hs_perf_mode_enabled = true;
+		set_uhqa_mode(1);
+		if (high_perf_mode)
+			set_high_perf_mode(1);
+	} else {
+		taiko_p->clsh_d.hs_perf_mode_enabled = false;
+		set_uhqa_mode(0);
+		set_high_perf_mode(0);
+	}
 	return 0;
 }
 
@@ -7435,8 +7427,7 @@ static ssize_t uhqa_mode_store(struct kobject *kobj,
 		uval = 1;
 
 	uhqa_mode = uval;
-	if (hpwidget)
-		set_uhqa_mode(uhqa_mode);
+	set_uhqa_mode(uhqa_mode);
 	return count;
 }
 
@@ -7457,8 +7448,7 @@ static ssize_t high_perf_mode_store(struct kobject *kobj,
 		uval = 1;
 
 	high_perf_mode = uval;
-	if (hpwidget)
-		set_high_perf_mode(high_perf_mode);
+	set_high_perf_mode(high_perf_mode);
 	return count;
 }
 
