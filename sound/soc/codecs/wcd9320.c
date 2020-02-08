@@ -2572,9 +2572,9 @@ static int taiko_codec_enable_spk_pa(struct snd_soc_dapm_widget *w,
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
 		taiko->spkr_pa_widget_on = true;
-		update_speaker_gain();
 		snd_soc_update_bits(codec, TAIKO_A_SPKR_DRV_EN, 0x80, 0x80);
 		spkwidget = true;
+		update_speaker_gain();
 		break;
 	case SND_SOC_DAPM_POST_PMD:
 		taiko->spkr_pa_widget_on = false;
