@@ -86,7 +86,12 @@ config FB_MSM_MIPI_NOVATEK_VIDEO_HD_PT_PANEL
 
 config MDNIE_LITE_TUNING
 	bool "MDNIe lite panel tuning"
-	default n
+	default y
+
+config MDNIE_LITE_CONTROL
+	bool "Simple MDNIe lite control interface"
+	depends on MDNIE_LITE_TUNING
+	default y
 
 config MDNIE_ENHENCED_LOCAL_CE
 	bool "MDNIe lite panel tuning for enhenced local ce"
