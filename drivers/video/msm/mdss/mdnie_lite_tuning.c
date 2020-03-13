@@ -125,7 +125,7 @@ static struct mipi_samsung_driver_data *mdnie_msd;
 #endif
 
 #if defined(CONFIG_MDNIE_LITE_CONTROL)
-int hijack = HIJACK_DISABLED; /* By default, do not enable hijacking */
+unsigned int hijack = HIJACK_DISABLED; /* By default, do not enable hijacking */
 int curve = 0;
 int black = 0;
 int black_r = 0;
@@ -187,14 +187,12 @@ char scenario_name[MAX_mDNIe_MODE][16] = {
 
 const char background_name[MAX_BACKGROUND_MODE][10] = {
 	"DYNAMIC",
-#if defined(CONFIG_MDNIE_LITE_CONTROL)
-	"CONTROL",
-#else
+//#if defined(CONFIG_MDNIE_LITE_CONTROL)
+//	"CONTROL",
+//#else
 	"STANDARD",
-#endif
-#if !defined(CONFIG_SUPPORT_DISPLAY_OCTA_TFT)
+//#endif
 	"NATURAL",
-#endif
 	"MOVIE",
 	"AUTO",
 };
@@ -719,13 +717,16 @@ static ssize_t mode_store(struct device *dev,
 
 	if (mdnie_tun_state.accessibility == NEGATIVE) {
 		DPRINT("already negative mode(%d), do not set background(%d)\n",
-			mdnie_tun_state.accessibility, mdnie_tun_state.background);
-	} else {
-		DPRINT(" %s : (%s) -> (%s)\n",
-			__func__, background_name[backup], background_name[mdnie_tun_state.background]);
-
-		mDNIe_Set_Mode();
+		mdnie_tun_state.accessibility, mdnie_tun_state.background);
+		return size;
 	}
+
+	DPRINT(" %s : (%s) -> (%s)\n",
+		__func__, background_name[backup], background_name[mdnie_tun_state.background]);
+	if (hijack)
+		update_mdnie_mode();
+
+	mDNIe_Set_Mode();
 
 	return size;
 }
@@ -1938,7 +1939,6 @@ static ssize_t version_show(struct device *dev, struct device_attribute *attr, c
         return sprintf(buf, "%s\n", MDNIE_VERSION);
 }
 
-static DEVICE_ATTR(control_override, 0666, hijack_show, hijack_store);
 static DEVICE_ATTR(control_sharpen, 0666, sharpen_show, sharpen_store);
 static DEVICE_ATTR(control_red, 0666, red_show, red_store);
 static DEVICE_ATTR(control_green, 0666, green_show, green_store);
@@ -2298,7 +2298,6 @@ void init_mdnie_class(void)
 	 * 
 	 * (Yank555.lu)
 	 * ------------------------------------------------------- */
-	device_create_file(tune_mdnie_dev, &dev_attr_control_override);
 	device_create_file(tune_mdnie_dev, &dev_attr_control_sharpen);
 	device_create_file(tune_mdnie_dev, &dev_attr_control_red);
 	device_create_file(tune_mdnie_dev, &dev_attr_control_green);
