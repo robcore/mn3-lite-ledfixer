@@ -1524,7 +1524,7 @@ static void gamma_init_vt888(struct SMART_DIM *pSmart, char *str, int size)
 	for (cnt = 0; cnt < S6E8FA_TABLE_MAX; cnt++) {
 		point_index = S6E8FA_ARRAY[cnt+1];
 		temp_cal_data =
-		((long long)(candela_coeff_2p2[point_index])) *
+		((long long)(candela_coeff_1p8[point_index])) *
 		((long long)(bl_level));
 		candela_level[cnt] = temp_cal_data;
 	}
@@ -1873,7 +1873,7 @@ static void gamma_init_vt232(struct SMART_DIM *pSmart, char *str, int size)
 		for (cnt = 0; cnt < S6E8FA_TABLE_MAX; cnt++) {
 			point_index = S6E8FA_ARRAY[cnt+1];
 			temp_cal_data =
-			((long long)(candela_coeff_2p25[point_index])) *
+			((long long)(candela_coeff_1p8[point_index])) *
 			((long long)(bl_level));
 			candela_level[cnt] = temp_cal_data;
 		}
@@ -1883,7 +1883,7 @@ static void gamma_init_vt232(struct SMART_DIM *pSmart, char *str, int size)
 		for (cnt = 0; cnt < S6E8FA_TABLE_MAX; cnt++) {
 			point_index = S6E8FA_ARRAY[cnt+1];
 			temp_cal_data =
-			((long long)(candela_coeff_2p2[point_index])) *
+			((long long)(candela_coeff_1p8[point_index])) *
 			((long long)(bl_level));
 			candela_level[cnt] = temp_cal_data;
 		}
@@ -1893,7 +1893,7 @@ static void gamma_init_vt232(struct SMART_DIM *pSmart, char *str, int size)
 		for (cnt = 0; cnt < S6E8FA_TABLE_MAX; cnt++) {
 			point_index = S6E8FA_ARRAY[cnt+1];
 			temp_cal_data =
-			((long long)(candela_coeff_2p15[point_index])) *
+			((long long)(candela_coeff_1p8[point_index])) *
 			((long long)(bl_level));
 			candela_level[cnt] = temp_cal_data;
 		}
@@ -1903,7 +1903,7 @@ static void gamma_init_vt232(struct SMART_DIM *pSmart, char *str, int size)
 		for (cnt = 0; cnt < S6E8FA_TABLE_MAX; cnt++) {
 			point_index = S6E8FA_ARRAY[cnt+1];
 			temp_cal_data =
-			((long long)(candela_coeff_2p1[point_index])) *
+			((long long)(candela_coeff_1p8[point_index])) *
 			((long long)(bl_level));
 			candela_level[cnt] = temp_cal_data;
 		}
@@ -1912,7 +1912,7 @@ static void gamma_init_vt232(struct SMART_DIM *pSmart, char *str, int size)
 		for (cnt = 0; cnt < S6E8FA_TABLE_MAX; cnt++) {
 			point_index = S6E8FA_ARRAY[cnt+1];
 			temp_cal_data =
-			((long long)(candela_coeff_2p0[point_index])) *
+			((long long)(candela_coeff_1p8[point_index])) *
 			((long long)(bl_level));
 			candela_level[cnt] = temp_cal_data;
 		}
@@ -1921,7 +1921,7 @@ static void gamma_init_vt232(struct SMART_DIM *pSmart, char *str, int size)
 		for (cnt = 0; cnt < S6E8FA_TABLE_MAX; cnt++) {
 			point_index = S6E8FA_ARRAY[cnt+1];
 			temp_cal_data =
-			((long long)(candela_coeff_1p9[point_index])) *
+			((long long)(candela_coeff_1p8[point_index])) *
 			((long long)(bl_level));
 			candela_level[cnt] = temp_cal_data;
 		}
@@ -1930,7 +1930,7 @@ static void gamma_init_vt232(struct SMART_DIM *pSmart, char *str, int size)
 		for (cnt = 0; cnt < S6E8FA_TABLE_MAX; cnt++) {
 			point_index = S6E8FA_ARRAY[cnt+1];
 			temp_cal_data =
-			((long long)(candela_coeff_2p2[point_index])) *
+			((long long)(candela_coeff_1p8[point_index])) *
 			((long long)(bl_level));
 			candela_level[cnt] = temp_cal_data;
 		}
@@ -2376,7 +2376,7 @@ static void gamma_init_evt1(
 		for (cnt = 0; cnt < S6E8FA_TABLE_MAX; cnt++) {
 			point_index = S6E8FA_ARRAY[cnt+1];
 			temp_cal_data =
-			((long long)(candela_coeff_1p85[point_index])) *
+			((long long)(candela_coeff_1p8[point_index])) *
 			((long long)(bl_level));
 			candela_level[cnt] = temp_cal_data;
 		}
@@ -2396,7 +2396,7 @@ static void gamma_init_evt1(
 		for (cnt = 0; cnt < S6E8FA_TABLE_MAX; cnt++) {
 			point_index = S6E8FA_ARRAY[cnt+1];
 			temp_cal_data =
-			((long long)(candela_coeff_1p85[point_index])) *
+			((long long)(candela_coeff_1p8[point_index])) *
 			((long long)(bl_level));
 			candela_level[cnt] = temp_cal_data;
 		}
@@ -2416,7 +2416,7 @@ static void gamma_init_evt1(
 		for (cnt = 0; cnt < S6E8FA_TABLE_MAX; cnt++) {
 			point_index = S6E8FA_ARRAY[cnt+1];
 			temp_cal_data =
-			((long long)(candela_coeff_1p75[point_index])) *
+			((long long)(candela_coeff_1p8[point_index])) *
 			((long long)(bl_level));
 			candela_level[cnt] = temp_cal_data;
 		}
@@ -2426,7 +2426,7 @@ static void gamma_init_evt1(
 		for (cnt = 0; cnt < S6E8FA_TABLE_MAX; cnt++) {
 			point_index = S6E8FA_ARRAY[cnt+1];
 			temp_cal_data =
-			((long long)(candela_coeff_1p7[point_index])) *
+			((long long)(candela_coeff_1p8[point_index])) *
 			((long long)(bl_level));
 			candela_level[cnt] = temp_cal_data;
 		}
@@ -2436,7 +2436,7 @@ static void gamma_init_evt1(
 		for (cnt = 0; cnt < S6E8FA_TABLE_MAX; cnt++) {
 			point_index = S6E8FA_ARRAY[cnt+1];
 			temp_cal_data =
-			((long long)(candela_coeff_1p65[point_index])) *
+			((long long)(candela_coeff_1p8[point_index])) *
 			((long long)(bl_level));
 			candela_level[cnt] = temp_cal_data;
 		}
@@ -2446,7 +2446,7 @@ static void gamma_init_evt1(
 		for (cnt = 0; cnt < S6E8FA_TABLE_MAX; cnt++) {
 			point_index = S6E8FA_ARRAY[cnt+1];
 			temp_cal_data =
-			((long long)(candela_coeff_1p6[point_index])) *
+			((long long)(candela_coeff_1p8[point_index])) *
 			((long long)(bl_level));
 			candela_level[cnt] = temp_cal_data;
 		}
@@ -2455,7 +2455,7 @@ static void gamma_init_evt1(
 		for (cnt = 0; cnt < S6E8FA_TABLE_MAX; cnt++) {
 			point_index = S6E8FA_ARRAY[cnt+1];
 			temp_cal_data =
-			((long long)(candela_coeff_2p2[point_index])) *
+			((long long)(candela_coeff_1p8[point_index])) *
 			((long long)(bl_level));
 			candela_level[cnt] = temp_cal_data;
 		}
@@ -2705,7 +2705,7 @@ static void gamma_init_evt1_second(
 		for (cnt = 0; cnt < S6E8FA_TABLE_MAX; cnt++) {
 			point_index = S6E8FA_ARRAY[cnt+1];
 			temp_cal_data =
-			((long long)(candela_coeff_1p9[point_index])) *
+			((long long)(candela_coeff_1p8[point_index])) *
 			((long long)(bl_level));
 			candela_level[cnt] = temp_cal_data;
 		}
@@ -2715,7 +2715,7 @@ static void gamma_init_evt1_second(
 		for (cnt = 0; cnt < S6E8FA_TABLE_MAX; cnt++) {
 			point_index = S6E8FA_ARRAY[cnt+1];
 			temp_cal_data =
-			((long long)(candela_coeff_1p85[point_index])) *
+			((long long)(candela_coeff_1p8[point_index])) *
 			((long long)(bl_level));
 			candela_level[cnt] = temp_cal_data;
 		}
@@ -2735,7 +2735,7 @@ static void gamma_init_evt1_second(
 		for (cnt = 0; cnt < S6E8FA_TABLE_MAX; cnt++) {
 			point_index = S6E8FA_ARRAY[cnt+1];
 			temp_cal_data =
-			((long long)(candela_coeff_1p85[point_index])) *
+			((long long)(candela_coeff_1p8[point_index])) *
 			((long long)(bl_level));
 			candela_level[cnt] = temp_cal_data;
 		}
@@ -2755,7 +2755,7 @@ static void gamma_init_evt1_second(
 		for (cnt = 0; cnt < S6E8FA_TABLE_MAX; cnt++) {
 			point_index = S6E8FA_ARRAY[cnt+1];
 			temp_cal_data =
-			((long long)(candela_coeff_1p75[point_index])) *
+			((long long)(candela_coeff_1p8[point_index])) *
 			((long long)(bl_level));
 			candela_level[cnt] = temp_cal_data;
 		}
@@ -2765,7 +2765,7 @@ static void gamma_init_evt1_second(
 		for (cnt = 0; cnt < S6E8FA_TABLE_MAX; cnt++) {
 			point_index = S6E8FA_ARRAY[cnt+1];
 			temp_cal_data =
-			((long long)(candela_coeff_1p7[point_index])) *
+			((long long)(candela_coeff_1p8[point_index])) *
 			((long long)(bl_level));
 			candela_level[cnt] = temp_cal_data;
 		}
@@ -2775,7 +2775,7 @@ static void gamma_init_evt1_second(
 		for (cnt = 0; cnt < S6E8FA_TABLE_MAX; cnt++) {
 			point_index = S6E8FA_ARRAY[cnt+1];
 			temp_cal_data =
-			((long long)(candela_coeff_1p65[point_index])) *
+			((long long)(candela_coeff_1p8[point_index])) *
 			((long long)(bl_level));
 			candela_level[cnt] = temp_cal_data;
 		}
@@ -2785,7 +2785,7 @@ static void gamma_init_evt1_second(
 		for (cnt = 0; cnt < S6E8FA_TABLE_MAX; cnt++) {
 			point_index = S6E8FA_ARRAY[cnt+1];
 			temp_cal_data =
-			((long long)(candela_coeff_1p6[point_index])) *
+			((long long)(candela_coeff_1p8[point_index])) *
 			((long long)(bl_level));
 			candela_level[cnt] = temp_cal_data;
 		}
@@ -2794,7 +2794,7 @@ static void gamma_init_evt1_second(
 		for (cnt = 0; cnt < S6E8FA_TABLE_MAX; cnt++) {
 			point_index = S6E8FA_ARRAY[cnt+1];
 			temp_cal_data =
-			((long long)(candela_coeff_2p2[point_index])) *
+			((long long)(candela_coeff_1p8[point_index])) *
 			((long long)(bl_level));
 			candela_level[cnt] = temp_cal_data;
 		}
@@ -3045,7 +3045,7 @@ static void gamma_init_evt1_third(
 		for (cnt = 0; cnt < S6E8FA_TABLE_MAX; cnt++) {
 			point_index = S6E8FA_ARRAY[cnt+1];
 			temp_cal_data =
-			((long long)(candela_coeff_2p15[point_index])) *
+			((long long)(candela_coeff_1p8[point_index])) *
 			((long long)(bl_level));
 			candela_level[cnt] = temp_cal_data;
 		}
@@ -3055,7 +3055,7 @@ static void gamma_init_evt1_third(
 		for (cnt = 0; cnt < S6E8FA_TABLE_MAX; cnt++) {
 			point_index = S6E8FA_ARRAY[cnt+1];
 			temp_cal_data =
-			((long long)(candela_coeff_2p1[point_index])) *
+			((long long)(candela_coeff_1p8[point_index])) *
 			((long long)(bl_level));
 			candela_level[cnt] = temp_cal_data;
 		}
@@ -3065,7 +3065,7 @@ static void gamma_init_evt1_third(
 		for (cnt = 0; cnt < S6E8FA_TABLE_MAX; cnt++) {
 			point_index = S6E8FA_ARRAY[cnt+1];
 			temp_cal_data =
-			((long long)(candela_coeff_2p15[point_index])) *
+			((long long)(candela_coeff_1p8[point_index])) *
 			((long long)(bl_level));
 			candela_level[cnt] = temp_cal_data;
 		}
@@ -3075,7 +3075,7 @@ static void gamma_init_evt1_third(
 		for (cnt = 0; cnt < S6E8FA_TABLE_MAX; cnt++) {
 			point_index = S6E8FA_ARRAY[cnt+1];
 			temp_cal_data =
-			((long long)(candela_coeff_2p1[point_index])) *
+			((long long)(candela_coeff_1p8[point_index])) *
 			((long long)(bl_level));
 			candela_level[cnt] = temp_cal_data;
 		}
@@ -3085,7 +3085,7 @@ static void gamma_init_evt1_third(
 		for (cnt = 0; cnt < S6E8FA_TABLE_MAX; cnt++) {
 			point_index = S6E8FA_ARRAY[cnt+1];
 			temp_cal_data =
-			((long long)(candela_coeff_2p05[point_index])) *
+			((long long)(candela_coeff_1p8[point_index])) *
 			((long long)(bl_level));
 			candela_level[cnt] = temp_cal_data;
 		}
@@ -3095,7 +3095,7 @@ static void gamma_init_evt1_third(
 		for (cnt = 0; cnt < S6E8FA_TABLE_MAX; cnt++) {
 			point_index = S6E8FA_ARRAY[cnt+1];
 			temp_cal_data =
-			((long long)(candela_coeff_2p0[point_index])) *
+			((long long)(candela_coeff_1p8[point_index])) *
 			((long long)(bl_level));
 			candela_level[cnt] = temp_cal_data;
 		}
@@ -3105,7 +3105,7 @@ static void gamma_init_evt1_third(
 		for (cnt = 0; cnt < S6E8FA_TABLE_MAX; cnt++) {
 			point_index = S6E8FA_ARRAY[cnt+1];
 			temp_cal_data =
-			((long long)(candela_coeff_1p95[point_index])) *
+			((long long)(candela_coeff_1p8[point_index])) *
 			((long long)(bl_level));
 			candela_level[cnt] = temp_cal_data;
 		}
@@ -3114,7 +3114,7 @@ static void gamma_init_evt1_third(
 		for (cnt = 0; cnt < S6E8FA_TABLE_MAX; cnt++) {
 			point_index = S6E8FA_ARRAY[cnt+1];
 			temp_cal_data =
-			((long long)(candela_coeff_2p2[point_index])) *
+			((long long)(candela_coeff_1p8[point_index])) *
 			((long long)(bl_level));
 			candela_level[cnt] = temp_cal_data;
 		}
@@ -3212,7 +3212,7 @@ static void pure_gamma_init(struct SMART_DIM *pSmart, char *str, int size)
 	for (cnt = 0; cnt < S6E8FA_TABLE_MAX; cnt++) {
 			point_index = S6E8FA_ARRAY[cnt+1];
 			temp_cal_data =
-			((long long)(candela_coeff_2p2[point_index])) *
+			((long long)(candela_coeff_1p8[point_index])) *
 			((long long)(bl_level));
 			candela_level[cnt] = temp_cal_data;
 	}
