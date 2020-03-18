@@ -192,9 +192,7 @@ const char background_name[MAX_BACKGROUND_MODE][10] = {
 #else
 	"STANDARD",
 #endif
-#if !defined(CONFIG_SUPPORT_DISPLAY_OCTA_TFT)
 	"NATURAL",
-#endif
 	"MOVIE",
 	"AUTO",
 };
@@ -305,33 +303,9 @@ static struct dsi_cmd_desc mdni_tune_cmd[] = {
 #endif
 };
 
-#if defined(CONFIG_FB_MSM_MIPI_VIDEO_WVGA_NT35502_PT_PANEL)
-#define MAX_TUNE_SIZE	5
-
-static int tune_size_tbl[MAX_TUNE_SIZE] = {
-	MDNIE_TUNE_FIRST_SIZE,
-	MDNIE_TUNE_SECOND_SIZE,
-	MDNIE_TUNE_THIRD_SIZE,
-	MDNIE_TUNE_FOURTH_SIZE,
-	MDNIE_TUNE_FIFTH_SIZE
-};
-#endif
-
 void print_tun_data(void)
 {
 	int i;
-#if defined(CONFIG_FB_MSM_MIPI_VIDEO_WVGA_NT35502_PT_PANEL)
-	int j = 0;
-	DPRINT("\n");
-	for(j = 0 ; j < MAX_TUNE_SIZE ; j++) {
-		DPRINT("---- size%d : %d", j+1, mdni_tune_cmd[j+1].dchdr.dlen);
-
-		for (i = 0; i < tune_size_tbl[j] ; i++)
-			DPRINT("0x%02X ", mdni_tune_cmd[j+1].payload[i]);
-
-	DPRINT("\n");
-	}
-#else
 	DPRINT("\n");
 	DPRINT("---- size1 : %d", PAYLOAD1.dchdr.dlen);
 	for (i = 0; i < MDNIE_TUNE_SECOND_SIZE ; i++)
@@ -341,7 +315,6 @@ void print_tun_data(void)
 	for (i = 0; i < MDNIE_TUNE_FIRST_SIZE ; i++)
 		DPRINT("0x%x ", PAYLOAD2.payload[i]);
 	DPRINT("\n");
-#endif
 }
 
 #if defined(CONFIG_MDNIE_LITE_CONTROL)
@@ -356,10 +329,8 @@ void update_mdnie_curve(void)
 					break;
 		case STANDARD_MODE:	source = STANDARD_UI_2;
 					break;
-#if !defined(CONFIG_SUPPORT_DISPLAY_OCTA_TFT)
 		case NATURAL_MODE:	source = NATURAL_UI_2;
 					break;
-#endif
 		case MOVIE_MODE:	source = MOVIE_UI_2;
 					break;
 		case AUTO_MODE:		source = AUTO_UI_2;
@@ -375,7 +346,7 @@ void update_mdnie_curve(void)
 
 void update_mdnie_mode(void)
 {
-	char	*source_1, *source_2;
+	char *source_1, *source_2;
 	int	i;
 
 	// Determine the source to copy the mode from
@@ -386,11 +357,9 @@ void update_mdnie_mode(void)
 		case STANDARD_MODE:	source_1 = STANDARD_UI_1;
 					source_2 = STANDARD_UI_2;
 					break;
-#if !defined(CONFIG_SUPPORT_DISPLAY_OCTA_TFT)
 		case NATURAL_MODE:	source_1 = NATURAL_UI_1;
 					source_2 = NATURAL_UI_2;
 					break;
-#endif
 		case MOVIE_MODE:	source_1 = MOVIE_UI_1;
 					source_2 = MOVIE_UI_2;
 					break;
@@ -821,9 +790,7 @@ static ssize_t curve_store(struct device * dev, struct device_attribute * attr, 
 	switch (new_val) {
 		case DYNAMIC_MODE:
 		case STANDARD_MODE:
-#if !defined(CONFIG_SUPPORT_DISPLAY_OCTA_TFT)
 		case NATURAL_MODE:
-#endif
 		case MOVIE_MODE:
 		case AUTO_MODE:	curve = new_val;
 					update_mdnie_curve();
@@ -845,17 +812,17 @@ static ssize_t copy_mode_store(struct device * dev, struct device_attribute * at
 	switch (new_val) {
 		case DYNAMIC_MODE:
 		case STANDARD_MODE:
-#if !defined(CONFIG_SUPPORT_DISPLAY_OCTA_TFT)
 		case NATURAL_MODE:
-#endif
 		case MOVIE_MODE:
-		case AUTO_MODE:		curve = new_val;
-					update_mdnie_mode();
-					if (hijack == HIJACK_ENABLED) {
-						mDNIe_Set_Mode();
-					}
-					return size;
-		default: 		return -EINVAL;
+		case AUTO_MODE:
+			curve = new_val;
+			update_mdnie_mode();
+			if (hijack == HIJACK_ENABLED) {
+				mDNIe_Set_Mode();
+			}
+			return size;
+		default:
+	 		return -EINVAL;
 	}
 }
 
@@ -2626,12 +2593,10 @@ void mDNIe_Set_Mode(enum Lcd_mDNIe_UI mode)
 			DPRINT(" = STANDARD MODE =\n");
 			INPUT_PAYLOAD1(STANDARD_UI_1);
 			INPUT_PAYLOAD2(STANDARD_UI_2);
-#if !defined(CONFIG_SUPPORT_DISPLAY_OCTA_TFT)
 		} else if (mdnie_tun_state.background == NATURAL_MODE) {
 			DPRINT(" = NATURAL MODE =\n");
 			INPUT_PAYLOAD1(NATURAL_UI_1);
 			INPUT_PAYLOAD2(NATURAL_UI_2);
-#endif
 		} else if (mdnie_tun_state.background == DYNAMIC_MODE) {
 			DPRINT(" = DYNAMIC MODE =\n");
 			INPUT_PAYLOAD1(DYNAMIC_UI_1);
@@ -2659,12 +2624,10 @@ void mDNIe_Set_Mode(enum Lcd_mDNIe_UI mode)
 				DPRINT(" = STANDARD MODE =\n");
 				INPUT_PAYLOAD1(STANDARD_VIDEO_1);
 				INPUT_PAYLOAD2(STANDARD_VIDEO_2);
-#if !defined(CONFIG_SUPPORT_DISPLAY_OCTA_TFT)
 			} else if (mdnie_tun_state.background == NATURAL_MODE) {
 				DPRINT(" = NATURAL MODE =\n");
 				INPUT_PAYLOAD1(NATURAL_VIDEO_1);
 				INPUT_PAYLOAD2(NATURAL_VIDEO_2);
-#endif
 			} else if (mdnie_tun_state.background == DYNAMIC_MODE) {
 				DPRINT(" = DYNAMIC MODE =\n");
 				INPUT_PAYLOAD1(DYNAMIC_VIDEO_1);
@@ -2737,12 +2700,10 @@ void mDNIe_Set_Mode(enum Lcd_mDNIe_UI mode)
 			DPRINT(" = STANDARD MODE =\n");
 			INPUT_PAYLOAD1(STANDARD_GALLERY_1);
 			INPUT_PAYLOAD2(STANDARD_GALLERY_2);
-#if !defined(CONFIG_SUPPORT_DISPLAY_OCTA_TFT)
 		} else if (mdnie_tun_state.background == NATURAL_MODE) {
 			DPRINT(" = NATURAL MODE =\n");
 			INPUT_PAYLOAD1(NATURAL_GALLERY_1);
 			INPUT_PAYLOAD2(NATURAL_GALLERY_2);
-#endif
 		} else if (mdnie_tun_state.background == DYNAMIC_MODE) {
 			DPRINT(" = DYNAMIC MODE =\n");
 			INPUT_PAYLOAD1(DYNAMIC_GALLERY_1);
@@ -2764,12 +2725,10 @@ void mDNIe_Set_Mode(enum Lcd_mDNIe_UI mode)
 			DPRINT(" = STANDARD MODE =\n");
 			INPUT_PAYLOAD1(STANDARD_VT_1);
 			INPUT_PAYLOAD2(STANDARD_VT_2);
-#if !defined(CONFIG_SUPPORT_DISPLAY_OCTA_TFT)
 		} else if (mdnie_tun_state.background == NATURAL_MODE) {
 			DPRINT(" = NATURAL MODE =\n");
 			INPUT_PAYLOAD1(NATURAL_VT_1);
 			INPUT_PAYLOAD2(NATURAL_VT_2);
-#endif
 		} else if (mdnie_tun_state.background == DYNAMIC_MODE) {
 			DPRINT(" = DYNAMIC MODE =\n");
 			INPUT_PAYLOAD1(DYNAMIC_VT_1);
@@ -2798,12 +2757,10 @@ void mDNIe_Set_Mode(enum Lcd_mDNIe_UI mode)
 				DPRINT(" = STANDARD MODE =\n");
 				INPUT_PAYLOAD1(STANDARD_DMB_1);
 				INPUT_PAYLOAD2(STANDARD_DMB_2);
-#if !defined(CONFIG_SUPPORT_DISPLAY_OCTA_TFT)
 			} else if (mdnie_tun_state.background == NATURAL_MODE) {
 				DPRINT(" = NATURAL MODE =\n");
 				INPUT_PAYLOAD1(NATURAL_DMB_1);
 				INPUT_PAYLOAD2(NATURAL_DMB_2);
-#endif
 			} else if (mdnie_tun_state.background == DYNAMIC_MODE) {
 				DPRINT(" = DYNAMIC MODE =\n");
 				INPUT_PAYLOAD1(DYNAMIC_DMB_1);
@@ -2853,12 +2810,10 @@ void mDNIe_Set_Mode(enum Lcd_mDNIe_UI mode)
 			DPRINT(" = STANDARD MODE =\n");
 			INPUT_PAYLOAD1(STANDARD_BROWSER_1);
 			INPUT_PAYLOAD2(STANDARD_BROWSER_2);
-#if !defined(CONFIG_SUPPORT_DISPLAY_OCTA_TFT)
 		} else if (mdnie_tun_state.background == NATURAL_MODE) {
 			DPRINT(" = NATURAL MODE =\n");
 			INPUT_PAYLOAD1(NATURAL_BROWSER_1);
 			INPUT_PAYLOAD2(NATURAL_BROWSER_2);
-#endif
 		} else if (mdnie_tun_state.background == DYNAMIC_MODE) {
 			DPRINT(" = DYNAMIC MODE =\n");
 			INPUT_PAYLOAD1(DYNAMIC_BROWSER_1);
@@ -2880,12 +2835,10 @@ void mDNIe_Set_Mode(enum Lcd_mDNIe_UI mode)
 			DPRINT(" = STANDARD MODE =\n");
 			INPUT_PAYLOAD1(STANDARD_EBOOK_1);
 			INPUT_PAYLOAD2(STANDARD_EBOOK_2);
-#if !defined(CONFIG_SUPPORT_DISPLAY_OCTA_TFT)
 		} else if (mdnie_tun_state.background == NATURAL_MODE) {
 			DPRINT(" = NATURAL MODE =\n");
 			INPUT_PAYLOAD1(NATURAL_EBOOK_1);
 			INPUT_PAYLOAD2(NATURAL_EBOOK_2);
-#endif
 		} else if (mdnie_tun_state.background == DYNAMIC_MODE) {
 			DPRINT(" = DYNAMIC MODE =\n");
 			INPUT_PAYLOAD1(DYNAMIC_EBOOK_1);
@@ -2900,8 +2853,6 @@ void mDNIe_Set_Mode(enum Lcd_mDNIe_UI mode)
 			INPUT_PAYLOAD2(AUTO_EBOOK_2);
 		}
 		break;
-
-#if !defined(CONFIG_SUPPORT_DISPLAY_OCTA_TFT)
 	case mDNIe_EMAIL_MODE:
 		DPRINT(" = EMAIL MODE =\n");
 		if (mdnie_tun_state.background == STANDARD_MODE) {
@@ -2926,7 +2877,6 @@ void mDNIe_Set_Mode(enum Lcd_mDNIe_UI mode)
 			INPUT_PAYLOAD2(AUTO_EMAIL_2);
 		}
 		break;
-#endif
 
 	case mDNIE_BLINE_MODE:
 		DPRINT(" = BLIND MODE =\n");
@@ -2949,12 +2899,10 @@ void mDNIe_Set_Mode(enum Lcd_mDNIe_UI mode)
 					DPRINT(" = STANDARD MODE =\n");
 					INPUT_PAYLOAD1(STANDARD_UI_1_FHD);
 					INPUT_PAYLOAD2(STANDARD_UI_2_FHD);
-#if !defined(CONFIG_SUPPORT_DISPLAY_OCTA_TFT)
 				} else if (mdnie_tun_state.background == NATURAL_MODE) {
 					DPRINT(" = NATURAL MODE =\n");
 					INPUT_PAYLOAD1(NATURAL_UI_1_FHD);
 					INPUT_PAYLOAD2(NATURAL_UI_2_FHD);
-#endif
 				} else if (mdnie_tun_state.background == DYNAMIC_MODE) {
 					DPRINT(" = DYNAMIC MODE =\n");
 					INPUT_PAYLOAD1(DYNAMIC_UI_1_FHD);
@@ -2982,12 +2930,10 @@ void mDNIe_Set_Mode(enum Lcd_mDNIe_UI mode)
 						DPRINT(" = STANDARD MODE =\n");
 						INPUT_PAYLOAD1(STANDARD_VIDEO_1_FHD);
 						INPUT_PAYLOAD2(STANDARD_VIDEO_2_FHD);
-#if !defined(CONFIG_SUPPORT_DISPLAY_OCTA_TFT)
 					} else if (mdnie_tun_state.background == NATURAL_MODE) {
 						DPRINT(" = NATURAL MODE =\n");
 						INPUT_PAYLOAD1(NATURAL_VIDEO_1_FHD);
 						INPUT_PAYLOAD2(NATURAL_VIDEO_2_FHD);
-#endif
 					} else if (mdnie_tun_state.background == DYNAMIC_MODE) {
 						DPRINT(" = DYNAMIC MODE =\n");
 						INPUT_PAYLOAD1(DYNAMIC_VIDEO_1_FHD);
@@ -3060,12 +3006,10 @@ void mDNIe_Set_Mode(enum Lcd_mDNIe_UI mode)
 					DPRINT(" = STANDARD MODE =\n");
 					INPUT_PAYLOAD1(STANDARD_GALLERY_1_FHD);
 					INPUT_PAYLOAD2(STANDARD_GALLERY_2_FHD);
-#if !defined(CONFIG_SUPPORT_DISPLAY_OCTA_TFT)
 				} else if (mdnie_tun_state.background == NATURAL_MODE) {
 					DPRINT(" = NATURAL MODE =\n");
 					INPUT_PAYLOAD1(NATURAL_GALLERY_1_FHD);
 					INPUT_PAYLOAD2(NATURAL_GALLERY_2_FHD);
-#endif
 				} else if (mdnie_tun_state.background == DYNAMIC_MODE) {
 					DPRINT(" = DYNAMIC MODE =\n");
 					INPUT_PAYLOAD1(DYNAMIC_GALLERY_1_FHD);
@@ -3087,12 +3031,10 @@ void mDNIe_Set_Mode(enum Lcd_mDNIe_UI mode)
 					DPRINT(" = STANDARD MODE =\n");
 					INPUT_PAYLOAD1(STANDARD_VT_1_FHD);
 					INPUT_PAYLOAD2(STANDARD_VT_2_FHD);
-#if !defined(CONFIG_SUPPORT_DISPLAY_OCTA_TFT)
 				} else if (mdnie_tun_state.background == NATURAL_MODE) {
 					DPRINT(" = NATURAL MODE =\n");
 					INPUT_PAYLOAD1(NATURAL_VT_1_FHD);
 					INPUT_PAYLOAD2(NATURAL_VT_2_FHD);
-#endif
 				} else if (mdnie_tun_state.background == DYNAMIC_MODE) {
 					DPRINT(" = DYNAMIC MODE =\n");
 					INPUT_PAYLOAD1(DYNAMIC_VT_1_FHD);
@@ -3121,12 +3063,10 @@ void mDNIe_Set_Mode(enum Lcd_mDNIe_UI mode)
 						DPRINT(" = STANDARD MODE =\n");
 						INPUT_PAYLOAD1(STANDARD_DMB_1);
 						INPUT_PAYLOAD2(STANDARD_DMB_2);
-#if !defined(CONFIG_SUPPORT_DISPLAY_OCTA_TFT)
 					} else if (mdnie_tun_state.background == NATURAL_MODE) {
 						DPRINT(" = NATURAL MODE =\n");
 						INPUT_PAYLOAD1(NATURAL_DMB_1);
 						INPUT_PAYLOAD2(NATURAL_DMB_2);
-#endif
 					} else if (mdnie_tun_state.background == DYNAMIC_MODE) {
 						DPRINT(" = DYNAMIC MODE =\n");
 						INPUT_PAYLOAD1(DYNAMIC_DMB_1);
@@ -3176,12 +3116,10 @@ void mDNIe_Set_Mode(enum Lcd_mDNIe_UI mode)
 					DPRINT(" = STANDARD MODE =\n");
 					INPUT_PAYLOAD1(STANDARD_BROWSER_1);
 					INPUT_PAYLOAD2(STANDARD_BROWSER_2);
-#if !defined(CONFIG_SUPPORT_DISPLAY_OCTA_TFT)
 				} else if (mdnie_tun_state.background == NATURAL_MODE) {
 					DPRINT(" = NATURAL MODE =\n");
 					INPUT_PAYLOAD1(NATURAL_BROWSER_1);
 					INPUT_PAYLOAD2(NATURAL_BROWSER_2);
-#endif
 				} else if (mdnie_tun_state.background == DYNAMIC_MODE) {
 					DPRINT(" = DYNAMIC MODE =\n");
 					INPUT_PAYLOAD1(DYNAMIC_BROWSER_1);
@@ -3203,12 +3141,10 @@ void mDNIe_Set_Mode(enum Lcd_mDNIe_UI mode)
 					DPRINT(" = STANDARD MODE =\n");
 					INPUT_PAYLOAD1(STANDARD_EBOOK_1);
 					INPUT_PAYLOAD2(STANDARD_EBOOK_2);
-#if !defined(CONFIG_SUPPORT_DISPLAY_OCTA_TFT)
 				} else if (mdnie_tun_state.background == NATURAL_MODE) {
 					DPRINT(" = NATURAL MODE =\n");
 					INPUT_PAYLOAD1(NATURAL_EBOOK_1);
 					INPUT_PAYLOAD2(NATURAL_EBOOK_2);
-#endif
 				} else if (mdnie_tun_state.background == DYNAMIC_MODE) {
 					DPRINT(" = DYNAMIC MODE =\n");
 					INPUT_PAYLOAD1(DYNAMIC_EBOOK_1);
@@ -3224,7 +3160,6 @@ void mDNIe_Set_Mode(enum Lcd_mDNIe_UI mode)
 				}
 				break;
 
-#if !defined(CONFIG_SUPPORT_DISPLAY_OCTA_TFT)
 			case mDNIe_EMAIL_MODE:
 				DPRINT(" = EMAIL MODE =\n");
 				if (mdnie_tun_state.background == STANDARD_MODE) {
@@ -3249,8 +3184,6 @@ void mDNIe_Set_Mode(enum Lcd_mDNIe_UI mode)
 					INPUT_PAYLOAD2(AUTO_EMAIL_2);
 				}
 				break;
-#endif
-
 			case mDNIE_BLINE_MODE:
 				DPRINT(" = BLIND MODE =\n");
 				INPUT_PAYLOAD1(COLOR_BLIND_1);
