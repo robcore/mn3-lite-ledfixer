@@ -351,22 +351,28 @@ void update_mdnie_mode(void)
 
 	// Determine the source to copy the mode from
 	switch (curve) {
-		case DYNAMIC_MODE:	source_1 = DYNAMIC_UI_1;
-					source_2 = DYNAMIC_UI_2;
-					break;
-		case STANDARD_MODE:	source_1 = STANDARD_UI_1;
-					source_2 = STANDARD_UI_2;
-					break;
-		case NATURAL_MODE:	source_1 = NATURAL_UI_1;
-					source_2 = NATURAL_UI_2;
-					break;
-		case MOVIE_MODE:	source_1 = MOVIE_UI_1;
-					source_2 = MOVIE_UI_2;
-					break;
-		case AUTO_MODE:		source_1 = AUTO_UI_1;
-					source_2 = AUTO_UI_2;
-					break;
-		default: return;
+		case DYNAMIC_MODE:
+			source_1 = DYNAMIC_UI_1;
+			source_2 = DYNAMIC_UI_2;
+			break;
+		case STANDARD_MODE:
+			source_1 = STANDARD_UI_1;
+			source_2 = STANDARD_UI_2;
+			break;
+		case NATURAL_MODE:
+			source_1 = NATURAL_UI_1;
+			source_2 = NATURAL_UI_2;
+			break;
+		case MOVIE_MODE:
+			source_1 = MOVIE_UI_1;
+			source_2 = MOVIE_UI_2;
+			break;
+		case AUTO_MODE:
+			source_1 = AUTO_UI_1;
+			source_2 = AUTO_UI_2;
+			break;
+		default:
+			return;
 	}
 
 	LITE_CONTROL_1[4] = source_1[4]; // Copy sharpen
