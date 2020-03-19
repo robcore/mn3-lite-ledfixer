@@ -1544,7 +1544,7 @@ static int find_cadela_table(int brightness)
 	int loop;
 	int err = -1;
 
-	for(loop = 0; loop <= CCG6_MAX_TABLE; loop++)
+	for(loop = 0; loop < 62; loop++)
 		if (ccg6_candela_table[loop][0] == brightness)
 			return ccg6_candela_table[loop][1];
 
@@ -1699,7 +1699,7 @@ enum {
 	mx_candela_coeff_1p6 = 13,
 };
 
-static int get_cal_data(unsigned int input_coeff, int pindex, int input_bl_level)
+static long long get_cal_data(unsigned int input_coeff, int pindex, int input_bl_level)
 {
 	if (!override_gamma) {
 		switch (input_coeff) {
@@ -1775,13 +1775,9 @@ static void gamma_init_rev0(
 {
 	long long candela_level[S6E3FA_TABLE_MAX] = {-1, };
 	int bl_index[S6E3FA_TABLE_MAX] = {-1, };
-
-	long long temp_cal_data = 0;
 	int bl_level;
-
 	int level_255_temp_MSB = 0;
 	int level_V255 = 0;
-
 	int point_index;
 	int cnt;
 	int table_index;
@@ -1817,21 +1813,13 @@ static void gamma_init_rev0(
 	if (pSmart->brightness_level < 300) {
 		for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 			point_index = S6E3FA_ARRAY[cnt+1];
-			temp_cal_data =
-			((long long)(candela_coeff_2p15[point_index])) *
-			((long long)(bl_level));
-			candela_level[cnt] = temp_cal_data;
+			candela_level[cnt] = get_cal_data(mx_candela_coeff_2p15, point_index, bl_level);
 		}
-
 	} else {
 		for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 			point_index = S6E3FA_ARRAY[cnt+1];
-			temp_cal_data =
-			((long long)(candela_coeff_2p2[point_index])) *
-			((long long)(bl_level));
-			candela_level[cnt] = temp_cal_data;
+			candela_level[cnt] = get_cal_data(mx_candela_coeff_2p2, point_index, bl_level);
 		}
-
 	}
 
 
@@ -2048,10 +2036,7 @@ static void gamma_init_rev1(
 {
 	long long candela_level[S6E3FA_TABLE_MAX] = {-1, };
 	int bl_index[S6E3FA_TABLE_MAX] = {-1, };
-
-	long long temp_cal_data = 0;
 	int bl_level;
-
 	int level_255_temp_MSB = 0;
 	int level_V255 = 0;
 
@@ -2090,21 +2075,14 @@ static void gamma_init_rev1(
 	if (pSmart->brightness_level < 300) {
 		for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 			point_index = S6E3FA_ARRAY[cnt+1];
-			temp_cal_data =
-			((long long)(candela_coeff_2p15[point_index])) *
-			((long long)(bl_level));
-			candela_level[cnt] = temp_cal_data;
+			candela_level[cnt] = get_cal_data(mx_candela_coeff_2p15, point_index, bl_level);
 		}
 
 	} else {
 		for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 			point_index = S6E3FA_ARRAY[cnt+1];
-			temp_cal_data =
-			((long long)(candela_coeff_2p2[point_index])) *
-			((long long)(bl_level));
-			candela_level[cnt] = temp_cal_data;
+			candela_level[cnt] = get_cal_data(mx_candela_coeff_2p2, point_index, bl_level);
 		}
-
 	}
 
 
@@ -2320,7 +2298,7 @@ static void gamma_init_rev2(struct SMART_DIM *pSmart, char *str, int size)
 	long long candela_level[S6E3FA_TABLE_MAX] = {-1, };
 	int bl_index[S6E3FA_TABLE_MAX] = {-1, };
 
-	long long temp_cal_data = 0;
+
 	int bl_level;
 
 	int level_255_temp_MSB = 0;
@@ -2361,21 +2339,13 @@ static void gamma_init_rev2(struct SMART_DIM *pSmart, char *str, int size)
 	if (pSmart->brightness_level < 300) {
 		for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 			point_index = S6E3FA_ARRAY[cnt+1];
-			temp_cal_data =
-			((long long)(candela_coeff_2p15[point_index])) *
-			((long long)(bl_level));
-			candela_level[cnt] = temp_cal_data;
+			candela_level[cnt] = get_cal_data(mx_candela_coeff_2p15, point_index, bl_level);
 		}
-
 	} else {
 		for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 			point_index = S6E3FA_ARRAY[cnt+1];
-			temp_cal_data =
-			((long long)(candela_coeff_2p2[point_index])) *
-			((long long)(bl_level));
-			candela_level[cnt] = temp_cal_data;
+			candela_level[cnt] = get_cal_data(mx_candela_coeff_2p2, point_index, bl_level);
 		}
-
 	}
 
 
@@ -2599,7 +2569,7 @@ static void gamma_init_H_revI(struct SMART_DIM *pSmart, char *str, int size)
 	long long candela_level[S6E3FA_TABLE_MAX] = {-1, };
 	int bl_index[S6E3FA_TABLE_MAX] = {-1, };
 
-	long long temp_cal_data = 0;
+
 	int bl_level;
 
 	int level_255_temp_MSB = 0;
@@ -2643,21 +2613,13 @@ static void gamma_init_H_revI(struct SMART_DIM *pSmart, char *str, int size)
 	if (pSmart->brightness_level < 350) {
 		for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 			point_index = S6E3FA_ARRAY[cnt+1];
-			temp_cal_data =
-			((long long)(candela_coeff_2p15[point_index])) *
-			((long long)(bl_level));
-			candela_level[cnt] = temp_cal_data;
+			candela_level[cnt] = get_cal_data(mx_candela_coeff_2p15, point_index, bl_level);
 		}
-
 	} else {
 		for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 			point_index = S6E3FA_ARRAY[cnt+1];
-			temp_cal_data =
-			((long long)(candela_coeff_2p2[point_index])) *
-			((long long)(bl_level));
-			candela_level[cnt] = temp_cal_data;
+			candela_level[cnt] = get_cal_data(mx_candela_coeff_2p2, point_index, bl_level);
 		}
-
 	}
 
 
@@ -2673,7 +2635,7 @@ static void gamma_init_H_revI(struct SMART_DIM *pSmart, char *str, int size)
 
 	/* max 350cd */
 	memcpy(curve_1p9, curve_1p9_350, sizeof(curve_1p9_350));
-	memcpy(curve_2p2, curve_2p2_350, sizeof(curve_1p9_350));
+	memcpy(curve_2p2, curve_2p2_350, sizeof(curve_2p2_350));
 
 	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 		if (searching_function(candela_level[cnt],
@@ -2884,7 +2846,7 @@ static void gamma_init_H_revJ(struct SMART_DIM *pSmart, char *str, int size)
 	long long candela_level[S6E3FA_TABLE_MAX] = {-1, };
 	int bl_index[S6E3FA_TABLE_MAX] = {-1, };
 
-	long long temp_cal_data = 0;
+
 	int bl_level;
 
 	int level_255_temp_MSB = 0;
@@ -2927,25 +2889,17 @@ static void gamma_init_H_revJ(struct SMART_DIM *pSmart, char *str, int size)
 	if (pSmart->brightness_level < 350) {
 		for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 			point_index = S6E3FA_ARRAY[cnt+1];
-			temp_cal_data =
-			((long long)(candela_coeff_2p15[point_index])) *
-			((long long)(bl_level));
-			candela_level[cnt] = temp_cal_data;
+			candela_level[cnt] = get_cal_data(mx_candela_coeff_2p15, point_index, bl_level);
 		}
-
 	} else {
 		for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 			point_index = S6E3FA_ARRAY[cnt+1];
-			temp_cal_data =
-			((long long)(candela_coeff_2p2[point_index])) *
-			((long long)(bl_level));
-			candela_level[cnt] = temp_cal_data;
+			candela_level[cnt] = get_cal_data(mx_candela_coeff_2p2, point_index, bl_level);
 		}
-
 	}
 
 
-#ifdef SMART_DIMMING_DEBUG_PLUS
+#ifdef SMART_DIMMING_DEBUG
 	printk(KERN_INFO "\n candela_1:%llu  candela_3:%llu  candela_11:%llu ",
 		candela_level[0], candela_level[1], candela_level[2]);
 	printk(KERN_INFO "candela_23:%llu  candela_35:%llu  candela_51:%llu ",
@@ -2987,7 +2941,7 @@ static void gamma_init_H_revJ(struct SMART_DIM *pSmart, char *str, int size)
 			bl_index[S6E3FA_TABLE_MAX - cnt] = 1;
 	}
 
-#ifdef SMART_DIMMING_DEBUG_PLUS
+#ifdef SMART_DIMMING_DEBUG
 	printk(KERN_INFO "\n bl_index_1:%d  bl_index_3:%d  bl_index_11:%d",
 		bl_index[0], bl_index[1], bl_index[2]);
 	printk(KERN_INFO "bl_index_23:%d bl_index_35:%d  bl_index_51:%d",
@@ -3164,7 +3118,7 @@ static void gamma_init_F_revA(
 	long long candela_level[S6E3FA_TABLE_MAX] = {-1, };
 	int bl_index[S6E3FA_TABLE_MAX] = {-1, };
 
-	long long temp_cal_data = 0;
+
 	int bl_level;
 
 	int level_255_temp_MSB = 0;
@@ -3207,19 +3161,15 @@ static void gamma_init_F_revA(
 	if (pSmart->brightness_level < 300) {
 		for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 			point_index = S6E3FA_ARRAY[cnt+1];
-			temp_cal_data =
-			((long long)(candela_coeff_2p15[point_index])) *
-			((long long)(bl_level));
-			candela_level[cnt] = temp_cal_data;
+			candela_level[cnt] = get_cal_data(mx_candela_coeff_2p15, point_index, bl_level);
 		}
 
 	} else {
 		for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 			point_index = S6E3FA_ARRAY[cnt+1];
-			temp_cal_data =
-			((long long)(candela_coeff_2p2[point_index])) *
-			((long long)(bl_level));
-			candela_level[cnt] = temp_cal_data;
+			candela_level[cnt] = get_cal_data(mx_candela_coeff_2p2, point_index, bl_level);
+
+
 		}
 
 	}
@@ -3445,7 +3395,7 @@ static void gamma_init_F_revE(
 	long long candela_level[S6E3FA_TABLE_MAX] = {-1, };
 	int bl_index[S6E3FA_TABLE_MAX] = {-1, };
 
-	long long temp_cal_data = 0;
+
 	int bl_level;
 
 	int level_255_temp_MSB = 0;
@@ -3490,21 +3440,14 @@ static void gamma_init_F_revE(
 	if (pSmart->brightness_level < 350) {
 		for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 			point_index = S6E3FA_ARRAY[cnt+1];
-			temp_cal_data =
-			((long long)(candela_coeff_2p15[point_index])) *
-			((long long)(bl_level));
-			candela_level[cnt] = temp_cal_data;
+			candela_level[cnt] = get_cal_data(mx_candela_coeff_2p15, point_index, bl_level);
 		}
 
 	} else {
 		for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 			point_index = S6E3FA_ARRAY[cnt+1];
-			temp_cal_data =
-			((long long)(candela_coeff_2p2[point_index])) *
-			((long long)(bl_level));
-			candela_level[cnt] = temp_cal_data;
+			candela_level[cnt] = get_cal_data(mx_candela_coeff_2p2, point_index, bl_level);
 		}
-
 	}
 
 
@@ -3732,7 +3675,7 @@ static void gamma_init_F_revF_G(
 	long long candela_level[S6E3FA_TABLE_MAX] = {-1, };
 	int bl_index[S6E3FA_TABLE_MAX] = {-1, };
 
-	long long temp_cal_data = 0;
+
 	int bl_level;
 
 	int level_255_temp_MSB = 0;
@@ -3777,19 +3720,13 @@ static void gamma_init_F_revF_G(
 	if (pSmart->brightness_level < 350) {
 		for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 			point_index = S6E3FA_ARRAY[cnt+1];
-			temp_cal_data =
-			((long long)(candela_coeff_2p15[point_index])) *
-			((long long)(bl_level));
-			candela_level[cnt] = temp_cal_data;
+			candela_level[cnt] = get_cal_data(mx_candela_coeff_2p15, point_index, bl_level);
 		}
 
 	} else {
 		for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 			point_index = S6E3FA_ARRAY[cnt+1];
-			temp_cal_data =
-			((long long)(candela_coeff_2p2[point_index])) *
-			((long long)(bl_level));
-			candela_level[cnt] = temp_cal_data;
+			candela_level[cnt] = get_cal_data(mx_candela_coeff_2p2, point_index, bl_level);
 		}
 
 	}
@@ -3891,7 +3828,7 @@ static void pure_gamma_init(struct SMART_DIM *pSmart, char *str, int size)
 
 	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 			point_index = S6E3FA_ARRAY[cnt+1];
-			candela_level[cnt] = ((long long)(get_cal_data(mx_candela_coeff_2p2, point_index, bl_level)));
+			candela_level[cnt] = get_cal_data(mx_candela_coeff_2p2, point_index, bl_level);
 	}
 
 #ifdef SMART_DIMMING_DEBUG
