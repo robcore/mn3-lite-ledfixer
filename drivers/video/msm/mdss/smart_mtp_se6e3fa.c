@@ -4083,7 +4083,7 @@ static ssize_t mxgamma_store(struct kobject *kobj,
 
 	sscanf(buf, "%d\n", &val);
 
-	sanitize_min_max(val, 0, 1);
+	sanitize_min_max(val, 0, 13);
 
 	mxgamma = val;
 	return count;
