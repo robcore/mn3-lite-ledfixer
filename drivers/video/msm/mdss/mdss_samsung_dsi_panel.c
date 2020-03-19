@@ -2912,7 +2912,6 @@ static int mdss_dsi_panel_dimming_init(struct mdss_panel_data *pdata)
 		/* Read mtp (B5h 19th) for HBM ELVSS OFFSET */
 		mipi_samsung_read_nv_mem(pdata, &nv_hbm_elvss_offset_cmds, hbm_buffer);
 		memcpy(&hbm_etc_cmds_list.cmd_desc[2].payload[1], hbm_buffer, 1);
-#if defined(CMD_DEBUG)
 {
 		int i,j;
 
@@ -2934,7 +2933,6 @@ static int mdss_dsi_panel_dimming_init(struct mdss_panel_data *pdata)
 			printk("\n");
 		}
 }
-#endif
 		/* Read mtp (B5h 24th ~ 25th) for Panel Production Day */
 		mipi_samsung_read_nv_mem(pdata, &nv_production_day_cmds, hbm_buffer);
 #endif
