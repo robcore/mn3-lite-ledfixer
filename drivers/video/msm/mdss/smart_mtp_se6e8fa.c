@@ -3317,17 +3317,22 @@ static void get_min_lux_table(char *str, int size)
 	memcpy(str, min_lux_table, size);
 }
 
+static bool override_gamma = false;
+module_param(override_gamma, bool, 0644);
+
 static void generate_gamma(struct SMART_DIM *psmart, char *str, int size)
 {
 	int lux_loop;
 	struct illuminance_table *ptable = (struct illuminance_table *)
 						(&(psmart->gen_table));
 
-	/* searching already generated gamma table */
-	for (lux_loop = 0; lux_loop < psmart->lux_table_max; lux_loop++) {
-		if (ptable[lux_loop].lux == psmart->brightness_level) {
-			memcpy(str, &(ptable[lux_loop].gamma_setting), size);
-			break;
+	if (!override_gamma) {
+		/* searching already generated gamma table */
+		for (lux_loop = 0; lux_loop < psmart->lux_table_max; lux_loop++) {
+			if (ptable[lux_loop].lux == psmart->brightness_level) {
+				memcpy(str, &(ptable[lux_loop].gamma_setting), size);
+				break;
+			}
 		}
 	}
 
