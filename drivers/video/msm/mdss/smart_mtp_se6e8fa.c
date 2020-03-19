@@ -3306,7 +3306,6 @@ static void set_max_lux_table(void)
 
 }
 
-
 static void set_min_lux_table(struct SMART_DIM *psmart)
 {
 	psmart->brightness_level = MIN_CANDELA;
