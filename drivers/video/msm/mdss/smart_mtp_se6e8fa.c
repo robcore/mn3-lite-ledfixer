@@ -3487,7 +3487,7 @@ static struct kobj_attribute smart_mtp_mxgamma_attribute =
 		mxgamma_store);
 
 static struct kobj_attribute smart_mtp_legend_attribute =
-	__ATTR(mxgamma, 0644,
+	__ATTR(gamma_legend_table, 0444,
 		gamma_legend_table_show,
 		NULL);
 
