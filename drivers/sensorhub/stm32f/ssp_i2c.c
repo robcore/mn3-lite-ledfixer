@@ -41,7 +41,7 @@ static int do_transfer(struct ssp_data *data, struct ssp_msg *msg,
 	while (gpio_get_value_cansleep(data->mcu_int2)) {
 		mdelay(3);
 		if ((ssp_down = data->bSspShutdown) || iDelaycnt++ > 500) {
-			pr_err("[SSP]: %s exit1 - Time out!!\n", __func__);
+			pr_debug("[SSP]: %s exit1 - Time out!!\n", __func__);
 			gpio_set_value_cansleep(data->ap_int, 1);
 			status = -1;
 			goto exit;
@@ -51,7 +51,7 @@ static int do_transfer(struct ssp_data *data, struct ssp_msg *msg,
 	status = spi_write(data->spi, msg, 9) >= 0;
 
 	if (status == 0) {
-		pr_err("[SSP]: %s spi_write fail!!\n", __func__);
+		pr_debug("[SSP]: %s spi_write fail!!\n", __func__);
 		gpio_set_value_cansleep(data->ap_int, 1);
 		status = -1;
 		goto exit;
@@ -68,7 +68,7 @@ static int do_transfer(struct ssp_data *data, struct ssp_msg *msg,
 	while (!gpio_get_value_cansleep(data->mcu_int2)) {
 		mdelay(3);
 		if ((ssp_down = data->bSspShutdown) || iDelaycnt++ > 500) {
-			pr_err("[SSP]: %s exit2 - Time out!!\n", __func__);
+			pr_debug("[SSP]: %s exit2 - Time out!!\n", __func__);
 			status = -2;
 			goto exit;
 		}
@@ -78,7 +78,7 @@ exit:
 	mutex_unlock(&data->comm_mutex);
 
 	if (ssp_down)
-		pr_err("[SSP] : %s, ssp down", __func__);
+		pr_debug("[SSP] : %s, ssp down", __func__);
 
 	if (status == -1) {
 		data->uTimeOutCnt += ssp_down ? 0 : 1;
@@ -121,7 +121,7 @@ int ssp_spi_sync(struct ssp_data *data, struct ssp_msg *msg, int timeout) {
 	int status = 0;
 
 	if (msg->length == 0) {
-		pr_err("[SSP]: %s length must not be 0\n", __func__);
+		pr_debug("[SSP]: %s length must not be 0\n", __func__);
 		clean_msg(msg);
 		return status;
 	}
@@ -142,7 +142,7 @@ int select_irq_msg(struct ssp_data *data) {
 
 	iRet = spi_read(data->spi, chTempBuf, sizeof(chTempBuf));
 	if (iRet < 0) {
-		pr_err("[SSP]: %s spi_read fail!!\n", __func__);
+		pr_debug("[SSP]: %s spi_read fail!!\n", __func__);
 		return ERROR;
 	}
 
@@ -165,7 +165,7 @@ int select_irq_msg(struct ssp_data *data) {
 			}
 
 			if (!found) {
-				pr_err("[SSP]: %s %d - Not match error\n", __func__, msg_options);
+				pr_debug("[SSP]: %s %d - Not match error\n", __func__, msg_options);
 				goto exit;
 			}
 
@@ -194,14 +194,14 @@ int select_irq_msg(struct ssp_data *data) {
 
 			clean_msg(msg);
 		} else
-			pr_err("[SSP]List empty error(%d)\n", msg_type);
+			pr_debug("[SSP]List empty error(%d)\n", msg_type);
 	exit:
 		mutex_unlock(&data->pending_mutex);
 		break;
 	case HUB2AP_WRITE:
 		buffer = (char*) kzalloc(chLength, GFP_KERNEL);
 		if (buffer == NULL) {
-			pr_err("[SSP] %s, failed to alloc memory for buffer\n", __func__);
+			pr_debug("[SSP] %s, failed to alloc memory for buffer\n", __func__);
 			iRet = -ENOMEM;
 			break;
 		}
@@ -210,12 +210,12 @@ int select_irq_msg(struct ssp_data *data) {
 		kfree(buffer);
 		break;
 	default:
-		pr_err("[SSP]No type error(%d)\n", msg_type);
+		pr_debug("[SSP]No type error(%d)\n", msg_type);
 		break;
 	}
 
 	if (iRet < 0) {
-		pr_err("[SSP]: %s - MSG2SSP_SSD error %d\n", __func__, iRet);
+		pr_debug("[SSP]: %s - MSG2SSP_SSD error %d\n", __func__, iRet);
 		return ERROR;
 	}
 
@@ -252,7 +252,7 @@ int ssp_send_cmd(struct ssp_data *data, char command, int arg)
 	iRet = ssp_spi_async(data, msg);
 
 	if (iRet != SUCCESS) {
-		pr_err("[SSP]: %s - command 0x%x failed %d\n",
+		pr_debug("[SSP]: %s - command 0x%x failed %d\n",
 				__func__, command, iRet);
 		return ERROR;
 	}
@@ -271,12 +271,12 @@ int send_instruction(struct ssp_data *data, u8 uInst,
 	struct ssp_msg *msg;
 
 	if (data->fw_dl_state == FW_DL_STATE_DOWNLOADING) {
-		pr_err("[SSP] %s - Skip Inst! DL state = %d\n",
+		pr_debug("[SSP] %s - Skip Inst! DL state = %d\n",
 			__func__, data->fw_dl_state);
 		return SUCCESS;
 	} else if ((!(data->uSensorState & (1 << uSensorType)))
 		&& (uInst <= CHANGE_DELAY)) {
-		pr_err("[SSP]: %s - Bypass Inst Skip! - %u\n",
+		pr_debug("[SSP]: %s - Bypass Inst Skip! - %u\n",
 			__func__, uSensorType);
 		return FAIL;
 	}
@@ -308,7 +308,7 @@ int send_instruction(struct ssp_data *data, u8 uInst,
 
 	msg = kzalloc(sizeof(*msg), GFP_KERNEL);
 	if (msg == NULL) {
-		pr_err("[SSP] %s, failed to alloc memory for ssp_msg\n", __func__);
+		pr_debug("[SSP] %s, failed to alloc memory for ssp_msg\n", __func__);
 		iRet = -ENOMEM;
 		return iRet;
 	}
@@ -327,7 +327,7 @@ int send_instruction(struct ssp_data *data, u8 uInst,
 	iRet = ssp_spi_async(data, msg);
 
 	if (iRet != SUCCESS) {
-		pr_err("[SSP]: %s - Instruction CMD Fail %d\n", __func__, iRet);
+		pr_debug("[SSP]: %s - Instruction CMD Fail %d\n", __func__, iRet);
 		return ERROR;
 	}
 
@@ -345,12 +345,12 @@ int send_instruction_sync(struct ssp_data *data, u8 uInst,
 	struct ssp_msg *msg;
 
 	if (data->fw_dl_state == FW_DL_STATE_DOWNLOADING) {
-		pr_err("[SSP] %s - Skip Inst! DL state = %d\n",
+		pr_debug("[SSP] %s - Skip Inst! DL state = %d\n",
 			__func__, data->fw_dl_state);
 		return SUCCESS;
 	} else if ((!(data->uSensorState & (1 << uSensorType)))
 		&& (uInst <= CHANGE_DELAY)) {
-		pr_err("[SSP]: %s - Bypass Inst Skip! - %u\n",
+		pr_debug("[SSP]: %s - Bypass Inst Skip! - %u\n",
 			__func__, uSensorType);
 		return FAIL;
 	}
@@ -396,7 +396,7 @@ int send_instruction_sync(struct ssp_data *data, u8 uInst,
 	iRet = ssp_spi_sync(data, msg, 1000);
 
 	if (iRet != SUCCESS) {
-		pr_err("[SSP]: %s - Instruction CMD Fail %d\n", __func__, iRet);
+		pr_debug("[SSP]: %s - Instruction CMD Fail %d\n", __func__, iRet);
 		return ERROR;
 	}
 
@@ -423,7 +423,7 @@ int flush(struct ssp_data *data, u8 uSensorType) {
 	iRet = ssp_spi_sync(data, msg, 1000);
 
 	if (iRet != SUCCESS) {
-		pr_err("[SSP]: %s - fail %d\n", __func__, iRet);
+		pr_debug("[SSP]: %s - fail %d\n", __func__, iRet);
 		return ERROR;
 	}
 
@@ -446,7 +446,7 @@ int get_batch_count(struct ssp_data *data, u8 uSensorType) {
 	iRet = ssp_spi_sync(data, msg, 1000);
 
 	if (iRet != SUCCESS) {
-		pr_err("[SSP]: %s - fail %d\n", __func__, iRet);
+		pr_debug("[SSP]: %s - fail %d\n", __func__, iRet);
 		return ERROR;
 	}
 
@@ -467,7 +467,7 @@ int get_chipid(struct ssp_data *data)
 retries:
 	msg = kzalloc(sizeof(*msg), GFP_KERNEL);
 	if (msg == NULL) {
-		pr_err("[SSP] %s, failed to alloc memory for ssp_msg\n", __func__);
+		pr_debug("[SSP] %s, failed to alloc memory for ssp_msg\n", __func__);
 		iRet = -ENOMEM;
 		return iRet;
 	}
@@ -481,14 +481,14 @@ retries:
 	
 	if (buffer != DEVICE_ID && iReties++ < 2) {
 	 mdelay(5);
-	 pr_err("[SSP] %s - get chip ID retry\n", __func__);	
+	 pr_debug("[SSP] %s - get chip ID retry\n", __func__);	
 	 goto retries;
 	}
 
 	if (iRet == SUCCESS)
 		return buffer;
 
-	pr_err("[SSP] %s - get chip ID failed %d\n", __func__, iRet);	
+	pr_debug("[SSP] %s - get chip ID failed %d\n", __func__, iRet);	
 	return ERROR;	
 }
 
@@ -507,12 +507,12 @@ int set_sensor_position(struct ssp_data *data)
 	msg->buffer[1] = data->accel_position;
 	msg->buffer[2] = data->mag_position;
 
-	pr_info("[SSP] Sensor Posision A : %u, G : %u, M: %u\n",
+	pr_debug("[SSP] Sensor Posision A : %u, G : %u, M: %u\n",
 			data->accel_position, data->accel_position, data->mag_position);
 
 	iRet = ssp_spi_async(data, msg);
 	if (iRet != SUCCESS) {
-		pr_err("[SSP]: %s - i2c fail %d\n", __func__, iRet);
+		pr_debug("[SSP]: %s - i2c fail %d\n", __func__, iRet);
 		iRet = ERROR;
 	}
 
@@ -535,11 +535,11 @@ int set_sensor_tilt(struct ssp_data *data)
 
 	iRet = ssp_spi_async(data, msg);
 
-	pr_info("[SSP] Sensor Position tilt : %u\n",
+	pr_debug("[SSP] Sensor Position tilt : %u\n",
         	data->rot_direction);
 
 	if (iRet != SUCCESS) {
-		pr_err("[SSP]: %s - i2c fail %d\n", __func__, iRet);
+		pr_debug("[SSP]: %s - i2c fail %d\n", __func__, iRet);
 		iRet = ERROR;
 	}
 
@@ -555,7 +555,7 @@ void set_proximity_threshold(struct ssp_data *data,
 	struct ssp_msg *msg;
 
 	if (!(data->uSensorState & (1<<PROXIMITY_SENSOR))) {
-		pr_info("[SSP]: %s - Skip this function!!!"\
+		pr_debug("[SSP]: %s - Skip this function!!!"\
 			", proximity sensor is not connected(0x%x)\n",
 			__func__, data->uSensorState);
 		return;
@@ -569,7 +569,7 @@ void set_proximity_threshold(struct ssp_data *data,
 	msg->buffer = (char*) kzalloc(2, GFP_KERNEL);
 	msg->free_buffer = 1;
 
-	pr_err("[SSP]: %s - SENSOR_PROXTHRESHOL",__func__);
+	pr_debug("[SSP]: %s - SENSOR_PROXTHRESHOL",__func__);
 
 	msg->buffer[0] = (unsigned char) uData1;
 	msg->buffer[1] = (unsigned char) uData2;
@@ -579,7 +579,7 @@ void set_proximity_threshold(struct ssp_data *data,
 	msg->buffer = (char*) kzalloc(4, GFP_KERNEL);
 	msg->free_buffer = 1;
 
-	pr_err("[SSP]: %s - SENSOR_PROXTHRESHOL",__func__);
+	pr_debug("[SSP]: %s - SENSOR_PROXTHRESHOL",__func__);
 
 	msg->buffer[0] = ((char) (uData1 >> 8) & 0x07);
 	msg->buffer[1] = (char) uData1;
@@ -589,13 +589,13 @@ void set_proximity_threshold(struct ssp_data *data,
 	iRet = ssp_spi_async(data, msg);
 
 	if (iRet != SUCCESS) {
-		pr_err("[SSP]: %s - SENSOR_PROXTHRESHOLD CMD fail %d\n",
+		pr_debug("[SSP]: %s - SENSOR_PROXTHRESHOLD CMD fail %d\n",
 			__func__, iRet);
 		return;
 	}
 
 	data->uInstFailCnt = 0;
-	pr_info("[SSP]: Proximity Threshold - %u, %u\n", uData1, uData2);
+	pr_debug("[SSP]: Proximity Threshold - %u, %u\n", uData1, uData2);
 }
 
 void set_proximity_barcode_enable(struct ssp_data *data, bool bEnable)
@@ -614,13 +614,13 @@ void set_proximity_barcode_enable(struct ssp_data *data, bool bEnable)
 
 	iRet = ssp_spi_async(data, msg);
 	if (iRet != SUCCESS) {
-		pr_err("[SSP]: %s - SENSOR_BARCODE_EMUL CMD fail %d\n",
+		pr_debug("[SSP]: %s - SENSOR_BARCODE_EMUL CMD fail %d\n",
 				__func__, iRet);
 		return;
 	}
 
 	data->uInstFailCnt = 0;
-	pr_info("[SSP] Proximity Barcode En : %u\n", bEnable);
+	pr_debug("[SSP] Proximity Barcode En : %u\n", bEnable);
 }
 
 void set_gesture_current(struct ssp_data *data, unsigned char uData1)
@@ -638,13 +638,13 @@ void set_gesture_current(struct ssp_data *data, unsigned char uData1)
 	iRet = ssp_spi_async(data, msg);
 
 	if (iRet != SUCCESS) {
-		pr_err("[SSP]: %s - SENSOR_GESTURE_CURRENT CMD fail %d\n", __func__,
+		pr_debug("[SSP]: %s - SENSOR_GESTURE_CURRENT CMD fail %d\n", __func__,
 				iRet);
 		return;
 	}
 
 	data->uInstFailCnt = 0;
-	pr_info("[SSP]: Gesture Current Setting - %u\n", uData1);
+	pr_debug("[SSP]: Gesture Current Setting - %u\n", uData1);
 }
 
 unsigned int get_sensor_scanning_info(struct ssp_data *data)
@@ -657,7 +657,7 @@ unsigned int get_sensor_scanning_info(struct ssp_data *data)
 retries:
 	msg = kzalloc(sizeof(*msg), GFP_KERNEL);
 	if (msg == NULL) {
-		pr_err("[SSP] %s, failed to alloc memory for ssp_msg\n", __func__);
+		pr_debug("[SSP] %s, failed to alloc memory for ssp_msg\n", __func__);
 		iRet = -ENOMEM;
 		return iRet;
 	}
@@ -670,12 +670,12 @@ retries:
 	iRet = ssp_spi_sync(data, msg, 1000);
 	
 	if (iRet != SUCCESS) {
-		pr_err("[SSP] %s -fail to get_sensor_scanning_info %d\n",
+		pr_debug("[SSP] %s -fail to get_sensor_scanning_info %d\n",
 				__func__, iRet);
 
 		if(iReties++ < 2)
 		{	
-			pr_err("[SSP] %s get_sensor_scanning_info fail retry\n",
+			pr_debug("[SSP] %s get_sensor_scanning_info fail retry\n",
 				__func__);
 			
 			mdelay(5);
@@ -691,7 +691,7 @@ retries:
 		// exception for abnormail sensorstatus
 		if(iReties++ < 2 && (iSensorState < 0x10000 || (iSensorState>>5 & 0x01) != 0x01 || (iSensorState & 0x03) != 0x03))
 		{
-			pr_err("[SSP] %s get_sensor_scanning_info val retry %d\n",
+			pr_debug("[SSP] %s get_sensor_scanning_info val retry %d\n",
 				__func__, iSensorState);
 			
 			mdelay(5);
@@ -699,7 +699,7 @@ retries:
 		}
 	}
 	
-	pr_err("[SSP]: %s - %d %d %d %d\n", __func__, buffer[0] ,buffer[1],buffer[2],buffer[3]);
+	pr_debug("[SSP]: %s - %d %d %d %d\n", __func__, buffer[0] ,buffer[1],buffer[2],buffer[3]);
 	return iSensorState;
 }
 
@@ -719,7 +719,7 @@ unsigned int get_firmware_rev(struct ssp_data *data)
 	iRet = ssp_spi_sync(data, msg, 1000);
 
 	if (iRet != SUCCESS)
-		pr_err("[SSP]: %s - i2c fail %d\n", __func__, iRet);
+		pr_debug("[SSP]: %s - i2c fail %d\n", __func__, iRet);
 	else
 		uRev = ((unsigned int)buffer[0] << 16)
 			| ((unsigned int)buffer[1] << 8) | buffer[2];
@@ -751,7 +751,7 @@ int get_fuserom_data(struct ssp_data *data)
 		return FAIL;
 	}
 
-	pr_info("[SSP] FUSE ROM Data %d , %d, %d\n", data->uFuseRomData[0],
+	pr_debug("[SSP] FUSE ROM Data %d , %d, %d\n", data->uFuseRomData[0],
 			data->uFuseRomData[1], data->uFuseRomData[2]);
 
 	return SUCCESS;
@@ -773,7 +773,7 @@ int set_big_data_start(struct ssp_data *data, u8 type, u32 length) {
 	iRet = ssp_spi_async(data, msg);
 
 	if (iRet != SUCCESS) {
-		pr_err("[SSP]: %s - i2c fail %d\n", __func__, iRet);
+		pr_debug("[SSP]: %s - i2c fail %d\n", __func__, iRet);
 		iRet = ERROR;
 	}
 
@@ -794,7 +794,7 @@ int sanity_check(struct ssp_data *data) {
 	iRet = ssp_spi_sync(data, msg, 1000);
 
 	if (iRet != SUCCESS) {
-		pr_err("[SSP]: %s - i2c fail %d\n", __func__, iRet);
+		pr_debug("[SSP]: %s - i2c fail %d\n", __func__, iRet);
 		iRet = ERROR;
 	}
 
@@ -802,7 +802,7 @@ int sanity_check(struct ssp_data *data) {
 		if (initialize_mcu(data) > 0) {
 			sync_sensor_state(data);
 			ssp_sensorhub_report_notice(data, MSG2SSP_AP_STATUS_RESET);
-			pr_err("[SSP]: %s %d\n", __func__, iRet);
+			pr_debug("[SSP]: %s %d\n", __func__, iRet);
 			if( data->uLastAPState!=0 )
 				ssp_send_cmd(data, data->uLastAPState, 0);
 			if( data->uLastResumeState != 0)
@@ -821,7 +821,7 @@ int set_time(struct ssp_data *data) {
 
 	getnstimeofday(&ts);
 	rtc_time_to_tm(ts.tv_sec, &tm);
-	pr_info("[SSP]: %s %d-%02d-%02d %02d:%02d:%02d.%09lu UTC\n", __func__,
+	pr_debug("[SSP]: %s %d-%02d-%02d %02d:%02d:%02d.%09lu UTC\n", __func__,
 			tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min,
 			tm.tm_sec, ts.tv_nsec);
 
@@ -845,7 +845,7 @@ int set_time(struct ssp_data *data) {
 	iRet = ssp_spi_async(data, msg);
 
 	if (iRet != SUCCESS) {
-		pr_err("[SSP]: %s - i2c fail %d\n", __func__, iRet);
+		pr_debug("[SSP]: %s - i2c fail %d\n", __func__, iRet);
 		iRet = ERROR;
 	}
 
@@ -861,7 +861,7 @@ int get_time(struct ssp_data *data) {
 
 	getnstimeofday(&ts);
 	rtc_time_to_tm(ts.tv_sec, &tm);
-	pr_info("[SSP]: %s ap %d-%02d-%02d %02d:%02d:%02d.%09lu UTC\n", __func__,
+	pr_debug("[SSP]: %s ap %d-%02d-%02d %02d:%02d:%02d.%09lu UTC\n", __func__,
 			tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min,
 			tm.tm_sec, ts.tv_nsec);
 
@@ -875,7 +875,7 @@ int get_time(struct ssp_data *data) {
 	iRet = ssp_spi_sync(data, msg, 1000);
 
 	if (iRet != SUCCESS) {
-		pr_err("[SSP]: %s - i2c failed %d\n", __func__, iRet);
+		pr_debug("[SSP]: %s - i2c failed %d\n", __func__, iRet);
 		return 0;
 	}
 
@@ -889,7 +889,7 @@ int get_time(struct ssp_data *data) {
 	memcpy(&ts.tv_nsec, &msg->buffer[8], 4);
 
 	rtc_time_to_tm(ts.tv_sec, &tm);
-	pr_info("[SSP]: %s mcu %d-%02d-%02d %02d:%02d:%02d.%09lu UTC\n", __func__,
+	pr_debug("[SSP]: %s mcu %d-%02d-%02d %02d:%02d:%02d.%09lu UTC\n", __func__,
 			tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min,
 			tm.tm_sec, ts.tv_nsec);
 

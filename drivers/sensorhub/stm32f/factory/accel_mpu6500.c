@@ -92,7 +92,7 @@ int set_accel_cal(struct ssp_data *data)
 	s16 accel_cal[3];
 
 	if (!(data->uSensorState & (1 << ACCELEROMETER_SENSOR))) {
-		pr_info("[SSP]: %s - Skip this function!!!"\
+		pr_debug("[SSP]: %s - Skip this function!!!"\
 			", accel sensor is not connected(0x%x)\n",
 			__func__, data->uSensorState);
 		return iRet;
@@ -113,11 +113,11 @@ int set_accel_cal(struct ssp_data *data)
 	iRet = ssp_spi_async(data, msg);
 
 	if (iRet != SUCCESS) {
-		pr_err("[SSP]: %s - i2c fail %d\n", __func__, iRet);
+		pr_debug("[SSP]: %s - i2c fail %d\n", __func__, iRet);
 		iRet = ERROR;
 	}
 
-	pr_info("[SSP] Set accel cal data %d, %d, %d\n", accel_cal[0], accel_cal[1], accel_cal[2]);
+	pr_debug("[SSP] Set accel cal data %d, %d, %d\n", accel_cal[0], accel_cal[1], accel_cal[2]);
 	return iRet;
 }
 
@@ -203,7 +203,7 @@ static int accel_do_calibrate(struct ssp_data *data, int iEnable)
 	cal_filp = filp_open(CALIBRATION_FILE_PATH,
 			O_CREAT | O_TRUNC | O_WRONLY, 0666);
 	if (IS_ERR(cal_filp)) {
-		pr_err("[SSP]: %s - Can't open calibration file\n", __func__);
+		pr_debug("[SSP]: %s - Can't open calibration file\n", __func__);
 		set_fs(old_fs);
 		iRet = PTR_ERR(cal_filp);
 		return iRet;
@@ -212,7 +212,7 @@ static int accel_do_calibrate(struct ssp_data *data, int iEnable)
 	iRet = cal_filp->f_op->write(cal_filp, (char *)&data->accelcal,
 		3 * sizeof(int), &cal_filp->f_pos);
 	if (iRet != 3 * sizeof(int)) {
-		pr_err("[SSP]: %s - Can't write the accelcal to file\n",
+		pr_debug("[SSP]: %s - Can't write the accelcal to file\n",
 			__func__);
 		iRet = -EIO;
 	}
@@ -232,7 +232,7 @@ static ssize_t accel_calibration_show(struct device *dev,
 
 	iRet = accel_open_calibration(data);
 	if (iRet < 0)
-		pr_err("[SSP]: %s - calibration open failed(%d)\n", __func__, iRet);
+		pr_debug("[SSP]: %s - calibration open failed(%d)\n", __func__, iRet);
 
 	ssp_dbg("[SSP] Cal data : %d %d %d - %d\n",
 		data->accelcal.x, data->accelcal.y, data->accelcal.z, iRet);
@@ -255,7 +255,7 @@ static ssize_t accel_calibration_store(struct device *dev,
 
 	iRet = accel_do_calibrate(data, (int)dEnable);
 	if (iRet < 0)
-		pr_err("[SSP]: %s - accel_do_calibrate() failed\n", __func__);
+		pr_debug("[SSP]: %s - accel_do_calibrate() failed\n", __func__);
 
 	return size;
 }
@@ -301,13 +301,13 @@ static ssize_t accel_reactive_alert_store(struct device *dev,
 		data->bAccelAlert = chTempBuf;
 
 		if (iRet != SUCCESS) {
-			pr_err("[SSP]: %s - accel Selftest Timeout!!\n", __func__);
+			pr_debug("[SSP]: %s - accel Selftest Timeout!!\n", __func__);
 			goto exit;
 		}
 
 		ssp_dbg("[SSP]: %s factory test success!\n", __func__);
 	} else {
-		pr_err("[SSP]: %s - invalid value %d\n", __func__, *buf);
+		pr_debug("[SSP]: %s - invalid value %d\n", __func__, *buf);
 		return -EINVAL;
 	}
 	exit: return size;
@@ -348,7 +348,7 @@ static ssize_t accel_hw_selftest_show(struct device *dev,
 
 	iRet = ssp_spi_sync(data, msg, 3000);
 	if (iRet != SUCCESS) {
-		pr_err("[SSP] %s - accel hw selftest Timeout!!\n", __func__);
+		pr_debug("[SSP] %s - accel hw selftest Timeout!!\n", __func__);
 		return sprintf(buf, "%d,%d,%d,%d\n", -5, 0, 0, 0);
 	}
 
@@ -358,7 +358,7 @@ static ssize_t accel_hw_selftest_show(struct device *dev,
 	shift_ratio[2] = (s16)((chTempBuf[6] << 8) + chTempBuf[5]);
 	result = chTempBuf[7];
 
-	pr_info("[SSP] %s - %d, %d, %d, %d, %d\n", __func__,
+	pr_debug("[SSP] %s - %d, %d, %d, %d, %d\n", __func__,
 		init_status, result, shift_ratio[0], shift_ratio[1], shift_ratio[2]);
 	return sprintf(buf, "%d,%d.%d,%d.%d,%d.%d\n", result,
 		shift_ratio[0] / 10, shift_ratio[0] % 10,

@@ -65,7 +65,7 @@
 
 
 #define ssp_dbg(dev, format, ...) do { \
-	printk(KERN_INFO dev, format, ##__VA_ARGS__); \
+	pr_debug(dev, format, ##__VA_ARGS__); \
 	} while (0)
 #else
 #define ssp_dbg(dev, format, ...)
@@ -73,7 +73,7 @@
 
 #if SSP_FUNC_DBG
 #define func_dbg() do { \
-	printk(KERN_INFO "[SSP]: %s\n", __func__); \
+	pr_debug("[SSP]: %s\n", __func__); \
 	} while (0)
 #else
 #define func_dbg()
@@ -81,7 +81,7 @@
 
 #if SSP_DATA_DBG
 #define data_dbg(dev, format, ...) do { \
-	printk(KERN_INFO dev, format, ##__VA_ARGS__); \
+	pr_debug(dev, format, ##__VA_ARGS__); \
 	} while (0)
 #else
 #define data_dbg(dev, format, ...)

@@ -150,7 +150,7 @@ static int accel_do_calibrate(struct ssp_data *data, int iEnable)
 	cal_filp = filp_open(CALIBRATION_FILE_PATH,
 			O_CREAT | O_TRUNC | O_WRONLY, 0666);
 	if (IS_ERR(cal_filp)) {
-		pr_err("[SSP]: %s - Can't open calibration file\n", __func__);
+		pr_debug("[SSP]: %s - Can't open calibration file\n", __func__);
 		set_fs(old_fs);
 		iRet = PTR_ERR(cal_filp);
 		return iRet;
@@ -159,7 +159,7 @@ static int accel_do_calibrate(struct ssp_data *data, int iEnable)
 	iRet = cal_filp->f_op->write(cal_filp, (char *)&data->accelcal,
 		3 * sizeof(int), &cal_filp->f_pos);
 	if (iRet != 3 * sizeof(int)) {
-		pr_err("[SSP]: %s - Can't write the accelcal to file\n",
+		pr_debug("[SSP]: %s - Can't write the accelcal to file\n",
 			__func__);
 		iRet = -EIO;
 	}
@@ -179,7 +179,7 @@ static ssize_t accel_calibration_show(struct device *dev,
 
 	iRet = accel_open_calibration(data);
 	if (iRet < 0)
-		pr_err("[SSP]: %s - calibration open failed\n", __func__);
+		pr_debug("[SSP]: %s - calibration open failed\n", __func__);
 
 	ssp_dbg("[SSP] Cal data : %d %d %d - %d\n",
 		data->accelcal.x, data->accelcal.y, data->accelcal.z, iRet);
@@ -202,7 +202,7 @@ static ssize_t accel_calibration_store(struct device *dev,
 
 	iRet = accel_do_calibrate(data, (int)dEnable);
 	if (iRet < 0)
-		pr_err("[SSP]: %s - accel_do_calibrate() failed\n", __func__);
+		pr_debug("[SSP]: %s - accel_do_calibrate() failed\n", __func__);
 
 	return size;
 }
@@ -245,7 +245,7 @@ static ssize_t accel_reactive_alert_store(struct device *dev,
 			msleep(20);
 
 		if ((iDelayCnt >= 150) || (iRet != SUCCESS)) {
-			pr_err("[SSP]: %s - accel Selftest Timeout!!\n",
+			pr_debug("[SSP]: %s - accel Selftest Timeout!!\n",
 				__func__);
 			goto exit;
 		}
@@ -255,7 +255,7 @@ static ssize_t accel_reactive_alert_store(struct device *dev,
 		data->bAccelAlert = data->uFactorydata[0];
 		ssp_dbg("[SSP]: %s factory test success!\n", __func__);
 	} else {
-		pr_err("[SSP]: %s - invalid value %d\n", __func__, *buf);
+		pr_debug("[SSP]: %s - invalid value %d\n", __func__, *buf);
 		return -EINVAL;
 	}
 exit:

@@ -42,7 +42,7 @@ static ssize_t sea_level_pressure_store(struct device *dev,
 	sscanf(buf, "%d", &iNewSeaLevelPressure);
 
 	if (iNewSeaLevelPressure == 0) {
-		pr_info("%s, our->temperature = 0\n", __func__);
+		pr_debug("%s, our->temperature = 0\n", __func__);
 		iNewSeaLevelPressure = -1;
 	}
 
@@ -67,7 +67,7 @@ int pressure_open_calibration(struct ssp_data *data)
 	if (IS_ERR(cal_filp)) {
 		iErr = PTR_ERR(cal_filp);
 		if (iErr != -ENOENT)
-			pr_err("[SSP]: %s - Can't open calibration file(%d)\n",
+			pr_debug("[SSP]: %s - Can't open calibration file(%d)\n",
 				__func__, iErr);
 		set_fs(old_fs);
 		return iErr;
@@ -75,7 +75,7 @@ int pressure_open_calibration(struct ssp_data *data)
 	iErr = cal_filp->f_op->read(cal_filp,
 		chBuf, 10 * sizeof(char), &cal_filp->f_pos);
 	if (iErr < 0) {
-		pr_err("[SSP]: %s - Can't read the cal data from file (%d)\n",
+		pr_debug("[SSP]: %s - Can't read the cal data from file (%d)\n",
 			__func__, iErr);
 		return iErr;
 	}
@@ -84,14 +84,14 @@ int pressure_open_calibration(struct ssp_data *data)
 
 	iErr = kstrtoint(chBuf, 10, &data->iPressureCal);
 	if (iErr < 0) {
-		pr_err("[SSP]: %s - kstrtoint failed. %d", __func__, iErr);
+		pr_debug("[SSP]: %s - kstrtoint failed. %d", __func__, iErr);
 		return iErr;
 	}
 
 	ssp_dbg("[SSP]: open barometer calibration %d\n", data->iPressureCal);
 
 	if (data->iPressureCal < PR_ABS_MIN || data->iPressureCal > PR_ABS_MAX)
-		pr_err("[SSP]: %s - wrong offset value!!!\n", __func__);
+		pr_debug("[SSP]: %s - wrong offset value!!!\n", __func__);
 
 	return iErr;
 }
@@ -104,7 +104,7 @@ static ssize_t pressure_cabratioin_store(struct device *dev,
 
 	iErr = kstrtoint(buf, 10, &iPressureCal);
 	if (iErr < 0) {
-		pr_err("[SSP]: %s - kstrtoint failed.(%d)", __func__, iErr);
+		pr_debug("[SSP]: %s - kstrtoint failed.(%d)", __func__, iErr);
 		return iErr;
 	}
 
@@ -143,7 +143,7 @@ static ssize_t eeprom_check_show(struct device *dev,
 	iRet = ssp_spi_sync(data, msg, 3000);
 
 	if (iRet != SUCCESS) {
-		pr_err("[SSP]: %s - Pressure Selftest Timeout!!\n", __func__);
+		pr_debug("[SSP]: %s - Pressure Selftest Timeout!!\n", __func__);
 		goto exit;
 	}
 

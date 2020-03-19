@@ -191,7 +191,7 @@ static long ssp_temphumidity_ioctl(struct file *file, unsigned int cmd,
 					break;
 			}
 			if (unlikely(ret)) {
-				pr_err("[SSP] read bluk adc1 data err(%d)", ret);
+				pr_debug("[SSP] read bluk adc1 data err(%d)", ret);
 				goto ioctl_error;
 			}
 			break;
@@ -205,7 +205,7 @@ static long ssp_temphumidity_ioctl(struct file *file, unsigned int cmd,
 					break;
 			}
 			if (unlikely(ret)) {
-				pr_err("[SSP] read bluk adc1 data err(%d)", ret);
+				pr_debug("[SSP] read bluk adc1 data err(%d)", ret);
 				goto ioctl_error;
 			}
 			break;
@@ -219,7 +219,7 @@ static long ssp_temphumidity_ioctl(struct file *file, unsigned int cmd,
 					break;
 			}
 			if (unlikely(ret)) {
-				pr_err("[SSP] read bluk adc1 data err(%d)", ret);
+				pr_debug("[SSP] read bluk adc1 data err(%d)", ret);
 				goto ioctl_error;
 			}
 			break;
@@ -233,7 +233,7 @@ static long ssp_temphumidity_ioctl(struct file *file, unsigned int cmd,
 					break;
 			}
 			if (unlikely(ret)) {
-				pr_err("[SSP] read bluk adc1 data err(%d)", ret);
+				pr_debug("[SSP] read bluk adc1 data err(%d)", ret);
 				goto ioctl_error;
 			}
 			break;
@@ -247,7 +247,7 @@ static long ssp_temphumidity_ioctl(struct file *file, unsigned int cmd,
 					break;
 			}
 			if (unlikely(ret)) {
-				pr_err("[SSP] read bluk adc1 data err(%d)", ret);
+				pr_debug("[SSP] read bluk adc1 data err(%d)", ret);
 				goto ioctl_error;
 			}
 			break;
@@ -261,13 +261,13 @@ static long ssp_temphumidity_ioctl(struct file *file, unsigned int cmd,
 					break;
 			}
 			if (unlikely(ret)) {
-				pr_err("[SSP] read bluk adc1 data err(%d)", ret);
+				pr_debug("[SSP] read bluk adc1 data err(%d)", ret);
 				goto ioctl_error;
 			}
 			break;
 
 		default:
-			pr_err("[SSP] temp ioctl cmd err(%d)", cmd);
+			pr_debug("[SSP] temp ioctl cmd err(%d)", cmd);
 			ret = EINVAL;
 			goto ioctl_error;
 	}
@@ -293,7 +293,7 @@ static int get_cp_thm_value(struct ssp_data *data)
 	err = qpnp_vadc_read(ssp_vadc,LR_MUX6_PU2_AMUX_THM3, &results);
 		mutex_unlock(&data->cp_temp_adc_lock);
 		if (err) {
-		pr_err("%s : error reading chn %d, rc = %d\n",
+		pr_debug("%s : error reading chn %d, rc = %d\n",
 			__func__, LR_MUX6_PU2_AMUX_THM3, err);
 			return err;
 		}
@@ -309,7 +309,7 @@ static int get_cp_thm2_value(struct ssp_data *data)
 	err = qpnp_vadc_read(ssp_vadc, LR_MUX8_PU2_AMUX_THM4, &results);
 	mutex_unlock(&data->cp_temp_adc_lock);
 	if (err) {
-		pr_err("%s : error reading chn %d, rc = %d\n",
+		pr_debug("%s : error reading chn %d, rc = %d\n",
 			__func__, LR_MUX8_PU2_AMUX_THM4, err);
 		return err;
 	}
@@ -351,7 +351,7 @@ static int convert_adc_to_temp(struct ssp_data *data, unsigned int adc)
 	err = qpnp_vadc_read(ssp_vadc, LR_MUX6_PU2_AMUX_THM3, &results);
 	mutex_unlock(&data->cp_temp_adc_lock);
 	if (err) {
-		pr_err("%s : error reading chn %d, rc = %d\n",
+		pr_debug("%s : error reading chn %d, rc = %d\n",
 			__func__, LR_MUX6_PU2_AMUX_THM3, err);
 		return err;
 	}
@@ -369,7 +369,7 @@ static int convert_adc_to_temp2(struct ssp_data *data, unsigned int adc)
 	err = qpnp_vadc_read(ssp_vadc, LR_MUX8_PU2_AMUX_THM4, &results);
 	mutex_unlock(&data->cp_temp_adc_lock);
 	if (err) {
-		pr_err("%s : error reading chn %d, rc = %d\n",
+		pr_debug("%s : error reading chn %d, rc = %d\n",
 			__func__, LR_MUX8_PU2_AMUX_THM4, err);
 		return err;
 	}
@@ -394,7 +394,7 @@ static ssize_t engine_version_show(struct device *dev,
 {
 	struct ssp_data *data = dev_get_drvdata(dev);
 
-	pr_info("[SSP] %s - engine_ver = %s_%s\n",
+	pr_debug("[SSP] %s - engine_ver = %s_%s\n",
 		__func__, MODEL_NAME, data->comp_engine_ver);
 
 	return sprintf(buf, "%s_%s\n",
@@ -410,7 +410,7 @@ static ssize_t engine_version_store(struct device *dev,
 	data->comp_engine_ver =
 		    kzalloc(((strlen(buf)+1) * sizeof(char)), GFP_KERNEL);
 	strncpy(data->comp_engine_ver, buf, strlen(buf)+1);
-	pr_info("[SSP] %s - engine_ver = %s, %s\n",
+	pr_debug("[SSP] %s - engine_ver = %s, %s\n",
 		__func__, data->comp_engine_ver, buf);
 
 	return size;
@@ -421,7 +421,7 @@ static ssize_t engine_version2_show(struct device *dev,
 {
 	struct ssp_data *data = dev_get_drvdata(dev);
 
-	pr_info("[SSP] %s - engine_ver2 = %s_%s\n",
+	pr_debug("[SSP] %s - engine_ver2 = %s_%s\n",
 		__func__, MODEL_NAME, data->comp_engine_ver2);
 
 	return sprintf(buf, "%s_%s\n",
@@ -437,7 +437,7 @@ static ssize_t engine_version2_store(struct device *dev,
 	data->comp_engine_ver2 =
 		    kzalloc(((strlen(buf)+1) * sizeof(char)), GFP_KERNEL);
 	strncpy(data->comp_engine_ver2, buf, strlen(buf)+1);
-	pr_info("[SSP] %s - engine_ver2 = %s, %s\n",
+	pr_debug("[SSP] %s - engine_ver2 = %s, %s\n",
 		__func__, data->comp_engine_ver2, buf);
 
 	return size;
@@ -453,7 +453,7 @@ static ssize_t pam_adc_show(struct device *dev,
 		goto exit;
 	}
 		adc = get_cp_thm_value(data);
-	/* pr_info("[SSP] %s cp_thm = %dmV\n", __func__, adc); */
+	/* pr_debug("[SSP] %s cp_thm = %dmV\n", __func__, adc); */
 exit:
 	return sprintf(buf, "%d\n", adc);
 }
@@ -468,7 +468,7 @@ static ssize_t pam_adc2_show(struct device *dev,
 		goto exit;
 	}
 	adc = get_cp_thm2_value(data);
-	/* pr_info("[SSP] %s cp_thm = %dmV\n", __func__, adc); */
+	/* pr_debug("[SSP] %s cp_thm = %dmV\n", __func__, adc); */
 exit:
 	return sprintf(buf, "%d\n", adc);
 }
@@ -481,13 +481,13 @@ static ssize_t pam_temp_show(struct device *dev,
 
 	adc = get_cp_thm_value(data);
 	if (adc < 0) {
-		pr_err("[SSP] %s - reading adc failed.(%d)\n", __func__, adc);
+		pr_debug("[SSP] %s - reading adc failed.(%d)\n", __func__, adc);
 		temp = adc;
 	} else {
 		temp = convert_adc_to_temp(data, adc);
 	}
 
-	pr_info("[SSP] %s cp_temperature(Celsius * 10) = %d\n",
+	pr_debug("[SSP] %s cp_temperature(Celsius * 10) = %d\n",
 		__func__, temp);
 	return sprintf(buf, "%d\n", temp);
 }
@@ -500,13 +500,13 @@ static ssize_t pam_temp2_show(struct device *dev,
 
 	adc = get_cp_thm_value(data);
 	if (adc < 0) {
-		pr_err("[SSP] %s - reading adc failed.(%d)\n", __func__, adc);
+		pr_debug("[SSP] %s - reading adc failed.(%d)\n", __func__, adc);
 		temp = adc;
 	} else {
 		temp = convert_adc_to_temp2(data, adc);
 	}
 
-	pr_info("[SSP] %s cp_temperature(Celsius * 10) = %d\n",
+	pr_debug("[SSP] %s cp_temperature(Celsius * 10) = %d\n",
 		__func__, temp);
 	return sprintf(buf, "%d\n", temp);
 }
@@ -527,7 +527,7 @@ s16 get_hub_adc(struct ssp_data *data, u32 chan) {
 	iRet = ssp_spi_sync(data, msg, 1000);
 
 	if (iRet != SUCCESS) {
-		pr_err("[SSP]: %s - i2c fail %d\n", __func__, iRet);
+		pr_debug("[SSP]: %s - i2c fail %d\n", __func__, iRet);
 		iRet = ERROR;
 	}
 
@@ -553,7 +553,7 @@ static ssize_t hub_batt_adc_show(struct device *dev,
 	else
 		adc = prev_adc;
 
-	pr_info("[SSP]: %s: adc %d\n", __func__, adc);
+	pr_debug("[SSP]: %s: adc %d\n", __func__, adc);
 
 exit:
 	return sprintf(buf, "%d\n", adc);
@@ -578,7 +578,7 @@ static ssize_t hub_chg_adc_show(struct device *dev,
 	else
 		adc = prev_adc;
 
-	pr_info("[SSP]: %s: adc %d\n", __func__, adc);
+	pr_debug("[SSP]: %s: adc %d\n", __func__, adc);
 
 exit:
 	return sprintf(buf, "%d\n", adc);
@@ -605,7 +605,7 @@ static ssize_t hub_batt_temp_show(struct device *dev,
 			break;
 	}
 
-	pr_info("[SSP]: %s: adc %d\n", __func__, temp_table_batt[mid].temperature);
+	pr_debug("[SSP]: %s: adc %d\n", __func__, temp_table_batt[mid].temperature);
 
 	return sprintf(buf, "%d\n", temp_table_batt[mid].temperature);
 
@@ -632,7 +632,7 @@ static ssize_t hub_chg_temp_show(struct device *dev,
 			break;
 	}
 
-	pr_info("[SSP]: %s: adc %d\n", __func__, temp_table_chg[mid].temperature);
+	pr_debug("[SSP]: %s: adc %d\n", __func__, temp_table_chg[mid].temperature);
 	return sprintf(buf, "%d\n", temp_table_chg[mid].temperature);
 }
 
@@ -653,12 +653,12 @@ static ssize_t temphumidity_crc_check(struct device *dev,
 	iRet = ssp_spi_sync(data, msg, 1000);
 
 	if (iRet != SUCCESS) {
-		pr_err("[SSP]: %s - Temphumidity check crc Timeout!! %d\n", __func__,
+		pr_debug("[SSP]: %s - Temphumidity check crc Timeout!! %d\n", __func__,
 				iRet);
 		goto exit;
 	}
 
-	pr_info("[SSP] : %s -Check_CRC : %d\n", __func__,
+	pr_debug("[SSP] : %s -Check_CRC : %d\n", __func__,
 			chTempBuf);
 
 	exit:
@@ -677,13 +677,13 @@ ssize_t temphumidity_send_accuracy(struct device *dev,
 	u8 accuracy;
 
 	if (kstrtou8(buf, 10, &accuracy) < 0) {
-		pr_err("[SSP] %s - read buf is fail(%s)\n", __func__, buf);
+		pr_debug("[SSP] %s - read buf is fail(%s)\n", __func__, buf);
 		return size;
 	}
 
 	if (accuracy == DONE_CAL)
 		ssp_send_cmd(data, MSG2SSP_AP_TEMPHUMIDITY_CAL_DONE, 0);
-	pr_info("[SSP] %s - accuracy = %d\n", __func__, accuracy);
+	pr_debug("[SSP] %s - accuracy = %d\n", __func__, accuracy);
 
 	return size;
 }
@@ -737,7 +737,7 @@ void initialize_temphumidity_factorytest(struct ssp_data *data)
 
 	ret = misc_register(&data->shtc1_device);
 	if (ret < 0) {
-		pr_err("register temphumidity misc device err(%d)", ret);
+		pr_debug("register temphumidity misc device err(%d)", ret);
 	}
 
 	ssp_vadc = qpnp_get_vadc(&data->spi->dev, "temphumidity_sensor");
@@ -745,7 +745,7 @@ void initialize_temphumidity_factorytest(struct ssp_data *data)
 	if (IS_ERR(ssp_vadc)) {
 		ret = PTR_ERR(ssp_vadc);
 		if (ret != -EPROBE_DEFER)
-			pr_err("%s: Fail to get vadc %d\n", __func__, ret);
+			pr_debug("%s: Fail to get vadc %d\n", __func__, ret);
 	}
 
 }

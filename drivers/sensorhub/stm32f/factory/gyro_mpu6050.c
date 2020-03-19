@@ -99,7 +99,7 @@ static int save_gyro_caldata(struct ssp_data *data, s16 *iCalData)
 	cal_filp = filp_open(CALIBRATION_FILE_PATH,
 			O_CREAT | O_TRUNC | O_WRONLY, 0666);
 	if (IS_ERR(cal_filp)) {
-		pr_err("[SSP]: %s - Can't open calibration file\n", __func__);
+		pr_debug("[SSP]: %s - Can't open calibration file\n", __func__);
 		set_fs(old_fs);
 		iRet = PTR_ERR(cal_filp);
 		return -EIO;
@@ -108,7 +108,7 @@ static int save_gyro_caldata(struct ssp_data *data, s16 *iCalData)
 	iRet = cal_filp->f_op->write(cal_filp, (char *)&data->gyrocal,
 		3 * sizeof(int), &cal_filp->f_pos);
 	if (iRet != 3 * sizeof(int)) {
-		pr_err("[SSP]: %s - Can't write gyro cal to file\n", __func__);
+		pr_debug("[SSP]: %s - Can't write gyro cal to file\n", __func__);
 		iRet = -EIO;
 	}
 
@@ -155,7 +155,7 @@ static ssize_t gyro_get_temp(struct device *dev,
 		msleep(20);
 
 	if ((iDelayCnt >= 150) || (iRet != SUCCESS)) {
-		pr_err("[SSP]: %s - Gyro Temp Timeout!!\n", __func__);
+		pr_debug("[SSP]: %s - Gyro Temp Timeout!!\n", __func__);
 		goto exit;
 	}
 	reg[0] = data->uFactorydata[1];
@@ -262,11 +262,11 @@ static ssize_t gyro_selftest_show(struct device *dev,
 		msleep(20);
 
 	if ((iDelayCnt >= 150) || (iRet != SUCCESS)) {
-		pr_err("[SSP]: %s - Gyro Selftest Timeout!!\n", __func__);
+		pr_debug("[SSP]: %s - Gyro Selftest Timeout!!\n", __func__);
 		goto exit;
 	}
 	for (i = 0; i < 29; i++)
-		pr_err("[SSP]: %s - uFactorydata[%d] = 0x%x\n", __func__, i,
+		pr_debug("[SSP]: %s - uFactorydata[%d] = 0x%x\n", __func__, i,
 				data->uFactorydata[i]);
 
 	initialized = data->uFactorydata[0];
@@ -298,15 +298,15 @@ static ssize_t gyro_selftest_show(struct device *dev,
 				(data->uFactorydata[27] << 16) +
 				(data->uFactorydata[26] << 8) +
 				data->uFactorydata[25]);
-	pr_err("[SSP] init: %d, total cnt: %d", initialized, total_count);
-	pr_err("[SSP] avg %+8ld %+8ld %+8ld (LSB)\n", avg[0], avg[1], avg[2]);
-	pr_err("[SSP] rms %+8ld %+8ld %+8ld (LSB)\n", rms[0], rms[1], rms[2]);
+	pr_debug("[SSP] init: %d, total cnt: %d", initialized, total_count);
+	pr_debug("[SSP] avg %+8ld %+8ld %+8ld (LSB)\n", avg[0], avg[1], avg[2]);
+	pr_debug("[SSP] rms %+8ld %+8ld %+8ld (LSB)\n", rms[0], rms[1], rms[2]);
 /*
 	avg[0] /= total_count;
 	avg[1] /= total_count;
 	avg[2] /= total_count;
 */
-	pr_info("[SSP] bias : %+8ld %+8ld %+8ld (LSB)\n",
+	pr_debug("[SSP] bias : %+8ld %+8ld %+8ld (LSB)\n",
 		avg[0], avg[1], avg[2]);
 
 	gyro_bias[0] = (avg[0] * DEF_SCALE_FOR_FLOAT) / DEF_GYRO_SENS;
@@ -317,7 +317,7 @@ static ssize_t gyro_selftest_show(struct device *dev,
 	iCalData[2] = (s16)avg[2];
 
 	if (VERBOSE_OUT) {
-		pr_info("[SSP] abs bias : %+8d.%03d %+8d.%03d %+8d.%03d (dps)\n",
+		pr_debug("[SSP] abs bias : %+8d.%03d %+8d.%03d %+8d.%03d (dps)\n",
 			(int)abs(gyro_bias[0]) / DEF_SCALE_FOR_FLOAT,
 			(int)abs(gyro_bias[0]) % DEF_SCALE_FOR_FLOAT,
 			(int)abs(gyro_bias[1]) / DEF_SCALE_FOR_FLOAT,
@@ -327,7 +327,7 @@ static ssize_t gyro_selftest_show(struct device *dev,
 	}
 	for (j = 0; j < 3; j++) {
 		if (abs(avg[j]) > DEF_BIAS_LSB_THRESH_SELF) {
-			pr_info("[SSP] %s-Gyro bias (%ld) exceeded threshold "
+			pr_debug("[SSP] %s-Gyro bias (%ld) exceeded threshold "
 				"(threshold = %d LSB)\n", a_name[j],
 				avg[j], DEF_BIAS_LSB_THRESH_SELF);
 			ret_val |= 1 << (3 + j);
@@ -341,14 +341,14 @@ static ssize_t gyro_selftest_show(struct device *dev,
 		ret_val |= 1 << 6;
 
 	if (VERBOSE_OUT) {
-		pr_info("[SSP] RMS ^ 2 : %+8ld %+8ld %+8ld\n",
+		pr_debug("[SSP] RMS ^ 2 : %+8ld %+8ld %+8ld\n",
 			(long)rms[0] / total_count,
 			(long)rms[1] / total_count, (long)rms[2] / total_count);
 	}
 
 	for (j = 0; j < 3; j++) {
 		if (rms[j] / total_count > DEF_RMS_THRESH) {
-			pr_info("[SSP] %s-Gyro rms (%ld) exceeded threshold "
+			pr_debug("[SSP] %s-Gyro rms (%ld) exceeded threshold "
 				"(threshold = %d LSB)\n", a_name[j],
 				rms[j] / total_count, DEF_RMS_THRESH);
 			ret_val |= 1 << (7 + j);
@@ -374,7 +374,7 @@ static ssize_t gyro_selftest_show(struct device *dev,
 		    dps_rms[i] * DEF_SCALE_FOR_FLOAT / DEF_SQRT_SCALE_FOR_RMS;
 	}
 
-	pr_info("[SSP] RMS : %+8d.%03d	 %+8d.%03d  %+8d.%03d (dps)\n",
+	pr_debug("[SSP] RMS : %+8d.%03d	 %+8d.%03d  %+8d.%03d (dps)\n",
 		(int)abs(gyro_rms[0]) / DEF_SCALE_FOR_FLOAT,
 		(int)abs(gyro_rms[0]) % DEF_SCALE_FOR_FLOAT,
 		(int)abs(gyro_rms[1]) / DEF_SCALE_FOR_FLOAT,
@@ -383,10 +383,10 @@ static ssize_t gyro_selftest_show(struct device *dev,
 		(int)abs(gyro_rms[2]) % DEF_SCALE_FOR_FLOAT);
 
 	if (!ret_val) {
-		pr_err("[SSP] ret_val == 0\n");
+		pr_debug("[SSP] ret_val == 0\n");
 		save_gyro_caldata(data, iCalData);
 	} else {
-		pr_err("[SSP] ret_val != 0\n");
+		pr_debug("[SSP] ret_val != 0\n");
 		data->gyrocal.x = 0;
 		data->gyrocal.y = 0;
 		data->gyrocal.z = 0;
@@ -471,19 +471,19 @@ static ssize_t gyro_selftest_dps_store(struct device *dev,
 		msleep(20);
 
 	if ((iDelayCnt >= 150) || (iRet != SUCCESS)) {
-		pr_err("[SSP]: %s - Gyro Selftest DPS Timeout!!\n", __func__);
+		pr_debug("[SSP]: %s - Gyro Selftest DPS Timeout!!\n", __func__);
 		goto exit;
 	}
 
 	mdelay(5);
 
 	if (data->uFactorydata[0] != SUCCESS) {
-		pr_err("[SSP]: %s - Gyro Selftest DPS Error!!\n", __func__);
+		pr_debug("[SSP]: %s - Gyro Selftest DPS Error!!\n", __func__);
 		goto exit;
 	}
 
 	data->uGyroDps = (unsigned int)iNewDps;
-	pr_err("[SSP]: %s - %u dps stored\n", __func__, data->uGyroDps);
+	pr_debug("[SSP]: %s - %u dps stored\n", __func__, data->uGyroDps);
 exit:
 	return count;
 }

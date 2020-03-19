@@ -77,14 +77,14 @@
 #define ST_NEG_AFE_OFFSET(x) (((-x > 63) ? (-x - 63) | 0x3F00 : (-x) << 8) | 0x0080)
 
 #ifdef AD7146_DEBUG
-#define AD7146_DRIVER_DBG(format, arg...) pr_info("[Grip]:"format,\
+#define AD7146_DRIVER_DBG(format, arg...) pr_debug("[Grip]:"format,\
 						 ## arg)
 #else
 #define AD7146_DRIVER_DBG(format, arg...) if (0)
 #endif
 
 #ifdef AD7146_DEBUG_L2
-#define AD7146_DRIVER_DBG_L2(format, arg...) pr_info("[Grip]:"format,\
+#define AD7146_DRIVER_DBG_L2(format, arg...) pr_debug("[Grip]:"format,\
 						    ## arg)
 #else
 #define AD7146_DRIVER_DBG_L2(format, arg...) if (0)
@@ -459,30 +459,30 @@ static ssize_t show_dumpregs(struct device *dev,
 	unsigned int u32_lpcnt = 0;
 
 	mutex_lock(&interrupt_thread_mutex);
-	pr_info("[Grip]: Bank 1 register\n");
+	pr_debug("[Grip]: Bank 1 register\n");
 	for (u32_lpcnt = 0; u32_lpcnt < 0x16; u32_lpcnt++) {
 		ad7146->read(ad7146->dev, (unsigned short)u32_lpcnt, &u16temp);
-		pr_info("[Grip]: Reg 0X%x val 0x%x\n",
+		pr_debug("[Grip]: Reg 0X%x val 0x%x\n",
 		       u32_lpcnt, u16temp);
 	}
 
 	ad7146->read(ad7146->dev, (unsigned short)0x042, &u16temp);
-	pr_info("[Grip]: Reg 0X0042 val 0x%x\n", u16temp);
+	pr_debug("[Grip]: Reg 0X0042 val 0x%x\n", u16temp);
 
 	ad7146->read(ad7146->dev, (unsigned short)0x0045, &u16temp);
-	pr_info("[Grip]: Reg 0X0045 val 0x%x\n", u16temp);
+	pr_debug("[Grip]: Reg 0X0045 val 0x%x\n", u16temp);
 
-	pr_info("[Grip]: Bank 2 register - Config\n");
+	pr_debug("[Grip]: Bank 2 register - Config\n");
 	for (u32_lpcnt = 0x080; u32_lpcnt < 0x090; u32_lpcnt++) {
 		ad7146->read(ad7146->dev, (unsigned short)u32_lpcnt, &u16temp);
-		pr_info("[Grip]: Reg 0X%x val 0x%x\n",
+		pr_debug("[Grip]: Reg 0X%x val 0x%x\n",
 		       u32_lpcnt, u16temp);
 	}
 
-	pr_info("[Grip]: Bank 3 register - Results\n");
+	pr_debug("[Grip]: Bank 3 register - Results\n");
 	for (u32_lpcnt = 0x0E0; u32_lpcnt < 0x128; u32_lpcnt++) {
 		ad7146->read(ad7146->dev, (unsigned short)u32_lpcnt, &u16temp);
-		pr_info("[Grip]: Reg 0X%x val 0x%x\n",
+		pr_debug("[Grip]: Reg 0X%x val 0x%x\n",
 		       u32_lpcnt, u16temp);
 	}
 
@@ -503,10 +503,10 @@ static int ad7146_open_calibration(struct ad7146_chip *ad7146)
 
 	offset_filp = filp_open(OFFSET_FILE_PATH, O_CREAT | O_RDONLY | O_SYNC, 0666);
 	if (IS_ERR(offset_filp)) {
-		pr_err("%s: no offset file\n", __func__);
+		pr_debug("%s: no offset file\n", __func__);
 		err = PTR_ERR(offset_filp);
 		if (err != -ENOENT)
-			pr_err("%s: Can't open cancelation file\n", __func__);
+			pr_debug("%s: Can't open cancelation file\n", __func__);
 		set_fs(old_fs);
 		return err;
 	}
@@ -514,7 +514,7 @@ static int ad7146_open_calibration(struct ad7146_chip *ad7146)
 	err = offset_filp->f_op->read(offset_filp,
 		(char *)&st_file, sizeof(unsigned short) * 2, &offset_filp->f_pos);
 	if (err != sizeof(unsigned short) * 2) {
-		pr_err("%s: Can't write the offset data to file\n", __func__);
+		pr_debug("%s: Can't write the offset data to file\n", __func__);
 		err = -EIO;
 	}
 
@@ -528,7 +528,7 @@ static int ad7146_open_calibration(struct ad7146_chip *ad7146)
 		ad7146_i2c_platform_data.cal_fixed_th_full = 0;
 	}
 
-	pr_info("[Grip]: %s, %d, %4x,%d\n", __func__, ad7146->cal_flags, st_file[0], st_file[1]);
+	pr_debug("[Grip]: %s, %d, %4x,%d\n", __func__, ad7146->cal_flags, st_file[0], st_file[1]);
 
 	filp_close(offset_filp, current->files);
 	set_fs(old_fs);
@@ -561,9 +561,9 @@ static ssize_t store_enable(struct device *dev,
 	err = kstrtoint(buf, 10, &val);
 
 	if (err < 0) {
-		pr_err("[Grip]: %s, kstrtoint failed\n", __func__);
+		pr_debug("[Grip]: %s, kstrtoint failed\n", __func__);
 	} else {
-		pr_info("[Grip]: %s: enable %d val %d\n", __func__, ad7146->eventcheck, val);
+		pr_debug("[Grip]: %s: enable %d val %d\n", __func__, ad7146->eventcheck, val);
 		if ((val == 1) || (val == 0)) {
 			if (ad7146->eventcheck != ((unsigned short) val)) {
 				ad7146->eventcheck = (unsigned short) val;
@@ -635,9 +635,9 @@ static inline void callback_tmrfn(unsigned long data)
 			input_report_rel(ad7146->input, REL_MISC,
 				    (unsigned int)state_value + 1);
 			input_sync(ad7146->input);
-			pr_info("[Grip]: %s: state_value = %d\n", __func__, state_value);
+			pr_debug("[Grip]: %s: state_value = %d\n", __func__, state_value);
 		} else if ((ad7146->eventcheck == 1) && (ad7146->onoff_flags == 0)) {
-			pr_info("[Grip]: %s, event locked by flags, %d\n", __func__, ad7146->onoff_flags);
+			pr_debug("[Grip]: %s, event locked by flags, %d\n", __func__, ad7146->onoff_flags);
 		}
 	}
 }
@@ -811,10 +811,10 @@ static void ad7146_interrupt_thread(struct work_struct *work)
 	ad7146->read(ad7146->dev, CDC_RESULT_S0_REG, &data);
 	if (data < OVER_FLOW_SCALE_VALUE)
 		data = FULL_SCALE_VALUE;
-	pr_info("[Grip]: %s, data(%d)\n", __func__, data);
+	pr_debug("[Grip]: %s, data(%d)\n", __func__, data);
 
 	if (ad7146->pw_on_grip_status == DRIVER_STATE_FULL_GRIP) { // init touch mode
-		pr_info("[Grip]: %s, FULL_GRIP\n", __func__);
+		pr_debug("[Grip]: %s, FULL_GRIP\n", __func__);
 		if ((ad7146->low_status & 1) == 1) {
 			if ((OVER_FLOW_SCALE_VALUE < data) &&
 				(data <= (threshold))) {
@@ -822,14 +822,14 @@ static void ad7146_interrupt_thread(struct work_struct *work)
 			} else {
 				ad7146->write(ad7146->dev, DRIVER_STG0_SF_AMBIENT , FULL_SCALE_VALUE);
 				ad7146->write(ad7146->dev, STG_0_LOW_THRESHOLD, threshold);
-				pr_info("[Grip]: %s, reset Full Grip\n", __func__);
+				pr_debug("[Grip]: %s, reset Full Grip\n", __func__);
 			}
 		} else {
 			if (data < threshold)
 				initnormalgrip(ad7146);
 		}
 	} else { // normal mode
-		pr_info("[Grip]: %s, NORMAL\n", __func__);
+		pr_debug("[Grip]: %s, NORMAL\n", __func__);
 		if (ad7146->low_status != 0) {
 			if (OVER_FLOW_SCALE_VALUE < data && data < FULL_SCALE_VALUE) {
 				ad7146_force_cal(ad7146, SLEEP_TIME_TO_CALI_INT);
@@ -870,18 +870,18 @@ static int ad7146_offset_check(struct ad7146_chip *ad7146)
 	if (data < CAL_LOW_MIN || CAL_HIGH_MAX < data) {
 		cal_offset = LD_POS_AFE_OFFSET(offset) + LD_NEG_AFE_OFFSET(offset);
 		cal_offset += 8;
-		pr_info("[Grip]: %s,(%d)\n", __func__, cal_offset);
+		pr_debug("[Grip]: %s,(%d)\n", __func__, cal_offset);
 		if (0 <= cal_offset && cal_offset <= MAX_OFFSET) {
 			offset = ST_POS_AFE_OFFSET(cal_offset);
 		} else if (-MAX_OFFSET <= cal_offset && cal_offset < 0) {
 			offset = ST_NEG_AFE_OFFSET(cal_offset);
 		} else {
 			err = -1;
-			pr_err("[Grip]: %s, Cal offset ERROR(%d)\n", __func__, cal_offset);
+			pr_debug("[Grip]: %s, Cal offset ERROR(%d)\n", __func__, cal_offset);
 		}
 		offset_write(ad7146, offset);
 	} else {
-		pr_info("[Grip]: %s, no change offset(%d)\n", __func__, data);
+		pr_debug("[Grip]: %s, no change offset(%d)\n", __func__, data);
 		return 0;
 	}
 
@@ -894,18 +894,18 @@ static int ad7146_offset_check(struct ad7146_chip *ad7146)
 			cal_offset -= 8;
 		else
 			cal_offset -= 16;
-		pr_info("[Grip]: %s,(%d)\n", __func__, cal_offset);
+		pr_debug("[Grip]: %s,(%d)\n", __func__, cal_offset);
 		if (0 <= cal_offset && cal_offset <= MAX_OFFSET) {
 			offset = ST_POS_AFE_OFFSET(cal_offset);
 		} else if (-MAX_OFFSET <= cal_offset && cal_offset < 0) {
 			offset = ST_NEG_AFE_OFFSET(cal_offset);
 		} else {
 			err = -1;
-			pr_err("[Grip]: %s, Cal offset ERROR(%d)\n", __func__, cal_offset);
+			pr_debug("[Grip]: %s, Cal offset ERROR(%d)\n", __func__, cal_offset);
 		}
 		offset_write(ad7146, offset);
 	} else {
-		pr_info("[Grip]: %s, no change offset(%d)\n", __func__, data);
+		pr_debug("[Grip]: %s, no change offset(%d)\n", __func__, data);
 		return 0;
 	}
 
@@ -941,7 +941,7 @@ static int ad7146_calibration(struct ad7146_chip *ad7146, bool cal_flag)
 			ad7146->read(ad7146->dev, DRIVER_STG0_AFEOFFSET, &offset);
 
 			cal_offset = LD_POS_AFE_OFFSET(offset) + LD_NEG_AFE_OFFSET(offset);
-			pr_info("[Grip]: %s, %d, %x(%d), %d\n", __func__,
+			pr_debug("[Grip]: %s, %d, %x(%d), %d\n", __func__,
 				data, offset, cal_offset, count);
 
 			if ((CAL_LOW_MAX < data && data <= CAL_HIGH_MIN) &&
@@ -952,7 +952,7 @@ static int ad7146_calibration(struct ad7146_chip *ad7146, bool cal_flag)
 				ad7146_i2c_platform_data.cal_fixed_th_full = data + FIXED_TH;
 				ad7146_i2c_platform_data.cal_offset = offset;
 				ad7146->cal_flags = CAL_RET_SUCCESS;
-				pr_info("[Grip]: %s, cal_fixed_th_full(%u), cal_offset(%u), cal_flags(%d)\n",
+				pr_debug("[Grip]: %s, cal_fixed_th_full(%u), cal_offset(%u), cal_flags(%d)\n",
 					__func__, ad7146_i2c_platform_data.cal_fixed_th_full,
 					ad7146_i2c_platform_data.cal_offset, ad7146->cal_flags);
 
@@ -969,13 +969,13 @@ static int ad7146_calibration(struct ad7146_chip *ad7146, bool cal_flag)
 					offset = ST_NEG_AFE_OFFSET(cal_offset);
 				} else {
 					err = -1;
-					pr_err("%s, offset ERROR(%d)\n", __func__, data);
+					pr_debug("%s, offset ERROR(%d)\n", __func__, data);
 					break;
 				}
 				offset_write(ad7146, offset);
 			} else {
 				err = -1;
-				pr_err("%s, raw data ERROR(%d)\n", __func__, data);
+				pr_debug("%s, raw data ERROR(%d)\n", __func__, data);
 				break;
 			}
 			if (count > 0)
@@ -994,7 +994,7 @@ static int ad7146_calibration(struct ad7146_chip *ad7146, bool cal_flag)
 	}
 
 	if (ad7146->cal_flags == CAL_RET_FAIL) {
-		pr_err("[Grip]: %s, cal fail\n", __func__);
+		pr_debug("[Grip]: %s, cal fail\n", __func__);
 		if (ad7146_i2c_platform_data.cal_fixed_th_full != 0) {
 			offset = ad7146_i2c_platform_data.cal_offset;
 			ad7146->cal_flags = CAL_RET_EXIST;
@@ -1003,7 +1003,7 @@ static int ad7146_calibration(struct ad7146_chip *ad7146, bool cal_flag)
 			ad7146->cal_flags = CAL_RET_NONE;
 		}
 	} else {
-		pr_info("[Grip]: %s, cal success\n", __func__);
+		pr_debug("[Grip]: %s, cal success\n", __func__);
 	}
 
 	offset_write(ad7146, offset);
@@ -1014,7 +1014,7 @@ static int ad7146_calibration(struct ad7146_chip *ad7146, bool cal_flag)
 	offset_filp = filp_open(OFFSET_FILE_PATH,
 			O_CREAT | O_TRUNC | O_WRONLY | O_SYNC, 0666);
 	if (IS_ERR(offset_filp)) {
-		pr_err("[Grip]: %s: Can't open file\n", __func__);
+		pr_debug("[Grip]: %s: Can't open file\n", __func__);
 		set_fs(old_fs);
 		err = PTR_ERR(offset_filp);
 		goto save_fail;
@@ -1023,7 +1023,7 @@ static int ad7146_calibration(struct ad7146_chip *ad7146, bool cal_flag)
 	err = offset_filp->f_op->write(offset_filp,
 		(char *)&st_file, sizeof(unsigned short) * 2, &offset_filp->f_pos);
 	if (err != sizeof(unsigned short) * 2) {
-		pr_err("[Grip]: %s: Can't write the offset data to file\n", __func__);
+		pr_debug("[Grip]: %s: Can't write the offset data to file\n", __func__);
 		err = -EIO;
 		filp_close(offset_filp, current->files);
 		set_fs(old_fs);
@@ -1086,7 +1086,7 @@ static ssize_t ad7146_raw_data_show(struct device *dev,
 		if (u16temp < OVER_FLOW_SCALE_VALUE)
 			u16temp = 0xFFFF;
 		ad7146->during_cal_data = u16temp;
-		pr_info("[Grip]: %s, raw_data : %d\n", __func__, u16temp);
+		pr_debug("[Grip]: %s, raw_data : %d\n", __func__, u16temp);
 	}
 
 	return snprintf(buf, PAGE_SIZE, "%d\n", ad7146->during_cal_data);
@@ -1109,9 +1109,9 @@ static ssize_t ad7146_onoff_store(struct device *dev,
 	err = kstrtoint(buf, 10, &val);
 
 	if (err < 0) {
-		pr_err("[Grip]: %s, kstrtoint failed\n", __func__);
+		pr_debug("[Grip]: %s, kstrtoint failed\n", __func__);
 	} else {
-		pr_info("[Grip]: %s: enable %d val %d\n", __func__, ad7146->onoff_flags, val);
+		pr_debug("[Grip]: %s: enable %d val %d\n", __func__, ad7146->onoff_flags, val);
 		if ((val == 1) || (val == 0)) {
 			if (ad7146->onoff_flags != ((unsigned char) val)) {
 				ad7146->onoff_flags = (unsigned char) val;
@@ -1123,7 +1123,7 @@ static ssize_t ad7146_onoff_store(struct device *dev,
 						input_report_rel(ad7146->input, REL_MISC,
 							ad7146->state_value + 1);
 						input_sync(ad7146->input);
-						pr_info("[Grip]: %s : report state %d\n", __func__, ad7146->state_value);
+						pr_debug("[Grip]: %s : report state %d\n", __func__, ad7146->state_value);
 				}
 			}
 		}
@@ -1176,7 +1176,7 @@ static ssize_t ad7146_calibration_store(struct device *dev,
 	err = kstrtoint(buf, 10, &val);
 
 	if (err < 0) {
-		pr_err("[Grip]: %s, kstrtoint failed\n", __func__);
+		pr_debug("[Grip]: %s, kstrtoint failed\n", __func__);
 	} else {
 		ad7146->during_cal_flags = DO_CALIBRATE;
 
@@ -1188,7 +1188,7 @@ static ssize_t ad7146_calibration_store(struct device *dev,
 		else if (val == 1)
 			ad7146_calibration(ad7146, true);
 		else
-			pr_err("[Grip]: %s, kstrtoint %d\n", __func__, val);
+			pr_debug("[Grip]: %s, kstrtoint %d\n", __func__, val);
 
 		ad7146->during_cal_flags = DONE_CALIBRATE;
 
@@ -1228,10 +1228,10 @@ static ssize_t ad7146_offset_store(struct device *dev,
 	err = kstrtos16(buf, 10, &val);
 
 	if (err < 0) {
-		pr_err("[Grip]: %s, kstrtoint failed\n", __func__);
+		pr_debug("[Grip]: %s, kstrtoint failed\n", __func__);
 	} else {
 		if (-MAX_OFFSET <= val && val <= MAX_OFFSET) {
-			pr_info("[Grip]: %s, %d\n", __func__, val);
+			pr_debug("[Grip]: %s, %d\n", __func__, val);
 			if (val > 0)
 				data = ST_POS_AFE_OFFSET(val);
 			else
@@ -1244,7 +1244,7 @@ static ssize_t ad7146_offset_store(struct device *dev,
 			ad7146->write(ad7146->dev, DRIVER_STG0_AFEOFFSET, data);
 			ad7146_force_cal(ad7146, SLEEP_TIME_TO_CALI_INT);
 		} else {
-			pr_err("[Grip]: %s, Error for data val(%d)\n", __func__, val);
+			pr_debug("[Grip]: %s, Error for data val(%d)\n", __func__, val);
 		}
 	}
 
@@ -1297,7 +1297,7 @@ static int ad7146_parse_dt(struct ad7146_chip *ad7146, struct device *dev)
 	ad7146->grip_int = of_get_named_gpio_flags(dNode,
 		"ad7146-i2c,grip_int-gpio", 0, &flags);
 	if (ad7146->grip_int < 0) {
-		pr_err("[Grip]: %s - get grip_int error\n", __func__);
+		pr_debug("[Grip]: %s - get grip_int error\n", __func__);
 		return -ENODEV;
 	}
 
@@ -1321,15 +1321,15 @@ static int __devinit ad7146_probe(struct i2c_client *client,
 	struct device *dev = &client->dev;
 	struct ad7146_chip *ad7146 = NULL;
 
-	pr_info("[Grip]: %s: called", __func__);
+	pr_debug("[Grip]: %s: called", __func__);
 
 	if (client == NULL) {
-		pr_err("[Grip]: %s: Client doesn't exist\n", __func__);
+		pr_debug("[Grip]: %s: Client doesn't exist\n", __func__);
 		return ret;
 	}
 	ad7146 = kzalloc(sizeof(struct ad7146_chip), GFP_KERNEL);
 	if (!ad7146) {
-		pr_err("[Grip]: %s: Memory allocation fail\n", __func__);
+		pr_debug("[Grip]: %s: Memory allocation fail\n", __func__);
 		ret = -ENOMEM;
 		return ret;
 	}
@@ -1340,7 +1340,7 @@ static int __devinit ad7146_probe(struct i2c_client *client,
 
 	ret = ad7146_parse_dt(ad7146, &client->dev);
 	if (ret < 0) {
-		pr_err("[Grip]: %s: - of_node error\n", __func__);
+		pr_debug("[Grip]: %s: - of_node error\n", __func__);
 		ret = -ENODEV;
 		goto err_of_node;
 	}
@@ -1354,7 +1354,7 @@ static int __devinit ad7146_probe(struct i2c_client *client,
 	 */
 	input = input_allocate_device();
 	if (!input) {
-		pr_err("[Grip]: %s: could not allocate input device\n", __func__);
+		pr_debug("[Grip]: %s: could not allocate input device\n", __func__);
 		ret = -ENOMEM;
 		goto err_kzalloc_mem;
 	}
@@ -1367,7 +1367,7 @@ static int __devinit ad7146_probe(struct i2c_client *client,
 
 	ret = input_register_device(ad7146->input);
 	if (ret) {
-		pr_err("[Grip]: %s: could not input_register_device(input);\n", __func__);
+		pr_debug("[Grip]: %s: could not input_register_device(input);\n", __func__);
 		ret = -ENOMEM;
 		goto err_input_register_device;
 	}
@@ -1375,7 +1375,7 @@ static int __devinit ad7146_probe(struct i2c_client *client,
 	ret = sensors_create_symlink(&ad7146->input->dev.kobj,
 					ad7146->input->name);
 	if (ret < 0) {
-		pr_err("[Grip]: %s: create_symlink error\n", __func__);
+		pr_debug("[Grip]: %s: create_symlink error\n", __func__);
 		goto err_sensors_create_symlink;
 	}
 
@@ -1384,49 +1384,49 @@ static int __devinit ad7146_probe(struct i2c_client *client,
 	wake_lock_init(&ad7146->grip_wake_lock, WAKE_LOCK_SUSPEND, "grip_wake_lock");
 
 	ret = gpio_request(ad7146->grip_int, "gpio_grip_int");
-	pr_info("[Grip]: %s : gpio request %d\n", __func__, ad7146->grip_int);
+	pr_debug("[Grip]: %s : gpio request %d\n", __func__, ad7146->grip_int);
 	if (ret < 0) {
-		pr_err("[Grip]: %s: gpio %d request failed (%d)\n",
+		pr_debug("[Grip]: %s: gpio %d request failed (%d)\n",
 		       __func__, ad7146->grip_int, ret);
 		goto err_gpio_request;
 	}
 
 	ret = gpio_direction_input(ad7146->grip_int);
 	if (ret < 0) {
-		pr_err("[Grip]: %s: failed to set gpio %d as input (%d)\n",
+		pr_debug("[Grip]: %s: failed to set gpio %d as input (%d)\n",
 		       __func__, ad7146->grip_int, ret);
 		goto err_free_irq;
 	}
 
 	ad7146->irq = gpio_to_irq(ad7146->grip_int);
-	pr_info("[Grip]: %s: irq %d\n", __func__, ad7146->irq);
+	pr_debug("[Grip]: %s: irq %d\n", __func__, ad7146->irq);
 
 	ret = request_threaded_irq(ad7146->irq, NULL, ad7146_isr,
 			IRQF_TRIGGER_FALLING | IRQF_ONESHOT,
 			dev_name(dev), ad7146);
 
 	if (ret) {
-		pr_err("[Grip]: %s: irq %d Driver init Failed", __func__, ad7146->irq);
+		pr_debug("[Grip]: %s: irq %d Driver init Failed", __func__, ad7146->irq);
 		goto err_free_irq;
 	}
 	disable_irq(ad7146->irq);
 
 	ret = sysfs_create_group(&input->dev.kobj, &ad7146_attr_group);
 	if (ret) {
-		pr_err("[Grip]: %s: cound not register sensor device\n", __func__);
+		pr_debug("[Grip]: %s: cound not register sensor device\n", __func__);
 		goto err_sysfs_create_input;
 	}
 
 	ret = sensors_register(ad7146->grip_dev, ad7146, ad7146_attrs, "grip_sensor");
 	if (ret) {
-		pr_err("[Grip]: %s: cound not register sensor device\n", __func__);
+		pr_debug("[Grip]: %s: cound not register sensor device\n", __func__);
 		goto err_sysfs_create_factory_grip;
 	}
 
 #ifdef CONFIG_SENSOR_USE_SYMLINK
 	ret =  sensors_initialize_symlink(input);
 	if (ret) {
-		pr_err("[Grip]: %s: cound not make grip sensor symlink(%d).\n",
+		pr_debug("[Grip]: %s: cound not make grip sensor symlink(%d).\n",
 			__func__, ret);
 		goto out_sensors_initialize_symlink;
 	}
@@ -1441,10 +1441,10 @@ static int __devinit ad7146_probe(struct i2c_client *client,
 	sensorshutdownmode(ad7146);
 	ad7146->onoff_flags = 1;
 
-	pr_info("[Grip]: %s - probe done\n", __func__);
+	pr_debug("[Grip]: %s - probe done\n", __func__);
 	return 0;
 err_hw_detect:
-	pr_err("[Grip]: %s: hw detect error\n", __func__);
+	pr_debug("[Grip]: %s: hw detect error\n", __func__);
 #ifdef CONFIG_SENSOR_USE_SYMLINK
 out_sensors_initialize_symlink:
 #endif
@@ -1463,7 +1463,7 @@ err_input_register_device:
 err_kzalloc_mem:
 err_of_node:
 	kfree(ad7146);
-	pr_info("[Grip]: %s - probe failed(%d)\n", __func__, ret);
+	pr_debug("[Grip]: %s - probe failed(%d)\n", __func__, ret);
 	return ret;
 }
 
@@ -1478,7 +1478,7 @@ static int __devexit ad7146_i2c_remove(struct i2c_client *client)
 {
 	struct ad7146_chip *ad7146 = i2c_get_clientdata(client);
 
-	pr_info("%s, Start\n", __func__);
+	pr_debug("%s, Start\n", __func__);
 	if (ad7146 != NULL) {
 		if (ad7146->eventcheck == ENABLE_INTERRUPTS) {
 			disable_irq(ad7146->irq);
@@ -1501,7 +1501,7 @@ static int __devexit ad7146_i2c_remove(struct i2c_client *client)
 void ad7146_shutdown(struct i2c_client *client)
 {
 	struct ad7146_chip *ad7146 = i2c_get_clientdata(client);
-	pr_info("%s, Start\n", __func__);
+	pr_debug("%s, Start\n", __func__);
 	if (ad7146 != NULL) {
 		if (ad7146->eventcheck == ENABLE_INTERRUPTS) {
 			disable_irq(ad7146->irq);
@@ -1527,7 +1527,7 @@ static int grip_i2c_suspend(struct device *dev)
 	struct i2c_client *client = to_i2c_client(dev);
 	struct ad7146_chip *ad7146 = i2c_get_clientdata(client);
 
-	pr_info("%s, check (%d)\n", __func__, ad7146->eventcheck);
+	pr_debug("%s, check (%d)\n", __func__, ad7146->eventcheck);
 /*	if (ad7146->eventcheck == 0)
 		ad7146->hw->power_en(0);*/
 
@@ -1539,7 +1539,7 @@ static int grip_i2c_resume(struct device *dev)
 	struct i2c_client *client = to_i2c_client(dev);
 	struct ad7146_chip *ad7146 = i2c_get_clientdata(client);
 
-	pr_info("%s, check (%d)\n", __func__, ad7146->eventcheck);
+	pr_debug("%s, check (%d)\n", __func__, ad7146->eventcheck);
 	if (ad7146->eventcheck == 0) {
 		//ad7146->hw->power_en(1);
 		msleep(10);
@@ -1591,7 +1591,7 @@ struct i2c_driver ad7146_i2c_driver = {
  */
 static __init int ad7146_i2c_init(void)
 {
-	pr_info("%s, start\n", __func__);
+	pr_debug("%s, start\n", __func__);
 	return i2c_add_driver(&ad7146_i2c_driver);
 }
 module_init(ad7146_i2c_init);

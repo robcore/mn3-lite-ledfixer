@@ -68,7 +68,7 @@ static ssize_t adc_data_read(struct device *dev,
 		send_instruction(data, REMOVE_SENSOR, GEOMAGNETIC_SENSOR,
 			chTempbuf, 2);
 
-	pr_info("[SSP]: %s - x = %d, y = %d, z = %d\n", __func__,
+	pr_debug("[SSP]: %s - x = %d, y = %d, z = %d\n", __func__,
 		data->buf[GEOMAGNETIC_SENSOR].x,
 		data->buf[GEOMAGNETIC_SENSOR].y,
 		data->buf[GEOMAGNETIC_SENSOR].z);
@@ -130,7 +130,7 @@ reties:
 		msleep(20);
 
 	if ((iDelayCnt >= 50) || (iRet != SUCCESS)) {
-		pr_err("[SSP]: %s - Magnetic Selftest Timeout!!\n", __func__);
+		pr_debug("[SSP]: %s - Magnetic Selftest Timeout!!\n", __func__);
 		goto exit;
 	}
 
@@ -142,20 +142,20 @@ reties:
 	iSF_Y = (s16)(((int)iSF_Y * ((int)data->uFuseRomData[1] + 128)) >> 8);
 	iSF_Z = (s16)(((int)iSF_Z * ((int)data->uFuseRomData[2] + 128)) >> 8);
 
-	pr_info("[SSP] %s: self test x = %d, y = %d, z = %d\n",
+	pr_debug("[SSP] %s: self test x = %d, y = %d, z = %d\n",
 		__func__, iSF_X, iSF_Y, iSF_Z);
 	if ((iSF_X >= -200) && (iSF_X <= 200))
-		pr_info("[SSP] x passed self test, expect -200<=x<=200\n");
+		pr_debug("[SSP] x passed self test, expect -200<=x<=200\n");
 	else
-		pr_info("[SSP] x failed self test, expect -200<=x<=200\n");
+		pr_debug("[SSP] x failed self test, expect -200<=x<=200\n");
 	if ((iSF_Y >= -200) && (iSF_Y <= 200))
-		pr_info("[SSP] y passed self test, expect -200<=y<=200\n");
+		pr_debug("[SSP] y passed self test, expect -200<=y<=200\n");
 	else
-		pr_info("[SSP] y failed self test, expect -200<=y<=200\n");
+		pr_debug("[SSP] y failed self test, expect -200<=y<=200\n");
 	if ((iSF_Z >= -3200) && (iSF_Z <= -800))
-		pr_info("[SSP] z passed self test, expect -3200<=z<=-800\n");
+		pr_debug("[SSP] z passed self test, expect -3200<=z<=-800\n");
 	else
-		pr_info("[SSP] z failed self test, expect -3200<=z<=-800\n");
+		pr_debug("[SSP] z failed self test, expect -3200<=z<=-800\n");
 
 	if (((iSF_X >= -200) && (iSF_X <= 200)) &&
 		((iSF_Y >= -200) && (iSF_Y <= 200)) &&

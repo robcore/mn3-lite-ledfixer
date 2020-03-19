@@ -89,7 +89,7 @@ static int save_gyro_caldata(struct ssp_data *data, s16 *iCalData)
 	cal_filp = filp_open(CALIBRATION_FILE_PATH,
 			O_CREAT | O_TRUNC | O_WRONLY, 0666);
 	if (IS_ERR(cal_filp)) {
-		pr_err("[SSP]: %s - Can't open calibration file\n", __func__);
+		pr_debug("[SSP]: %s - Can't open calibration file\n", __func__);
 		set_fs(old_fs);
 		iRet = PTR_ERR(cal_filp);
 		return -EIO;
@@ -98,7 +98,7 @@ static int save_gyro_caldata(struct ssp_data *data, s16 *iCalData)
 	iRet = cal_filp->f_op->write(cal_filp, (char *)&data->gyrocal,
 		3 * sizeof(int), &cal_filp->f_pos);
 	if (iRet != 3 * sizeof(int)) {
-		pr_err("[SSP]: %s - Can't write gyro cal to file\n", __func__);
+		pr_debug("[SSP]: %s - Can't write gyro cal to file\n", __func__);
 		iRet = -EIO;
 	}
 
@@ -143,7 +143,7 @@ static ssize_t gyro_get_temp(struct device *dev,
 		msleep(20);
 
 	if ((iDelayCnt >= 150) || (iRet != SUCCESS)) {
-		pr_err("[SSP]: %s - Gyro Temp Timeout!!\n", __func__);
+		pr_debug("[SSP]: %s - Gyro Temp Timeout!!\n", __func__);
 		goto exit;
 	}
 
@@ -177,7 +177,7 @@ static ssize_t gyro_selftest_show(struct device *dev,
 		msleep(20);
 
 	if ((iDelayCnt >= 150) || (iRet != SUCCESS)) {
-		pr_err("[SSP]: %s - Gyro Selftest Timeout!!\n", __func__);
+		pr_debug("[SSP]: %s - Gyro Selftest Timeout!!\n", __func__);
 		goto exit;
 	}
 
@@ -253,17 +253,17 @@ static ssize_t gyro_selftest_dps_store(struct device *dev,
 		msleep(20);
 
 	if ((iDelayCnt >= 150) || (iRet != SUCCESS)) {
-		pr_err("[SSP]: %s - Gyro Selftest DPS Timeout!!\n", __func__);
+		pr_debug("[SSP]: %s - Gyro Selftest DPS Timeout!!\n", __func__);
 		goto exit;
 	}
 
 	if (data->uFactorydata[0] != SUCCESS) {
-		pr_err("[SSP]: %s - Gyro Selftest DPS Error!!\n", __func__);
+		pr_debug("[SSP]: %s - Gyro Selftest DPS Error!!\n", __func__);
 		goto exit;
 	}
 
 	data->uGyroDps = (unsigned int)iNewDps;
-	pr_err("[SSP]: %s - %u dps stored\n", __func__, data->uGyroDps);
+	pr_debug("[SSP]: %s - %u dps stored\n", __func__, data->uGyroDps);
 exit:
 	return count;
 }

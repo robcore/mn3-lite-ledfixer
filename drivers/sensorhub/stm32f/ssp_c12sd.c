@@ -91,7 +91,7 @@ static ssize_t uv_poll_delay_store(struct device *dev,
 
 	if (new_delay != ktime_to_ns(uv->uv_poll_delay)) {
 		uv->uv_poll_delay = ns_to_ktime(new_delay);
-		pr_info("%s, poll_delay = %lld\n", __func__, new_delay);
+		pr_debug("%s, poll_delay = %lld\n", __func__, new_delay);
 	}
 
 	if (uv->onoff)
@@ -114,10 +114,10 @@ static ssize_t uv_enable_store(struct device *dev,
 	} else if (sysfs_streq(buf, "0")) {
 		new_value = false;
 	} else {
-		pr_err("%s: invalid value %d\n", __func__, *buf);
+		pr_debug("%s: invalid value %d\n", __func__, *buf);
 		return -EINVAL;
 	}
-	pr_info("%s, old = %d, new = %d\n", __func__, uv->onoff, new_value);
+	pr_debug("%s, old = %d, new = %d\n", __func__, uv->onoff, new_value);
 	mutex_lock(&uv->power_lock);
 	if (new_value && !uv->onoff) { /* Enable */
 		uv->onoff = new_value;
@@ -131,7 +131,7 @@ static ssize_t uv_enable_store(struct device *dev,
 		if (uv->pdata->power_on)
 			uv->pdata->power_on(uv->onoff);
 	} else
-		pr_err("%s, new_enable = %d\n", __func__, new_value);
+		pr_debug("%s, new_enable = %d\n", __func__, new_value);
 	mutex_unlock(&uv->power_lock);
 
 	return size;
@@ -189,7 +189,7 @@ static ssize_t get_adc_value(struct device *dev,
 		mutex_unlock(&uv->read_lock);
 	} else
 		adc = uv->uv_raw_data;
-	pr_info("%s: uv_adc = 0x%x, (%dmV)\n", __func__, adc, adc / 1000);
+	pr_debug("%s: uv_adc = 0x%x, (%dmV)\n", __func__, adc, adc / 1000);
 
 	return snprintf(buf, PAGE_SIZE, "%d\n", adc);
 }
@@ -201,7 +201,7 @@ static ssize_t uv_power_on(struct device *dev,
 
 	if (!uv->onoff && uv->pdata->power_on)
 		uv->pdata->power_on(true);
-	pr_info("%s\n", __func__);
+	pr_debug("%s\n", __func__);
 
 	return sprintf(buf, "%d\n", 1);
 }
@@ -213,7 +213,7 @@ static ssize_t uv_power_off(struct device *dev,
 
 	if (!uv->onoff && uv->pdata->power_on)
 		uv->pdata->power_on(false);
-	pr_info("%s\n", __func__);
+	pr_debug("%s\n", __func__);
 
 	return sprintf(buf, "%d\n", 1);
 }
@@ -262,21 +262,21 @@ static int uv_probe(struct platform_device *pdev)
 	struct uv_platform_data *pdata = pdev->dev.platform_data;
 	int ret = 0;
 
-	pr_info("%s: is started\n", __func__);
+	pr_debug("%s: is started\n", __func__);
 	if (!pdata) {
-		pr_err("%s: pdata is NULL\n", __func__);
+		pr_debug("%s: pdata is NULL\n", __func__);
 		return -ENODEV;
 	}
 
 	if (!pdata->get_adc_value || !pdata->power_on) {
-		pr_err("%s: need to check pdata\n", __func__);
+		pr_debug("%s: need to check pdata\n", __func__);
 		return -ENODEV;
 	}
 
 	/* allocate memory */
 	uv = kzalloc(sizeof(struct uv_info), GFP_KERNEL);
 	if (uv == NULL) {
-		pr_err("%s: Failed to allocate memory\n", __func__);
+		pr_debug("%s: Failed to allocate memory\n", __func__);
 		return -ENOMEM;
 	}
 
@@ -296,7 +296,7 @@ static int uv_probe(struct platform_device *pdev)
 	/* allocate uv input device */
 	uv->uv_input_dev = input_allocate_device();
 	if (!uv->uv_input_dev) {
-		pr_err("%s: could not allocate input device\n",
+		pr_debug("%s: could not allocate input device\n",
 			__func__);
 		goto err_input_allocate_device_uv;
 	}
@@ -307,7 +307,7 @@ static int uv_probe(struct platform_device *pdev)
 
 	ret = input_register_device(uv->uv_input_dev);
 	if (ret < 0) {
-		pr_err("%s: could not register input device\n",
+		pr_debug("%s: could not register input device\n",
 			__func__);
 		input_free_device(uv->uv_input_dev);
 		goto err_input_register_device_uv;
@@ -316,7 +316,7 @@ static int uv_probe(struct platform_device *pdev)
 	ret = sysfs_create_group(&uv->uv_input_dev->dev.kobj,
 				&uv_attribute_group);
 	if (ret) {
-		pr_err("%s: could not create sysfs group\n",
+		pr_debug("%s: could not create sysfs group\n",
 			__func__);
 		goto err_sysfs_create_group_uv;
 	}
@@ -330,7 +330,7 @@ static int uv_probe(struct platform_device *pdev)
 	uv->uv_wq = create_singlethread_workqueue("uv_wq");
 	if (!uv->uv_wq) {
 		ret = -ENOMEM;
-		pr_err("%s: could not create uv workqueue\n",
+		pr_debug("%s: could not create uv workqueue\n",
 			__func__);
 		goto err_create_uv_workqueue;
 	}
@@ -340,7 +340,7 @@ static int uv_probe(struct platform_device *pdev)
 	ret = sensors_register(uv->uv_dev, uv, uv_sensor_attrs,
 		"uv_sensor");
 	if (ret) {
-		pr_err("%s: could not register uv device(%d)\n",
+		pr_debug("%s: could not register uv device(%d)\n",
 			__func__, ret);
 		goto err_sensor_register_failed;
 	}
@@ -348,7 +348,7 @@ static int uv_probe(struct platform_device *pdev)
 	ret = sensors_create_symlink(&uv->uv_input_dev->dev.kobj,
 		uv->uv_input_dev->name);
 	if (ret < 0) {
-		pr_err("%s, sensors_create_symlinks failed!(%d)\n",
+		pr_debug("%s, sensors_create_symlinks failed!(%d)\n",
 			__func__, ret);
 		goto err_uv_input__sysfs_create_link;
 	}
@@ -361,7 +361,7 @@ static int uv_probe(struct platform_device *pdev)
 
 	platform_set_drvdata(pdev, uv);
 
-	pr_info("%s, success\n", __func__);
+	pr_debug("%s, success\n", __func__);
 	return 0;
 err_uv_input__sysfs_create_link:
 	sensors_unregister(uv->uv_dev, uv_sensor_attrs);
@@ -384,7 +384,7 @@ static int uv_remove(struct platform_device *pdev)
 {
 	struct uv_info *uv = dev_get_drvdata(&pdev->dev);
 
-	pr_info("%s+\n", __func__);
+	pr_debug("%s+\n", __func__);
 	if (uv->onoff) {
 		hrtimer_cancel(&uv->uv_timer);
 		cancel_work_sync(&uv->work_uv);
@@ -404,7 +404,7 @@ static int uv_remove(struct platform_device *pdev)
 	mutex_destroy(&uv->read_lock);
 	mutex_destroy(&uv->power_lock);
 	kfree(uv);
-	pr_info("%s-\n", __func__);
+	pr_debug("%s-\n", __func__);
 	return 0;
 }
 
@@ -421,7 +421,7 @@ static void ssp_early_suspend(struct early_suspend *handler)
 		if (uv->pdata->power_on)
 			uv->pdata->power_on(false);
 	}
-	pr_err("%s, enabled = %d\n", __func__, uv->onoff);
+	pr_debug("%s, enabled = %d\n", __func__, uv->onoff);
 }
 
 static void ssp_late_resume(struct early_suspend *handler)
@@ -435,7 +435,7 @@ static void ssp_late_resume(struct early_suspend *handler)
 		hrtimer_start(&uv->uv_timer,
 			uv->uv_poll_delay, HRTIMER_MODE_REL);
 	}
-	pr_err("%s, enabled = %d\n", __func__, uv->onoff);
+	pr_debug("%s, enabled = %d\n", __func__, uv->onoff);
 }
 #else
 static int uv_suspend(struct platform_device *pdev, pm_message_t state)
@@ -448,7 +448,7 @@ static int uv_suspend(struct platform_device *pdev, pm_message_t state)
 		if (uv->pdata->power_on)
 			uv->pdata->power_on(false);
 	}
-	pr_err("%s, enabled = %d\n", __func__, uv->onoff);
+	pr_debug("%s, enabled = %d\n", __func__, uv->onoff);
 	return 0;
 }
 
@@ -462,7 +462,7 @@ static int uv_resume(struct platform_device *pdev)
 		hrtimer_start(&uv->uv_timer,
 			uv->uv_poll_delay, HRTIMER_MODE_REL);
 	}
-	pr_err("%s, enabled = %d\n", __func__, uv->onoff);
+	pr_debug("%s, enabled = %d\n", __func__, uv->onoff);
 	return 0;
 }
 #endif
@@ -471,7 +471,7 @@ static void uv_shutdown(struct platform_device *pdev)
 {
 	struct uv_info *uv = dev_get_drvdata(&pdev->dev);
 
-	pr_info("%s+\n", __func__);
+	pr_debug("%s+\n", __func__);
 	if (uv->onoff) {
 		hrtimer_cancel(&uv->uv_timer);
 		cancel_work_sync(&uv->work_uv);
@@ -489,7 +489,7 @@ static void uv_shutdown(struct platform_device *pdev)
 		uv->pdata->power_on(false);
 	mutex_destroy(&uv->power_lock);
 	kfree(uv);
-	pr_info("%s-\n", __func__);
+	pr_debug("%s-\n", __func__);
 }
 
 static struct platform_driver uv_driver = {

@@ -211,7 +211,7 @@ int proximity_open_lcd_ldi(struct ssp_data *data)
 	if (IS_ERR(cancel_filp)) {
 		iRet = PTR_ERR(cancel_filp);
 		if (iRet != -ENOENT)
-			pr_err("[SSP]: %s - Can't open lcd ldi file\n",
+			pr_debug("[SSP]: %s - Can't open lcd ldi file\n",
 				__func__);
 		set_fs(old_fs);
 		data->chLcdLdi[0] = 0;
@@ -222,7 +222,7 @@ int proximity_open_lcd_ldi(struct ssp_data *data)
 	iRet = cancel_filp->f_op->read(cancel_filp,
 		(u8 *)data->chLcdLdi, sizeof(u8) * 2, &cancel_filp->f_pos);
 	if (iRet != (sizeof(u8) * 2)) {
-		pr_err("[SSP]: %s - Can't read the lcd ldi data\n", __func__);
+		pr_debug("[SSP]: %s - Can't read the lcd ldi data\n", __func__);
 		iRet = -EIO;
 	}
 
@@ -250,7 +250,7 @@ int proximity_open_calibration(struct ssp_data *data)
 	if (IS_ERR(cancel_filp)) {
 		iRet = PTR_ERR(cancel_filp);
 		if (iRet != -ENOENT)
-			pr_err("[SSP]: %s - Can't open cancelation file\n",
+			pr_debug("[SSP]: %s - Can't open cancelation file\n",
 				__func__);
 		set_fs(old_fs);
 		goto exit;
@@ -259,14 +259,14 @@ int proximity_open_calibration(struct ssp_data *data)
 	iRet = cancel_filp->f_op->read(cancel_filp,
 		(u8 *)&data->uProxCanc, sizeof(unsigned int), &cancel_filp->f_pos);
 	if (iRet != sizeof(u8)) {
-		pr_err("[SSP]: %s - Can't read the cancel data\n", __func__);
+		pr_debug("[SSP]: %s - Can't read the cancel data\n", __func__);
 		iRet = -EIO;
 	}
 
 	if (data->uProxCanc != 0) /*If there is an offset cal data. */
 		get_proximity_threshold(data);
 
-	pr_info("%s: proximity ps_canc = %d, ps_thresh hi - %d lo - %d\n",
+	pr_debug("%s: proximity ps_canc = %d, ps_thresh hi - %d lo - %d\n",
 		__func__, data->uProxCanc, data->uProxHiThresh,
 		data->uProxLoThresh);
 
@@ -302,7 +302,7 @@ static int proximity_store_cancelation(struct ssp_data *data, int iCalCMD)
 	cancel_filp = filp_open(CANCELATION_FILE_PATH,
 			O_CREAT | O_TRUNC | O_WRONLY | O_SYNC, 0666);
 	if (IS_ERR(cancel_filp)) {
-		pr_err("%s: Can't open cancelation file\n", __func__);
+		pr_debug("%s: Can't open cancelation file\n", __func__);
 		set_fs(old_fs);
 		iRet = PTR_ERR(cancel_filp);
 		return iRet;
@@ -311,7 +311,7 @@ static int proximity_store_cancelation(struct ssp_data *data, int iCalCMD)
 	iRet = cancel_filp->f_op->write(cancel_filp, (u8 *)&data->uProxCanc,
 		sizeof(unsigned int), &cancel_filp->f_pos);
 	if (iRet != sizeof(unsigned int)) {
-		pr_err("%s: Can't write the cancel data to file\n", __func__);
+		pr_debug("%s: Can't write the cancel data to file\n", __func__);
 		iRet = -EIO;
 	}
 
@@ -356,7 +356,7 @@ static ssize_t proximity_cancel_store(struct device *dev,
 
 	iRet = proximity_store_cancelation(data, iCalCMD);
 	if (iRet < 0) {
-		pr_err("[SSP]: - %s proximity_store_cancelation() failed\n",
+		pr_debug("[SSP]: - %s proximity_store_cancelation() failed\n",
 			__func__);
 		return iRet;
 	}
@@ -386,10 +386,10 @@ static ssize_t proximity_thresh_high_store(struct device *dev,
 
 	iRet = kstrtou16(buf, 10, &uNewThresh);
 	if (iRet < 0)
-		pr_err("[SSP]: %s - kstrtoint failed.(%d)\n", __func__, iRet);
+		pr_debug("[SSP]: %s - kstrtoint failed.(%d)\n", __func__, iRet);
 	else {	
 		if(uNewThresh & 0xfc00)
-			pr_err("[SSP]: %s - allow 10bits.(%d)\n", __func__, uNewThresh);
+			pr_debug("[SSP]: %s - allow 10bits.(%d)\n", __func__, uNewThresh);
 		else {
 			uNewThresh &= 0x03ff;
 			data->uProxHiThresh = uNewThresh;
@@ -425,10 +425,10 @@ static ssize_t proximity_thresh_low_store(struct device *dev,
 
 	iRet = kstrtou16(buf, 10, &uNewThresh);
 	if (iRet < 0)
-		pr_err("[SSP]: %s - kstrtoint failed.(%d)\n", __func__, iRet);
+		pr_debug("[SSP]: %s - kstrtoint failed.(%d)\n", __func__, iRet);
 	else {
 		if(uNewThresh & 0xfc00)
-			pr_err("[SSP]: %s - allow 10bits.(%d)\n", __func__, uNewThresh);
+			pr_debug("[SSP]: %s - allow 10bits.(%d)\n", __func__, uNewThresh);
 		else {
 			uNewThresh &= 0x03ff;
 			data->uProxLoThresh = uNewThresh;

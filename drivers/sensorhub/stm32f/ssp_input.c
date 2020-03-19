@@ -127,9 +127,6 @@ static int ssp_push_7bytes_buffer(struct iio_dev *indio_dev, u64 t, s16 *d,
 
 void report_meta_data(struct ssp_data *data, struct sensor_value *s)
 {
-	pr_info("[SSP]: %s - what: %d, sensor: %d\n", __func__,
-		s->meta_data.what, s->meta_data.sensor);
-
 	if (s->meta_data.sensor == ACCELEROMETER_SENSOR) {
 		s16 accel_buf[3];
 		memset(accel_buf, 0xff, sizeof(s16) * 3);
@@ -603,7 +600,7 @@ iRet_gesture_sysfs_create_link:
 		&data->gesture_input_dev->dev.kobj,
 		data->gesture_input_dev->name);
 iRet_prs_sysfs_create_link:
-	pr_err("[SSP]: %s - could not create event symlink\n", __func__);
+	pr_debug("[SSP]: %s - could not create event symlink\n", __func__);
 
 	return FAIL;
 }
@@ -760,7 +757,7 @@ int initialize_input_dev(struct ssp_data *data)
 	/* accel */
 	data->accel_indio_dev = iio_allocate_device(0);
 	if (!data->accel_indio_dev) {
-		pr_err("[SSP]: %s failed to allocate memory for iio accel device\n", __func__);
+		pr_debug("[SSP]: %s failed to allocate memory for iio accel device\n", __func__);
 		return -ENOMEM;
 	}
 
@@ -774,7 +771,7 @@ int initialize_input_dev(struct ssp_data *data)
 
 	iRet = ssp_iio_configure_ring(data->accel_indio_dev);
 	if (iRet) {
-		pr_err("[SSP]: %s configure ring buffer fail\n", __func__);
+		pr_debug("[SSP]: %s configure ring buffer fail\n", __func__);
 		goto out_free_accel;
 	}
 
@@ -789,7 +786,7 @@ int initialize_input_dev(struct ssp_data *data)
 	/* mag */
 	data->mag_indio_dev = iio_allocate_device(0);
 	if (!data->mag_indio_dev) {
-		pr_err("[SSP]: %s failed to allocate memory for iio mag device\n", __func__);
+		pr_debug("[SSP]: %s failed to allocate memory for iio mag device\n", __func__);
 		goto out_alloc_fail_mag;
 	}
 
@@ -803,7 +800,7 @@ int initialize_input_dev(struct ssp_data *data)
 
 	iRet = ssp_iio_configure_ring(data->mag_indio_dev);
 	if (iRet) {
-		pr_err("[SSP]: %s configure ring buffer fail\n", __func__);
+		pr_debug("[SSP]: %s configure ring buffer fail\n", __func__);
 		goto out_free_mag;
 	}
 
@@ -818,7 +815,7 @@ int initialize_input_dev(struct ssp_data *data)
 	/* uncal mag */
 	data->uncal_mag_indio_dev = iio_allocate_device(0);
 	if (!data->uncal_mag_indio_dev) {
-		pr_err("[SSP]: %s failed to allocate memory for iio uncal mag device\n", __func__);
+		pr_debug("[SSP]: %s failed to allocate memory for iio uncal mag device\n", __func__);
 		goto out_alloc_fail_uncal_mag;
 	}
 
@@ -832,7 +829,7 @@ int initialize_input_dev(struct ssp_data *data)
 
 	iRet = ssp_iio_configure_ring(data->uncal_mag_indio_dev);
 	if (iRet) {
-		pr_err("[SSP]: %s configure ring buffer fail\n", __func__);
+		pr_debug("[SSP]: %s configure ring buffer fail\n", __func__);
 		goto out_free_uncal_mag;
 	}
 
@@ -847,7 +844,7 @@ int initialize_input_dev(struct ssp_data *data)
 	/* gyro */
 	data->gyro_indio_dev = iio_allocate_device(0);
 	if (!data->gyro_indio_dev) {
-		pr_err("[SSP]: %s failed to allocate memory for iio gyro device\n", __func__);
+		pr_debug("[SSP]: %s failed to allocate memory for iio gyro device\n", __func__);
 		goto out_alloc_fail_gyro;
 	}
 
@@ -861,7 +858,7 @@ int initialize_input_dev(struct ssp_data *data)
 
 	iRet = ssp_iio_configure_ring(data->gyro_indio_dev);
 	if (iRet) {
-		pr_err("[SSP]: %s configure ring buffer fail\n", __func__);
+		pr_debug("[SSP]: %s configure ring buffer fail\n", __func__);
 		goto out_free_gyro;
 	}
 
@@ -876,7 +873,7 @@ int initialize_input_dev(struct ssp_data *data)
 
 	data->uncal_gyro_indio_dev = iio_allocate_device(0);
 	if (!data->uncal_gyro_indio_dev) {
-		pr_err("[SSP]: %s failed to allocate memory for iio gyro device\n", __func__);
+		pr_debug("[SSP]: %s failed to allocate memory for iio gyro device\n", __func__);
 		goto out_alloc_fail_uncal_gyro;
 	}
 
@@ -890,7 +887,7 @@ int initialize_input_dev(struct ssp_data *data)
 
 	iRet = ssp_iio_configure_ring(data->uncal_gyro_indio_dev);
 	if (iRet) {
-		pr_err("[SSP]: %s configure ring buffer fail\n", __func__);
+		pr_debug("[SSP]: %s configure ring buffer fail\n", __func__);
 		goto out_free_uncal_gyro;
 	}
 
@@ -905,7 +902,7 @@ int initialize_input_dev(struct ssp_data *data)
 
 	data->game_rot_indio_dev = iio_allocate_device(0);
 	if (!data->game_rot_indio_dev) {
-		pr_err("[SSP]: %s failed to allocate memory for iio gyro device\n", __func__);
+		pr_debug("[SSP]: %s failed to allocate memory for iio gyro device\n", __func__);
 		goto out_alloc_fail_game_rot;
 	}
 
@@ -919,7 +916,7 @@ int initialize_input_dev(struct ssp_data *data)
 
 	iRet = ssp_iio_configure_ring(data->game_rot_indio_dev);
 	if (iRet) {
-		pr_err("[SSP]: %s configure ring buffer fail\n", __func__);
+		pr_debug("[SSP]: %s configure ring buffer fail\n", __func__);
 		goto out_free_game_rot;
 	}
 
@@ -934,7 +931,7 @@ int initialize_input_dev(struct ssp_data *data)
 
 	data->rot_indio_dev = iio_allocate_device(0);
 	if (!data->rot_indio_dev) {
-		pr_err("[SSP]: %s failed to allocate memory for iio gyro device\n", __func__);
+		pr_debug("[SSP]: %s failed to allocate memory for iio gyro device\n", __func__);
 		goto out_alloc_fail_rot;
 	}
 
@@ -948,7 +945,7 @@ int initialize_input_dev(struct ssp_data *data)
 
 	iRet = ssp_iio_configure_ring(data->rot_indio_dev);
 	if (iRet) {
-		pr_err("[SSP]: %s configure ring buffer fail\n", __func__);
+		pr_debug("[SSP]: %s configure ring buffer fail\n", __func__);
 		goto out_free_rot;
 	}
 
@@ -963,7 +960,7 @@ int initialize_input_dev(struct ssp_data *data)
 
 	data->step_det_indio_dev = iio_allocate_device(0);
 	if (!data->step_det_indio_dev) {
-		pr_err("[SSP]: %s failed to allocate memory for iio gyro device\n", __func__);
+		pr_debug("[SSP]: %s failed to allocate memory for iio gyro device\n", __func__);
 		goto out_alloc_fail_step_det;
 	}
 
@@ -977,7 +974,7 @@ int initialize_input_dev(struct ssp_data *data)
 
 	iRet = ssp_iio_configure_ring(data->step_det_indio_dev);
 	if (iRet) {
-		pr_err("[SSP]: %s configure ring buffer fail\n", __func__);
+		pr_debug("[SSP]: %s configure ring buffer fail\n", __func__);
 		goto out_free_step_det;
 	}
 
@@ -1306,7 +1303,7 @@ out_unreg_ring_accel:
 	ssp_iio_unconfigure_ring(data->accel_indio_dev);
 out_free_accel:
 	iio_free_device(data->accel_indio_dev);
-	pr_err("[SSP]: %s - could not allocate input device\n", __func__);
+	pr_debug("[SSP]: %s - could not allocate input device\n", __func__);
 	return ERROR;
 }
 

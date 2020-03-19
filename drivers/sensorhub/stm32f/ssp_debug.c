@@ -41,7 +41,7 @@ void ssp_dump_task(struct work_struct *work) {
 	
 
 	big = container_of(work, struct ssp_big, work);
-	pr_err("[SSP]: %s - start ssp dumping (%d)(%d)\n", __func__,big->data->bMcuDumpMode,big->data->uDumpCnt);
+	pr_debug("[SSP]: %s - start ssp dumping (%d)(%d)\n", __func__,big->data->bMcuDumpMode,big->data->uDumpCnt);
 	big->data->uDumpCnt++;
 	wake_lock(&big->data->ssp_wake_lock);
 
@@ -58,7 +58,7 @@ void ssp_dump_task(struct work_struct *work) {
 
 		dump_file = filp_open(strFilePath, O_RDWR | O_CREAT | O_APPEND, 0666);
 		if (IS_ERR(dump_file)) {
-			pr_err("[SSP]: %s - Can't open dump file\n", __func__);
+			pr_debug("[SSP]: %s - Can't open dump file\n", __func__);
 			set_fs(fs);
 			iRet = PTR_ERR(dump_file);
 			wake_unlock(&big->data->ssp_wake_lock);
@@ -86,7 +86,7 @@ void ssp_dump_task(struct work_struct *work) {
 
 		iRetTrans = ssp_spi_sync(big->data, msg, 1000);
 		if (iRetTrans != SUCCESS) {
-			pr_err("[SSP]: %s - Fail to receive data %d (%d)\n", __func__, iRetTrans,residue);
+			pr_debug("[SSP]: %s - Fail to receive data %d (%d)\n", __func__, iRetTrans,residue);
 			break;
 		}
 			if(big->data->bMcuDumpMode == true)
@@ -94,7 +94,7 @@ void ssp_dump_task(struct work_struct *work) {
 				iRetWrite = vfs_write(dump_file, (char __user *) buffer, packet_len,
 					&dump_file->f_pos);
 				if (iRetWrite < 0) {
-					pr_err("[SSP]: %s - Can't write dump to file\n", __func__);
+					pr_debug("[SSP]: %s - Can't write dump to file\n", __func__);
 					break;
 				}
 		}
@@ -124,7 +124,7 @@ void ssp_dump_task(struct work_struct *work) {
 	kfree(buffer);
 	kfree(big);
 
-	pr_err("[SSP]: %s done\n", __func__);
+	pr_debug("[SSP]: %s done\n", __func__);
 }
 
 void ssp_temp_task(struct work_struct *work) {
@@ -156,7 +156,7 @@ void ssp_temp_task(struct work_struct *work) {
 
 		iRet = ssp_spi_sync(big->data, msg, 1000);
 		if (iRet != SUCCESS) {
-			pr_err("[SSP]: %s - Fail to receive data %d\n", __func__, iRet);
+			pr_debug("[SSP]: %s - Fail to receive data %d\n", __func__, iRet);
 			break;
 		}
 		// 12 = 1 chunk size for ks79.shin
@@ -240,15 +240,15 @@ void sync_sensor_state(struct ssp_data *data)
 	int iRet = 0;
 	iRet = set_hw_offset(data);
 	if (iRet < 0) {
-		pr_err("[SSP]: %s - set_hw_offset failed\n", __func__);
+		pr_debug("[SSP]: %s - set_hw_offset failed\n", __func__);
 	}
 	iRet = set_gyro_cal(data);
 	if (iRet < 0) {
-		pr_err("[SSP]: %s - set_gyro_cal failed\n", __func__);
+		pr_debug("[SSP]: %s - set_gyro_cal failed\n", __func__);
 	}
 	iRet = set_accel_cal(data);
 	if (iRet < 0) {
-		pr_err("[SSP]: %s - set_accel_cal failed\n", __func__);
+		pr_debug("[SSP]: %s - set_accel_cal failed\n", __func__);
 	}
 	udelay(10);
 
@@ -275,7 +275,7 @@ void sync_sensor_state(struct ssp_data *data)
 	data->bMcuDumpMode = sec_debug_is_enabled();
 	iRet = ssp_send_cmd(data, MSG2SSP_AP_MCU_SET_DUMPMODE,data->bMcuDumpMode);
 	if (iRet < 0) {
-		pr_err("[SSP]: %s - MSG2SSP_AP_MCU_SET_DUMPMODE failed\n", __func__);
+		pr_debug("[SSP]: %s - MSG2SSP_AP_MCU_SET_DUMPMODE failed\n", __func__);
 	}
 
 
@@ -388,16 +388,16 @@ static void debug_work_func(struct work_struct *work)
 
 	if (data->fw_dl_state >= FW_DL_STATE_DOWNLOADING &&
 		data->fw_dl_state < FW_DL_STATE_DONE) {
-		pr_info("[SSP] : %s firmware downloading state = %d\n",
+		pr_debug("[SSP] : %s firmware downloading state = %d\n",
 			__func__, data->fw_dl_state);
 		return;
 	} else if (data->fw_dl_state == FW_DL_STATE_FAIL) {
-		pr_err("[SSP] : %s firmware download failed = %d\n",
+		pr_debug("[SSP] : %s firmware download failed = %d\n",
 			__func__, data->fw_dl_state);
 		return;
 	}
 	if ((data->uSensorState & 0xff) == 0x0){
-		pr_err("[SSP] : %s MCU sensor probe fail\n", __func__);
+		pr_debug("[SSP] : %s MCU sensor probe fail\n", __func__);
 		return;
 	}
 	wake_lock(&data->ssp_wake_lock);
@@ -405,7 +405,7 @@ static void debug_work_func(struct work_struct *work)
 		if(sanity_check(data)>0) data->uSanityCnt++;
 
 		if (set_sensor_position(data) < 0) {
-			pr_err("[SSP]: %s :set_sensor_position delayed \n", __func__);
+			pr_debug("[SSP]: %s :set_sensor_position delayed \n", __func__);
 		}
 	}
 
@@ -422,14 +422,14 @@ static void debug_work_func(struct work_struct *work)
 		&& (data->uLastResumeState != MSG2SSP_AP_STATUS_SUSPEND)) {
 
 		if (data->uResetCnt < LIMIT_RESET_CNT) {
-			pr_info("[SSP] : %s - uSsdFailCnt(%u), uInstFailCnt(%u),"\
+			pr_debug("[SSP] : %s - uSsdFailCnt(%u), uInstFailCnt(%u),"\
 				"uIrqFailCnt(%u), uTimeOutCnt(%u), uBusyCnt(%u), pending(%u)\n",
 				__func__, data->uSsdFailCnt, data->uInstFailCnt, data->uIrqFailCnt,
 				data->uTimeOutCnt, data->uBusyCnt, !list_empty(&data->pending_list));
 			reset_mcu(data);
 			data->uResetCnt++;
 		} else {
-			pr_info("[SSP] : %s - data->uResetCnt == LIMIT_RESET_CNT\n", __func__);
+			pr_debug("[SSP] : %s - data->uResetCnt == LIMIT_RESET_CNT\n", __func__);
 			ssp_enable(data, false);
 		}
 

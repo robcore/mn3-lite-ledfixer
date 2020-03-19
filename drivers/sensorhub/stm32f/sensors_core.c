@@ -28,7 +28,7 @@ static void set_sensor_attr(struct device *dev,
 
 	for (i = 0; attributes[i] != NULL; i++)
 		if ((device_create_file(dev, attributes[i])) < 0)
-			pr_err("[SENSOR CORE] fail device_create_file"\
+			pr_debug("[SENSOR CORE] fail device_create_file"\
 				"(dev, attributes[%d])\n", i);
 }
 
@@ -38,12 +38,12 @@ int sensors_create_symlink(struct kobject *target,
 	int err = 0;
 
 	if (symlink_dev == NULL)
-		pr_err("%s, symlink_dev is NULL!!!\n", __func__);
+		pr_debug("%s, symlink_dev is NULL!!!\n", __func__);
 
 	err = sysfs_create_link(&symlink_dev->kobj, target, name);
 
 	if (err < 0) {
-		pr_err("%s, %s failed!(%d)\n", __func__, name, err);
+		pr_debug("%s, %s failed!(%d)\n", __func__, name, err);
 		return err;
 	}
 
@@ -56,7 +56,7 @@ void sensors_remove_symlink(struct kobject *target,
 {
 
 	if (symlink_dev == NULL)
-		pr_err("%s, symlink_dev is NULL!!!\n", __func__);
+		pr_debug("%s, symlink_dev is NULL!!!\n", __func__);
 
 	sysfs_delete_link(&symlink_dev->kobj, target, name);
 }
@@ -78,7 +78,7 @@ int sensors_register(struct device *dev, void * drvdata,
 
 	if (IS_ERR(dev)) {
 		ret = PTR_ERR(dev);
-		pr_err("[SENSORS CORE] device_create failed!"\
+		pr_debug("[SENSORS CORE] device_create failed!"\
 			"[%d]\n", ret);
 		return ret;
 	}
@@ -116,11 +116,11 @@ EXPORT_SYMBOL_GPL(destroy_sensor_class);
 
 static int __init sensors_class_init(void)
 {
-	pr_info("[SENSORS CORE] sensors_class_init\n");
+	pr_debug("[SENSORS CORE] sensors_class_init\n");
 	sensors_class = class_create(THIS_MODULE, "sensors");
 
 	if (IS_ERR(sensors_class)) {
-		pr_err("%s, create sensors_class is failed.(err=%ld)\n",
+		pr_debug("%s, create sensors_class is failed.(err=%ld)\n",
 			__func__, IS_ERR(sensors_class));
 		return PTR_ERR(sensors_class);
 	}
@@ -128,7 +128,7 @@ static int __init sensors_class_init(void)
     /* For symbolic link */
 	sensors_event_class = class_create(THIS_MODULE, "sensor_event");
 	if (IS_ERR(sensors_event_class)) {
-		pr_err("%s, create sensors_class is failed.(err=%ld)\n",
+		pr_debug("%s, create sensors_class is failed.(err=%ld)\n",
 			__func__, IS_ERR(sensors_event_class));
 		return PTR_ERR(sensors_event_class);
 	}
@@ -137,7 +137,7 @@ static int __init sensors_class_init(void)
 		"%s", "symlink2");
 
 	if (IS_ERR(symlink_dev)) {
-		pr_err("[SENSORS CORE] symlink_dev create failed!"\
+		pr_debug("[SENSORS CORE] symlink_dev create failed!"\
 			"[%ld]\n", IS_ERR(symlink_dev));
 		return PTR_ERR(symlink_dev);
 	}

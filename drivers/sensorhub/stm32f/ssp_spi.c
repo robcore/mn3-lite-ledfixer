@@ -21,7 +21,7 @@
 #if defined(DEBUG_SSP_SPI)
 #define ssp_log(fmt, arg...)	\
 	do {					\
-		printk(KERN_ERR "[%s:%d] " fmt ,	\
+		pr_debug("[%s:%d] " fmt ,	\
 			__func__, __LINE__, ##arg);		\
 	}							\
 	while (0)

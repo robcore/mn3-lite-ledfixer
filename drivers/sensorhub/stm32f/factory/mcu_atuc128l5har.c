@@ -57,7 +57,7 @@ ssize_t mcu_update_kernel_bin_show(struct device *dev,
 		bSuccess = false;
 out:
 	data->uCurFirmRev = get_firmware_rev(data);
-	pr_info("[SSP] %s: MCU Firm Rev : New = %8u\n",
+	pr_debug("[SSP] %s: MCU Firm Rev : New = %8u\n",
 		__func__, data->uCurFirmRev);
 	return sprintf(buf, "%s\n", (bSuccess ? "OK" : "NG"));
 }
@@ -102,7 +102,7 @@ ssize_t mcu_update_ums_bin_show(struct device *dev,
 		bSuccess = false;
 
 	data->uCurFirmRev = get_firmware_rev(data);
-	pr_info("[SSP] %s: MCU Firm Rev : New = %8u\n",
+	pr_debug("[SSP] %s: MCU Firm Rev : New = %8u\n",
 		__func__, data->uCurFirmRev);
 	return sprintf(buf, "%s\n", (bSuccess ? "OK" : "NG"));
 }
@@ -157,7 +157,7 @@ ssize_t mcu_factorytest_store(struct device *dev,
 		iRet = ssp_spi_async(data, msg);
 
 	} else {
-		pr_err("[SSP]: %s - invalid value %d\n", __func__, *buf);
+		pr_debug("[SSP]: %s - invalid value %d\n", __func__, *buf);
 		return -EINVAL;
 	}
 
@@ -213,7 +213,7 @@ ssize_t mcu_sleep_factorytest_store(struct device *dev,
 		iRet = ssp_spi_async(data, msg);
 
 	} else {
-		pr_err("[SSP]: %s - invalid value %d\n", __func__, *buf);
+		pr_debug("[SSP]: %s - invalid value %d\n", __func__, *buf);
 		return -EINVAL;
 	}
 
@@ -238,7 +238,7 @@ ssize_t mcu_sleep_factorytest_show(struct device *dev,
 
 		if ((iSensorData < 0) ||
 			(iSensorData >= (SENSOR_MAX - 1))) {
-			pr_err("[SSP]: %s - Mcu data frame error %d\n",
+			pr_debug("[SSP]: %s - Mcu data frame error %d\n",
 				__func__, iSensorData);
 			goto exit;
 		}

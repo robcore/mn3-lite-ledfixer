@@ -71,7 +71,7 @@ static void enable_sensor(struct ssp_data *data,
 		uBuf[8] = batchOptions;
 
 		ret = send_instruction(data, ADD_SENSOR, iSensorType, uBuf, 9);
-		pr_info("[SSP], delay %d, timeout %d, flag=%d, ret%d",
+		pr_debug("[SSP], delay %d, timeout %d, flag=%d, ret%d",
 			dMsDelay, maxBatchReportLatency, uBuf[8], ret);
 		if (ret <= 0) {
 			uNewEnable =
@@ -178,7 +178,7 @@ static int ssp_remove_sensor(struct ssp_data *data,
 		}
 	} else if (uChangedSensor == GEOMAGNETIC_SENSOR) {
 		if (mag_store_hwoffset(data))
-			pr_err("mag_store_hwoffset success\n");
+			pr_debug("mag_store_hwoffset success\n");
 	}
 
 	if (!data->bSspShutdown)
@@ -216,7 +216,7 @@ static ssize_t set_enable_irq(struct device *dev,
 	if (kstrtou8(buf, 10, &dTemp) < 0)
 		return -1;
 
-	pr_info("[SSP] %s - %d start\n", __func__, dTemp);
+	pr_debug("[SSP] %s - %d start\n", __func__, dTemp);
 	if (dTemp) {
 		reset_mcu(data);
 		enable_debug_timer(data);
@@ -224,8 +224,8 @@ static ssize_t set_enable_irq(struct device *dev,
 		disable_debug_timer(data);
 		ssp_enable(data, 0);
 	} else
-		pr_err("[SSP] %s - invalid value\n", __func__);
-	pr_info("[SSP] %s - %d end\n", __func__, dTemp);
+		pr_debug("[SSP] %s - invalid value\n", __func__);
+	pr_debug("[SSP] %s - %d end\n", __func__, dTemp);
 	return size;
 }
 
@@ -272,13 +272,13 @@ static ssize_t set_sensors_enable(struct device *dev,
 						accel_open_calibration(data);
 						iRet = set_accel_cal(data);
 						if (iRet < 0)
-							pr_err("[SSP]: %s - set_accel_cal failed %d\n", __func__, iRet);
+							pr_debug("[SSP]: %s - set_accel_cal failed %d\n", __func__, iRet);
 					}
 					else if (uChangedSensor == GYROSCOPE_SENSOR) {
 						gyro_open_calibration(data);
 						iRet = set_gyro_cal(data);
 						if (iRet < 0)
-							pr_err("[SSP]: %s - set_gyro_cal failed %d\n", __func__,  iRet);
+							pr_debug("[SSP]: %s - set_gyro_cal failed %d\n", __func__,  iRet);
 					}
 					else if (uChangedSensor == PRESSURE_SENSOR)
 						pressure_open_calibration(data);
@@ -313,7 +313,7 @@ static ssize_t set_flush(struct device *dev,
 		return -EINVAL;
 
 	if (flush(data, sensor_type) < 0) {
-		pr_err("[SSP] ssp returns error for flush(%x)", sensor_type);
+		pr_debug("[SSP] ssp returns error for flush(%x)", sensor_type);
 		return -EINVAL;
 	}
 	return size;
@@ -779,7 +779,7 @@ static long ssp_batch_ioctl(struct file *file, unsigned int cmd,
 	sensor_type = (cmd & 0xFF);
 
 	if ((cmd >> 8 & 0xFF) != BATCH_IOCTL_MAGIC) {
-		pr_err("[SSP] Invalid BATCH CMD %x", cmd);
+		pr_debug("[SSP] Invalid BATCH CMD %x", cmd);
 		return -EINVAL;
 	}
 
@@ -789,7 +789,7 @@ static long ssp_batch_ioctl(struct file *file, unsigned int cmd,
 			break;
 	}
 	if (unlikely(ret)) {
-		pr_err("[SSP] batch ioctl err(%d)", ret);
+		pr_debug("[SSP] batch ioctl err(%d)", ret);
 		return -EINVAL;
 	}
 	ms_delay = get_msdelay(batch.delay);
@@ -832,7 +832,7 @@ static long ssp_batch_ioctl(struct file *file, unsigned int cmd,
 		}
 	}
 
-	pr_info("[SSP] batch %d: delay %lld, timeout %lld, flag %d, ret %d",
+	pr_debug("[SSP] batch %d: delay %lld, timeout %lld, flag %d, ret %d",
 		sensor_type, batch.delay, batch.timeout, batch.flag, ret);
 	if (!batch.timeout)
 		return 0;
@@ -934,7 +934,7 @@ err_gesture_input_dev:
 	device_remove_file(&data->pressure_input_dev->dev,
 		&dev_attr_pressure_poll_delay);
 err_pressure_input_dev:
-	pr_err("[SSP] error init sysfs");
+	pr_debug("[SSP] error init sysfs");
 	return ERROR;
 }
 
@@ -984,39 +984,39 @@ void proximity_ldo_enable(int onoff)
 	int ret = 0;
 	if (get_lcd_attached() == 0)
 	{
-		pr_err("skip proximity_ldo_enable : LCD is not attached\n");
+		pr_debug("skip proximity_ldo_enable : LCD is not attached\n");
 		return;
 	}
 
 	if(!sub_ldo1){
 		sub_ldo1 = regulator_get(NULL, "lp8720_ldo1");
 		if (IS_ERR(sub_ldo1)){
-			pr_err("lp8720 : could not get sub_ldo1, rc = %ld\n", PTR_ERR(sub_ldo1));
+			pr_debug("lp8720 : could not get sub_ldo1, rc = %ld\n", PTR_ERR(sub_ldo1));
 			sub_ldo1 = NULL;
 		}
 		if(sub_ldo1 != NULL){
 			ret = regulator_set_voltage(sub_ldo1, 1800000, 1800000);
 			if (ret) 
-				pr_err("set_voltage sub_ldo1 failed, rc=%d\n", ret);
+				pr_debug("set_voltage sub_ldo1 failed, rc=%d\n", ret);
 		}
 	}
 	if(sub_ldo1 != NULL){
 	if(onoff){
-		printk(KERN_ERR "[SSP] %s : on\n",__func__);
+		pr_debug("[SSP] %s : on\n",__func__);
 		ret = regulator_enable(sub_ldo1);
 		if (ret) 
-			pr_err("enable sub_ldo1 failed, rc=%d\n", ret);
+			pr_debug("enable sub_ldo1 failed, rc=%d\n", ret);
 	}
 	else{
-		printk(KERN_ERR "[SSP] %s : off ",__func__);
+		pr_debug("[SSP] %s : off ",__func__);
 		ret = regulator_disable(sub_ldo1);
 		if (ret) 
-			pr_err("enable sub_ldo1 failed, rc=%d\n", ret);
+			pr_debug("enable sub_ldo1 failed, rc=%d\n", ret);
 	}
 	gpio_tlmm_config(GPIO_CFG(561, 0, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA), GPIO_CFG_ENABLE);	
 	gpio_set_value(561, 1);
 	}else{
-		pr_err("sub_ldo1 is NULL, failed\n");
+		pr_debug("sub_ldo1 is NULL, failed\n");
 	}
 }
 #endif

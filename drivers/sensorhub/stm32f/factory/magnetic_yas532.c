@@ -34,7 +34,7 @@ int mag_open_hwoffset(struct ssp_data *data)
 
 	cal_filp = filp_open(MAG_HW_OFFSET_FILE_PATH, O_RDONLY, 0666);
 	if (IS_ERR(cal_filp)) {
-		pr_err("[SSP] %s: filp_open failed\n", __func__);
+		pr_debug("[SSP] %s: filp_open failed\n", __func__);
 		set_fs(old_fs);
 		iRet = PTR_ERR(cal_filp);
 
@@ -48,7 +48,7 @@ int mag_open_hwoffset(struct ssp_data *data)
 	iRet = cal_filp->f_op->read(cal_filp, (char *)&data->magoffset,
 		3 * sizeof(char), &cal_filp->f_pos);
 	if (iRet != 3 * sizeof(char)) {
-		pr_err("[SSP] %s: filp_open failed\n", __func__);
+		pr_debug("[SSP] %s: filp_open failed\n", __func__);
 		iRet = -EIO;
 	}
 
@@ -74,14 +74,14 @@ int mag_store_hwoffset(struct ssp_data *data)
 	mm_segment_t old_fs;
 
 	if (!(data->uSensorState & (1 << GEOMAGNETIC_SENSOR))) {
-		pr_info("[SSP]: %s - Skip this function!!!"\
+		pr_debug("[SSP]: %s - Skip this function!!!"\
 			", magnetic sensor is not connected(0x%x)\n",
 			__func__, data->uSensorState);
 		return iRet;
 	}
 
 	if (get_hw_offset(data) < 0) {
-		pr_err("[SSP]: %s - get_hw_offset failed\n", __func__);
+		pr_debug("[SSP]: %s - get_hw_offset failed\n", __func__);
 		return ERROR;
 	} else {
 		old_fs = get_fs();
@@ -90,7 +90,7 @@ int mag_store_hwoffset(struct ssp_data *data)
 		cal_filp = filp_open(MAG_HW_OFFSET_FILE_PATH,
 			O_CREAT | O_TRUNC | O_WRONLY, 0666);
 		if (IS_ERR(cal_filp)) {
-			pr_err("[SSP]: %s - Can't open hw_offset file\n",
+			pr_debug("[SSP]: %s - Can't open hw_offset file\n",
 				__func__);
 			set_fs(old_fs);
 			iRet = PTR_ERR(cal_filp);
@@ -100,7 +100,7 @@ int mag_store_hwoffset(struct ssp_data *data)
 			(char *)&data->magoffset,
 			3 * sizeof(char), &cal_filp->f_pos);
 		if (iRet != 3 * sizeof(char)) {
-			pr_err("[SSP]: %s - Can't write the hw_offset"
+			pr_debug("[SSP]: %s - Can't write the hw_offset"
 				" to file\n", __func__);
 			iRet = -EIO;
 		}
@@ -116,7 +116,7 @@ int set_hw_offset(struct ssp_data *data)
 	struct ssp_msg *msg;
 
 	if (!(data->uSensorState & (1 << GEOMAGNETIC_SENSOR))) {
-		pr_info("[SSP]: %s - Skip this function!!!"\
+		pr_debug("[SSP]: %s - Skip this function!!!"\
 			", magnetic sensor is not connected(0x%x)\n",
 			__func__, data->uSensorState);
 		return iRet;
@@ -136,11 +136,11 @@ int set_hw_offset(struct ssp_data *data)
 	iRet = ssp_spi_async(data, msg);
 
 	if (iRet != SUCCESS) {
-		pr_err("[SSP]: %s - i2c fail %d\n", __func__, iRet);
+		pr_debug("[SSP]: %s - i2c fail %d\n", __func__, iRet);
 		iRet = ERROR;
 	}
 
-	pr_info("[SSP]: %s: x: %d, y: %d, z: %d\n", __func__,
+	pr_debug("[SSP]: %s: x: %d, y: %d, z: %d\n", __func__,
 		(s8)data->magoffset.x, (s8)data->magoffset.y, (s8)data->magoffset.z);
 	return iRet;
 }
@@ -152,7 +152,7 @@ int set_static_matrix(struct ssp_data *data)
 	s16 static_matrix[9] = YAS_STATIC_ELLIPSOID_MATRIX;
 
 	if (!(data->uSensorState & (1 << GEOMAGNETIC_SENSOR))) {
-		pr_info("[SSP]: %s - Skip this function!!!"\
+		pr_debug("[SSP]: %s - Skip this function!!!"\
 			", magnetic sensor is not connected(0x%x)\n",
 			__func__, data->uSensorState);
 		return iRet;
@@ -170,7 +170,7 @@ int set_static_matrix(struct ssp_data *data)
 	iRet = ssp_spi_async(data, msg);
 
 	if (iRet != SUCCESS) {
-		pr_err("[SSP]: %s - i2c fail %d\n", __func__, iRet);
+		pr_debug("[SSP]: %s - i2c fail %d\n", __func__, iRet);
 		iRet = ERROR;
 	}
 
@@ -196,7 +196,7 @@ int get_hw_offset(struct ssp_data *data)
 	iRet = ssp_spi_sync(data, msg, 1000);
 
 	if (iRet != SUCCESS) {
-		pr_err("[SSP]: %s - i2c fail %d\n", __func__, iRet);
+		pr_debug("[SSP]: %s - i2c fail %d\n", __func__, iRet);
 		iRet = ERROR;
 	}
 
@@ -204,7 +204,7 @@ int get_hw_offset(struct ssp_data *data)
 	data->magoffset.y = buffer[1];
 	data->magoffset.z = buffer[2];
 
-	pr_info("[SSP]: %s: x: %d, y: %d, z: %d\n", __func__,
+	pr_debug("[SSP]: %s: x: %d, y: %d, z: %d\n", __func__,
 		(s8)data->magoffset.x,
 		(s8)data->magoffset.y,
 		(s8)data->magoffset.z);
@@ -238,7 +238,7 @@ static ssize_t raw_data_show(struct device *dev,
 {
 	struct ssp_data *data = dev_get_drvdata(dev);
 
-	pr_info("[SSP] %s - %d,%d,%d\n", __func__,
+	pr_debug("[SSP] %s - %d,%d,%d\n", __func__,
 		data->buf[GEOMAGNETIC_RAW].x,
 		data->buf[GEOMAGNETIC_RAW].y,
 		data->buf[GEOMAGNETIC_RAW].z);
@@ -297,10 +297,10 @@ static ssize_t raw_data_store(struct device *dev,
 		} while (--iRetries);
 
 		if (iRetries > 0) {
-			pr_info("[SSP] %s - success, %d\n", __func__, iRetries);
+			pr_debug("[SSP] %s - success, %d\n", __func__, iRetries);
 			data->bGeomagneticRawEnabled = true;
 		} else {
-			pr_err("[SSP] %s - wait timeout, %d\n", __func__,
+			pr_debug("[SSP] %s - wait timeout, %d\n", __func__,
 				iRetries);
 			data->bGeomagneticRawEnabled = false;
 		}
@@ -366,7 +366,7 @@ static ssize_t adc_data_read(struct device *dev,
 		send_instruction(data, REMOVE_SENSOR, GEOMAGNETIC_SENSOR,
 			chTempbuf, 4);
 
-	pr_info("[SSP]: %s - x = %d, y = %d, z = %d\n", __func__,
+	pr_debug("[SSP]: %s - x = %d, y = %d, z = %d\n", __func__,
 		iSensorBuf[0], iSensorBuf[1], iSensorBuf[2]);
 
 	return sprintf(buf, "%s,%d,%d,%d\n", (bSuccess ? "OK" : "NG"),
@@ -393,7 +393,7 @@ static ssize_t magnetic_get_selftest(struct device *dev,
 	iRet = ssp_spi_sync(data, msg, 1000);
 
 	if (iRet != SUCCESS) {
-		pr_err("[SSP]: %s - Magnetic Selftest Timeout!! %d\n", __func__, iRet);
+		pr_debug("[SSP]: %s - Magnetic Selftest Timeout!! %d\n", __func__, iRet);
 		goto exit;
 	}
 
@@ -432,7 +432,7 @@ static ssize_t magnetic_get_selftest(struct device *dev,
 	if (unlikely(ohz < -600 || ohz > 600))
 		err[6] = -1;
 
-	pr_info("[SSP] %s\n"
+	pr_debug("[SSP] %s\n"
 		"[SSP] Test1 - err = %d, id = %d\n"
 		"[SSP] Test3 - err = %d\n"
 		"[SSP] Test4 - err = %d, offset = %d,%d,%d\n"
@@ -457,7 +457,7 @@ static ssize_t hw_offset_show(struct device *dev,
 
 	mag_open_hwoffset(data);
 
-	pr_info("[SSP] %s: %d %d %d\n", __func__,
+	pr_debug("[SSP] %s: %d %d %d\n", __func__,
 		(s8)data->magoffset.x,
 		(s8)data->magoffset.y,
 		(s8)data->magoffset.z);

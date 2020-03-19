@@ -60,7 +60,7 @@ static ssize_t gesture_get_selftest_show(struct device *dev,
 	iRet = ssp_spi_sync(data, msg, 2000);
 
 	if (iRet != SUCCESS) {
-		pr_err("[SSP]: %s - Gesture Selftest Timeout!!\n", __func__);
+		pr_debug("[SSP]: %s - Gesture Selftest Timeout!!\n", __func__);
 		goto exit;
 	}
 
@@ -69,7 +69,7 @@ static ssize_t gesture_get_selftest_show(struct device *dev,
 	raw_C = chTempBuf[2];
 	raw_D = chTempBuf[3];
 
-	pr_info("[SSP] %s: self test A = %d, B = %d, C = %d, D = %d\n",
+	pr_debug("[SSP] %s: self test A = %d, B = %d, C = %d, D = %d\n",
 		__func__, raw_A, raw_B, raw_C, raw_D);
 
 	exit: return sprintf(buf, "%d,%d,%d,%d\n", raw_A, raw_B, raw_C, raw_D);
@@ -98,7 +98,7 @@ static ssize_t ir_current_store(struct device *dev,
 
 	iRet = kstrtou16(buf, 10, &uNewIrCurrent);
 	if (iRet < 0)
-		pr_err("[SSP]: %s - kstrtoint failed.(%d)\n", __func__, iRet);
+		pr_debug("[SSP]: %s - kstrtoint failed.(%d)\n", __func__, iRet);
 	else {
 		for(current_index = 0; current_index < 16; current_index++) {
 			if (set_current[0][current_index] == uNewIrCurrent) {

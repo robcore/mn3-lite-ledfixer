@@ -133,7 +133,7 @@ static int stm32fwu_spi_wait_for_ack(struct spi_device *spi,
 	int ret;
 
 #if SSP_STM_DEBUG
-	pr_info("[SSP] %s: dummy byte = 0x%02hhx\n",
+	pr_debug("[SSP] %s: dummy byte = 0x%02hhx\n",
 		__func__, dummy_bytes);
 #endif
 	while (i < cmd->timeout) {
@@ -215,7 +215,7 @@ static int stm32fwu_spi_send_cmd(struct spi_device *spi,
 	cmd->status = ret;
 
 	if (ret != BL_ACK) {
-		pr_err("[SSP] %s: Got NAK or Error %d\n", __func__, ret);
+		pr_debug("[SSP] %s: Got NAK or Error %d\n", __func__, ret);
 		return ret;
 	}
 
@@ -247,7 +247,7 @@ static int stm32fwu_spi_read(struct spi_device *spi,
 	ret = spi_sync(spi, &m);
 
 	if (ret < 0) {
-		pr_err("[SSP] Error in %d spi_read()\n", ret);
+		pr_debug("[SSP] Error in %d spi_read()\n", ret);
 		return ret;
 	}
 
@@ -289,7 +289,7 @@ static int stm32fwu_spi_write(struct spi_device *spi,
 	ret = spi_sync(spi, &m);
 
 	if (ret < 0) {
-		pr_err("[SSP] Error in %d spi_write()\n", ret);
+		pr_debug("[SSP] Error in %d spi_write()\n", ret);
 		return ret;
 	}
 
@@ -315,13 +315,13 @@ static int send_addr(struct spi_device *spi, u32 fw_addr, int send_short)
 	res = stm32fwu_spi_write(spi, &header[i], len);
 
 	if (res <  len) {
-		pr_err("[SSP] Error in sending address. Res  %d\n", res);
+		pr_debug("[SSP] Error in sending address. Res  %d\n", res);
 		return ((res > 0) ? -EIO : res);
 	}
 
 	res = stm32fwu_spi_wait_for_ack(spi, &dummy_cmd, BL_ACK);
 	if (res != BL_ACK) {
-		pr_err("[SSP] send_addr(): rcv_ack returned 0x%x\n",
+		pr_debug("[SSP] send_addr(): rcv_ack returned 0x%x\n",
 			res);
 		return res;
 	}
@@ -377,7 +377,7 @@ static int fw_read_stm(struct spi_device *spi, u32 fw_addr,
 	res = stm32fwu_spi_send_cmd(spi, &cmd);
 
 	if (res != BL_ACK) {
-		pr_err("[SSP] Error %d sending read_mem cmd\n", res);
+		pr_debug("[SSP] Error %d sending read_mem cmd\n", res);
 		return res;
 	}
 
@@ -387,7 +387,7 @@ static int fw_read_stm(struct spi_device *spi, u32 fw_addr,
 		res = send_addr(spi, fw_addr, 0);
 
 	if (res != 0) {
-		pr_err("[SSP] Error %d sending read_mem Address\n", res);
+		pr_debug("[SSP] Error %d sending read_mem Address\n", res);
 		return res;
 	}
 
@@ -423,11 +423,11 @@ static int fw_write_stm(struct spi_device *spi, u32 fw_addr,
 	cmd.ack_pad = (u8)((fw_addr >> 24) & 0xFF);
 
 #if SSP_STM_DEBUG
-	pr_info("[SSP] sending WMEM_COMMAND\n");
+	pr_debug("[SSP] sending WMEM_COMMAND\n");
 #endif
 
 	if (len > STM_MAX_XFER_SIZE) {
-		pr_err("[SSP] Can't send more than 256 bytes per transaction\n");
+		pr_debug("[SSP] Can't send more than 256 bytes per transaction\n");
 		return -EINVAL;
 	}
 
@@ -440,7 +440,7 @@ static int fw_write_stm(struct spi_device *spi, u32 fw_addr,
 
 	res = stm32fwu_spi_send_cmd(spi, &cmd);
 	if (res != BL_ACK) {
-		pr_err("[SSP] Error %d sending read_mem cmd\n", res);
+		pr_debug("[SSP] Error %d sending read_mem cmd\n", res);
 		return res;
 	}
 
@@ -450,13 +450,13 @@ static int fw_write_stm(struct spi_device *spi, u32 fw_addr,
 		res = send_addr(spi, fw_addr, 0);
 
 	if (res != 0) {
-		pr_err("[SSP] Error %d sending write_mem Address\n", res);
+		pr_debug("[SSP] Error %d sending write_mem Address\n", res);
 		return res;
 	}
 
 	res = stm32fwu_spi_write(spi, send_buff, len + 2);
 	if (res < len) {
-		pr_err("[SSP] Error writing to flash. res = %d\n", res);
+		pr_debug("[SSP] Error writing to flash. res = %d\n", res);
 		return ((res > 0) ? -EIO : res);
 	}
 
@@ -468,10 +468,10 @@ static int fw_write_stm(struct spi_device *spi, u32 fw_addr,
 	}
 
 	if (res == BL_NACK) {
-		pr_err("[SSP] Got NAK waiting for WRITE_MEM to complete\n");
+		pr_debug("[SSP] Got NAK waiting for WRITE_MEM to complete\n");
 		return -EPROTO;
 	}
-	pr_err("[SSP] timeout waiting for ACK for WRITE_MEM command\n");
+	pr_debug("[SSP] timeout waiting for ACK for WRITE_MEM command\n");
 	return -ETIME;
 }
 
@@ -491,7 +491,7 @@ static int load_ums_fw_bootmode(struct spi_device *spi, const char *pFn)
 	struct file *fp = NULL;
 	mm_segment_t old_fs = get_fs();
 
-	pr_info("[SSP] ssp_load_ums_fw start!!!\n");
+	pr_debug("[SSP] ssp_load_ums_fw start!!!\n");
 
 	old_fs = get_fs();
 	set_fs(get_ds());
@@ -501,17 +501,17 @@ static int load_ums_fw_bootmode(struct spi_device *spi, const char *pFn)
 	fp = filp_open(fw_path, O_RDONLY, 0);
 	if (IS_ERR(fp)) {
 		iRet = ERROR;
-		pr_err("file %s open error:%d\n", fw_path, (s32)fp);
+		pr_debug("file %s open error:%d\n", fw_path, (s32)fp);
 		goto err_open;
 	}
 
 	uFSize = (unsigned int)fp->f_path.dentry->d_inode->i_size;
-	pr_info("ssp_load_ums firmware size: %u\n", uFSize);
+	pr_debug("ssp_load_ums firmware size: %u\n", uFSize);
 
 	buff = kzalloc((size_t)uFSize, GFP_KERNEL);
 	if (!buff) {
 		iRet = ERROR;
-		pr_err("fail to alloc buffer for fw\n");
+		pr_debug("fail to alloc buffer for fw\n");
 		goto err_alloc;
 	}
 
@@ -519,7 +519,7 @@ static int load_ums_fw_bootmode(struct spi_device *spi, const char *pFn)
 			(unsigned int)uFSize, &fp->f_pos);
 	if (uNRead != uFSize) {
 		iRet = ERROR;
-		pr_err("fail to read file %s (nread = %u)\n", fw_path, uNRead);
+		pr_debug("fail to read file %s (nread = %u)\n", fw_path, uNRead);
 		goto err_fw_size;
 	}
 	remaining = uFSize;
@@ -531,11 +531,11 @@ static int load_ums_fw_bootmode(struct spi_device *spi, const char *pFn)
 		while (retry_count < 3) {
 			iRet = fw_write_stm(spi, fw_addr, block, buff + uPos);
 			if (iRet < block) {
-				pr_err("[SSP] Error writing to addr 0x%08X\n", fw_addr);
+				pr_debug("[SSP] Error writing to addr 0x%08X\n", fw_addr);
 				if (iRet < 0) {
-					pr_err("[SSP] Erro was %d\n", iRet);
+					pr_debug("[SSP] Erro was %d\n", iRet);
 				} else {
-					pr_err("[SSP] Incomplete write of %d bytes\n",
+					pr_debug("[SSP] Incomplete write of %d bytes\n",
 						iRet);
 					iRet = -EIO;
 				}
@@ -547,19 +547,19 @@ static int load_ums_fw_bootmode(struct spi_device *spi, const char *pFn)
 			}
 		}
 		if (iRet < 0) {
-			pr_err("[SSP] Writing MEM failed: %d, retry cont: %d\n", iRet, err_count);
+			pr_debug("[SSP] Writing MEM failed: %d, retry cont: %d\n", iRet, err_count);
 			goto out;
 		}
 		remaining -= block;
 		uPos += block;
 		fw_addr += block;
 		if (count++ == 50) {
-			pr_info("[SSP] Updated %u bytes / %u bytes\n", uPos,
+			pr_debug("[SSP] Updated %u bytes / %u bytes\n", uPos,
 				uFSize);
 			count = 0;
 		}
 	}
-	pr_info("[SSP] Firm up(UMS) success(%d bytes, retry %d)\n", uPos, err_count);
+	pr_debug("[SSP] Firm up(UMS) success(%d bytes, retry %d)\n", uPos, err_count);
 out:
 err_fw_size:
 	kfree(buff);
@@ -586,7 +586,7 @@ static int fw_erase_stm(struct spi_device *spi)
 	ret = stm32fwu_spi_send_cmd(spi, &cmd);
 
 	if (ret < 0 || ret != BL_ACK) {
-		pr_err("[SSP] fw_erase failed\n");
+		pr_debug("[SSP] fw_erase failed\n");
 		return ret;
 	}
 	if (cmd.ack_loops == 0)
@@ -622,11 +622,11 @@ static int load_kernel_fw_bootmode(struct spi_device *spi, const char *pFn)
 	int err_count = 0;
 	int retry_count = 0;
 
-	pr_info("[SSP] ssp_load_fw start!!!\n");
+	pr_debug("[SSP] ssp_load_fw start!!!\n");
 
 	iRet = request_firmware(&fw, pFn, &spi->dev);
 	if (iRet) {
-		pr_err("[SSP] Unable to open firmware %s\n", pFn);
+		pr_debug("[SSP] Unable to open firmware %s\n", pFn);
 		return iRet;
 	}
 
@@ -638,11 +638,11 @@ static int load_kernel_fw_bootmode(struct spi_device *spi, const char *pFn)
 		while (retry_count < 3) {
 			iRet = fw_write_stm(spi, fw_addr, block, fw->data + uPos);
 			if (iRet < block) {
-				pr_err("[SSP] Error writing to addr 0x%08X\n", fw_addr);
+				pr_debug("[SSP] Error writing to addr 0x%08X\n", fw_addr);
 				if (iRet < 0) {
-					pr_err("[SSP] Erro was %d\n", iRet);
+					pr_debug("[SSP] Erro was %d\n", iRet);
 				} else {
-					pr_err("[SSP] Incomplete write of %d bytes\n",
+					pr_debug("[SSP] Incomplete write of %d bytes\n",
 						iRet);
 					iRet = -EIO;
 				}
@@ -654,20 +654,20 @@ static int load_kernel_fw_bootmode(struct spi_device *spi, const char *pFn)
 			}
 		}
 		if (iRet < 0) {
-			pr_err("[SSP] Writing MEM failed: %d, retry cont: %d\n", iRet, err_count);
+			pr_debug("[SSP] Writing MEM failed: %d, retry cont: %d\n", iRet, err_count);
 			goto out_load_kernel;
 		}
 		remaining -= block;
 		uPos += block;
 		fw_addr += block;
 		if (count++ == 20) {
-			pr_info("[SSP] Updated %u bytes / %u bytes\n", uPos,
+			pr_debug("[SSP] Updated %u bytes / %u bytes\n", uPos,
 				fw->size);
 			count = 0;
 		}
 	}
 
-	pr_info("[SSP] Firmware download is success.(%d bytes, retry %d)\n", uPos, err_count);
+	pr_debug("[SSP] Firmware download is success.(%d bytes, retry %d)\n", uPos, err_count);
 
 out_load_kernel:
 	release_firmware(fw);
@@ -697,11 +697,11 @@ static int change_to_bootmode(struct ssp_data *data)
 	}
 	ret = stm32fwu_spi_write(data->spi, &syncb, 1);
 #if SSP_STM_DEBUG
-	pr_info("[SSP] stm32fwu_spi_write(sync byte) returned %d\n", ret);
+	pr_debug("[SSP] stm32fwu_spi_write(sync byte) returned %d\n", ret);
 #endif
 	ret = stm32fwu_spi_wait_for_ack(data->spi, &dummy_cmd, BL_ACK);
 #if SSP_STM_DEBUG
-	pr_info("[SSP] stm32fwu_spi_wait_for_ack returned %d (0x%x)\n",
+	pr_debug("[SSP] stm32fwu_spi_wait_for_ack returned %d (0x%x)\n",
 		ret, ret);
 #endif
 	return ret;
@@ -730,18 +730,18 @@ static int update_mcu_bin(struct ssp_data *data, int iBinType)
 
 	do {
 		iRet = change_to_bootmode(data);
-		pr_info("[ssp] bootmode %d retry: %d\n", iRet, 3 - retry);
+		pr_debug("[ssp] bootmode %d retry: %d\n", iRet, 3 - retry);
 	} while (retry-- > 0 && iRet != BL_ACK );
 
 	if(iRet != BL_ACK) {
-		pr_err("[SSP]: %s - change_to_bootmode %d\n",
+		pr_debug("[SSP]: %s - change_to_bootmode %d\n",
 			__func__, iRet);
 		return iRet;
 	}
 
 	iRet = fw_erase_stm(data->spi);
 	if (iRet < 0) {
-		pr_err("[SSP]: %s - fw_erase_stm %d\n",
+		pr_debug("[SSP]: %s - fw_erase_stm %d\n",
 			__func__, iRet);
 		return iRet;
 	}
@@ -767,7 +767,7 @@ static int update_mcu_bin(struct ssp_data *data, int iBinType)
 		break;
 
 	default:
-		pr_err("[SSP] binary type error!!\n");
+		pr_debug("[SSP] binary type error!!\n");
 	}
 /* STM : GO USER ADDR */
 	stm32fwu_spi_send_cmd(data->spi, &cmd);
@@ -791,19 +791,19 @@ int forced_to_download_binary(struct ssp_data *data, int iBinType)
 	ssp_enable(data, false);
 
 	data->fw_dl_state = FW_DL_STATE_DOWNLOADING;
-	pr_info("[SSP] %s, DL state = %d\n", __func__,
+	pr_debug("[SSP] %s, DL state = %d\n", __func__,
 	data->fw_dl_state);
 	data->spi->max_speed_hz = BOOT_SPI_HZ;
 	if (spi_setup(data->spi))
-		pr_err("failed to setup spi for ssp_boot\n");
+		pr_debug("failed to setup spi for ssp_boot\n");
 
 	do {
-		pr_info("[SSP] %d try\n", 3 - retry);
+		pr_debug("[SSP] %d try\n", 3 - retry);
 		iRet = update_mcu_bin(data, iBinType);
 	} while (retry -- > 0 && iRet < 0);
 	data->spi->max_speed_hz = NORM_SPI_HZ;
 	if (spi_setup(data->spi))
-		pr_err("failed to setup spi for ssp_norm\n");
+		pr_debug("failed to setup spi for ssp_norm\n");
 
 	if (iRet < 0) {
 		ssp_dbg("[SSP]: %s - update_mcu_bin failed!\n", __func__);
@@ -811,7 +811,7 @@ int forced_to_download_binary(struct ssp_data *data, int iBinType)
 	}
 
 	data->fw_dl_state = FW_DL_STATE_SYNC;
-	pr_info("[SSP] %s, DL state = %d\n", __func__, data->fw_dl_state);
+	pr_debug("[SSP] %s, DL state = %d\n", __func__, data->fw_dl_state);
 	clean_pending_list(data);
 	ssp_enable(data, true);
 
@@ -828,7 +828,7 @@ int forced_to_download_binary(struct ssp_data *data, int iBinType)
 	gyro_open_calibration(data);
 	pressure_open_calibration(data);
 	if (mag_open_hwoffset(data) < 0)
-		pr_info("[SSP]: %s - mag_open_hw_offset"
+		pr_debug("[SSP]: %s - mag_open_hw_offset"
 			" failed, %d\n", __func__, iRet);
 
 	sync_sensor_state(data);
@@ -838,7 +838,7 @@ int forced_to_download_binary(struct ssp_data *data, int iBinType)
 #endif
 
 	data->fw_dl_state = FW_DL_STATE_DONE;
-	pr_info("[SSP] %s, DL state = %d\n", __func__, data->fw_dl_state);
+	pr_debug("[SSP] %s, DL state = %d\n", __func__, data->fw_dl_state);
 
 	iRet = SUCCESS;
 out:
@@ -850,7 +850,7 @@ int check_fwbl(struct ssp_data *data)
 
 	unsigned int fw_revision;
 
-	pr_info("[SSP] change_rev = %d\n", data->ssp_changes);
+	pr_debug("[SSP] change_rev = %d\n", data->ssp_changes);
 #if defined (CONFIG_MACH_JSGLTE_CHN_CMCC)
 	fw_revision = SSP_FIRMWARE_REVISION_JSGLTE;
 #elif defined (CONFIG_MACH_VIKALCU)
@@ -879,7 +879,7 @@ int check_fwbl(struct ssp_data *data)
 		iRet = check_bootloader(data->client, BL_WAITING_BOOTLOAD_CMD);
 
 		if (iRet >= 0) {
-			pr_info("[SSP] ssp_load_fw_bootmode\n");
+			pr_debug("[SSP] ssp_load_fw_bootmode\n");
 
 			return FW_DL_STATE_NEED_TO_SCHEDULE;
 		} else {
@@ -889,28 +889,28 @@ int check_fwbl(struct ssp_data *data)
 			data->uCurFirmRev = get_firmware_rev(data);
 			if (data->uCurFirmRev == SSP_INVALID_REVISION ||\
 				data->uCurFirmRev == ERROR) {
-				pr_err("[SSP] MCU is not working, FW download failed\n");
+				pr_debug("[SSP] MCU is not working, FW download failed\n");
 				return FW_DL_STATE_FAIL;
 			} else if (data->uCurFirmRev != fw_revision) {
-				pr_info("[SSP] MCU Firm Rev : Old = %8u, New = %8u\n",
+				pr_debug("[SSP] MCU Firm Rev : Old = %8u, New = %8u\n",
 					data->uCurFirmRev, fw_revision);
 
 				return FW_DL_STATE_NEED_TO_SCHEDULE;
 			}
-			pr_info("[SSP] MCU Firm Rev : Old = %8u, New = %8u\n",
+			pr_debug("[SSP] MCU Firm Rev : Old = %8u, New = %8u\n",
 				data->uCurFirmRev, fw_revision);
 		}
 #endif
-		pr_err("[SSP] SSP_INVALID_REVISION\n");
+		pr_debug("[SSP] SSP_INVALID_REVISION\n");
 		return FW_DL_STATE_NEED_TO_SCHEDULE;
 	} else {
 		if (data->uCurFirmRev != fw_revision) {
-			pr_info("[SSP] MCU Firm Rev : Old = %8u, New = %8u\n",
+			pr_debug("[SSP] MCU Firm Rev : Old = %8u, New = %8u\n",
 				data->uCurFirmRev, fw_revision);
 
 			return FW_DL_STATE_NEED_TO_SCHEDULE;
 		}
-		pr_info("[SSP] MCU Firm Rev : Old = %8u, New = %8u\n",
+		pr_debug("[SSP] MCU Firm Rev : Old = %8u, New = %8u\n",
 			data->uCurFirmRev, fw_revision);
 	}
 

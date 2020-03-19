@@ -224,7 +224,7 @@ int parse_dataframe(struct ssp_data *data, char *pchRcvDataFrame, int iLength) {
 		case MSG2AP_INST_BYPASS_DATA:
 			iSensorData = pchRcvDataFrame[iDataIdx++];
 			if ((iSensorData < 0) || (iSensorData >= SENSOR_MAX)) {
-				pr_err("[SSP]: %s - Mcu data frame1 error %d\n", __func__,
+				pr_debug("[SSP]: %s - Mcu data frame1 error %d\n", __func__,
 						iSensorData);
 				return ERROR;
 			}
@@ -277,12 +277,12 @@ int parse_dataframe(struct ssp_data *data, char *pchRcvDataFrame, int iLength) {
 						|| (iSensorData == GESTURE_SENSOR) || (iSensorData == SIG_MOTION_SENSOR))
 					data->report_sensor_data[iSensorData](data, &sensorsdata);
 				else
-					pr_err("[SSP]: %s irq_diff is under 1msec (%d)\n", __func__, iSensorData);
+					pr_debug("[SSP]: %s irq_diff is under 1msec (%d)\n", __func__, iSensorData);
 				sensortime.batch_count--;
 			} while ((sensortime.batch_count > 0) && (iDataIdx < iLength));
 
 			if (sensortime.batch_count > 0)
-				pr_err("[SSP]: %s batch count error (%d)\n", __func__, sensortime.batch_count);
+				pr_debug("[SSP]: %s batch count error (%d)\n", __func__, sensortime.batch_count);
 
 			data->lastTimestamp[iSensorData] = data->timestamp;
 			data->reportedData[iSensorData] = true;
@@ -290,7 +290,7 @@ int parse_dataframe(struct ssp_data *data, char *pchRcvDataFrame, int iLength) {
 		case MSG2AP_INST_DEBUG_DATA:
 			iSensorData = print_mcu_debug(pchRcvDataFrame, &iDataIdx, iLength);
 			if (iSensorData) {
-				pr_err("[SSP]: %s - Mcu data frame3 error %d\n", __func__,
+				pr_debug("[SSP]: %s - Mcu data frame3 error %d\n", __func__,
 						iSensorData);
 				return ERROR;
 			}

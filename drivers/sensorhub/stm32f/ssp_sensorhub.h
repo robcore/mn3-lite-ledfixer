@@ -39,12 +39,11 @@
 #define IOCTL_READ_BIG_CONTEXT_DATA	_IOR(SENSORHUB_IOCTL_MAGIC, 3, char *)
 
 #define sensorhub_info(str, args...) \
-	pr_info("[SSP]: %s - " str, __func__, ##args)
+	pr_debug("[SSP]: %s - " str, __func__, ##args)
 #define sensorhub_debug(str, args...) \
 	pr_debug("[SSP]: %s - " str, __func__, ##args)
 #define sensorhub_err(str, args...) \
-	pr_err("[SSP]: %s - " str, __func__, ##args)
-
+	pr_debug("[SSP]: %s - " str, __func__, ##args)
 
 struct sensorhub_event {
 	char *library_data;
