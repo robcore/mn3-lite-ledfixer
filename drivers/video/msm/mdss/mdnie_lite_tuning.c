@@ -150,7 +150,7 @@ struct mdnie_lite_tun_type mdnie_tun_state = {
 #ifdef MDNIE_LITE_MODE
 	.background = 0,
 #else
-	.background = AUTO_MODE,
+	.background = STANDARD_MODE,
 #endif /* MDNIE_LITE_MODE */
 	.outdoor = OUTDOOR_OFF_MODE,
 	.accessibility = ACCESSIBILITY_OFF,
@@ -187,11 +187,7 @@ char scenario_name[MAX_mDNIe_MODE][16] = {
 
 const char background_name[MAX_BACKGROUND_MODE][10] = {
 	"DYNAMIC",
-#if defined(CONFIG_MDNIE_LITE_CONTROL)
-	"CONTROL",
-#else
 	"STANDARD",
-#endif
 	"NATURAL",
 	"MOVIE",
 	"AUTO",
@@ -306,6 +302,7 @@ static struct dsi_cmd_desc mdni_tune_cmd[] = {
 void print_tun_data(void)
 {
 	int i;
+
 	DPRINT("\n");
 	DPRINT("---- size1 : %d", PAYLOAD1.dchdr.dlen);
 	for (i = 0; i < MDNIE_TUNE_SECOND_SIZE ; i++)
@@ -411,19 +408,6 @@ void sending_tuning_cmd(void)
 	mfd = mdnie_msd->mfd;
 	ctrl_pdata = mdnie_msd->ctrl_pdata;
 
-#if defined(CONFIG_FB_MSM_MDSS_MDP3)
-	if (!mfd) {
-		DPRINT("[ERROR] mfd is null!\n");
-		return;
-	}
-
-	if (mfd->blank_mode) {
-		DPRINT("[ERROR] blank_mode (%d). do not send mipi cmd.\n",
-			mfd->blank_mode);
-		return;
-	}
-#endif
-
 	if (mfd->resume_state == MIPI_SUSPEND_STATE) {
 		DPRINT("[ERROR] not ST_DSI_RESUME. do not send mipi cmd.\n");
 		return;
@@ -455,19 +439,10 @@ void sending_tuning_cmd(void)
 
 	mutex_lock(&mdnie_msd->lock);
 
-#ifdef MDNIE_LITE_TUN_DATA_DEBUG
-		print_tun_data();
-#endif
 
-#if defined(CONFIG_FB_MSM_MDSS_MDP3)
-		mdss_dsi_cmds_send(ctrl_pdata, mdni_tune_cmd, ARRAY_SIZE(mdni_tune_cmd));
-#else
-#if defined(CONFIG_FB_MSM_MIPI_MAGNA_OCTA_VIDEO_WXGA_PT_DUAL_PANEL)
-	mdss_dsi_cmds_send(ctrl_pdata, mdni_tune_cmd, ARRAY_SIZE(mdni_tune_cmd), CMD_REQ_SINGLE_TX);
-#else
-	mdss_dsi_cmds_send(ctrl_pdata, mdni_tune_cmd, ARRAY_SIZE(mdni_tune_cmd), 0);
-#endif
-#endif
+		print_tun_data();
+
+		mdss_dsi_cmds_send(ctrl_pdata, mdni_tune_cmd, ARRAY_SIZE(mdni_tune_cmd), 0);
 
 		mutex_unlock(&mdnie_msd->lock);
 	}
@@ -514,13 +489,6 @@ void mDNIe_Set_Mode(void)
 		return;
 	}
 
-#if defined(CONFIG_FB_MSM_MDSS_DSI_DBG) && defined(CONFIG_FB_MSM_MDSS_MDP3)
-	if(!dsi_ctrl_on) {
-		DPRINT("[ERROR] dsi_on (%d). do not send mipi cmd.\n", dsi_ctrl_on);
-		return;
-	}
-#endif
-
 	play_speed_1_5 = 0;
 
 #ifdef CONFIG_MDNIE_LITE_CONTROL
@@ -532,17 +500,8 @@ void mDNIe_Set_Mode(void)
 #endif
 	if (mdnie_tun_state.accessibility) {
 		DPRINT(" = ACCESSIBILITY MODE =\n");
-#if defined(CONFIG_FB_MSM_MIPI_VIDEO_WVGA_NT35502_PT_PANEL)
 		INPUT_PAYLOAD1(blind_tune_value[mdnie_tun_state.accessibility][0]);
 		INPUT_PAYLOAD2(blind_tune_value[mdnie_tun_state.accessibility][1]);
-		INPUT_PAYLOAD3(blind_tune_value[mdnie_tun_state.accessibility][2]);
-		INPUT_PAYLOAD4(blind_tune_value[mdnie_tun_state.accessibility][3]);
-		INPUT_PAYLOAD5(blind_tune_value[mdnie_tun_state.accessibility][4]);
-#else
-		INPUT_PAYLOAD1(blind_tune_value[mdnie_tun_state.accessibility][0]);
-		INPUT_PAYLOAD2(blind_tune_value[mdnie_tun_state.accessibility][1]);
-#endif
-
 	}
 
 #if defined(CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_CMD_WQHD_PT_PANEL) || defined (CONFIG_FB_MSM_MIPI_MAGNA_OCTA_CMD_HD_PT_PANEL) \
@@ -631,7 +590,7 @@ void mDNIe_Set_Mode(void)
 		}
 #endif
 }
-
+	print_tun_data();
 	sending_tuning_cmd();
 	free_tun_cmd();
 
@@ -809,6 +768,11 @@ static ssize_t curve_store(struct device * dev, struct device_attribute * attr, 
 }
 
 /* copy_mode */
+
+static ssize_t copy_mode_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%d\n", curve);
+}
 
 static ssize_t copy_mode_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
 {
@@ -1404,7 +1368,7 @@ static ssize_t white_blue_store(struct device * dev, struct device_attribute * a
 
 static DEVICE_ATTR(hijack, 0666, hijack_show, hijack_store);
 static DEVICE_ATTR(curve, 0666, curve_show, curve_store);
-static DEVICE_ATTR(copy_mode, 0222, NULL, copy_mode_store);
+static DEVICE_ATTR(copy_mode, 0666, copy_mode_show, copy_mode_store);
 static DEVICE_ATTR(sharpen, 0666, sharpen_show, sharpen_store);
 static DEVICE_ATTR(red_red, 0666, red_red_show, red_red_store);
 static DEVICE_ATTR(red_green, 0666, red_green_show, red_green_store);
