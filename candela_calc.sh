@@ -14,11 +14,3 @@ END=255
 for ((i=0;i<=END;i++)); do
     candela_func $i
 done
-
-#limit=255
-#for ((i=1;i<=END;++i)); do echo $i; done
-#for i in $(seq 1 $limit)
-#do
-#	CURVAL="$(echo $(( i + 1 )))"
-#	echo "$CURVAL"
-#done
