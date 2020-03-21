@@ -89,7 +89,7 @@ Copyright (C) 2012, Samsung Electronics. All rights reserved.
 
 /* PANEL DEPENDENT THINGS */
 #define MAX_CANDELA 300
-#define MIN_CANDELA	5
+#define MIN_CANDELA	10
 
 /*
 *	ID 0x20
