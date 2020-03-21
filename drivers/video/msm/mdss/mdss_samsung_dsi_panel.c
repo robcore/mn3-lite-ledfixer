@@ -1529,8 +1529,10 @@ static int make_brightcontrol_set(int bl_level)
 		cmd_count = update_bright_packet(cmd_count, &gamma_control);
 	}
 #else
+#if 0
 	gamma_control = get_gamma_control_set(cd_level);
 	cmd_count = update_bright_packet(cmd_count, &gamma_control);
+#endif
 #endif
 #if defined(CONFIG_FB_MSM_MDSS_MAGNA_OCTA_VIDEO_720P_PANEL)\
 	|| defined(CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_VIDEO_HD_PANEL)
@@ -2044,9 +2046,10 @@ static DEVICE_ATTR(window_type, S_IRUGO,
 			mipi_samsung_disp_windowtype_show, NULL);
 
 
-static DEVICE_ATTR(power_reduce, S_IRUGO | S_IWUSR | S_IWGRP,
+static DEVICE_ATTR(power_reduce, 0644,
 			mipi_samsung_disp_acl_show,
 			mipi_samsung_disp_acl_store);
+
 static DEVICE_ATTR(auto_brightness, S_IRUGO | S_IWUSR | S_IWGRP,
 			mipi_samsung_auto_brightness_show,
 			mipi_samsung_auto_brightness_store);
