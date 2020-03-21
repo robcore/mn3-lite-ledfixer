@@ -2584,7 +2584,7 @@ static void gamma_init_H_revI(struct SMART_DIM *pSmart, char *str, int size)
 
 	/* max 350cd */
 	memcpy(curve_1p9, curve_1p9_350, sizeof(curve_1p9_350));
-	memcpy(curve_2p2, curve_2p2_350, sizeof(curve_1p9_350));
+	memcpy(curve_2p2, curve_2p2_350, sizeof(curve_2p2_350));
 
 	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 		if (searching_function(candela_level[cnt],
@@ -2869,7 +2869,7 @@ static void gamma_init_H_revJ(struct SMART_DIM *pSmart, char *str, int size)
 
 	/* max 350cd */
 	memcpy(curve_1p9, curve_1p9_350, sizeof(curve_1p9_350));
-	memcpy(curve_2p2, curve_2p2_350, sizeof(curve_1p9_350));
+	memcpy(curve_2p2, curve_2p2_350, sizeof(curve_2p2_350));
 
 	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 		if (searching_function(candela_level[cnt],
@@ -3432,7 +3432,7 @@ static void gamma_init_F_revE(
 
 	/* max 350cd */
 	memcpy(curve_1p9, curve_1p9_350, sizeof(curve_1p9_350));
-	memcpy(curve_2p2, curve_2p2_350, sizeof(curve_1p9_350));
+	memcpy(curve_2p2, curve_2p2_350, sizeof(curve_2p2_350));
 
 	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 		if (searching_function(candela_level[cnt],
@@ -3719,7 +3719,7 @@ static void gamma_init_F_revF_G(
 
 	/* max 350cd */
 	memcpy(curve_1p9, curve_1p9_350, sizeof(curve_1p9_350));
-	memcpy(curve_2p2, curve_2p2_350, sizeof(curve_1p9_350));
+	memcpy(curve_2p2, curve_2p2_350, sizeof(curve_2p2_350));
 
 	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 		if (searching_function(candela_level[cnt],
