@@ -1414,12 +1414,12 @@ static int searching_function(long long candela, int *index, int gamma_curve)
 	*index = -1;
 
 	for (cnt = 0; cnt < (S6E3FA_GRAY_SCALE_MAX-1); cnt++) {
-		if (gamma_curve == GAMMA_CURVE_1P9) {
-			delta_1 = candela - curve_1p9[cnt];
-			delta_2 = candela - curve_1p9[cnt+1];
+		if (gamma_curve == GAMMA_CURVE_1P65) {
+			delta_1 = candela - curve_1p65[cnt];
+			delta_2 = candela - curve_1p65[cnt+1];
 		} else {
-			delta_1 = candela - curve_2p2[cnt];
-			delta_2 = candela - curve_2p2[cnt+1];
+			delta_1 = candela - curve_1p6[cnt];
+			delta_2 = candela - curve_1p6[cnt+1];
 		}
 
 		if (delta_2 < 0) {
@@ -1757,7 +1757,7 @@ static void gamma_init_rev0(
 #endif
 	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 		if (searching_function(candela_level[cnt],
-			&(bl_index[cnt]), GAMMA_CURVE_2P15)) {
+			&(bl_index[cnt]), GAMMA_CURVE_1P65)) {
 			pr_err("%s searching function error cnt:%d\n",
 			__func__, cnt);
 		}
@@ -2030,7 +2030,7 @@ static void gamma_init_rev1(
 
 	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 		if (searching_function(candela_level[cnt],
-			&(bl_index[cnt]), GAMMA_CURVE_2P15)) {
+			&(bl_index[cnt]), GAMMA_CURVE_1P65)) {
 			pr_info("%s searching functioin error cnt:%d\n",
 			__func__, cnt);
 		}
@@ -2301,7 +2301,7 @@ static void gamma_init_rev2(struct SMART_DIM *pSmart, char *str, int size)
 
 	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 		if (searching_function(candela_level[cnt],
-			&(bl_index[cnt]), GAMMA_CURVE_2P15)) {
+			&(bl_index[cnt]), GAMMA_CURVE_1P65)) {
 			pr_info("%s searching functioin error cnt:%d\n",
 			__func__, cnt);
 		}
@@ -2582,12 +2582,12 @@ static void gamma_init_H_revI(struct SMART_DIM *pSmart, char *str, int size)
 #endif
 
 	/* max 350cd */
-	memcpy(curve_1p9, curve_1p9_350, sizeof(curve_1p9_350));
-	memcpy(curve_2p2, curve_2p2_350, sizeof(curve_2p2_350));
+	memcpy(curve_1p65, curve_1p65_350, sizeof(curve_1p65_350));
+	memcpy(curve_1p6, curve_1p6_350, sizeof(curve_1p6_350));
 
 	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 		if (searching_function(candela_level[cnt],
-			&(bl_index[cnt]), GAMMA_CURVE_2P15)) {
+			&(bl_index[cnt]), GAMMA_CURVE_1P65)) {
 			pr_info("%s searching functioin error cnt:%d\n",
 			__func__, cnt);
 		}
@@ -2867,12 +2867,12 @@ static void gamma_init_H_revJ(struct SMART_DIM *pSmart, char *str, int size)
 #endif
 
 	/* max 350cd */
-	memcpy(curve_1p9, curve_1p9_350, sizeof(curve_1p9_350));
-	memcpy(curve_2p2, curve_2p2_350, sizeof(curve_1p9_350));
+	memcpy(curve_1p65, curve_1p65_350, sizeof(curve_1p65_350));
+	memcpy(curve_1p6, curve_1p6_350, sizeof(curve_1p6_350));
 
 	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 		if (searching_function(candela_level[cnt],
-			&(bl_index[cnt]), GAMMA_CURVE_2P15)) {
+			&(bl_index[cnt]), GAMMA_CURVE_1P65)) {
 			pr_info("%s searching functioin error cnt:%d\n",
 			__func__, cnt);
 		}
@@ -3148,7 +3148,7 @@ static void gamma_init_F_revA(
 
 	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 		if (searching_function(candela_level[cnt],
-			&(bl_index[cnt]), GAMMA_CURVE_2P15)) {
+			&(bl_index[cnt]), GAMMA_CURVE_1P65)) {
 			pr_info("%s searching functioin error cnt:%d\n",
 			__func__, cnt);
 		}
@@ -3430,12 +3430,12 @@ static void gamma_init_F_revE(
 #endif
 
 	/* max 350cd */
-	memcpy(curve_1p9, curve_1p9_350, sizeof(curve_1p9_350));
-	memcpy(curve_2p2, curve_2p2_350, sizeof(curve_1p9_350));
+	memcpy(curve_1p65, curve_1p65_350, sizeof(curve_1p65_350));
+	memcpy(curve_1p6, curve_1p6_350, sizeof(curve_1p6_350));
 
 	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 		if (searching_function(candela_level[cnt],
-			&(bl_index[cnt]), GAMMA_CURVE_2P15)) {
+			&(bl_index[cnt]), GAMMA_CURVE_1P65)) {
 			pr_info("%s searching functioin error cnt:%d\n",
 			__func__, cnt);
 		}
@@ -3717,12 +3717,12 @@ static void gamma_init_F_revF_G(
 #endif
 
 	/* max 350cd */
-	memcpy(curve_1p9, curve_1p9_350, sizeof(curve_1p9_350));
-	memcpy(curve_2p2, curve_2p2_350, sizeof(curve_2p2_350));
+	memcpy(curve_1p65, curve_1p65_350, sizeof(curve_1p65_350));
+	memcpy(curve_1p6, curve_1p6_350, sizeof(curve_1p6_350));
 
 	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 		if (searching_function(candela_level[cnt],
-			&(bl_index[cnt]), GAMMA_CURVE_2P15)) {
+			&(bl_index[cnt]), GAMMA_CURVE_1P6)) {
 			pr_info("%s searching functioin error cnt:%d\n",
 			__func__, cnt);
 		}
@@ -3823,7 +3823,7 @@ static void pure_gamma_init(struct SMART_DIM *pSmart, char *str, int size)
 	/*calculate brightness level*/
 	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 			if (searching_function(candela_level[cnt],
-				&(bl_index[cnt]), GAMMA_CURVE_2P2)) {
+				&(bl_index[cnt]), GAMMA_CURVE_1P6)) {
 				pr_info("%s searching functioin error cnt:%d\n",
 					__func__, cnt);
 			}

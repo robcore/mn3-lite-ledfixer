@@ -67,6 +67,8 @@ Copyright (C) 2012, Samsung Electronics. All rights reserved.
 #define GAMMA_CURVE_2P1 4
 #define GAMMA_CURVE_2P0 5
 #define GAMMA_CURVE_1P9 6
+#define GAMMA_CURVE_1P6 7
+#define GAMMA_CURVE_1P65 8
 
 
 #define MTP_START_ADDR 0xC8
