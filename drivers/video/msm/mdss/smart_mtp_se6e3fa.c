@@ -1755,11 +1755,10 @@ static void gamma_init_rev0(
 		candela_level[6], candela_level[7], candela_level[8]);
 	printk(KERN_INFO "candela_255:%llu brightness_level %d\n", candela_level[9], pSmart->brightness_level);
 #endif
-
 	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 		if (searching_function(candela_level[cnt],
 			&(bl_index[cnt]), GAMMA_CURVE_2P15)) {
-			pr_info("%s searching functioin error cnt:%d\n",
+			pr_err("%s searching function error cnt:%d\n",
 			__func__, cnt);
 		}
 	}
@@ -3719,7 +3718,7 @@ static void gamma_init_F_revF_G(
 
 	/* max 350cd */
 	memcpy(curve_1p9, curve_1p9_350, sizeof(curve_1p9_350));
-	memcpy(curve_2p2, curve_2p2_350, sizeof(curve_1p9_350));
+	memcpy(curve_2p2, curve_2p2_350, sizeof(curve_2p2_350));
 
 	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 		if (searching_function(candela_level[cnt],
