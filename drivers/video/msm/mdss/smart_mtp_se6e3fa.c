@@ -1697,6 +1697,8 @@ static void gamma_init_rev0(
 	int cnt;
 	int table_index;
 
+	pr_info("SMARTDIM: %s INIT!!\n", __func__);
+
 	/*calculate candela level */
 	if (pSmart->brightness_level > AOR_FIX_CD) {
 		/* 300CD ~ 190CD */
@@ -1729,7 +1731,7 @@ static void gamma_init_rev0(
 		for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 			point_index = S6E3FA_ARRAY[cnt+1];
 			temp_cal_data =
-			((long long)(candela_coeff_1p8[point_index])) *
+			((long long)(candela_coeff_2p15[point_index])) *
 			((long long)(bl_level));
 			candela_level[cnt] = temp_cal_data;
 		}
@@ -1738,7 +1740,7 @@ static void gamma_init_rev0(
 		for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 			point_index = S6E3FA_ARRAY[cnt+1];
 			temp_cal_data =
-			((long long)(candela_coeff_1p7[point_index])) *
+			((long long)(candela_coeff_2p2[point_index])) *
 			((long long)(bl_level));
 			candela_level[cnt] = temp_cal_data;
 		}
@@ -1970,6 +1972,8 @@ static void gamma_init_rev1(
 	int cnt;
 	int table_index;
 
+	pr_info("SMARTDIM: %s INIT!!\n", __func__);
+
 	/*calculate candela level */
 	if (pSmart->brightness_level > AOR_FIX_CD) {
 		/* 300CD ~ 190CD */
@@ -2002,7 +2006,7 @@ static void gamma_init_rev1(
 		for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 			point_index = S6E3FA_ARRAY[cnt+1];
 			temp_cal_data =
-			((long long)(candela_coeff_1p8[point_index])) *
+			((long long)(candela_coeff_2p15[point_index])) *
 			((long long)(bl_level));
 			candela_level[cnt] = temp_cal_data;
 		}
@@ -2011,7 +2015,7 @@ static void gamma_init_rev1(
 		for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 			point_index = S6E3FA_ARRAY[cnt+1];
 			temp_cal_data =
-			((long long)(candela_coeff_1p7[point_index])) *
+			((long long)(candela_coeff_2p2[point_index])) *
 			((long long)(bl_level));
 			candela_level[cnt] = temp_cal_data;
 		}
@@ -2241,6 +2245,8 @@ static void gamma_init_rev2(struct SMART_DIM *pSmart, char *str, int size)
 	int cnt;
 	int table_index;
 
+	pr_info("SMARTDIM: %s INIT!!\n", __func__);
+
 	/*calculate candela level */
 	if (pSmart->brightness_level > AOR_FIX_CD) {
 		/* 300CD ~ 190CD */
@@ -2273,7 +2279,7 @@ static void gamma_init_rev2(struct SMART_DIM *pSmart, char *str, int size)
 		for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 			point_index = S6E3FA_ARRAY[cnt+1];
 			temp_cal_data =
-			((long long)(candela_coeff_1p8[point_index])) *
+			((long long)(candela_coeff_2p15[point_index])) *
 			((long long)(bl_level));
 			candela_level[cnt] = temp_cal_data;
 		}
@@ -2282,7 +2288,7 @@ static void gamma_init_rev2(struct SMART_DIM *pSmart, char *str, int size)
 		for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 			point_index = S6E3FA_ARRAY[cnt+1];
 			temp_cal_data =
-			((long long)(candela_coeff_1p7[point_index])) *
+			((long long)(candela_coeff_2p2[point_index])) *
 			((long long)(bl_level));
 			candela_level[cnt] = temp_cal_data;
 		}
@@ -2520,7 +2526,8 @@ static void gamma_init_H_revI(struct SMART_DIM *pSmart, char *str, int size)
 	int cnt;
 	int table_index;
 
-	pr_info("%s : start !!\n",__func__);
+	pr_info("SMARTDIM: %s INIT!!\n", __func__);
+
 	/*calculate candela level */
 	if (pSmart->brightness_level > AOR_FIX_CD) {
 		/* 300CD ~ 190CD */
@@ -2555,7 +2562,7 @@ static void gamma_init_H_revI(struct SMART_DIM *pSmart, char *str, int size)
 		for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 			point_index = S6E3FA_ARRAY[cnt+1];
 			temp_cal_data =
-			((long long)(candela_coeff_1p8[point_index])) *
+			((long long)(candela_coeff_2p15[point_index])) *
 			((long long)(bl_level));
 			candela_level[cnt] = temp_cal_data;
 		}
@@ -2564,7 +2571,7 @@ static void gamma_init_H_revI(struct SMART_DIM *pSmart, char *str, int size)
 		for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 			point_index = S6E3FA_ARRAY[cnt+1];
 			temp_cal_data =
-			((long long)(candela_coeff_1p7[point_index])) *
+			((long long)(candela_coeff_2p2[point_index])) *
 			((long long)(bl_level));
 			candela_level[cnt] = temp_cal_data;
 		}
@@ -2584,7 +2591,7 @@ static void gamma_init_H_revI(struct SMART_DIM *pSmart, char *str, int size)
 
 	/* max 350cd */
 	memcpy(curve_1p9, curve_1p9_350, sizeof(curve_1p9_350));
-	memcpy(curve_2p2, curve_2p2_350, sizeof(curve_2p2_350));
+	memcpy(curve_2p2, curve_2p2_350, sizeof(curve_1p9_350));
 
 	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 		if (searching_function(candela_level[cnt],
@@ -2805,7 +2812,8 @@ static void gamma_init_H_revJ(struct SMART_DIM *pSmart, char *str, int size)
 	int cnt;
 	int table_index;
 
-	pr_info("%s : start !!\n",__func__);
+	pr_info("SMARTDIM: %s INIT!!\n", __func__);
+
 	/*calculate candela level */
 	if (pSmart->brightness_level > AOR_FIX_CD) {
 		/* 350CD ~ 190CD */
@@ -2840,7 +2848,7 @@ static void gamma_init_H_revJ(struct SMART_DIM *pSmart, char *str, int size)
 		for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 			point_index = S6E3FA_ARRAY[cnt+1];
 			temp_cal_data =
-			((long long)(candela_coeff_1p8[point_index])) *
+			((long long)(candela_coeff_2p15[point_index])) *
 			((long long)(bl_level));
 			candela_level[cnt] = temp_cal_data;
 		}
@@ -2849,7 +2857,7 @@ static void gamma_init_H_revJ(struct SMART_DIM *pSmart, char *str, int size)
 		for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 			point_index = S6E3FA_ARRAY[cnt+1];
 			temp_cal_data =
-			((long long)(candela_coeff_1p7[point_index])) *
+			((long long)(candela_coeff_2p2[point_index])) *
 			((long long)(bl_level));
 			candela_level[cnt] = temp_cal_data;
 		}
@@ -2869,7 +2877,7 @@ static void gamma_init_H_revJ(struct SMART_DIM *pSmart, char *str, int size)
 
 	/* max 350cd */
 	memcpy(curve_1p9, curve_1p9_350, sizeof(curve_1p9_350));
-	memcpy(curve_2p2, curve_2p2_350, sizeof(curve_2p2_350));
+	memcpy(curve_2p2, curve_2p2_350, sizeof(curve_1p9_350));
 
 	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 		if (searching_function(candela_level[cnt],
@@ -3086,6 +3094,8 @@ static void gamma_init_F_revA(
 	int cnt;
 	int table_index;
 
+	pr_info("SMARTDIM: %s INIT!!\n", __func__);
+
 	/*calculate candela level */
 	if (pSmart->brightness_level > AOR_FIX_CD) {
 		/* 300CD ~ 183CD */
@@ -3120,7 +3130,7 @@ static void gamma_init_F_revA(
 		for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 			point_index = S6E3FA_ARRAY[cnt+1];
 			temp_cal_data =
-			((long long)(candela_coeff_1p8[point_index])) *
+			((long long)(candela_coeff_2p15[point_index])) *
 			((long long)(bl_level));
 			candela_level[cnt] = temp_cal_data;
 		}
@@ -3129,7 +3139,7 @@ static void gamma_init_F_revA(
 		for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 			point_index = S6E3FA_ARRAY[cnt+1];
 			temp_cal_data =
-			((long long)(candela_coeff_1p7[point_index])) *
+			((long long)(candela_coeff_2p2[point_index])) *
 			((long long)(bl_level));
 			candela_level[cnt] = temp_cal_data;
 		}
@@ -3367,7 +3377,7 @@ static void gamma_init_F_revE(
 	int cnt;
 	int table_index;
 
-	pr_info("%s : start!!\n",__func__);
+	pr_info("SMARTDIM: %s INIT!!\n", __func__);
 
 	/*calculate candela level */
 	if (pSmart->brightness_level > AOR_FIX_CD) {
@@ -3403,7 +3413,7 @@ static void gamma_init_F_revE(
 		for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 			point_index = S6E3FA_ARRAY[cnt+1];
 			temp_cal_data =
-			((long long)(candela_coeff_1p8[point_index])) *
+			((long long)(candela_coeff_2p15[point_index])) *
 			((long long)(bl_level));
 			candela_level[cnt] = temp_cal_data;
 		}
@@ -3412,7 +3422,7 @@ static void gamma_init_F_revE(
 		for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 			point_index = S6E3FA_ARRAY[cnt+1];
 			temp_cal_data =
-			((long long)(candela_coeff_1p7[point_index])) *
+			((long long)(candela_coeff_2p2[point_index])) *
 			((long long)(bl_level));
 			candela_level[cnt] = temp_cal_data;
 		}
@@ -3432,7 +3442,7 @@ static void gamma_init_F_revE(
 
 	/* max 350cd */
 	memcpy(curve_1p9, curve_1p9_350, sizeof(curve_1p9_350));
-	memcpy(curve_2p2, curve_2p2_350, sizeof(curve_2p2_350));
+	memcpy(curve_2p2, curve_2p2_350, sizeof(curve_1p9_350));
 
 	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 		if (searching_function(candela_level[cnt],
@@ -3654,7 +3664,7 @@ static void gamma_init_F_revF_G(
 	int cnt;
 	int table_index;
 
-	pr_info("%s : start!!\n",__func__);
+	pr_info("SMARTDIM: %s INIT!!\n", __func__);
 
 	/*calculate candela level */
 	if (pSmart->brightness_level > AOR_FIX_CD) {
@@ -3690,7 +3700,7 @@ static void gamma_init_F_revF_G(
 		for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 			point_index = S6E3FA_ARRAY[cnt+1];
 			temp_cal_data =
-			((long long)(candela_coeff_1p8[point_index])) *
+			((long long)(candela_coeff_2p15[point_index])) *
 			((long long)(bl_level));
 			candela_level[cnt] = temp_cal_data;
 		}
@@ -3699,7 +3709,7 @@ static void gamma_init_F_revF_G(
 		for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 			point_index = S6E3FA_ARRAY[cnt+1];
 			temp_cal_data =
-			((long long)(candela_coeff_1p7[point_index])) *
+			((long long)(candela_coeff_2p2[point_index])) *
 			((long long)(bl_level));
 			candela_level[cnt] = temp_cal_data;
 		}
@@ -3719,7 +3729,7 @@ static void gamma_init_F_revF_G(
 
 	/* max 350cd */
 	memcpy(curve_1p9, curve_1p9_350, sizeof(curve_1p9_350));
-	memcpy(curve_2p2, curve_2p2_350, sizeof(curve_2p2_350));
+	memcpy(curve_2p2, curve_2p2_350, sizeof(curve_1p9_350));
 
 	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 		if (searching_function(candela_level[cnt],
@@ -3801,12 +3811,14 @@ static void pure_gamma_init(struct SMART_DIM *pSmart, char *str, int size)
 	int bl_level, cnt;
 	int point_index;
 
+	pr_info("SMARTDIM: %s INIT!!\n", __func__);
+
 	bl_level = pSmart->brightness_level;
 
 	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 			point_index = S6E3FA_ARRAY[cnt+1];
 			temp_cal_data =
-			((long long)(candela_coeff_1p7[point_index])) *
+			((long long)(candela_coeff_2p2[point_index])) *
 			((long long)(bl_level));
 			candela_level[cnt] = temp_cal_data;
 	}
@@ -4166,3 +4178,4 @@ struct smartdim_conf *smart_S6E3FA0_get_conf(void){
  * END - Wrapper
  * ----------------------------------------------------------------------------
  */
+
