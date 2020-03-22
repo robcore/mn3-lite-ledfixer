@@ -67,9 +67,6 @@ Copyright (C) 2012, Samsung Electronics. All rights reserved.
 #define GAMMA_CURVE_2P1 4
 #define GAMMA_CURVE_2P0 5
 #define GAMMA_CURVE_1P9 6
-#define GAMMA_CURVE_1P6 7
-#define GAMMA_CURVE_1P65 8
-
 
 #define MTP_START_ADDR 0xC8
 #define LUMINANCE_MAX 62
@@ -84,8 +81,8 @@ Copyright (C) 2012, Samsung Electronics. All rights reserved.
 #define S6E3FA_GRAY_SCALE_MAX 256
 
 /*6.3*4194304 */
-#define S6E3FA_VREG0_REF 26424115
-
+//#define S6E3FA_VREG0_REF 26424115
+#define S6E3FA_VREG0_REF 25165824
 /*V0,V3,V11,V23,V35,V51,V87,V151,V203,V255*/
 #define S6E3FA_MAX 11
 
