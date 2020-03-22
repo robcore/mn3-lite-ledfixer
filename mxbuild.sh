@@ -6,6 +6,8 @@ export CCACHE_NLEVELS="8"
 env KCONFIG_NOTIMESTAMP=true &>/dev/null
 
 RDIR="/root/mn3lite"
+BUILDIR="$RDIR/build"
+KDIR="$BUILDIR/arch/arm/boot"
 OLDVERFILE="$RDIR/.oldversion"
 OLDVER="$(cat $OLDVERFILE)"
 LASTZIPFILE="$RDIR/.lastzip"
@@ -20,7 +22,6 @@ QUICKAMPM="$(date +%p)"
 QUICKTIME="$QUICKHOUR:$QUICKMIN${QUICKAMPM}"
 QUICKDATE="$QUICKMONTHDAY-$QUICKTIME"
 CORECOUNT="$(grep processor /proc/cpuinfo | wc -l)"
-KDIR="$RDIR/build/arch/arm/boot"
 #TOOLCHAIN="/opt/toolchains/arm-cortex_a15-linux-gnueabihf_5.3/bin/arm-cortex_a15-linux-gnueabihf-"
 TOOLCHAIN="/opt/toolchains/gcc-linaro-7.5.0-2019.12-x86_64_arm-linux-gnueabihf/bin/arm-linux-gnueabihf-"
 #TOOLCHAIN="/opt/arm-cortex_a15-linux-gnueabihf-linaro_4.9.4-2015.06/bin/arm-cortex_a15-linux-gnueabihf-"
@@ -116,7 +117,7 @@ clean_build() {
 	echo -ne "Cleaning build...      \r"; \
 	takeouttrash &>/dev/null
 	echo -ne "Cleaning build....     \r"; \
-	rm -rf "$RDIR/build" &>/dev/null
+	rm -rf "$BUILDIR" &>/dev/null
 	echo -ne "Cleaning build.....    \r"; \
 	rm "$ZIPFOLDER/boot.img" &>/dev/null
 	echo -ne "Cleaning build......   \r"; \
@@ -334,10 +335,10 @@ build_new_config() {
 	echo "Creating kernel config..."
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
 	MX_KERNEL_VERSION="dummyconfigbuild"
-	mkdir -p "$RDIR/build" || warnandfail "Failed to make $RDIR/build directory!"
+	mkdir -p "$BUILDIR" || warnandfail "Failed to make $BUILDIR directory!"
 	cat "$RDIR/arch/arm/configs/msm8974_sec_hlte_tmo_defconfig" "$RDIR/arch/arm/configs/msm8974_sec_defconfig" "$RDIR/arch/arm/configs/selinux_defconfig" > "$RDIR/arch/arm/configs/mxconfig"
-	cp "$MXCONFIG" "$RDIR/build/.config" || warnandfail "Config Copy Error!"
-	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -C "$RDIR" O="$RDIR/build" menuconfig
+	cp "$MXCONFIG" "$BUILDIR/.config" || warnandfail "Config Copy Error!"
+	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -C "$RDIR" O="$BUILDIR" menuconfig
 
 }
 
@@ -346,9 +347,9 @@ build_menuconfig() {
 	echo "Creating kernel config..."
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
 	MX_KERNEL_VERSION="dummyconfigbuild"
-	mkdir -p "$RDIR/build" || warnandfail "Failed to make $RDIR/build directory!"
-	cp "$MXCONFIG" "$RDIR/build/.config" || warnandfail "Config Copy Error!"
-	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -C "$RDIR" O="$RDIR/build" menuconfig
+	mkdir -p "$BUILDIR" || warnandfail "Failed to make $BUILDIR directory!"
+	cp "$MXCONFIG" "$BUILDIR/.config" || warnandfail "Config Copy Error!"
+	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -C "$RDIR" O="$BUILDIR" menuconfig
 
 }
 
@@ -357,16 +358,16 @@ build_single_config() {
 	echo "Creating kernel config..."
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
 	MX_KERNEL_VERSION="buildingsingledriver"
-	mkdir -p "$RDIR/build" || warnandfail "Failed to make $RDIR/build directory!"
-	cp "$MXCONFIG" "$RDIR/build/.config" || warnandfail "Config Copy Error!"
-	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -C "$RDIR" O="$RDIR/build" -j"$CORECOUNT" oldconfig || warnandfail "make oldconfig Failed!"
+	mkdir -p "$BUILDIR" || warnandfail "Failed to make $BUILDIR directory!"
+	cp "$MXCONFIG" "$BUILDIR/.config" || warnandfail "Config Copy Error!"
+	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -C "$RDIR" O="$BUILDIR" -j"$CORECOUNT" oldconfig || warnandfail "make oldconfig Failed!"
 
 }
 
 build_single_driver() {
 
 	echo "Building Single Driver..."
-	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -C "$RDIR" -S -s -j"$CORECOUNT" O="$RDIR/build/" "$1"
+	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -C "$RDIR" -S -s -j"$CORECOUNT" O="$BUILDIR/" "$1"
 
 }
 
@@ -374,20 +375,20 @@ build_kernel_config() {
 
 	echo "Creating kernel config..."
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
-	mkdir -p "$RDIR/build" || warnandfail "Failed to make $RDIR/build directory!"
-	cp "$MXCONFIG" "$RDIR/build/.config" || warnandfail "Config Copy Error!"
-	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -C "$RDIR" O="$RDIR/build" -j"$CORECOUNT" oldconfig || warnandfail "make oldconfig Failed!"
+	mkdir -p "$BUILDIR" || warnandfail "Failed to make $BUILDIR directory!"
+	cp "$MXCONFIG" "$BUILDIR/.config" || warnandfail "Config Copy Error!"
+	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -C "$RDIR" O="$BUILDIR" -j"$CORECOUNT" oldconfig || warnandfail "make oldconfig Failed!"
 
 }
 
 build_kernel() {
 
 	echo "Backing up .config to config.$QUICKDATE"
-	cp "$RDIR/build/.config" "$RDIR/oldconfigs/config.$QUICKDATE"
+	cp "$BUILDIR/.config" "$RDIR/oldconfigs/config.$QUICKDATE"
 	echo "Snapshot of current environment variables:"
 	env
 	echo "Starting build..."
-	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -S -s -C "$RDIR" O="$RDIR/build" -j"$CORECOUNT" || warnandfail "Kernel Build failed!"
+	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -S -s -C "$RDIR" O="$BUILDIR" -j"$CORECOUNT" || warnandfail "Kernel Build failed!"
 
 }
 
@@ -395,10 +396,10 @@ build_ramdisk() {
 
 	echo "Building ramdisk structure..."
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR"
-	rm -rf "$RDIR/build/ramdisk" &>/dev/null
-	cp -par "$RAMDISKFOLDER" "$RDIR/build/ramdisk" || warnandfail "Failed to create $RDIR/build/ramdisk!"
+	rm -rf "$BUILDIR/ramdisk" &>/dev/null
+	cp -par "$RAMDISKFOLDER" "$BUILDIR/ramdisk" || warnandfail "Failed to create $BUILDIR/ramdisk!"
 	echo "Building ramdisk img"
-	cd "$RDIR/build/ramdisk" || warnandfail "Failed to cd to $RDIR/build/ramdisk!"
+	cd "$BUILDIR/ramdisk" || warnandfail "Failed to cd to $BUILDIR/ramdisk!"
 	mkdir -pm 755 dev proc sys system
 	mkdir -pm 771 data
 	if [ -f "$KDIR/ramdisk.cpio.gz" ]
@@ -446,7 +447,7 @@ create_zip() {
 	echo "Compressing to TWRP flashable zip file..."
 	cd "$ZIPFOLDER" || warnandfail "Failed to cd to $ZIPFOLDER"
 	#[ -d "$ZIPFOLDER/system/lib/modules" ] && rm -rf "$ZIPFOLDER/system/lib/modules"
-	#for MXMODS in $(find "$RDIR/build/" -iname '*.ko')
+	#for MXMODS in $(find "$BUILDIR/" -iname '*.ko')
 	#do
 	#	if [ -f "$MXMODS" ]
 	#	then
