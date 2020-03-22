@@ -150,7 +150,7 @@ struct mdnie_lite_tun_type mdnie_tun_state = {
 #ifdef MDNIE_LITE_MODE
 	.background = 0,
 #else
-	.background = STANDARD_MODE,
+	.background = AUTO_MODE,
 #endif /* MDNIE_LITE_MODE */
 	.outdoor = OUTDOOR_OFF_MODE,
 	.accessibility = ACCESSIBILITY_OFF,
@@ -439,8 +439,9 @@ void sending_tuning_cmd(void)
 
 	mutex_lock(&mdnie_msd->lock);
 
-
+#ifdef MDNIE_LITE_TUN_DATA_DEBUG
 		print_tun_data();
+#endif
 
 		mdss_dsi_cmds_send(ctrl_pdata, mdni_tune_cmd, ARRAY_SIZE(mdni_tune_cmd), 0);
 
@@ -590,7 +591,7 @@ void mDNIe_Set_Mode(void)
 		}
 #endif
 }
-	print_tun_data();
+
 	sending_tuning_cmd();
 	free_tun_cmd();
 
