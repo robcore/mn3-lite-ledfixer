@@ -169,43 +169,60 @@ static void print_RGB_offset(struct SMART_DIM *pSmart)
 #define v255_denominator 860
 static int v255_adjustment(struct SMART_DIM *pSmart)
 {
-	unsigned long long result_1, result_2, result_3, result_4;
+	unsigned long long result_2, result_3, result_4;
 	int add_mtp;
 	int LSB;
 	int v255_value;
 
 	v255_value = (V255_300CD_R_MSB << 8) | (V255_300CD_R_LSB);
+	pr_info("%s RED v255_value:%d \n", __func__, v255_value);
 	LSB = char_to_int_v255(pSmart->MTP.R_OFFSET.OFFSET_255_MSB,
 				pSmart->MTP.R_OFFSET.OFFSET_255_LSB);
+	pr_info("%s RED LSB:%d \n", __func__, LSB);
 	add_mtp = LSB + v255_value;
-	result_1 = result_2 = (v255_coefficient+add_mtp) << BIT_SHIFT;
+	pr_info("%s RED add_mtp:%d \n", __func__, add_mtp);
+	result_2 = (v255_coefficient+add_mtp) << BIT_SHIFT;
 	do_div(result_2, v255_denominator);
 	result_3 = (S6E3FA_VREG0_REF * result_2) >> BIT_SHIFT;
-	result_4 = S6E3FA_VREG0_REF - result_3;
-	pSmart->RGB_OUTPUT.R_VOLTAGE.level_255 = result_4;
+	pSmart->RGB_OUTPUT.R_VOLTAGE.level_255 = S6E3FA_VREG0_REF - result_3;
 	pSmart->RGB_OUTPUT.R_VOLTAGE.level_0 = S6E3FA_VREG0_REF;
+	pr_info("%s RED level_255:%d level_0: %d\n", __func__,
+			 pSmart->RGB_OUTPUT.R_VOLTAGE.level_255,
+			 pSmart->RGB_OUTPUT.R_VOLTAGE.level_0);
 
 	v255_value = (V255_300CD_G_MSB << 8) | (V255_300CD_G_LSB);
+	pr_info("%s GREEN v255_value:%d \n", __func__, v255_value);
 	LSB = char_to_int_v255(pSmart->MTP.G_OFFSET.OFFSET_255_MSB,
 				pSmart->MTP.G_OFFSET.OFFSET_255_LSB);
+	pr_info("%s GREEN LSB:%d \n", __func__, LSB);
 	add_mtp = LSB + v255_value;
-	result_1 = result_2 = (v255_coefficient+add_mtp) << BIT_SHIFT;
+	pr_info("%s GREEN add_mtp:%d \n", __func__, add_mtp);
+	result_2 = (v255_coefficient+add_mtp) << BIT_SHIFT;
 	do_div(result_2, v255_denominator);
 	result_3 = (S6E3FA_VREG0_REF * result_2) >> BIT_SHIFT;
 	result_4 = S6E3FA_VREG0_REF - result_3;
 	pSmart->RGB_OUTPUT.G_VOLTAGE.level_255 = result_4;
 	pSmart->RGB_OUTPUT.G_VOLTAGE.level_0 = S6E3FA_VREG0_REF;
+	pr_info("%s GREEN level_255:%d level_0: %d\n", __func__,
+			 pSmart->RGB_OUTPUT.G_VOLTAGE.level_255,
+			 pSmart->RGB_OUTPUT.G_VOLTAGE.level_0);
 
 	v255_value = (V255_300CD_B_MSB << 8) | (V255_300CD_B_LSB);
+	pr_info("%s BLUE v255_value:%d \n", __func__, v255_value);
 	LSB = char_to_int_v255(pSmart->MTP.B_OFFSET.OFFSET_255_MSB,
 				pSmart->MTP.B_OFFSET.OFFSET_255_LSB);
+	pr_info("%s BLUE LSB:%d \n", __func__, LSB);
 	add_mtp = LSB + v255_value;
-	result_1 = result_2 = (v255_coefficient+add_mtp) << BIT_SHIFT;
+	pr_info("%s BLUE add_mtp:%d \n", __func__, add_mtp);
+	result_2 = (v255_coefficient+add_mtp) << BIT_SHIFT;
 	do_div(result_2, v255_denominator);
 	result_3 = (S6E3FA_VREG0_REF * result_2) >> BIT_SHIFT;
 	result_4 = S6E3FA_VREG0_REF - result_3;
 	pSmart->RGB_OUTPUT.B_VOLTAGE.level_255 = result_4;
 	pSmart->RGB_OUTPUT.B_VOLTAGE.level_0 = S6E3FA_VREG0_REF;
+	pr_info("%s BLUE level_255:%d level_0: %d\n", __func__,
+			 pSmart->RGB_OUTPUT.R_VOLTAGE.level_255,
+			 pSmart->RGB_OUTPUT.R_VOLTAGE.level_0);
 
 #ifdef SMART_DIMMING_DEBUG
 	pr_info("%s MTP Offset VT R:%d G:%d B:%d\n", __func__,
@@ -292,10 +309,10 @@ static void v255_hexa(int *index, struct SMART_DIM *pSmart, char *str)
 }
 
 static int vt_coefficient[] = {
-	0, 12, 24, 36, 48,
-	60, 72, 84, 96, 108,
-	138, 148, 158, 168,
-	178, 186,
+	12, 24, 36, 48, 60,
+	72, 84, 96, 108, 120,
+	132, 144, 156, 168,
+	180, 192,
 };
 #define vt_denominator 860
 static int vt_adjustment(struct SMART_DIM *pSmart)
@@ -328,12 +345,10 @@ static int vt_adjustment(struct SMART_DIM *pSmart)
 	result_4 = S6E3FA_VREG0_REF - result_3;
 	pSmart->GRAY.VT_TABLE.B_Gray = result_4;
 
-#ifdef SMART_DIMMING_DEBUG
 	pr_info("%s VT RED:%d GREEN:%d BLUE:%d\n", __func__,
 			pSmart->GRAY.VT_TABLE.R_Gray,
 			pSmart->GRAY.VT_TABLE.G_Gray,
 			pSmart->GRAY.VT_TABLE.B_Gray);
-#endif
 
 	return 0;
 
@@ -3846,7 +3861,7 @@ static void pure_gamma_init(struct SMART_DIM *pSmart, char *str, int size)
 	/*calculate brightness level*/
 	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 			if (searching_function(candela_level[cnt],
-				&(bl_index[cnt]), GAMMA_CURVE_2P2)) {
+				&(bl_index[cnt]), GAMMA_CURVE_1P9)) {
 				pr_info("%s searching functioin error cnt:%d\n",
 					__func__, cnt);
 			}
