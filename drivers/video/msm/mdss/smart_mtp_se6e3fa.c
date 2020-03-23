@@ -116,7 +116,6 @@ static int char_to_int_v255(char data1, char data2)
 	return cal_data;
 }
 
-#ifdef SMART_DIMMING_DEBUG
 static void print_RGB_offset(struct SMART_DIM *pSmart)
 {
 	pr_info("%s MTP Offset VT R:%d G:%d B:%d\n", __func__,
@@ -163,7 +162,6 @@ static void print_RGB_offset(struct SMART_DIM *pSmart)
 			char_to_int_v255(pSmart->MTP.B_OFFSET.OFFSET_255_MSB,
 				pSmart->MTP.B_OFFSET.OFFSET_255_LSB));
 }
-#endif
 
 #define v255_coefficient 72
 #define v255_denominator 860
@@ -1325,14 +1323,12 @@ static int generate_gray_scale(struct SMART_DIM *pSmart)
 
 	}
 
-#ifdef SMART_DIMMING_DEBUG
 		for (cnt = 0; cnt < S6E3FA_GRAY_SCALE_MAX; cnt++) {
 			pr_info("%s %8d %8d %8d %d\n", __func__,
 				pSmart->GRAY.TABLE[cnt].R_Gray,
 				pSmart->GRAY.TABLE[cnt].G_Gray,
 				pSmart->GRAY.TABLE[cnt].B_Gray, cnt);
 		}
-#endif
 	return 0;
 }
 
@@ -4065,10 +4061,6 @@ static int smart_dimming_init(struct SMART_DIM *psmart)
 	gamma_cell_determine(psmart->ldi_revision);
 	set_max_lux_table();
 
-#ifdef SMART_DIMMING_DEBUG
-	print_RGB_offset(psmart);
-#endif
-
 	v255_adjustment(psmart);
 	vt_adjustment(psmart);
 	v203_adjustment(psmart);
@@ -4080,6 +4072,7 @@ static int smart_dimming_init(struct SMART_DIM *psmart)
 	v11_adjustment(psmart);
 	v3_adjustment(psmart);
 
+	print_RGB_offset(psmart);
 
 	if (generate_gray_scale(psmart)) {
 		pr_info(KERN_ERR "lcd smart dimming fail generate_gray_scale\n");
