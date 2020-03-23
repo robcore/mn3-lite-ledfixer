@@ -1,10 +1,5 @@
 #!/bin/bash
 
-usage() {
-	echo "Calculate candela tables"
-	echo "use $0 1 for 300 and $0 2 for 350"
-}
-
 candela_func300() {
 	local bracket="$(qalc -t $1/255)"
 	local exponent="$(qalc -t $bracket^1.85)"
