@@ -41,6 +41,23 @@ Copyright (C) 2012, Samsung Electronics. All rights reserved.
 #include <linux/ctype.h>
 #include <asm/div64.h>
 
+#define VT232_ID 0x02
+#define CCG6_ID 0x03
+#define EVT1_ID 0x23
+#define EVT1_SECOND_ID 0x44
+
+/* EVT1_THIRD_ID & EVT1_FOURTH_ID has same smart-dimming algo */
+#define EVT1_THIRD_ID 0x25
+#define EVT1_FOURTH_ID 0x45
+
+/* for REV H LDI */
+#define EVT1_REV_H_ID3_1 0x46
+#define EVT1_REV_H_ID3_2 0x26
+
+/* for REV I LDI */
+#define EVT1_REV_I_ID3_1 0x47
+#define EVT1_REV_I_ID3_2 0x27
+
 /* octa ldi id3 */
 #define EVT0_ID 0x00
 #define EVT0_SECOND_ID 0x01
@@ -54,6 +71,20 @@ Copyright (C) 2012, Samsung Electronics. All rights reserved.
 #define EVT0_F_REV_E 0x11
 #define EVT0_F_REV_F 0x12
 #define EVT2_F_REV_G 0x32
+
+#define EVT2_FRESCO_REV_G 0x43
+
+/* EA8061V ldi id3 */
+#define EVT0_EA8061V_REV_A 0x82
+#define EVT2_EA8061V_REV_C 0x95
+#define EVT2_EA8061V_REV_D 0x96
+#define EVT2_EA8061V_REV_E 0x97
+#define EVT0_EA8061V_KMINI_REV_A 0x84
+
+/* EA8061 ldi id3 */
+#define EVT2_EA8061_HESTIA_REV_I 0x47
+#define EVT2_EA8061_HESTIA_REV_J 0x48
+#define EVT2_EA8061_HESTIA_REV_A 0x40
 
 /*
 *	From 4.8 inch model use AID function
@@ -71,8 +102,29 @@ Copyright (C) 2012, Samsung Electronics. All rights reserved.
 #define GAMMA_CURVE_1P85 8
 
 #define MTP_START_ADDR 0xC8
-#define LUMINANCE_MAX 62
+#define LUMINANCE_MAX 72
 #define GAMMA_SET_MAX 33
+/*
+ * Each of R, G, B have 1 count so the offset of VT is
+ * GAMMA_SET_MAX -3
+ */
+#define VT_GAMMA_SET_MAX 3
+#define VT_GAMMA_OFFSET	GAMMA_SET_MAX - VT_GAMMA_SET_MAX
+enum {
+	VT_GAMMA_OFFSET_R = 0,
+	VT_GAMMA_OFFSET_G = 0,
+	VT_GAMMA_OFFSET_B = 1,
+};
+enum {
+	VT_GAMMA_BIT_SHIFT_R = 0,
+	VT_GAMMA_BIT_SHIFT_G = 4,
+	VT_GAMMA_BIT_SHIFT_B = 0,
+};
+enum {
+	VT_GAMMA_BIT_MASK_R = 0xF,
+	VT_GAMMA_BIT_MASK_G = 0xF,
+	VT_GAMMA_BIT_MASK_B = 0xFF,
+};
 #define BIT_SHIFT 22
 /*
 	it means BIT_SHIFT is 22.  pow(2,BIT_SHIFT) is 4194304.

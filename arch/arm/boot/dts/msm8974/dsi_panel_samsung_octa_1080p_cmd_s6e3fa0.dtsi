@@ -60,7 +60,7 @@
 		qcom,mdss-pan-dsi-dma-tr = <0x04>;
 		qcom,mdss-pan-dsi-tx-eot-append = <1>;
 		qcom,mdss-pan-dsi-frame-rate = <60>;
-		qcom,panel-phy-regulatorSettings = [07 09 03 00  /* Regualotor settings */
+		qcom,panel-phy-regulatorSettings = [07 09 03 00  /* Regulator settings */
 						    20 00 01];
 		qcom,panel-phy-timingSettings = [E0 48 25 00 66 6D
 						    2A 4B 3F 03 04 A0];

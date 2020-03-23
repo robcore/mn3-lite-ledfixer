@@ -15,6 +15,7 @@
 /include/ "msm8974-sii8240_mhl-hlte-r06.dtsi"
 /include/ "msm8974-max77803-hlte-r06.dtsi"
 /include/ "msm8974-w1.dtsi"
+/include/ "dsi_panel_samsung_octa_1080p_cmd_s6e3fa0.dtsi"
 
 / {
 	aliases {

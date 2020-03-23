@@ -129,7 +129,7 @@ enum {
 #define BIT_SHIFT 22
 /*
 	it means BIT_SHIFT is 22.  pow(2,BIT_SHIFT) is 4194304.
-	BIT_SHIFT is used for right bit shfit
+	BIT_SHIFT is used for right bit shift
 */
 #define BIT_SHIFT_MUL 4194304
 
