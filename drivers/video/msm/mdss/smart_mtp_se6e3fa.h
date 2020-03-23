@@ -82,12 +82,14 @@ Copyright (C) 2012, Samsung Electronics. All rights reserved.
 
 /*6.3*4194304 */
 //#define S6E3FA_VREG0_REF 26424115
-#define S6E3FA_VREG0_REF 25165824
+//#define S6E3FA_VREG0_REF 25165824
+#define S6E3FA_VREG0_REF 16777216
+
 /*V0,V3,V11,V23,V35,V51,V87,V151,V203,V255*/
 #define S6E3FA_MAX 11
 
 /* PANEL DEPENDENT THINGS */
-#define MAX_CANDELA 300
+#define MAX_CANDELA 350
 #define MIN_CANDELA	5
 
 /*
