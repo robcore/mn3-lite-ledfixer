@@ -1415,8 +1415,6 @@ static int searching_function(long long candela, int *index, int gamma_curve)
 		searcing algorithm to reduce searching time.
 	*/
 
-	pr_info("SMARTDIM %s - Input Candela : %lld Input Index : %d\n", __func__, candela, *index);
-
 	*index = -1;
 
 	for (cnt = 0; cnt < (S6E3FA_GRAY_SCALE_MAX-1); cnt++) {
@@ -1431,26 +1429,21 @@ static int searching_function(long long candela, int *index, int gamma_curve)
 			delta_2 = candela - curve_2p2_350[cnt+1];
 		}
 
-		pr_info("SMARTDIM %s Loop - delta1: %lld delta2: %lld\n", __func__, delta_1, delta_2);
-
 		if (delta_2 < 0) {
 			if ((delta_1 + delta_2) <= 0)
 				*index = cnt;
 			else
 				*index = cnt + 1;
-			pr_info("SMARTDIM %s Loop - Loop Index : %d\n", __func__, *index);
 			break;
 		}
 
 		if (delta_1 == 0) {
 			*index = cnt;
-			pr_info("SMARTDIM %s Loop - Loop Index : %d\n", __func__, *index);
 			break;
 		}
 
 		if (delta_2 == 0) {
 			*index = cnt + 1;
-			pr_info("SMARTDIM %s Loop - Loop Index : %d\n", __func__, *index);
 			break;
 		}
 	}
@@ -1561,9 +1554,10 @@ static int find_cadela_table(int brightness)
 	int err = -1;
 
 	for (loop = 0; loop <= CCG6_MAX_TABLE; loop++) {
-		pr_info("SMARTDIM %s Loop - ccg6_candela_table value: %d input brightness: %d\n", __func__, ccg6_candela_table[loop][0], brightness);
 		if (ccg6_candela_table[loop][0] == brightness)
 			return ccg6_candela_table[loop][1];
+		else
+			pr_info("SMARTDIM %s : no candela value found for brightness level %d\n", __func__, brightness);
 	}
 
 	return err;
@@ -2885,72 +2879,80 @@ static void gamma_init_H_revJ(struct SMART_DIM *pSmart, char *str, int size)
 {
 	long long candela_level[S6E3FA_TABLE_MAX] = {-1, };
 	int bl_index[S6E3FA_TABLE_MAX] = {-1, };
-
 	long long temp_cal_data = 0;
-	int bl_level;
-
 	int level_255_temp_MSB = 0;
 	int level_V255 = 0;
-
-	int point_index;
-	int cnt;
-	int table_index;
+	int bl_level, point_index, cnt, table_index;
 
 	pr_info("SMARTDIM %s - pSmart->brightness_level : %d\n", __func__, pSmart->brightness_level);
 	/*calculate candela level */
-	if (pSmart->brightness_level > 183) {
-		/* 350CD ~ 190CD */
-		bl_level = pSmart->brightness_level;
-	} else if ((pSmart->brightness_level <= 183) &&
-				(pSmart->brightness_level >= AOR_ADJUST_CD)) {
-		/* 180CD ~ 110CD */
-		if (pSmart->brightness_level == 111)
-			bl_level = 185;
-		else if (pSmart->brightness_level == 119)
-			bl_level = 199;
-		else if (pSmart->brightness_level == 126)
-			bl_level = 207;
-		else if (pSmart->brightness_level == 134)
-			bl_level = 220;
-		else if (pSmart->brightness_level == 143)
-			bl_level = 228;
-		else if (pSmart->brightness_level == 152)
-			bl_level = 242;
-		else if (pSmart->brightness_level == 162)
-			bl_level = 255;
-		else if (pSmart->brightness_level == 172)
-			bl_level = 268;
-		else if (pSmart->brightness_level == 183)
-			bl_level = 270;
-	} else {
+AOR_ADJUST_CD
+	if (psmart->brightness_level < AOR_ADJUST_CD) {
 		/* 100CD ~ 10CD */
 		bl_level = AOR_ADJUST_CD;
+	} else if ((pSmart->brightness_level >= AOR_ADJUST_CD) &&
+				(pSmart->brightness_level < 282)) {
+		/* 180CD ~ 110CD */
+		if (pSmart->brightness_level == 111)
+			bl_level = 127;
+		else if (pSmart->brightness_level == 119)
+			bl_level = 135;
+		else if (pSmart->brightness_level == 126)
+			bl_level = 142;
+		else if (pSmart->brightness_level == 134)
+			bl_level = 150;
+		else if (pSmart->brightness_level == 143)
+			bl_level = 159;
+		else if (pSmart->brightness_level == 152)
+			bl_level = 168;
+		else if (pSmart->brightness_level == 162)
+			bl_level = 178;
+		else if (pSmart->brightness_level == 172)
+			bl_level = 188;
+		else if (pSmart->brightness_level == 183)
+			bl_level = 191;
+		else if (pSmart->brightness_level == 195)
+			bl_level = 203;
+		else if (pSmart->brightness_level == 207)
+			bl_level = 215;
+		else if (pSmart->brightness_level == 220)
+			bl_level = 228;
+		else if (pSmart->brightness_level == 234)
+			bl_level = 242;
+		else if (pSmart->brightness_level == 249)
+			bl_level = 257;
+		else if (pSmart->brightness_level == 265)
+			bl_level = 273;
+		else if (pSmart->brightness_level > 265)
+			bl_level = 281;
+	} else if (pSmart->brightness_level >= 282) {
+		/* 350CD ~ 282CD */
+		bl_level = pSmart->brightness_level;
 	}
-	pr_info("SMARTDIM %s - adjusted bl_level : %d\n", __func__, bl_level);
 
 	if (pSmart->brightness_level < 350) {
 		for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 			point_index = S6E3FA_ARRAY[cnt+1];
-			candela_level[cnt] = ((long long)(candela_coeff_2p2[point_index])) * ((long long)(bl_level));
-			pr_info("SMARTDIM %s - candela_level : %lld\n", __func__, candela_level[cnt]);
+			candela_level[cnt] = ((long long)(candela_coeff_2p15[point_index])) * ((long long)(bl_level));
+			pr_info("SMARTDIM %s - candela_level : %lld adjusted bl_level : %d\n", __func__, candela_level[cnt], bl_level);
 		}
 
 	} else {
 		for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 			point_index = S6E3FA_ARRAY[cnt+1];
-			candela_level[cnt] = ((long long)(candela_coeff_2p25[point_index])) * ((long long)(bl_level));
-			pr_info("SMARTDIM %s - candela_level : %lld\n", __func__, candela_level[cnt]);
+			candela_level[cnt] = ((long long)(candela_coeff_2p2[point_index])) * ((long long)(bl_level));
+			pr_info("SMARTDIM %s - candela_level : %lld adjusted bl_level : %d\n", __func__, candela_level[cnt], bl_level);
 		}
 	}
 
 	/* max 350cd */
-	memcpy(curve_1p85, curve_1p85_350, sizeof(curve_1p85_350));
 	memcpy(curve_1p9, curve_1p9_350, sizeof(curve_1p9_350));
+	memcpy(curve_2p2, curve_2p2_350, sizeof(curve_1p9_350));
 
 	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 		if (searching_function(candela_level[cnt],
-			&(bl_index[cnt]), GAMMA_CURVE_1P85)) {
-			pr_err("%s searching function error cnt:%d\n",
+			&(bl_index[cnt]), GAMMA_CURVE_1P9)) {
+			pr_debug("%s searching function error cnt:%d\n",
 			__func__, cnt);
 		}
 	}
@@ -2963,8 +2965,6 @@ static void gamma_init_H_revJ(struct SMART_DIM *pSmart, char *str, int size)
 
 		if (table_index == -1) {
 			table_index = CCG6_MAX_TABLE;
-			pr_err("%s failed candela table_index cnt : %d brightness %d",
-				__func__, cnt, pSmart->brightness_level);
 		}
 
 		bl_index[S6E3FA_TABLE_MAX - cnt] +=
@@ -2975,7 +2975,6 @@ static void gamma_init_H_revJ(struct SMART_DIM *pSmart, char *str, int size)
 			bl_index[S6E3FA_TABLE_MAX - cnt] = 1;
 	}
 
-#ifdef SMART_DIMMING_DEBUG_PLUS
 	pr_info("\n bl_index_1:%d  bl_index_3:%d  bl_index_11:%d",
 		bl_index[0], bl_index[1], bl_index[2]);
 	pr_info("bl_index_23:%d bl_index_35:%d  bl_index_51:%d",
@@ -2983,7 +2982,7 @@ static void gamma_init_H_revJ(struct SMART_DIM *pSmart, char *str, int size)
 	pr_info("bl_index_87:%d  bl_index_151:%d bl_index_203:%d",
 		bl_index[6], bl_index[7], bl_index[8]);
 	pr_info("bl_index_255:%d\n", bl_index[9]);
-#endif
+
 	/*Generate Gamma table*/
 	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++)
 		(void)Make_hexa[cnt](bl_index , pSmart, str);
