@@ -1139,7 +1139,6 @@ static struct dsi_cmd get_elvss_control_set(int cd_idx)
 #endif
 
 #if defined(TEMPERATURE_ELVSS)
-#if !defined(CONFIG_FB_MSM_MDSS_MAGNA_OCTA_VIDEO_720P_PANEL)
 	// ELVSS lOW TEMPERATURE
 	if (msd.dstat.auto_brightness != 6) // if HBM is not set
 	{
@@ -1150,7 +1149,6 @@ static struct dsi_cmd get_elvss_control_set(int cd_idx)
 
 		}
 	}
-#endif
 #endif
 	elvss_control.num_of_cmds = 1;
 	msd.dstat.curr_elvss_idx = cmd_idx;
@@ -1571,9 +1569,8 @@ static ssize_t mipi_samsung_disp_acl_store(struct device *dev,
 		struct device_attribute *attr, const char *buf, size_t size)
 {
 	struct msm_fb_data_type *mfd = msd.mfd;
-	int	acl_set;
+	int	acl_set = msd.dstat.acl_on;
 
-	acl_set = msd.dstat.acl_on;
 	if (sysfs_streq(buf, "1"))
 		acl_set = true;
 	else if (sysfs_streq(buf, "0"))
