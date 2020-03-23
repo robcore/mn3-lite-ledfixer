@@ -1400,7 +1400,7 @@ static void mtp_offset_substraction(struct SMART_DIM *pSmart, char *str)
 	str[29] = offset_cal(char_to_int(pSmart->MTP.B_OFFSET.OFFSET_3), str[29]);
 
 	for (offcount = 0; offcount < OFFSET_CAL_MAX; offcount++) {
-		pr_info("SMARTDIM %s - Substract String : %s\n", __func__, str[offcount]);
+		pr_info("SMARTDIM %s - Substract String : %d\n", __func__, str[offcount]);
 	}
 
 }
@@ -1791,9 +1791,8 @@ static void gamma_init_rev0(
 	for (cnt = 1; cnt < S6E3FA_TABLE_MAX; cnt++) {
 		table_index = find_cadela_table(pSmart->brightness_level);
 
-		if ((table_index == -1) || (table_index >= CCG6_MAX_TABLE) {
+		if (table_index == -1)
 			table_index = CCG6_MAX_TABLE;
-		}
 
 		bl_index[S6E3FA_TABLE_MAX - cnt] +=
 			gradation_offset_rev0[table_index][cnt - 1];
