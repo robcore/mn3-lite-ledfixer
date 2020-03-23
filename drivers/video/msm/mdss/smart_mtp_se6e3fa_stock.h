@@ -1,7 +1,7 @@
 /*
  * =================================================================
  *
- *       Filename:  smart_mtp_se6e3fa.h
+ *       Filename:  smart_mtp_se6e8fa.h
  *
  *    Description:  Smart dimming algorithm implementation
  *
@@ -55,20 +55,6 @@ Copyright (C) 2012, Samsung Electronics. All rights reserved.
 #define EVT0_F_REV_F 0x12
 #define EVT2_F_REV_G 0x32
 
-#define EVT2_FRESCO_REV_G 0x43
-
-/* EA8061V ldi id3 */
-#define EVT0_EA8061V_REV_A 0x82
-#define EVT2_EA8061V_REV_C 0x95
-#define EVT2_EA8061V_REV_D 0x96
-#define EVT2_EA8061V_REV_E 0x97
-#define EVT0_EA8061V_KMINI_REV_A 0x84
-
-/* EA8061 ldi id3 */
-#define EVT2_EA8061_HESTIA_REV_I 0x47
-#define EVT2_EA8061_HESTIA_REV_J 0x48
-#define EVT2_EA8061_HESTIA_REV_A 0x40
-
 /*
 *	From 4.8 inch model use AID function
 *	CASE#1 is used for now.
@@ -86,33 +72,12 @@ Copyright (C) 2012, Samsung Electronics. All rights reserved.
 #define MTP_START_ADDR 0xC8
 #define LUMINANCE_MAX 62
 #define GAMMA_SET_MAX 33
-/*
- * Each of R, G, B have 1 count so the offset of VT is
- * GAMMA_SET_MAX -3
- */
-#define VT_GAMMA_SET_MAX 3
-#define VT_GAMMA_OFFSET	GAMMA_SET_MAX - VT_GAMMA_SET_MAX
-enum {
-	VT_GAMMA_OFFSET_R = 0,
-	VT_GAMMA_OFFSET_G = 0,
-	VT_GAMMA_OFFSET_B = 1,
-};
-enum {
-	VT_GAMMA_BIT_SHIFT_R = 0,
-	VT_GAMMA_BIT_SHIFT_G = 4,
-	VT_GAMMA_BIT_SHIFT_B = 0,
-};
-enum {
-	VT_GAMMA_BIT_MASK_R = 0xF,
-	VT_GAMMA_BIT_MASK_G = 0xF,
-	VT_GAMMA_BIT_MASK_B = 0xFF,
-};
 #define BIT_SHIFT 22
 /*
 	it means BIT_SHIFT is 22.  pow(2,BIT_SHIFT) is 4194304.
-	BIT_SHIFT is used for right bit shift
+	BIT_SHIFT is used for right bit shfit
 */
-#define BIT_SHIFT_MUL 4194304
+#define BIT_SHFIT_MUL 4194304
 
 #define S6E3FA_GRAY_SCALE_MAX 256
 
@@ -123,7 +88,7 @@ enum {
 #define S6E3FA_MAX 11
 
 /* PANEL DEPENDENT THINGS */
-#define MAX_CANDELA 350
+#define MAX_CANDELA 300
 #define MIN_CANDELA	5
 
 /*
@@ -212,7 +177,7 @@ struct RGB_OUTPUT_VOLTARE {
 
 struct GRAY_VOLTAGE {
 	/*
-		This voltage value use 14bit right shift
+		This voltage value use 14bit right shit
 		it means voltage is divied by 16384.
 	*/
 	int R_Gray;
