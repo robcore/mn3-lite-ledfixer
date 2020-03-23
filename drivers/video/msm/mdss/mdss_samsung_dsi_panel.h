@@ -34,12 +34,7 @@
 #define LCD_DEBUG(X, ...) pr_info("[LCD]%s:"X, __func__, ## __VA_ARGS__);
 
 #include "smart_dimming.h"
-#if defined(CONFIG_FB_MSM_MIPI_MAGNA_OCTA_VIDEO_720P_PT_PANEL) \
-	|| defined(CONFIG_FB_MSM_MDSS_MAGNA_OCTA_VIDEO_720P_PANEL) 
-#include "smart_mtp_ea8061v.h"
-#else
-#include "smart_mtp_ea8061.h"
-#endif
+#include "smart_mtp_se6e3fa.h"
 
 enum mipi_samsung_cmd_list {
 
