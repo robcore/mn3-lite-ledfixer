@@ -27,7 +27,7 @@ TOOLCHAIN="/opt/toolchains/gcc-linaro-7.5.0-2019.12-x86_64_arm-linux-gnueabihf/b
 #TOOLCHAIN="/opt/arm-cortex_a15-linux-gnueabihf-linaro_4.9.4-2015.06/bin/arm-cortex_a15-linux-gnueabihf-"
 #TOOLCHAIN="/opt/toolchains/gcc-linaro-6.5.0-2018.12-x86_64_arm-linux-gnueabihf/bin/arm-linux-gnueabihf-"
 #TOOLCHAIN="/opt/toolchains/gcc-arm-9.2-2019.12-x86_64-arm-none-linux-gnueabihf/bin/arm-none-linux-gnueabihf-"
-export ARCH="arm"
+#export ARCH="arm"
 export CROSS_COMPILE="$TOOLCHAIN"
 echo -n "$(date +%s)" > "$RDIR/.starttime"
 STARTTIME="$(cat $RDIR/.starttime)"
