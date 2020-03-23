@@ -24,42 +24,33 @@ candela_func350() {
 }
 
 END=255
-
-if [ "$1" = "1" ]
-then
-	echo "300 candela table"
-	echo "" >> curvegenheader.h
-	echo '/*' >> curvegenheader.h
-	echo '*		index : 0 ~ 255' >> curvegenheader.h
-	echo '*		300 is max CANDELA' >> curvegenheader.h
-	echo '*		(300*((index/255)^1.85))*4194304' >> curvegenheader.h
-	echo '*/' >> curvegenheader.h
-	echo '' >> curvegenheader.h
-	echo 'static int curve_1p85_300[] = {' >> curvegenheader.h
-	for ((i=0;i<=END;i++)); do
-		echo "Calculating $i/255"
-	    candela_func300 $i
-	done
-	echo '};' >> curvegenheader.h
-	echo "done"
-elif [ "$1" = "2" ]
-then
-	echo "350 candela table"
-	echo "" >> curvegenheader.h
-	echo '/*' >> curvegenheader.h
-	echo '*		index : 0 ~ 255' >> curvegenheader.h
-	echo '*		350 is max CANDELA' >> curvegenheader.h
-	echo '*		(350*((index/255)^1.85))*4194304' >> curvegenheader.h
-	echo '*/' >> curvegenheader.h
-	echo '' >> curvegenheader.h
-	echo 'static int curve_1p85_350[] = {' >> curvegenheader.h
-	for ((i=0;i<=END;i++)); do
-		echo "Calculating $i/255"
-	    candela_func350 $i
-	done
-	echo '};' >> curvegenheader.h
-	echo "done"
-else
-	usage
-	exit 0
-fi
+echo "300 candela table"
+echo "" >> curvegenheader.h
+echo '/*' >> curvegenheader.h
+echo '*		index : 0 ~ 255' >> curvegenheader.h
+echo '*		300 is max CANDELA' >> curvegenheader.h
+echo '*		(300*((index/255)^1.85))*4194304' >> curvegenheader.h
+echo '*/' >> curvegenheader.h
+echo '' >> curvegenheader.h
+echo 'static int curve_1p85[] = {' >> curvegenheader.h
+for ((i=0;i<=END;i++)); do
+	echo "Calculating $i/255"
+    candela_func300 $i
+done
+echo '};' >> curvegenheader.h
+echo "done"
+echo "350 candela table"
+echo "" >> curvegenheader.h
+echo '/*' >> curvegenheader.h
+echo '*		index : 0 ~ 255' >> curvegenheader.h
+echo '*		350 is max CANDELA' >> curvegenheader.h
+echo '*		(350*((index/255)^1.85))*4194304' >> curvegenheader.h
+echo '*/' >> curvegenheader.h
+echo '' >> curvegenheader.h
+echo 'static int curve_1p85_350[] = {' >> curvegenheader.h
+for ((i=0;i<=END;i++)); do
+	echo "Calculating $i/255"
+    candela_func350 $i
+done
+echo '};' >> curvegenheader.h
+echo "done"
