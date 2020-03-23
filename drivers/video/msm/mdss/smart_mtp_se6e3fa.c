@@ -1481,7 +1481,6 @@ static void(*Make_hexa[S6E3FA_TABLE_MAX])(int*, struct SMART_DIM*, char*) = {
 #define AOR_FIX_CD 180
 #define AOR_ADJUST_CD 110
 
-
 #define CCG6_MAX_TABLE 61
 static int ccg6_candela_table[][2] = {
 {5, 0,},
@@ -2886,8 +2885,8 @@ static void gamma_init_H_revJ(struct SMART_DIM *pSmart, char *str, int size)
 
 	pr_info("SMARTDIM %s - pSmart->brightness_level : %d\n", __func__, pSmart->brightness_level);
 	/*calculate candela level */
-AOR_ADJUST_CD
-	if (psmart->brightness_level < AOR_ADJUST_CD) {
+
+	if (psmart->brightness_level < 111) {
 		/* 100CD ~ 10CD */
 		bl_level = AOR_ADJUST_CD;
 	} else if ((pSmart->brightness_level >= AOR_ADJUST_CD) &&
