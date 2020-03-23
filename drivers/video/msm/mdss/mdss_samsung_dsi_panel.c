@@ -3251,6 +3251,8 @@ static int mdss_samsung_parse_candella_lux_mapping_table(struct device_node *np,
 			return -EINVAL;
 		}
 		table->lux_tab_size = len / (sizeof(int)*4);
+		pr_err("%s: lux_tab_size: %d\n",
+				__func__, table->lux_tab_size);
 		table->lux_tab = kzalloc((sizeof(int) * table->lux_tab_size), GFP_KERNEL);
 		if (!table->lux_tab)
 			return -ENOMEM;

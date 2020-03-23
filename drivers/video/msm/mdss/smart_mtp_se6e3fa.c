@@ -116,6 +116,17 @@ static int char_to_int_v255(char data1, char data2)
 	return cal_data;
 }
 
+static int v255_val[3] = {0, 0, 0};
+static int vt_val[3] = {0, 0, 0};
+static int v203_val[3] = {0, 0, 0};
+static int v151_val[3] = {0, 0, 0};
+static int v87_val[3] = {0, 0, 0};
+static int v51_val[3] = {0, 0, 0};
+static int v35_val[3] = {0, 0, 0};
+static int v23_val[3] = {0, 0, 0};
+static int v11_val[3] = {0, 0, 0};
+static int v3_val[3] = {0, 0, 0};
+
 static void print_RGB_offset(struct SMART_DIM *pSmart)
 {
 	pr_info("%s MTP Offset VT R:%d G:%d B:%d\n", __func__,
@@ -173,12 +184,12 @@ static int v255_adjustment(struct SMART_DIM *pSmart)
 	int v255_value;
 
 	v255_value = (V255_300CD_R_MSB << 8) | (V255_300CD_R_LSB);
-	pr_info("%s RED v255_value:%d \n", __func__, v255_value);
+	pr_info("%s RED v255_value: %d\n", __func__, v255_value);
 	LSB = char_to_int_v255(pSmart->MTP.R_OFFSET.OFFSET_255_MSB,
 				pSmart->MTP.R_OFFSET.OFFSET_255_LSB);
-	pr_info("%s RED LSB:%d \n", __func__, LSB);
+	pr_info("%s RED LSB: %d\n", __func__, LSB);
 	add_mtp = LSB + v255_value;
-	pr_info("%s RED add_mtp:%d \n", __func__, add_mtp);
+	pr_info("%s RED add_mtp: %d\n", __func__, add_mtp);
 	result_2 = (v255_coefficient+add_mtp) << BIT_SHIFT;
 	do_div(result_2, v255_denominator);
 	result_3 = (S6E3FA_VREG0_REF * result_2) >> BIT_SHIFT;
@@ -189,12 +200,12 @@ static int v255_adjustment(struct SMART_DIM *pSmart)
 			 pSmart->RGB_OUTPUT.R_VOLTAGE.level_0);
 
 	v255_value = (V255_300CD_G_MSB << 8) | (V255_300CD_G_LSB);
-	pr_info("%s GREEN v255_value:%d \n", __func__, v255_value);
+	pr_info("%s GREEN v255_value: %d\n", __func__, v255_value);
 	LSB = char_to_int_v255(pSmart->MTP.G_OFFSET.OFFSET_255_MSB,
 				pSmart->MTP.G_OFFSET.OFFSET_255_LSB);
-	pr_info("%s GREEN LSB:%d \n", __func__, LSB);
+	pr_info("%s GREEN LSB: %d\n", __func__, LSB);
 	add_mtp = LSB + v255_value;
-	pr_info("%s GREEN add_mtp:%d \n", __func__, add_mtp);
+	pr_info("%s GREEN add_mtp: %d\n", __func__, add_mtp);
 	result_2 = (v255_coefficient+add_mtp) << BIT_SHIFT;
 	do_div(result_2, v255_denominator);
 	result_3 = (S6E3FA_VREG0_REF * result_2) >> BIT_SHIFT;
@@ -206,12 +217,12 @@ static int v255_adjustment(struct SMART_DIM *pSmart)
 			 pSmart->RGB_OUTPUT.G_VOLTAGE.level_0);
 
 	v255_value = (V255_300CD_B_MSB << 8) | (V255_300CD_B_LSB);
-	pr_info("%s BLUE v255_value:%d \n", __func__, v255_value);
+	pr_info("%s BLUE v255_value: %d\n", __func__, v255_value);
 	LSB = char_to_int_v255(pSmart->MTP.B_OFFSET.OFFSET_255_MSB,
 				pSmart->MTP.B_OFFSET.OFFSET_255_LSB);
-	pr_info("%s BLUE LSB:%d \n", __func__, LSB);
+	pr_info("%s BLUE LSB: %d\n", __func__, LSB);
 	add_mtp = LSB + v255_value;
-	pr_info("%s BLUE add_mtp:%d \n", __func__, add_mtp);
+	pr_info("%s BLUE add_mtp: %d\n", __func__, add_mtp);
 	result_2 = (v255_coefficient+add_mtp) << BIT_SHIFT;
 	do_div(result_2, v255_denominator);
 	result_3 = (S6E3FA_VREG0_REF * result_2) >> BIT_SHIFT;
@@ -305,39 +316,46 @@ static void v255_hexa(int *index, struct SMART_DIM *pSmart, char *str)
 	str[5] = result_3 & 0xff;
 
 }
-
+/*
 static int vt_coefficient[] = {
 	12, 24, 36, 48, 60,
 	72, 84, 96, 108, 120,
 	132, 144, 156, 168,
 	180, 192,
 };
+*/
+static int vt_coefficient[] = {
+	0, 12, 24, 36, 48,
+	60, 72, 84, 96, 108,
+	138, 148, 158, 168,
+	178, 186,
+};
 #define vt_denominator 860
 static int vt_adjustment(struct SMART_DIM *pSmart)
 {
-	unsigned long long result_1, result_2, result_3, result_4;
+	unsigned long long result_2, result_3, result_4;
 	int add_mtp;
 	int LSB;
 
 	LSB = char_to_int(pSmart->MTP.R_OFFSET.OFFSET_1);
-	add_mtp = LSB + VT_300CD_R;
-	result_1 = result_2 = vt_coefficient[LSB] << BIT_SHIFT;
+	add_mtp = LSB + VT_300CD_R + 16;
+	result_2 = (vt_coefficient[LSB] + add_mtp) << BIT_SHIFT;
 	do_div(result_2, vt_denominator);
 	result_3 = (S6E3FA_VREG0_REF * result_2) >> BIT_SHIFT;
 	result_4 = S6E3FA_VREG0_REF - result_3;
 	pSmart->GRAY.VT_TABLE.R_Gray = result_4;
 
 	LSB = char_to_int(pSmart->MTP.G_OFFSET.OFFSET_1);
-	add_mtp = LSB + VT_300CD_G;
-	result_1 = result_2 = vt_coefficient[LSB] << BIT_SHIFT;
+	add_mtp = LSB + VT_300CD_G + 4;
+	result_2 = (vt_coefficient[LSB] + add_mtp) << BIT_SHIFT;
 	do_div(result_2, vt_denominator);
 	result_3 = (S6E3FA_VREG0_REF * result_2) >> BIT_SHIFT;
 	result_4 = S6E3FA_VREG0_REF - result_3;
 	pSmart->GRAY.VT_TABLE.G_Gray = result_4;
 
 	LSB = char_to_int(pSmart->MTP.B_OFFSET.OFFSET_1);
-	add_mtp = LSB + VT_300CD_B;
-	result_1 = result_2 = vt_coefficient[LSB] << BIT_SHIFT;
+	add_mtp = LSB + VT_300CD_B + 16;
+	result_2 = (vt_coefficient[LSB] + add_mtp) << BIT_SHIFT;
 	do_div(result_2, vt_denominator);
 	result_3 = (S6E3FA_VREG0_REF * result_2) >> BIT_SHIFT;
 	result_4 = S6E3FA_VREG0_REF - result_3;
@@ -4072,7 +4090,7 @@ static int smart_dimming_init(struct SMART_DIM *psmart)
 	v11_adjustment(psmart);
 	v3_adjustment(psmart);
 
-	print_RGB_offset(psmart);
+	//print_RGB_offset(psmart);
 
 	if (generate_gray_scale(psmart)) {
 		pr_info(KERN_ERR "lcd smart dimming fail generate_gray_scale\n");
