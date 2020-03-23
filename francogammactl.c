@@ -14,17 +14,17 @@
 #define GAMMACONTROL_VERSION 2
 
 		//     r      g      b
-int v255_val[3]	= {    0,     0,     0};
-int vt_val[3]	= {    0,     0,     0};
-int v203_val[3]	= {    0,     0,     0};
-int v151_val[3]	= {    0,     0,     0};
-int v87_val[3]	= {    0,     0,     0};
-int v51_val[3]	= {    0,     0,     0};
-int v35_val[3]	= {    0,     0,     0};
-int v23_val[3]	= {    0,     0,     0};
-int v11_val[3]	= {    0,     0,     0};
-int v3_val[3]	= {    0,     0,     0};
-int tuner[3]	= {   60,    60,    60};
+int v255_val[3] = {0, 0, 0};
+int vt_val[3] = {0, 0, 0};
+int v203_val[3] = {0, 0, 0};
+int v151_val[3] = {0, 0, 0};
+int v87_val[3] = {0, 0, 0};
+int v51_val[3] = {0, 0, 0};
+int v35_val[3] = {0, 0, 0};
+int v23_val[3] = {0, 0, 0};
+int v11_val[3] = {0, 0, 0};
+int v3_val[3] = {0, 0, 0};
+int tuner[3] = {   60,    60,    60};
 
 int red_tint[10] = {15, 20, 9, 9, 9, 9, 9, 9, 9, 9};
 int grn_tint[10] = {15, 20, 9, 9, 9, 9, 9, 9, 9, 9};

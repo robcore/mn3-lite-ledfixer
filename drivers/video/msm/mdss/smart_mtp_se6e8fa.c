@@ -3459,7 +3459,7 @@ static int smart_dimming_init(struct SMART_DIM *psmart)
 		psmart->gen_table[lux_loop].lux = psmart->plux_table[lux_loop];
 
 #if defined(AID_OPERATION)
-		if (id3 == EVT1_THIRD_ID || id3 == EVT1_FOUTRH_ID ||
+		if (id3 == EVT1_THIRD_ID || id3 == EVT1_FOURTH_ID ||
 				id3 == EVT1_REV_H_ID3_1 || id3 == EVT1_REV_H_ID3_2 ||
 				id3 == EVT1_REV_I_ID3_1 || id3 == EVT1_REV_I_ID3_2)
 			gamma_init_evt1_third(psmart,

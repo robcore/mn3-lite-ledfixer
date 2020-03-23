@@ -1,0 +1,10 @@
+CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_CMD_FULL_HD_PT_PANEL
+/root/mn3lite/arch/arm/mach-msm/clock-8974.c
+/root/mn3lite/drivers/video/msm/mdss/mdnie_lite_tuning.h
+/root/mn3lite/drivers/video/msm/mdss/mdss_dsi_host.c
+/root/mn3lite/drivers/video/msm/mdss/mdss_mdp_overlay.c
+/root/mn3lite/drivers/video/msm/mdss/mdnie_lite_tuning.c
+/root/mn3lite/drivers/video/msm/mdss/mdss_dsi.c
+/root/mn3lite/drivers/video/msm/mdss/mdss_mdp.h
+/root/mn3lite/drivers/video/msm/mdss/mdss_samsung_dsi_panel.c
+/root/mn3lite/drivers/video/msm/mdss/mdnie_lite_tuning-jamison.c

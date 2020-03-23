@@ -5817,7 +5817,7 @@ static int candela_coeff_2p15[] = {
 */
 
 static int curve_1p9_350[] = {
-19646 ,
+0 ,
 39292 ,
 146642 ,
 316834 ,

@@ -46,9 +46,9 @@ Copyright (C) 2012, Samsung Electronics. All rights reserved.
 #define EVT1_ID 0x23
 #define EVT1_SECOND_ID 0x44
 
-/* EVT1_THIRD_ID & EVT1_FOUTRH_ID has same smart-dimming algo */
+/* EVT1_THIRD_ID & EVT1_FOURTH_ID has same smart-dimming algo */
 #define EVT1_THIRD_ID 0x25
-#define EVT1_FOUTRH_ID 0x45
+#define EVT1_FOURTH_ID 0x45
 
 /* for REV H LDI */
 #define EVT1_REV_H_ID3_1 0x46
