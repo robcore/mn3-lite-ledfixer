@@ -2814,7 +2814,6 @@ static void gamma_init_H_revJ(struct SMART_DIM *pSmart, char *str, int size)
 	int cnt;
 	int table_index;
 
-	pr_info("SMARTDIM: !!\n", __func__);
 	pr_info("SMARTDIM %s - pSmart->brightness_level : %d\n", __func__, pSmart->brightness_level);
 	/*calculate candela level */
 	if (pSmart->brightness_level > AOR_FIX_CD) {
