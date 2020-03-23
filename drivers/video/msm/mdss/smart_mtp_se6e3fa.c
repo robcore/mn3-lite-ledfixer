@@ -1334,11 +1334,13 @@ char offset_cal(int offset,  char value)
 		return real_value - offset;
 }
 
+#define OFFSET_CAL_MAX 29
 static void mtp_offset_substraction(struct SMART_DIM *pSmart, char *str)
 {
 	int level_255_temp = 0;
 	int level_255_temp_MSB = 0;
 	int MTP_V255;
+	int offcount = 0;
 
 	/*subtration MTP_OFFSET value from generated gamma table*/
 	level_255_temp = (str[0] << 8) | str[1] ;
@@ -1396,6 +1398,11 @@ static void mtp_offset_substraction(struct SMART_DIM *pSmart, char *str)
 	str[27] = offset_cal(char_to_int(pSmart->MTP.R_OFFSET.OFFSET_3), str[27]);
 	str[28] = offset_cal(char_to_int(pSmart->MTP.G_OFFSET.OFFSET_3), str[28]);
 	str[29] = offset_cal(char_to_int(pSmart->MTP.B_OFFSET.OFFSET_3), str[29]);
+
+	for (offcount = 0; offcount < OFFSET_CAL_MAX; offcount++) {
+		pr_info("SMARTDIM %s - Substract String : %s\n", __func__, str[offcount]);
+	}
+
 }
 
 static int searching_function(long long candela, int *index, int gamma_curve)
@@ -1408,7 +1415,7 @@ static int searching_function(long long candela, int *index, int gamma_curve)
 		searcing algorithm to reduce searching time.
 	*/
 
-	pr_info("SMARTDIM %s - Input Candela : %lld Input Index : %d\n", __func__, candela,*index);
+	pr_info("SMARTDIM %s - Input Candela : %lld Input Index : %d\n", __func__, candela, *index);
 
 	*index = -1;
 
@@ -1553,9 +1560,11 @@ static int find_cadela_table(int brightness)
 	int loop;
 	int err = -1;
 
-	for (loop = 0; loop <= CCG6_MAX_TABLE; loop++)
+	for (loop = 0; loop <= CCG6_MAX_TABLE; loop++) {
+		pr_info("SMARTDIM %s Loop - ccg6_candela_table value: %d input brightness: %d\n", __func__, ccg6_candela_table[loop][0], brightness);
 		if (ccg6_candela_table[loop][0] == brightness)
 			return ccg6_candela_table[loop][1];
+	}
 
 	return err;
 }
@@ -1564,56 +1573,56 @@ static int find_cadela_table(int brightness)
 
 static int gradation_offset_rev0[][9] = {
 /*	V255 V203 V151 V87 V51 V35 V23 V11 V3 */
-	{0, 6, 11, 18, 23, 26, 30, 34, 37},
-	{0, 5, 10, 16, 20, 23, 26, 30, 30},
-	{0, 5, 8, 14, 18, 21, 24, 27, 27},
-	{0, 5, 8, 13, 16, 19, 22, 24, 26},
-	{0, 4, 7, 12, 15, 18, 20, 23, 25},
-	{0, 4, 6, 10, 13, 16, 18, 22, 25},
-	{0, 4, 6, 10, 13, 16, 18, 21, 24},
-	{0, 4, 6, 9, 12, 15, 17, 20, 23},
-	{0, 4, 5, 9, 12, 14, 16, 19, 22},
-	{0, 4, 5, 8, 11, 13, 15, 18, 21},
-	{0, 4, 5, 8, 10, 13, 14, 17, 20},
-	{0, 3, 4, 7, 9, 12, 13, 16, 19},
-	{0, 3, 4, 7, 9, 11, 13, 16, 18},
-	{0, 3, 4, 6, 8, 10, 12, 15, 17},
-	{0, 3, 4, 6, 8, 10, 12, 15, 17},
-	{0, 3, 4, 6, 7, 9, 11, 14, 16},
-	{0, 3, 3, 5, 7, 9, 11, 13, 15},
-	{0, 3, 3, 5, 6, 8, 10, 12, 14},
-	{0, 3, 3, 5, 6, 8, 10, 12, 14},
-	{0, 3, 3, 5, 6, 8, 9, 11, 14},
-	{0, 3, 3, 4, 5, 7, 8, 11, 13},
-	{0, 3, 3, 4, 5, 7, 8, 10, 12},
-	{0, 3, 3, 4, 5, 7, 8, 10, 12},
-	{0, 2, 2, 3, 4, 6, 7, 9, 11},
-	{0, 2, 2, 3, 4, 6, 7, 8, 10},
-	{0, 2, 2, 3, 4, 5, 6, 8, 10},
-	{0, 2, 2, 3, 4, 5, 6, 7, 9},
-	{0, 2, 2, 3, 3, 4, 5, 7, 9},
-	{0, 1, 1, 2, 3, 4, 5, 6, 8},
-	{0, 1, 1, 2, 2, 3, 4, 5, 7},
-	{0, 1, 1, 2, 2, 3, 4, 5, 7},
-	{0, 1, 1, 1, 2, 3, 3, 4, 6},
-	{0, 1, 1, 1, 2, 3, 3, 4, 6},
-	{0, 1, 1, 1, 2, 3, 3, 4, 6},
-	{0, 1, 1, 1, 1, 2, 2, 3, 5},
-	{0, 1, 1, 1, 1, 2, 2, 3, 4},
-	{0, 1, 0, 1, 1, 2, 2, 3, 4},
-	{0, 1, 0, 1, 1, 2, 2, 3, 4},
-	{0, 1, 0, 0, 0, 1, 1, 2, 3},
-	{0, 1, 0, 0, 0, 1, 1, 2, 3},
-	{0, 1, 0, 0, 0, 1, 1, 2, 3},
-	{0, 1, 0, 0, 0, 0, 1, 2, 3},
-	{0, 0, 0, 0, 0, 0, 1, 2, 5},
-	{0, 0, 0, 0, 0, 0, 1, 2, 5},
-	{0, 0, 0, 0, 0, 0, 1, 2, 5},
-	{0, 0, 0, 0, 0, 0, 1, 2, 4},
-	{0, 0, 0, 0, 0, 0, 1, 2, 4},
-	{0, 0, 0, 0, 0, 0, 0, 2, 4},
-	{0, 0, 0, 0, 0, 0, 0, 2, 4},
-	{0, 0, 0, 0, 0, 0, 0, 2, 4},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
 	{0, 0, 0, 0, 0, 0, 0, 0, 0},
 	{0, 0, 0, 0, 0, 0, 0, 0, 0},
 	{0, 0, 0, 0, 0, 0, 0, 0, 0},
@@ -1759,13 +1768,13 @@ static void gamma_init_rev0(
 
 
 #ifdef SMART_DIMMING_DEBUG
-	printk(KERN_INFO "\n candela_1:%llu  candela_3:%llu  candela_11:%llu ",
+	pr_info("\n candela_1:%llu  candela_3:%llu  candela_11:%llu ",
 		candela_level[0], candela_level[1], candela_level[2]);
-	printk(KERN_INFO "candela_23:%llu  candela_35:%llu  candela_51:%llu ",
+	pr_info("candela_23:%llu  candela_35:%llu  candela_51:%llu ",
 		candela_level[3], candela_level[4], candela_level[5]);
-	printk(KERN_INFO "candela_87:%llu  candela_151:%llu  candela_203:%llu ",
+	pr_info("candela_87:%llu  candela_151:%llu  candela_203:%llu ",
 		candela_level[6], candela_level[7], candela_level[8]);
-	printk(KERN_INFO "candela_255:%llu brightness_level %d\n", candela_level[9], pSmart->brightness_level);
+	pr_info("candela_255:%llu brightness_level %d\n", candela_level[9], pSmart->brightness_level);
 #endif
 
 	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
@@ -1782,10 +1791,8 @@ static void gamma_init_rev0(
 	for (cnt = 1; cnt < S6E3FA_TABLE_MAX; cnt++) {
 		table_index = find_cadela_table(pSmart->brightness_level);
 
-		if (table_index == -1) {
+		if ((table_index == -1) || (table_index >= CCG6_MAX_TABLE) {
 			table_index = CCG6_MAX_TABLE;
-			pr_info("%s fail candela table_index cnt : %d brightness %d",
-				__func__, cnt, pSmart->brightness_level);
 		}
 
 		bl_index[S6E3FA_TABLE_MAX - cnt] +=
@@ -1797,13 +1804,13 @@ static void gamma_init_rev0(
 	}
 
 #ifdef SMART_DIMMING_DEBUG
-	printk(KERN_INFO "\n bl_index_1:%d  bl_index_3:%d  bl_index_11:%d",
+	pr_info("\n bl_index_1:%d  bl_index_3:%d  bl_index_11:%d",
 		bl_index[0], bl_index[1], bl_index[2]);
-	printk(KERN_INFO "bl_index_23:%d bl_index_35:%d  bl_index_51:%d",
+	pr_info("bl_index_23:%d bl_index_35:%d  bl_index_51:%d",
 		bl_index[3], bl_index[4], bl_index[5]);
-	printk(KERN_INFO "bl_index_87:%d  bl_index_151:%d bl_index_203:%d",
+	pr_info("bl_index_87:%d  bl_index_151:%d bl_index_203:%d",
 		bl_index[6], bl_index[7], bl_index[8]);
-	printk(KERN_INFO "bl_index_255:%d\n", bl_index[9]);
+	pr_info("bl_index_255:%d\n", bl_index[9]);
 #endif
 	/*Generate Gamma table*/
 	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++)
@@ -2034,13 +2041,13 @@ static void gamma_init_rev1(
 
 
 #ifdef SMART_DIMMING_DEBUG
-	printk(KERN_INFO "\n candela_1:%llu  candela_3:%llu  candela_11:%llu ",
+	pr_info("\n candela_1:%llu  candela_3:%llu  candela_11:%llu ",
 		candela_level[0], candela_level[1], candela_level[2]);
-	printk(KERN_INFO "candela_23:%llu  candela_35:%llu  candela_51:%llu ",
+	pr_info("candela_23:%llu  candela_35:%llu  candela_51:%llu ",
 		candela_level[3], candela_level[4], candela_level[5]);
-	printk(KERN_INFO "candela_87:%llu  candela_151:%llu  candela_203:%llu ",
+	pr_info("candela_87:%llu  candela_151:%llu  candela_203:%llu ",
 		candela_level[6], candela_level[7], candela_level[8]);
-	printk(KERN_INFO "candela_255:%llu brightness_level %d\n", candela_level[9], pSmart->brightness_level);
+	pr_info("candela_255:%llu brightness_level %d\n", candela_level[9], pSmart->brightness_level);
 #endif
 
 	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
@@ -2072,13 +2079,13 @@ static void gamma_init_rev1(
 	}
 
 #ifdef SMART_DIMMING_DEBUG
-	printk(KERN_INFO "\n bl_index_1:%d  bl_index_3:%d  bl_index_11:%d",
+	pr_info("\n bl_index_1:%d  bl_index_3:%d  bl_index_11:%d",
 		bl_index[0], bl_index[1], bl_index[2]);
-	printk(KERN_INFO "bl_index_23:%d bl_index_35:%d  bl_index_51:%d",
+	pr_info("bl_index_23:%d bl_index_35:%d  bl_index_51:%d",
 		bl_index[3], bl_index[4], bl_index[5]);
-	printk(KERN_INFO "bl_index_87:%d  bl_index_151:%d bl_index_203:%d",
+	pr_info("bl_index_87:%d  bl_index_151:%d bl_index_203:%d",
 		bl_index[6], bl_index[7], bl_index[8]);
-	printk(KERN_INFO "bl_index_255:%d\n", bl_index[9]);
+	pr_info("bl_index_255:%d\n", bl_index[9]);
 #endif
 	/*Generate Gamma table*/
 	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++)
@@ -2307,13 +2314,13 @@ static void gamma_init_rev2(struct SMART_DIM *pSmart, char *str, int size)
 
 
 #ifdef SMART_DIMMING_DEBUG
-	printk(KERN_INFO "\n candela_1:%llu  candela_3:%llu  candela_11:%llu ",
+	pr_info("\n candela_1:%llu  candela_3:%llu  candela_11:%llu ",
 		candela_level[0], candela_level[1], candela_level[2]);
-	printk(KERN_INFO "candela_23:%llu  candela_35:%llu  candela_51:%llu ",
+	pr_info("candela_23:%llu  candela_35:%llu  candela_51:%llu ",
 		candela_level[3], candela_level[4], candela_level[5]);
-	printk(KERN_INFO "candela_87:%llu  candela_151:%llu  candela_203:%llu ",
+	pr_info("candela_87:%llu  candela_151:%llu  candela_203:%llu ",
 		candela_level[6], candela_level[7], candela_level[8]);
-	printk(KERN_INFO "candela_255:%llu brightness_level %d\n", candela_level[9], pSmart->brightness_level);
+	pr_info("candela_255:%llu brightness_level %d\n", candela_level[9], pSmart->brightness_level);
 #endif
 
 	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
@@ -2345,13 +2352,13 @@ static void gamma_init_rev2(struct SMART_DIM *pSmart, char *str, int size)
 	}
 
 #ifdef SMART_DIMMING_DEBUG
-	printk(KERN_INFO "\n bl_index_1:%d  bl_index_3:%d  bl_index_11:%d",
+	pr_info("\n bl_index_1:%d  bl_index_3:%d  bl_index_11:%d",
 		bl_index[0], bl_index[1], bl_index[2]);
-	printk(KERN_INFO "bl_index_23:%d bl_index_35:%d  bl_index_51:%d",
+	pr_info("bl_index_23:%d bl_index_35:%d  bl_index_51:%d",
 		bl_index[3], bl_index[4], bl_index[5]);
-	printk(KERN_INFO "bl_index_87:%d  bl_index_151:%d bl_index_203:%d",
+	pr_info("bl_index_87:%d  bl_index_151:%d bl_index_203:%d",
 		bl_index[6], bl_index[7], bl_index[8]);
-	printk(KERN_INFO "bl_index_255:%d\n", bl_index[9]);
+	pr_info("bl_index_255:%d\n", bl_index[9]);
 #endif
 	/*Generate Gamma table*/
 	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++)
@@ -2590,13 +2597,13 @@ static void gamma_init_H_revI(struct SMART_DIM *pSmart, char *str, int size)
 
 
 #ifdef SMART_DIMMING_DEBUG
-	printk(KERN_INFO "\n candela_1:%llu  candela_3:%llu  candela_11:%llu ",
+	pr_info("\n candela_1:%llu  candela_3:%llu  candela_11:%llu ",
 		candela_level[0], candela_level[1], candela_level[2]);
-	printk(KERN_INFO "candela_23:%llu  candela_35:%llu  candela_51:%llu ",
+	pr_info("candela_23:%llu  candela_35:%llu  candela_51:%llu ",
 		candela_level[3], candela_level[4], candela_level[5]);
-	printk(KERN_INFO "candela_87:%llu  candela_151:%llu  candela_203:%llu ",
+	pr_info("candela_87:%llu  candela_151:%llu  candela_203:%llu ",
 		candela_level[6], candela_level[7], candela_level[8]);
-	printk(KERN_INFO "candela_255:%llu brightness_level %d\n", candela_level[9], pSmart->brightness_level);
+	pr_info("candela_255:%llu brightness_level %d\n", candela_level[9], pSmart->brightness_level);
 #endif
 
 	/* max 350cd */
@@ -2632,13 +2639,13 @@ static void gamma_init_H_revI(struct SMART_DIM *pSmart, char *str, int size)
 	}
 
 #ifdef SMART_DIMMING_DEBUG
-	printk(KERN_INFO "\n bl_index_1:%d  bl_index_3:%d  bl_index_11:%d",
+	pr_info("\n bl_index_1:%d  bl_index_3:%d  bl_index_11:%d",
 		bl_index[0], bl_index[1], bl_index[2]);
-	printk(KERN_INFO "bl_index_23:%d bl_index_35:%d  bl_index_51:%d",
+	pr_info("bl_index_23:%d bl_index_35:%d  bl_index_51:%d",
 		bl_index[3], bl_index[4], bl_index[5]);
-	printk(KERN_INFO "bl_index_87:%d  bl_index_151:%d bl_index_203:%d",
+	pr_info("bl_index_87:%d  bl_index_151:%d bl_index_203:%d",
 		bl_index[6], bl_index[7], bl_index[8]);
-	printk(KERN_INFO "bl_index_255:%d\n", bl_index[9]);
+	pr_info("bl_index_255:%d\n", bl_index[9]);
 #endif
 	/*Generate Gamma table*/
 	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++)
@@ -2674,68 +2681,68 @@ static void gamma_init_H_revI(struct SMART_DIM *pSmart, char *str, int size)
 
 static int gradation_offset_H_revJ[][9] = {
 /*	V255 V203 V151 V87 V51 V35 V23 V11 V3 */
-	{11, 11, 11, 11, 11, 11, 11, 11, 11},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
 };
 
 static int rgb_offset_H_revJ[][RGB_COMPENSATION] = {
@@ -2743,70 +2750,138 @@ static int rgb_offset_H_revJ[][RGB_COMPENSATION] = {
 	R87 G87 B87 R51 G51 B51 R35 G35 B35
 	R23 G23 B23 R11 G11 B11
 */
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-	{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 };
 
+/*
+for reference
+#define CCG6_MAX_TABLE 61
+static int ccg6_candela_table[][2] = {
+{5, 0,},
+{6, 1,},
+{7, 2,},
+{8, 3,},
+{9, 4,},
+{10, 5,},
+{11, 6,},
+{12, 7,},
+{13, 8,},
+{14, 9,},
+{15, 10,},
+{16, 11,},
+{17, 12,},
+{19, 13,},
+{20, 14,},
+{21, 15,},
+{22, 16,},
+{24, 17,},
+{25, 18,},
+{27, 19,},
+{29, 20,},
+{30, 21,},
+{32, 22,},
+{34, 23,},
+{37, 24,},
+{39, 25,},
+{41, 26,},
+{44, 27,},
+{47, 28,},
+{50, 29,},
+{53, 30,},
+{56, 31,},
+{60, 32,},
+{64, 33,},
+{68, 34,},
+{72, 35,},
+{77, 36,},
+{82, 37,},
+{87, 38,},
+{93, 39,},
+{98, 40,},
+{105, 41,},
+{111, 42,},
+{119, 43,},
+{126, 44,},
+{134, 45,},
+{143, 46,},
+{152, 47,},
+{162, 48,},
+{172, 49,},
+{183, 50,},
+{195, 51,},
+{207, 52,},
+{220, 53,},
+{234, 54,},
+{249, 55,},
+{265, 56,},
+{282, 57,},
+{300, 58,},
+{316, 59,},
+{333, 60,},
+{350, 61,},
+};
+*/
 static void gamma_init_H_revJ(struct SMART_DIM *pSmart, char *str, int size)
 {
 	long long candela_level[S6E3FA_TABLE_MAX] = {-1, };
@@ -2824,10 +2899,10 @@ static void gamma_init_H_revJ(struct SMART_DIM *pSmart, char *str, int size)
 
 	pr_info("SMARTDIM %s - pSmart->brightness_level : %d\n", __func__, pSmart->brightness_level);
 	/*calculate candela level */
-	if (pSmart->brightness_level > AOR_FIX_CD) {
+	if (pSmart->brightness_level > 183) {
 		/* 350CD ~ 190CD */
 		bl_level = pSmart->brightness_level;
-	} else if ((pSmart->brightness_level <= AOR_FIX_CD) &&
+	} else if ((pSmart->brightness_level <= 183) &&
 				(pSmart->brightness_level >= AOR_ADJUST_CD)) {
 		/* 180CD ~ 110CD */
 		if (pSmart->brightness_level == 111)
@@ -2846,7 +2921,7 @@ static void gamma_init_H_revJ(struct SMART_DIM *pSmart, char *str, int size)
 			bl_level = 255;
 		else if (pSmart->brightness_level == 172)
 			bl_level = 268;
-		else
+		else if (pSmart->brightness_level == 183)
 			bl_level = 270;
 	} else {
 		/* 100CD ~ 10CD */
@@ -2857,14 +2932,14 @@ static void gamma_init_H_revJ(struct SMART_DIM *pSmart, char *str, int size)
 	if (pSmart->brightness_level < 350) {
 		for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 			point_index = S6E3FA_ARRAY[cnt+1];
-			candela_level[cnt] = ((long long)(candela_coeff_1p85[point_index])) * ((long long)(bl_level));
+			candela_level[cnt] = ((long long)(candela_coeff_2p2[point_index])) * ((long long)(bl_level));
 			pr_info("SMARTDIM %s - candela_level : %lld\n", __func__, candela_level[cnt]);
 		}
 
 	} else {
 		for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 			point_index = S6E3FA_ARRAY[cnt+1];
-			candela_level[cnt] = ((long long)(candela_coeff_1p9[point_index])) * ((long long)(bl_level));
+			candela_level[cnt] = ((long long)(candela_coeff_2p25[point_index])) * ((long long)(bl_level));
 			pr_info("SMARTDIM %s - candela_level : %lld\n", __func__, candela_level[cnt]);
 		}
 	}
@@ -2902,13 +2977,13 @@ static void gamma_init_H_revJ(struct SMART_DIM *pSmart, char *str, int size)
 	}
 
 #ifdef SMART_DIMMING_DEBUG_PLUS
-	printk(KERN_INFO "\n bl_index_1:%d  bl_index_3:%d  bl_index_11:%d",
+	pr_info("\n bl_index_1:%d  bl_index_3:%d  bl_index_11:%d",
 		bl_index[0], bl_index[1], bl_index[2]);
-	printk(KERN_INFO "bl_index_23:%d bl_index_35:%d  bl_index_51:%d",
+	pr_info("bl_index_23:%d bl_index_35:%d  bl_index_51:%d",
 		bl_index[3], bl_index[4], bl_index[5]);
-	printk(KERN_INFO "bl_index_87:%d  bl_index_151:%d bl_index_203:%d",
+	pr_info("bl_index_87:%d  bl_index_151:%d bl_index_203:%d",
 		bl_index[6], bl_index[7], bl_index[8]);
-	printk(KERN_INFO "bl_index_255:%d\n", bl_index[9]);
+	pr_info("bl_index_255:%d\n", bl_index[9]);
 #endif
 	/*Generate Gamma table*/
 	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++)
@@ -2941,7 +3016,6 @@ static void gamma_init_H_revJ(struct SMART_DIM *pSmart, char *str, int size)
 	/*subtration MTP_OFFSET value from generated gamma table*/
 	mtp_offset_substraction(pSmart, str);
 }
-
 
 static int gradation_offset_F_revA[][9] = {
 /*	V255 V203 V151 V87 V51 V35 V23 V11 V3 */
@@ -3142,13 +3216,13 @@ static void gamma_init_F_revA(
 
 
 #ifdef SMART_DIMMING_DEBUG
-	printk(KERN_INFO "\n candela_1:%llu  candela_3:%llu  candela_11:%llu ",
+	pr_info("\n candela_1:%llu  candela_3:%llu  candela_11:%llu ",
 		candela_level[0], candela_level[1], candela_level[2]);
-	printk(KERN_INFO "candela_23:%llu  candela_35:%llu  candela_51:%llu ",
+	pr_info("candela_23:%llu  candela_35:%llu  candela_51:%llu ",
 		candela_level[3], candela_level[4], candela_level[5]);
-	printk(KERN_INFO "candela_87:%llu  candela_151:%llu  candela_203:%llu ",
+	pr_info("candela_87:%llu  candela_151:%llu  candela_203:%llu ",
 		candela_level[6], candela_level[7], candela_level[8]);
-	printk(KERN_INFO "candela_255:%llu brightness_level %d\n", candela_level[9], pSmart->brightness_level);
+	pr_info("candela_255:%llu brightness_level %d\n", candela_level[9], pSmart->brightness_level);
 #endif
 
 	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
@@ -3180,13 +3254,13 @@ static void gamma_init_F_revA(
 	}
 
 #ifdef SMART_DIMMING_DEBUG
-	printk(KERN_INFO "\n bl_index_1:%d  bl_index_3:%d  bl_index_11:%d",
+	pr_info("\n bl_index_1:%d  bl_index_3:%d  bl_index_11:%d",
 		bl_index[0], bl_index[1], bl_index[2]);
-	printk(KERN_INFO "bl_index_23:%d bl_index_35:%d  bl_index_51:%d",
+	pr_info("bl_index_23:%d bl_index_35:%d  bl_index_51:%d",
 		bl_index[3], bl_index[4], bl_index[5]);
-	printk(KERN_INFO "bl_index_87:%d  bl_index_151:%d bl_index_203:%d",
+	pr_info("bl_index_87:%d  bl_index_151:%d bl_index_203:%d",
 		bl_index[6], bl_index[7], bl_index[8]);
-	printk(KERN_INFO "bl_index_255:%d\n", bl_index[9]);
+	pr_info("bl_index_255:%d\n", bl_index[9]);
 #endif
 	/*Generate Gamma table*/
 	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++)
@@ -3425,13 +3499,13 @@ static void gamma_init_F_revE(
 
 
 #ifdef SMART_DIMMING_DEBUG
-	printk(KERN_INFO "\n candela_1:%llu  candela_3:%llu  candela_11:%llu ",
+	pr_info("\n candela_1:%llu  candela_3:%llu  candela_11:%llu ",
 		candela_level[0], candela_level[1], candela_level[2]);
-	printk(KERN_INFO "candela_23:%llu  candela_35:%llu  candela_51:%llu ",
+	pr_info("candela_23:%llu  candela_35:%llu  candela_51:%llu ",
 		candela_level[3], candela_level[4], candela_level[5]);
-	printk(KERN_INFO "candela_87:%llu  candela_151:%llu  candela_203:%llu ",
+	pr_info("candela_87:%llu  candela_151:%llu  candela_203:%llu ",
 		candela_level[6], candela_level[7], candela_level[8]);
-	printk(KERN_INFO "candela_255:%llu brightness_level %d\n", candela_level[9], pSmart->brightness_level);
+	pr_info("candela_255:%llu brightness_level %d\n", candela_level[9], pSmart->brightness_level);
 #endif
 
 	/* max 350cd */
@@ -3467,13 +3541,13 @@ static void gamma_init_F_revE(
 	}
 
 #ifdef SMART_DIMMING_DEBUG
-	printk(KERN_INFO "\n bl_index_1:%d  bl_index_3:%d  bl_index_11:%d",
+	pr_info("\n bl_index_1:%d  bl_index_3:%d  bl_index_11:%d",
 		bl_index[0], bl_index[1], bl_index[2]);
-	printk(KERN_INFO "bl_index_23:%d bl_index_35:%d  bl_index_51:%d",
+	pr_info("bl_index_23:%d bl_index_35:%d  bl_index_51:%d",
 		bl_index[3], bl_index[4], bl_index[5]);
-	printk(KERN_INFO "bl_index_87:%d  bl_index_151:%d bl_index_203:%d",
+	pr_info("bl_index_87:%d  bl_index_151:%d bl_index_203:%d",
 		bl_index[6], bl_index[7], bl_index[8]);
-	printk(KERN_INFO "bl_index_255:%d\n", bl_index[9]);
+	pr_info("bl_index_255:%d\n", bl_index[9]);
 #endif
 	/*Generate Gamma table*/
 	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++)
@@ -3712,13 +3786,13 @@ static void gamma_init_F_revF_G(
 
 
 #ifdef SMART_DIMMING_DEBUG
-	printk(KERN_INFO "\n candela_1:%llu  candela_3:%llu  candela_11:%llu ",
+	pr_info("\n candela_1:%llu  candela_3:%llu  candela_11:%llu ",
 		candela_level[0], candela_level[1], candela_level[2]);
-	printk(KERN_INFO "candela_23:%llu  candela_35:%llu  candela_51:%llu ",
+	pr_info("candela_23:%llu  candela_35:%llu  candela_51:%llu ",
 		candela_level[3], candela_level[4], candela_level[5]);
-	printk(KERN_INFO "candela_87:%llu  candela_151:%llu  candela_203:%llu ",
+	pr_info("candela_87:%llu  candela_151:%llu  candela_203:%llu ",
 		candela_level[6], candela_level[7], candela_level[8]);
-	printk(KERN_INFO "candela_255:%llu brightness_level %d\n", candela_level[9], pSmart->brightness_level);
+	pr_info("candela_255:%llu brightness_level %d\n", candela_level[9], pSmart->brightness_level);
 #endif
 
 	/* max 350cd */
@@ -3754,13 +3828,13 @@ static void gamma_init_F_revF_G(
 	}
 
 #ifdef SMART_DIMMING_DEBUG
-	printk(KERN_INFO "\n bl_index_1:%d  bl_index_3:%d  bl_index_11:%d",
+	pr_info("\n bl_index_1:%d  bl_index_3:%d  bl_index_11:%d",
 		bl_index[0], bl_index[1], bl_index[2]);
-	printk(KERN_INFO "bl_index_23:%d bl_index_35:%d  bl_index_51:%d",
+	pr_info("bl_index_23:%d bl_index_35:%d  bl_index_51:%d",
 		bl_index[3], bl_index[4], bl_index[5]);
-	printk(KERN_INFO "bl_index_87:%d  bl_index_151:%d bl_index_203:%d",
+	pr_info("bl_index_87:%d  bl_index_151:%d bl_index_203:%d",
 		bl_index[6], bl_index[7], bl_index[8]);
-	printk(KERN_INFO "bl_index_255:%d\n", bl_index[9]);
+	pr_info("bl_index_255:%d\n", bl_index[9]);
 #endif
 	/*Generate Gamma table*/
 	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++)
@@ -3800,10 +3874,7 @@ static void pure_gamma_init(struct SMART_DIM *pSmart, char *str, int size)
 {
 	long long candela_level[S6E3FA_TABLE_MAX] = {-1, };
 	int bl_index[S6E3FA_TABLE_MAX] = {-1, };
-
-	long long temp_cal_data = 0;
-	int bl_level, cnt;
-	int point_index;
+	int bl_level, cnt, point_index;
 
 	pr_info("SMARTDIM: %s INIT!!\n", __func__);
 
@@ -3811,21 +3882,16 @@ static void pure_gamma_init(struct SMART_DIM *pSmart, char *str, int size)
 
 	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 			point_index = S6E3FA_ARRAY[cnt+1];
-			temp_cal_data =
-			((long long)(candela_coeff_2p2[point_index])) *
-			((long long)(bl_level));
-			candela_level[cnt] = temp_cal_data;
+			candela_level[cnt] = ((long long)(candela_coeff_2p25[point_index])) * ((long long)(bl_level));
 	}
 
-#ifdef SMART_DIMMING_DEBUG
-	printk(KERN_INFO "\n candela_1:%llu  candela_3:%llu  candela_11:%llu ",
+	pr_info("\n candela_1:%llu  candela_3:%llu  candela_11:%llu ",
 		candela_level[0], candela_level[1], candela_level[2]);
-	printk(KERN_INFO "candela_23:%llu  candela_35:%llu  candela_51:%llu ",
+	pr_info("candela_23:%llu  candela_35:%llu  candela_51:%llu ",
 		candela_level[3], candela_level[4], candela_level[5]);
-	printk(KERN_INFO "candela_87:%llu  candela_151:%llu  candela_203:%llu ",
+	pr_info("candela_87:%llu  candela_151:%llu  candela_203:%llu ",
 		candela_level[6], candela_level[7], candela_level[8]);
-	printk(KERN_INFO "candela_255:%llu\n", candela_level[9]);
-#endif
+	pr_info("candela_255:%llu\n", candela_level[9]);
 
 	/*calculate brightness level*/
 	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
@@ -3844,13 +3910,13 @@ static void pure_gamma_init(struct SMART_DIM *pSmart, char *str, int size)
 		bl_index[1] += 1;
 
 #ifdef SMART_DIMMING_DEBUG
-	printk(KERN_INFO "\n bl_index_1:%d  bl_index_3:%d  bl_index_11:%d",
+	pr_info("\n bl_index_1:%d  bl_index_3:%d  bl_index_11:%d",
 	bl_index[0], bl_index[1], bl_index[2]);
-	printk(KERN_INFO "bl_index_23:%d bl_index_35:%d  bl_index_51:%d",
+	pr_info("bl_index_23:%d bl_index_35:%d  bl_index_51:%d",
 		bl_index[3], bl_index[4], bl_index[5]);
-	printk(KERN_INFO "bl_index_87:%d  bl_index_151:%d bl_index_203:%d",
+	pr_info("bl_index_87:%d  bl_index_151:%d bl_index_203:%d",
 		bl_index[5], bl_index[7], bl_index[8]);
-	printk(KERN_INFO "bl_index_255:%d\n", bl_index[9]);
+	pr_info("bl_index_255:%d\n", bl_index[9]);
 #endif
 
 	/*Generate Gamma table*/

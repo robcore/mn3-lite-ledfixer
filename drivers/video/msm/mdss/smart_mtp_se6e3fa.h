@@ -86,8 +86,13 @@ Copyright (C) 2012, Samsung Electronics. All rights reserved.
 //#define S6E3FA_VREG0_REF 26424115
 //#define S6E3FA_VREG0_REF 25165824
 //#define S6E3FA_VREG0_REF 16777216
+
 /*2.6x4194304 */
-#define S6E3FA_VREG0_REF 10905190
+//#define S6E3FA_VREG0_REF 10905190
+
+/*2.4x4194304 */
+#define S6E3FA_VREG0_REF 10066330
+
 /*V0,V3,V11,V23,V35,V51,V87,V151,V203,V255*/
 #define S6E3FA_MAX 11
 
@@ -181,7 +186,7 @@ struct RGB_OUTPUT_VOLTARE {
 
 struct GRAY_VOLTAGE {
 	/*
-		This voltage value use 14bit right shit
+		This voltage value use 14bit right shift
 		it means voltage is divied by 16384.
 	*/
 	int R_Gray;
