@@ -1407,6 +1407,9 @@ static int searching_function(long long candela, int *index, int gamma_curve)
 	*	This searching_functin should be changed with improved
 		searcing algorithm to reduce searching time.
 	*/
+
+	pr_info("SMARTDIM %s - Input Candela : %lld Input Index : %d\n", __func__, candela,*index);
+
 	*index = -1;
 
 	for (cnt = 0; cnt < (S6E3FA_GRAY_SCALE_MAX-1); cnt++) {
@@ -1421,21 +1424,26 @@ static int searching_function(long long candela, int *index, int gamma_curve)
 			delta_2 = candela - curve_2p2_350[cnt+1];
 		}
 
+		pr_info("SMARTDIM %s Loop - delta1: %lld delta2: %lld\n", __func__, delta_1, delta_2);
+
 		if (delta_2 < 0) {
 			if ((delta_1 + delta_2) <= 0)
 				*index = cnt;
 			else
 				*index = cnt + 1;
+			pr_info("SMARTDIM %s Loop - Loop Index : %d\n", __func__, *index);
 			break;
 		}
 
 		if (delta_1 == 0) {
 			*index = cnt;
+			pr_info("SMARTDIM %s Loop - Loop Index : %d\n", __func__, *index);
 			break;
 		}
 
 		if (delta_2 == 0) {
-			*index = cnt+1;
+			*index = cnt + 1;
+			pr_info("SMARTDIM %s Loop - Loop Index : %d\n", __func__, *index);
 			break;
 		}
 	}
