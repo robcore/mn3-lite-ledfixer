@@ -1,7 +1,7 @@
 /*
  * =================================================================
  *
- *       Filename:  smart_mtp_se6e8fa.h
+ *       Filename:  smart_mtp_se6e3fa.h
  *
  *    Description:  Smart dimming algorithm implementation
  *
@@ -40,23 +40,6 @@ Copyright (C) 2012, Samsung Electronics. All rights reserved.
 #include <linux/wait.h>
 #include <linux/ctype.h>
 #include <asm/div64.h>
-
-#define VT232_ID 0x02
-#define CCG6_ID 0x03
-#define EVT1_ID 0x23
-#define EVT1_SECOND_ID 0x44
-
-/* EVT1_THIRD_ID & EVT1_FOURTH_ID has same smart-dimming algo */
-#define EVT1_THIRD_ID 0x25
-#define EVT1_FOURTH_ID 0x45
-
-/* for REV H LDI */
-#define EVT1_REV_H_ID3_1 0x46
-#define EVT1_REV_H_ID3_2 0x26
-
-/* for REV I LDI */
-#define EVT1_REV_I_ID3_1 0x47
-#define EVT1_REV_I_ID3_2 0x27
 
 /* octa ldi id3 */
 #define EVT0_ID 0x00
@@ -144,7 +127,7 @@ enum {
 //#define S6E3FA_VREG0_REF 10905190
 
 /*2.4 x 4194304 */
-#define S6E3FA_VREG0_REF 10066330
+//#define S6E3FA_VREG0_REF 10066330
 
 /*V0,V3,V11,V23,V35,V51,V87,V151,V203,V255*/
 #define S6E3FA_MAX 11
@@ -309,4 +292,3 @@ struct SMART_DIM {
 } __packed;
 
 #endif
-

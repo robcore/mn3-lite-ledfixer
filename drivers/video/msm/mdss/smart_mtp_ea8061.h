@@ -237,7 +237,7 @@ struct RGB_OUTPUT_VOLTARE {
 
 struct GRAY_VOLTAGE {
 	/*
-		This voltage value use 14bit right shit
+		This voltage value use 14bit right shift
 		it means voltage is divied by 16384.
 	*/
 	int R_Gray;
