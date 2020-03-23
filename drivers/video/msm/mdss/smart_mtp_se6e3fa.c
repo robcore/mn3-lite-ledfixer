@@ -2878,21 +2878,21 @@ static void gamma_init_H_revJ(struct SMART_DIM *pSmart, char *str, int size)
 		if (pSmart->brightness_level == 111)
 			bl_level = 185;
 		else if (pSmart->brightness_level == 119)
-			bl_level = 185;
+			bl_level = 186;
 		else if (pSmart->brightness_level == 126)
-			bl_level = 185;
+			bl_level = 187;
 		else if (pSmart->brightness_level == 134)
-			bl_level = 185;
+			bl_level = 188;
 		else if (pSmart->brightness_level == 143)
-			bl_level = 185;
+			bl_level = 189;
 		else if (pSmart->brightness_level == 152)
-			bl_level = 185;
+			bl_level = 190;
 		else if (pSmart->brightness_level == 162)
-			bl_level = 185;
-		else if (pSmart->brightness_level == 172)
-			bl_level = 185;
-		else if (pSmart->brightness_level == 183)
 			bl_level = 191;
+		else if (pSmart->brightness_level == 172)
+			bl_level = 194;
+		else if (pSmart->brightness_level == 183)
+			bl_level = 198;
 		else if (pSmart->brightness_level == 195)
 			bl_level = 203;
 		else if (pSmart->brightness_level == 207)
