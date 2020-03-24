@@ -2240,7 +2240,6 @@ void init_mdnie_class(void)
 	device_create_file(tune_mdnie_dev, &dev_attr_control_yellow);
 	device_create_file(tune_mdnie_dev, &dev_attr_control_white);
 	device_create_file(tune_mdnie_dev, &dev_attr_control_black);
-	device_create_file(tune_mdnie_dev, &dev_attr_control_version);
 #endif
 
 	mdnie_tun_state.mdnie_enable = true;

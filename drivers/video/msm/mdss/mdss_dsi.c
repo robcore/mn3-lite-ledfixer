@@ -675,6 +675,7 @@ static int mdss_dsi_off(struct mdss_panel_data *pdata)
 			pr_err("%s: unable to config tlmm = %d\n",
 				__func__, ctrl_pdata->disp_te_gpio);
 			gpio_free(ctrl_pdata->disp_te_gpio);
+			mutex_unlock(&ctrl_pdata->mutex);
 			return -ENODEV;
 		}
 	}
@@ -2573,10 +2574,12 @@ int dsi_panel_device_register(struct device_node *pan_node,
 	if (pinfo->cont_splash_enabled) {
 		pr_info("%s : splash enabled..panel_power_on (1)\n", __func__);
 		pinfo->panel_power_on = 1;
-		rc = mdss_dsi_panel_power_on(&(ctrl_pdata->panel_data), 1);
-		if (rc) {
-			pr_err("%s: Panel power on failed\n", __func__);
-			return rc;
+		if(ctrl_pdata->ndx == DSI_CTRL_0) {
+			rc = mdss_dsi_panel_power_on(&(ctrl_pdata->panel_data), 1);
+			if (rc) {
+				pr_err("%s: Panel power on failed\n", __func__);
+				return rc;
+			}
 		}
 
 		mdss_dsi_clk_ctrl(ctrl_pdata, DSI_ALL_CLKS, 1);

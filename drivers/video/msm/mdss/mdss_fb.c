@@ -924,6 +924,16 @@ static int mdss_fb_pm_resume(struct device *dev)
 		dev_dbg(dev, "Ignore Resume\n");
 		return 0;
 	}
+
+	/*
+	 * It is possible that the runtime status of the fb device may
+	 * have been active when the system was suspended. Reset the runtime
+	 * status to suspended state after a complete system resume.
+	 */
+	pm_runtime_disable(dev);
+	pm_runtime_set_suspended(dev);
+	pm_runtime_enable(dev);
+
 	return mdss_fb_resume_sub(mfd);
 }
 #endif
@@ -1092,6 +1102,8 @@ static int mdss_fb_blank_sub(int blank_mode, struct fb_info *info,
 	if (mfd->dcm_state == DCM_ENTER)
 		return -EPERM;
 
+	mutex_lock(&mfd->power_state);
+
 	mfd->blank_mode = blank_mode;
 
 	switch (blank_mode) {
@@ -1166,6 +1178,8 @@ static int mdss_fb_blank_sub(int blank_mode, struct fb_info *info,
 
 	pr_info("FB_NUM:%d, MDSS_FB_%s -- \n", mfd->panel_info->fb_num,
 			blank_mode ? "BLANK": "UNBLANK");
+
+	mutex_unlock(&mfd->power_state);
 
 	return ret;
 }
@@ -2278,7 +2292,7 @@ static int mdss_fb_wait_for_kickoff(struct msm_fb_data_type *mfd)
 	ret = wait_event_timeout(mfd->kickoff_wait_q,
 			(!atomic_read(&mfd->kickoff_pending) ||
 			 mfd->shutdown_pending),
-			msecs_to_jiffies(WAIT_DISP_OP_TIMEOUT / 2));
+			msecs_to_jiffies(WAIT_DISP_OP_TIMEOUT));
 	if (!ret) {
 		pr_err("wait for kickoff timeout %d pending=%d\n",
 				ret, atomic_read(&mfd->kickoff_pending));
@@ -2463,9 +2477,14 @@ static int __mdss_fb_display_thread(void *data)
 
 	while (1) {
 		ATRACE_BEGIN(__func__);
-		wait_event(mfd->commit_wait_q,
+		ret = wait_event_interruptible(mfd->commit_wait_q,
 				(atomic_read(&mfd->commits_pending) ||
 				 kthread_should_stop()));
+
+		if (ret) {
+			pr_info("%s: interrupted", __func__);
+			continue;
+		}
 
 		if (kthread_should_stop())
 			break;
@@ -2960,7 +2979,8 @@ static int __ioctl_wait_idle(struct msm_fb_data_type *mfd, u32 cmd)
 		(cmd != MSMFB_OVERLAY_VSYNC_CTRL) &&
 		(cmd != MSMFB_ASYNC_BLIT) &&
 		(cmd != MSMFB_BLIT) &&
-		(cmd != MSMFB_NOTIFY_UPDATE)) {
+		(cmd != MSMFB_NOTIFY_UPDATE) &&
+		(cmd != MSMFB_OVERLAY_PREPARE)) {
 		ret = mdss_fb_pan_idle(mfd);
 	}
 
