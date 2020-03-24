@@ -14,7 +14,6 @@
 /include/ "msm8974-camera-sensor-hlte-r02.dtsi"
 /include/ "msm8974-sii8240_mhl-hlte-r02.dtsi"
 /include/ "msm8974-max77803-hlte-r02.dtsi"
-/include/ "dsi_panel_samsung_octa_1080p_cmd_s6e3fa0.dtsi"
 
 / {
 	aliases {
