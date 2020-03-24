@@ -2756,7 +2756,9 @@ static int mdss_dsi_panel_dimming_init(struct mdss_panel_data *pdata)
 				msd.sdimconf = smart_S6E8AA4_get_conf();
 				break;
 #else
+#ifndef CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_CMD_FULL_HD_PT_PANEL
 				msd.sdimconf = smart_S6E8FA0_get_conf();
+#endif
 				break;
 #endif
 #else
@@ -2766,7 +2768,9 @@ static int mdss_dsi_panel_dimming_init(struct mdss_panel_data *pdata)
 			case PANEL_720P_OCTA_D53D6EA8061V_VIDEO:
 			case PANEL_QHD_OCTA_S6E88A0_VIDEO:
 			case PANEL_HD_OCTA_D53D6EA8061_VIDEO:
+#ifndef CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_CMD_FULL_HD_PT_PANEL
 				msd.sdimconf = smart_S6E8FA0_get_conf();
+#endif
 				break;
 			case PANEL_1080P_OCTA_S6E3FA0:
 			case PANEL_1080P_OCTA_S6E3FA0_CMD:
