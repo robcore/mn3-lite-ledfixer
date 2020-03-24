@@ -2918,23 +2918,23 @@ static void gamma_init_H_revJ(struct SMART_DIM *pSmart, char *str, int size)
 		else if (pSmart->brightness_level == 152)
 			bl_level = 190;
 		else if (pSmart->brightness_level == 162)
-			bl_level = 191;
+			bl_level = 195;
 		else if (pSmart->brightness_level == 172)
-			bl_level = 194;
+			bl_level = 195;
 		else if (pSmart->brightness_level == 183)
-			bl_level = 198;
+			bl_level = 207;
 		else if (pSmart->brightness_level == 195)
-			bl_level = 203;
+			bl_level = 207;
 		else if (pSmart->brightness_level == 207)
-			bl_level = 215;
+			bl_level = 220;
 		else if (pSmart->brightness_level == 220)
-			bl_level = 228;
+			bl_level = 220;
 		else if (pSmart->brightness_level == 234)
-			bl_level = 242;
+			bl_level = 249;
 		else if (pSmart->brightness_level == 249)
-			bl_level = 257;
+			bl_level = 265;
 		else if (pSmart->brightness_level == 265)
-			bl_level = 273;
+			bl_level = 282;
 		else if (pSmart->brightness_level > 265)
 			bl_level = 281;
 	} else if (pSmart->brightness_level >= 282) {
@@ -2961,7 +2961,7 @@ static void gamma_init_H_revJ(struct SMART_DIM *pSmart, char *str, int size)
 
 	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 		if (searching_function(candela_level[cnt],
-			&(bl_index[cnt]), GAMMA_CURVE_1P9)) {
+			&(bl_index[cnt]), GAMMA_CURVE_2P15)) {
 			pr_debug("%s searching function error cnt:%d\n",
 			__func__, cnt);
 		}
