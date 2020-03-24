@@ -2615,7 +2615,7 @@ static void gamma_init_H_revI(struct SMART_DIM *pSmart, char *str, int size)
 
 	/* max 350cd */
 	memcpy(curve_1p9, curve_1p9_350, sizeof(curve_1p9_350));
-	memcpy(curve_2p2, curve_2p2_350, sizeof(curve_1p9_350));
+	memcpy(curve_2p2, curve_2p2_350, sizeof(curve_2p2_350));
 
 	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 		if (searching_function(candela_level[cnt],
@@ -2961,7 +2961,7 @@ static void gamma_init_H_revJ(struct SMART_DIM *pSmart, char *str, int size)
 
 	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 		if (searching_function(candela_level[cnt],
-			&(bl_index[cnt]), GAMMA_CURVE_2P15)) {
+			&(bl_index[cnt]), GAMMA_CURVE_1P9)) {
 			pr_debug("%s searching function error cnt:%d\n",
 			__func__, cnt);
 		}
@@ -3502,7 +3502,7 @@ static void gamma_init_F_revE(
 
 	/* max 350cd */
 	memcpy(curve_1p9, curve_1p9_350, sizeof(curve_1p9_350));
-	memcpy(curve_2p2, curve_2p2_350, sizeof(curve_1p9_350));
+	memcpy(curve_2p2, curve_2p2_350, sizeof(curve_2p2_350));
 
 	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 		if (searching_function(candela_level[cnt],
@@ -3787,7 +3787,7 @@ static void gamma_init_F_revF_G(
 
 	/* max 350cd */
 	memcpy(curve_1p9, curve_1p9_350, sizeof(curve_1p9_350));
-	memcpy(curve_2p2, curve_2p2_350, sizeof(curve_1p9_350));
+	memcpy(curve_2p2, curve_2p2_350, sizeof(curve_2p2_350));
 
 	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 		if (searching_function(candela_level[cnt],
@@ -4187,8 +4187,8 @@ static int smart_dimming_init(struct SMART_DIM *psmart)
  * ----------------------------------------------------------------------------
  */
 
-static struct SMART_DIM 	smart_S6E3FA0;
-static struct smartdim_conf __S6E3FA0__ ;
+static struct SMART_DIM smart_S6E3FA0;
+static struct smartdim_conf __S6E3FA0__;
 
 static void wrap_generate_gamma(int cd, char *cmd_str) {
 	smart_S6E3FA0.brightness_level = cd;
