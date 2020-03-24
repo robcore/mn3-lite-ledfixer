@@ -40,7 +40,7 @@ mdss-dsi-objs += mdss_samsung_oled_cmd_hd_wqhd_panel.o smart_mtp_s6e3.o
 else ifeq ($(CONFIG_FB_MSM_MIPI_MAGNA_OCTA_CMD_HD_PT_PANEL),y)
 mdss-dsi-objs += mdss_samsung_oled_cmd_hd_wqhd_panel.o smart_mtp_ea8064.o
 else ifeq ($(CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_CMD_FULL_HD_PT_PANEL),y)
-mdss-dsi-objs += mdss_samsung_dsi_panel.o smart_mtp_se6e8fa.o smart_mtp_se6e3fa.o
+mdss-dsi-objs += mdss_samsung_dsi_panel.o  smart_mtp_se6e3fa.o #smart_mtp_se6e8fa.o
 else ifeq ($(CONFIG_FB_MSM_MIPI_SAMSUNG_YOUM_CMD_FULL_HD_PT_PANEL),y)
 mdss-dsi-objs += mdss_samsung_dsi_panel.o smart_mtp_se6e8fa.o smart_mtp_se6e3fa.o
 else ifeq ($(CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_VIDEO_FULL_HD_PT_PANEL),y)

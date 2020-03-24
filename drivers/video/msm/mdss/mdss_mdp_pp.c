@@ -4168,11 +4168,11 @@ int mdss_mdp_ad_input(struct msm_fb_data_type *mfd,
 
 	ret = mdss_mdp_get_ad(mfd, &ad);
 	if (ret == -ENODEV || ret == -EPERM) {
-		pr_err("AD not supported on device, disp num %d\n",
+		pr_debug("AD not supported on device, disp num %d\n",
 			mfd->index);
 		return ret;
 	} else if (ret || !ad) {
-		pr_err("Failed to get ad info: ret = %d, ad = 0x%pK\n",
+		pr_debug("Failed to get ad info: ret = %d, ad = 0x%pK\n",
 			ret, ad);
 		return ret;
 	}
@@ -4246,7 +4246,7 @@ int mdss_mdp_ad_input(struct msm_fb_data_type *mfd,
 	default:
 		pr_warn("invalid default %d", input->mode);
 		ret = -EINVAL;
-		goto error;
+		break;
 	}
 error:
 	mutex_unlock(&ad->lock);

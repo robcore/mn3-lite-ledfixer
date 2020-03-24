@@ -74,7 +74,7 @@ Copyright (C) 2012, Samsung Electronics. All rights reserved.
 
 
 #define MTP_START_ADDR 0xC8
-#define LUMINANCE_MAX 54
+#define LUMINANCE_MAX 62
 #define GAMMA_SET_MAX 33
 #define BIT_SHIFT 22
 /*
@@ -92,7 +92,7 @@ Copyright (C) 2012, Samsung Electronics. All rights reserved.
 #define S6E8FA_MAX 11
 
 /* PANEL DEPENDENT THINGS */
-#define MAX_CANDELA 300
+#define MAX_CANDELA 350
 #define MIN_CANDELA	10
 
 /*
