@@ -424,13 +424,8 @@ static struct mdss_mdp_wb_data *get_user_node(struct msm_fb_data_type *mfd,
 
 		list_for_each_entry(node, &wb->register_queue, registered_entry)
 			if ((node->buf_data.p[0].srcp_ihdl == ihdl) &&
-				    (node->buf_info.offset == data->offset)) {
-				pr_debug("found fd=%d hdl=%p off=%x addr=%x\n",
-						data->memory_id, ihdl,
-						data->offset,
-						node->buf_data.p[0].addr);
+				    (node->buf_info.offset == data->offset))
 				return node;
-			}
 	}
 
 	node = kzalloc(sizeof(struct mdss_mdp_wb_data), GFP_KERNEL);
@@ -473,6 +468,7 @@ static struct mdss_mdp_wb_data *get_user_node(struct msm_fb_data_type *mfd,
 
 register_fail:
 	kfree(node);
+	node = NULL;
 	return NULL;
 }
 

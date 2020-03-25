@@ -180,18 +180,15 @@ static void print_RGB_offset(struct SMART_DIM *pSmart)
 #define v255_denominator 860
 static int v255_adjustment(struct SMART_DIM *pSmart)
 {
-	unsigned long long result_2, result_3, result_4;
+	unsigned long long result_2, result_3;
 	int add_mtp;
 	int LSB;
 	int v255_value;
 
 	v255_value = (V255_300CD_R_MSB << 8) | (V255_300CD_R_LSB);
-	pr_info("%s RED v255_value: %d\n", __func__, v255_value);
 	LSB = char_to_int_v255(pSmart->MTP.R_OFFSET.OFFSET_255_MSB,
 				pSmart->MTP.R_OFFSET.OFFSET_255_LSB);
-	pr_info("%s RED LSB: %d\n", __func__, LSB);
 	add_mtp = LSB + v255_value;
-	pr_info("%s RED add_mtp: %d\n", __func__, add_mtp);
 	result_2 = (v255_coefficient+add_mtp) << BIT_SHIFT;
 	do_div(result_2, v255_denominator);
 	result_3 = (S6E3FA_VREG0_REF * result_2) >> BIT_SHIFT;
@@ -202,34 +199,26 @@ static int v255_adjustment(struct SMART_DIM *pSmart)
 			 pSmart->RGB_OUTPUT.R_VOLTAGE.level_0);
 
 	v255_value = (V255_300CD_G_MSB << 8) | (V255_300CD_G_LSB);
-	pr_info("%s GREEN v255_value: %d\n", __func__, v255_value);
 	LSB = char_to_int_v255(pSmart->MTP.G_OFFSET.OFFSET_255_MSB,
 				pSmart->MTP.G_OFFSET.OFFSET_255_LSB);
-	pr_info("%s GREEN LSB: %d\n", __func__, LSB);
 	add_mtp = LSB + v255_value;
-	pr_info("%s GREEN add_mtp: %d\n", __func__, add_mtp);
 	result_2 = (v255_coefficient+add_mtp) << BIT_SHIFT;
 	do_div(result_2, v255_denominator);
 	result_3 = (S6E3FA_VREG0_REF * result_2) >> BIT_SHIFT;
-	result_4 = S6E3FA_VREG0_REF - result_3;
-	pSmart->RGB_OUTPUT.G_VOLTAGE.level_255 = result_4;
+	pSmart->RGB_OUTPUT.G_VOLTAGE.level_255 = S6E3FA_VREG0_REF - result_3;;
 	pSmart->RGB_OUTPUT.G_VOLTAGE.level_0 = S6E3FA_VREG0_REF;
 	pr_info("%s GREEN level_255:%d level_0: %d\n", __func__,
 			 pSmart->RGB_OUTPUT.G_VOLTAGE.level_255,
 			 pSmart->RGB_OUTPUT.G_VOLTAGE.level_0);
 
 	v255_value = (V255_300CD_B_MSB << 8) | (V255_300CD_B_LSB);
-	pr_info("%s BLUE v255_value: %d\n", __func__, v255_value);
 	LSB = char_to_int_v255(pSmart->MTP.B_OFFSET.OFFSET_255_MSB,
 				pSmart->MTP.B_OFFSET.OFFSET_255_LSB);
-	pr_info("%s BLUE LSB: %d\n", __func__, LSB);
 	add_mtp = LSB + v255_value;
-	pr_info("%s BLUE add_mtp: %d\n", __func__, add_mtp);
 	result_2 = (v255_coefficient+add_mtp) << BIT_SHIFT;
 	do_div(result_2, v255_denominator);
 	result_3 = (S6E3FA_VREG0_REF * result_2) >> BIT_SHIFT;
-	result_4 = S6E3FA_VREG0_REF - result_3;
-	pSmart->RGB_OUTPUT.B_VOLTAGE.level_255 = result_4;
+	pSmart->RGB_OUTPUT.B_VOLTAGE.level_255 = S6E3FA_VREG0_REF - result_3;
 	pSmart->RGB_OUTPUT.B_VOLTAGE.level_0 = S6E3FA_VREG0_REF;
 	pr_info("%s BLUE level_255:%d level_0: %d\n", __func__,
 			 pSmart->RGB_OUTPUT.R_VOLTAGE.level_255,
@@ -335,7 +324,7 @@ static int vt_coefficient[] = {
 #define vt_denominator 860
 static int vt_adjustment(struct SMART_DIM *pSmart)
 {
-	unsigned long long result_2, result_3, result_4;
+	unsigned long long result_2, result_3;
 	int add_mtp;
 	int LSB;
 
@@ -344,24 +333,21 @@ static int vt_adjustment(struct SMART_DIM *pSmart)
 	result_2 = (vt_coefficient[LSB] + add_mtp) << BIT_SHIFT;
 	do_div(result_2, vt_denominator);
 	result_3 = (S6E3FA_VREG0_REF * result_2) >> BIT_SHIFT;
-	result_4 = S6E3FA_VREG0_REF - result_3;
-	pSmart->GRAY.VT_TABLE.R_Gray = result_4;
+	pSmart->GRAY.VT_TABLE.R_Gray = S6E3FA_VREG0_REF - result_3;
 
 	LSB = char_to_int(pSmart->MTP.G_OFFSET.OFFSET_1);
 	add_mtp = LSB + VT_300CD_G + 4;
 	result_2 = (vt_coefficient[LSB] + add_mtp) << BIT_SHIFT;
 	do_div(result_2, vt_denominator);
 	result_3 = (S6E3FA_VREG0_REF * result_2) >> BIT_SHIFT;
-	result_4 = S6E3FA_VREG0_REF - result_3;
-	pSmart->GRAY.VT_TABLE.G_Gray = result_4;
+	pSmart->GRAY.VT_TABLE.G_Gray = S6E3FA_VREG0_REF - result_3;
 
 	LSB = char_to_int(pSmart->MTP.B_OFFSET.OFFSET_1);
 	add_mtp = LSB + VT_300CD_B + 16;
 	result_2 = (vt_coefficient[LSB] + add_mtp) << BIT_SHIFT;
 	do_div(result_2, vt_denominator);
 	result_3 = (S6E3FA_VREG0_REF * result_2) >> BIT_SHIFT;
-	result_4 = S6E3FA_VREG0_REF - result_3;
-	pSmart->GRAY.VT_TABLE.B_Gray = result_4;
+	pSmart->GRAY.VT_TABLE.B_Gray = S6E3FA_VREG0_REF - result_3;
 
 #ifdef SMART_DIMMING_DEBUG
 	pr_info("%s VT RED:%d GREEN:%d BLUE:%d\n", __func__,
