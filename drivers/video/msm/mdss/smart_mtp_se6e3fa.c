@@ -4059,6 +4059,8 @@ static void mtp_sorting(struct SMART_DIM *psmart)
 
 }
 
+static void wrap_smart_dimming_init(void);
+
 static ssize_t v255_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
 	return sprintf(buf, "%d %d %d\n", v255_val[0], v255_val[1], v255_val[2]);
@@ -4071,7 +4073,7 @@ static ssize_t v255_store(struct kobject *kobj,
 	v255_val[0] = new_r;
 	v255_val[1] = new_g;
 	v255_val[2] = new_b;
-	smart_dimming_full_reinit();
+	wrap_smart_dimming_init();
 	return count;
 }
 
@@ -4088,7 +4090,7 @@ static ssize_t v203_store(struct kobject *kobj,
 	v203_val[0] = new_r;
 	v203_val[1] = new_g;
 	v203_val[2] = new_b;
-	smart_dimming_full_reinit();
+	wrap_smart_dimming_init();
 	return count;
 }
 
@@ -4105,7 +4107,7 @@ static ssize_t v151_store(struct kobject *kobj,
 	v151_val[0] = new_r;
 	v151_val[1] = new_g;
 	v151_val[2] = new_b;
-	smart_dimming_full_reinit();
+	wrap_smart_dimming_init();
 	return count;
 }
 
@@ -4122,7 +4124,7 @@ static ssize_t v87_store(struct kobject *kobj,
 	v87_val[0] = new_r;
 	v87_val[1] = new_g;
 	v87_val[2] = new_b;
-	smart_dimming_full_reinit();
+	wrap_smart_dimming_init();
 	return count;
 }
 
@@ -4139,7 +4141,7 @@ static ssize_t v51_store(struct kobject *kobj,
 	v51_val[0] = new_r;
 	v51_val[1] = new_g;
 	v51_val[2] = new_b;
-	smart_dimming_full_reinit();
+	wrap_smart_dimming_init();
 	return count;
 }
 
@@ -4156,7 +4158,7 @@ static ssize_t v35_store(struct kobject *kobj,
 	v35_val[0] = new_r;
 	v35_val[1] = new_g;
 	v35_val[2] = new_b;
-	smart_dimming_full_reinit();
+	wrap_smart_dimming_init();
 	return count;
 }
 
@@ -4173,7 +4175,7 @@ static ssize_t v23_store(struct kobject *kobj,
 	v23_val[0] = new_r;
 	v23_val[1] = new_g;
 	v23_val[2] = new_b;
-	smart_dimming_full_reinit();
+	wrap_smart_dimming_init();
 	return count;
 }
 
@@ -4190,7 +4192,7 @@ static ssize_t v11_store(struct kobject *kobj,
 	v11_val[0] = new_r;
 	v11_val[1] = new_g;
 	v11_val[2] = new_b;
-	smart_dimming_full_reinit();
+	wrap_smart_dimming_init();
 	return count;
 }
 
@@ -4207,7 +4209,23 @@ static ssize_t v3_store(struct kobject *kobj,
 	v3_val[0] = new_r;
 	v3_val[1] = new_g;
 	v3_val[2] = new_b;
-	smart_dimming_full_reinit();
+	wrap_smart_dimming_init();
+	return count;
+}
+
+static ssize_t v0_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%d %d %d\n", v0_val[0], v0_val[1], v0_val[2]);
+}
+
+static ssize_t v0_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count) {
+	int new_r, new_g, new_b;
+	sscanf(buf, "%d %d %d", &new_r, &new_g, &new_b);
+	v0_val[0] = new_r;
+	v0_val[1] = new_g;
+	v0_val[2] = new_b;
+	wrap_smart_dimming_init();
 	return count;
 }
 
@@ -4256,6 +4274,11 @@ static struct kobj_attribute v3_attribute =
 		v3_show,
 		v3_store);
 
+static struct kobj_attribute v0_attribute =
+	__ATTR(v0, 0644,
+		v0_show,
+		v0_store);
+
 static struct attribute *gamma_control_attrs[] =
 {
 	&v255_attribute.attr,
@@ -4267,6 +4290,7 @@ static struct attribute *gamma_control_attrs[] =
 	&v23_attribute.attr,
 	&v11_attribute.attr,
 	&v3_attribute.attr,
+	&v0_attribute.attr,
 	NULL
 };
 

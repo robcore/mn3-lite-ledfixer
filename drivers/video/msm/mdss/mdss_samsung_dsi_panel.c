@@ -2932,10 +2932,6 @@ struct mdss_panel_data *mdss_dsi_switching = NULL;
 static bool dsi_first_init = true;
 #endif
 
-void smart_dimming_full_reinit(void) {
-	mdss_dsi_panel_dimming_init(msd.pdata);
-}
-
 static int mdss_dsi_panel_on(struct mdss_panel_data *pdata)
 {
 	struct mipi_panel_info *mipi;

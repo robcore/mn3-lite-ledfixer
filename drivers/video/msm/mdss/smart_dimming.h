@@ -55,8 +55,6 @@ struct smartdim_conf *smart_S6E8FA0_get_conf_main(void);
 struct smartdim_conf *smart_S6E8FA0_get_conf_sub(void);
 #endif
 
-void smart_dimming_full_reinit(void);
-
 #if defined(CONFIG_LCD_HMT)
 struct smartdim_conf_hmt {
 	void (*generate_gamma)(int cd, char *str, int dual);
