@@ -2538,7 +2538,7 @@ static int mipi_samsung_disp_send_cmd(
 			if (force_500cd_enabled)
 				msd.dstat.force500_need_update = 1;
 
-			if(msd.dstat.auto_brightness == 6) {
+			if(msd.dstat.auto_brightness == 6) { //TODO make hbm depend on our own toggle instead of autobrightness!!!
 				cmd_size = make_brightcontrol_hbm_set(msd.dstat.bright_level);
 				msd.dstat.hbm_mode = 1;
 			} else if (msd.dstat.force500_need_update) {
@@ -2547,8 +2547,8 @@ static int mipi_samsung_disp_send_cmd(
 				cmd_size = make_force_500cd_set(msd.dstat.bright_level);
 				msd.dstat.force500_need_update = 0;
 			} else {
-				if(msd.dstat.hbm_mode)
-					mdss_dsi_cmds_send(msd.ctrl_pdata, hbm_hbm_off_elvss_cmds.cmd_desc, hbm_hbm_off_elvss_cmds.num_of_cmds, flag);
+//				if(msd.dstat.hbm_mode)
+//					mdss_dsi_cmds_send(msd.ctrl_pdata, hbm_hbm_off_elvss_cmds.cmd_desc, hbm_hbm_off_elvss_cmds.num_of_cmds, flag);
 				cmd_size = make_brightcontrol_set(msd.dstat.bright_level);
 				msd.dstat.hbm_mode = 0;
 			}
