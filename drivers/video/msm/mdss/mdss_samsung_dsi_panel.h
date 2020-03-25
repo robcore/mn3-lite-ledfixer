@@ -101,6 +101,7 @@ struct display_status {
 	int temperature;
 	char temperature_value;
 	int temper_need_update;
+	int force500_need_update;
 	int siop_status;
 	int hbm_mode;
 

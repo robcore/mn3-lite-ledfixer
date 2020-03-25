@@ -1911,7 +1911,7 @@ static ssize_t mipi_samsung_temperature_store(struct device *dev,
 {
 	int temp;
 
-	sscanf(buf, "%d" , &msd.dstat.temperature);
+	sscanf(buf, "%d", &msd.dstat.temperature);
 
 	temp = msd.dstat.temperature;
 
@@ -1990,35 +1990,37 @@ static ssize_t mipi_samsung_disp_partial_disp_store(struct device *dev,
 #endif
 
 #if defined(FORCE_500CD)
+static unsigned int force_500cd_enabled;
 static ssize_t mipi_samsung_force_500cd_show(struct device *dev,
 		struct device_attribute *attr, char *buf)
 {
-	pr_info("Node for make brightness as 500Cd \n");
+	int rc;
 
-	return 0;
+	rc = snprintf((char *)buf, PAGE_SIZE, "%u\n",
+					force_500cd_enabled);
+	return rc;
 }
 
 static ssize_t mipi_samsung_force_500cd_store(struct device *dev,
 		struct device_attribute *attr, const char *buf, size_t size)
 {
 	int input;
-	sscanf(buf, "%d " , &input);
-	pr_info("%s: input = %d\n", __func__, input);
+	sscanf(buf, "%d", &input);
 
+	if (input > 1)
+		input = 1;
+	if (input < 0)
+		input = 0;
 
-	if (msd.dstat.on) {
-		if(input) {
-			pr_info("Force 500Cd Enable\n");
+	force_500cd_enabled = input;
+	if (force_500cd_enabled == 1) {
+		msd.dstat.force500_need_update = 1;
+		if (msd.mfd->resume_state == MIPI_RESUME_STATE)
 			mipi_samsung_disp_send_cmd(PANEl_FORCE_500CD, true);
-			pr_info("Finish to make 500Cd \n");
-		} else {
-			pr_info("Force 500Cd Disable\n");
-			mipi_samsung_disp_send_cmd(PANEL_BRIGHT_CTRL, true);
-			pr_info("Finish to Disable 500Cd \n");
-		}
 	} else {
-		pr_info("%s : LCD is off state\n", __func__);
-		return -EINVAL;
+		msd.dstat.force500_need_update = 0;
+		if (msd.mfd->resume_state == MIPI_RESUME_STATE)
+			mipi_samsung_disp_send_cmd(PANEL_BRIGHT_CTRL, true);
 	}
 
 	return size;
@@ -2533,27 +2535,27 @@ static int mipi_samsung_disp_send_cmd(
 				flag = 0;
 
 			msd.dstat.recent_bright_level = msd.dstat.bright_level;
-#if defined(HBM_RE) || defined(CONFIG_HBM_PSRE)
+			if (force_500cd_enabled)
+				msd.dstat.force500_need_update = 1;
+
 			if(msd.dstat.auto_brightness == 6) {
 				cmd_size = make_brightcontrol_hbm_set(msd.dstat.bright_level);
 				msd.dstat.hbm_mode = 1;
+			} else if (msd.dstat.force500_need_update) {
+				cmd_desc = brightness_packet;
+				msd.dstat.recent_bright_level = msd.dstat.bright_level;
+				cmd_size = make_force_500cd_set(msd.dstat.bright_level);
+				msd.dstat.force500_need_update = 0;
 			} else {
-#if defined(CONFIG_FB_MSM_MDSS_MAGNA_OCTA_VIDEO_720P_PANEL)\
-	|| defined(CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_VIDEO_HD_PANEL)
 				if(msd.dstat.hbm_mode)
 					mdss_dsi_cmds_send(msd.ctrl_pdata, hbm_hbm_off_elvss_cmds.cmd_desc, hbm_hbm_off_elvss_cmds.num_of_cmds, flag);
-#endif
 				cmd_size = make_brightcontrol_set(msd.dstat.bright_level);
 				msd.dstat.hbm_mode = 0;
 			}
-#else
-			cmd_size = make_brightcontrol_set(msd.dstat.bright_level);
-#endif
 			if (msd.mfd->resume_state != MIPI_RESUME_STATE) {
-				pr_info("%s : panel is off state!!\n", __func__);
 				goto unknown_command;
 			}
-			udelay(300);
+			udelay(100);
 			break;
 		case PANEL_MTP_ENABLE:
 			cmd_desc = nv_enable_cmds.cmd_desc;
@@ -2659,8 +2661,6 @@ static int mipi_samsung_disp_send_cmd(
 	return 0;
 
 unknown_command:
-	LCD_DEBUG("Undefined command\n");
-
 	if (lock)
 		mutex_unlock(&msd.lock);
 
