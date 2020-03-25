@@ -56,7 +56,7 @@ static int err_fg_working;
 DEFINE_LED_TRIGGER(bl_led_trigger);
 
 static struct mdss_samsung_driver_data msd;
-extern int system_rev;
+extern unsigned int system_rev;
 #if defined(CONFIG_MACH_DEGASLTE_SPR)
 static int	bl_min_brightness = 1;
 static int	bl_max_brightness_level  = 184;

@@ -28,7 +28,7 @@
 #include "mdss_dsi.h"
 #include "mdss_samsung_dsi_panel.h"
 #include "mdss_fb.h"
-
+#include <linux/sysfs_helpers.h>
 #if defined(CONFIG_MDNIE_LITE_TUNING)
 #include "mdnie_lite_tuning.h"
 #endif
@@ -43,11 +43,14 @@
 #if defined(CONFIG_MIPI_LCD_S6E3FA0_FORCE_VIDEO_MODE)
 #define CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_CMD_FULL_HD_PT_PANEL 1
 #endif
-#if defined(CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_CMD_FULL_HD_PT_PANEL)
+#if defined(CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_CMD_FULL_HD_PT_PANEL) \
+	|| defined(CONFIG_FB_MSM_MIPI_SAMSUNG_YOUM_CMD_FULL_HD_PT_PANEL)
 #define SMART_ACL
 #define HBM_RE
 #define TEMPERATURE_ELVSS_S6E3FA0
 #define PARTIAL_UPDATE
+#endif
+#if defined(CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_CMD_FULL_HD_PT_PANEL)
 #define LDI_FPS_CHANGE
 #define LDI_ADJ_VDDM_OFFSET
 #define FORCE_500CD
@@ -1524,10 +1527,8 @@ static int make_brightcontrol_set(int bl_level)
 		cmd_count = update_bright_packet(cmd_count, &gamma_control);
 	}
 #else
-
 	gamma_control = get_gamma_control_set(cd_level);
 	cmd_count = update_bright_packet(cmd_count, &gamma_control);
-
 #endif
 #if defined(CONFIG_FB_MSM_MDSS_MAGNA_OCTA_VIDEO_720P_PANEL)\
 	|| defined(CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_VIDEO_HD_PANEL)
@@ -1569,8 +1570,9 @@ static ssize_t mipi_samsung_disp_acl_store(struct device *dev,
 		struct device_attribute *attr, const char *buf, size_t size)
 {
 	struct msm_fb_data_type *mfd = msd.mfd;
-	int	acl_set = msd.dstat.acl_on;
+	int	acl_set;
 
+	acl_set = msd.dstat.acl_on;
 	if (sysfs_streq(buf, "1"))
 		acl_set = true;
 	else if (sysfs_streq(buf, "0"))
@@ -2043,7 +2045,6 @@ static DEVICE_ATTR(window_type, S_IRUGO,
 static DEVICE_ATTR(power_reduce, 0644,
 			mipi_samsung_disp_acl_show,
 			mipi_samsung_disp_acl_store);
-
 static DEVICE_ATTR(auto_brightness, S_IRUGO | S_IWUSR | S_IWGRP,
 			mipi_samsung_auto_brightness_show,
 			mipi_samsung_auto_brightness_store);
@@ -2913,6 +2914,7 @@ static int mdss_dsi_panel_dimming_init(struct mdss_panel_data *pdata)
 		/* Read mtp (B5h 19th) for HBM ELVSS OFFSET */
 		mipi_samsung_read_nv_mem(pdata, &nv_hbm_elvss_offset_cmds, hbm_buffer);
 		memcpy(&hbm_etc_cmds_list.cmd_desc[2].payload[1], hbm_buffer, 1);
+#if defined(CMD_DEBUG)
 {
 		int i,j;
 
@@ -2934,6 +2936,7 @@ static int mdss_dsi_panel_dimming_init(struct mdss_panel_data *pdata)
 			printk("\n");
 		}
 }
+#endif
 		/* Read mtp (B5h 24th ~ 25th) for Panel Production Day */
 		mipi_samsung_read_nv_mem(pdata, &nv_production_day_cmds, hbm_buffer);
 #endif
@@ -3252,8 +3255,6 @@ static int mdss_samsung_parse_candella_lux_mapping_table(struct device_node *np,
 			return -EINVAL;
 		}
 		table->lux_tab_size = len / (sizeof(int)*4);
-		pr_err("%s: lux_tab_size: %d\n",
-				__func__, table->lux_tab_size);
 		table->lux_tab = kzalloc((sizeof(int) * table->lux_tab_size), GFP_KERNEL);
 		if (!table->lux_tab)
 			return -ENOMEM;

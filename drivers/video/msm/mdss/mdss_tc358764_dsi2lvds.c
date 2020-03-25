@@ -48,7 +48,7 @@ static int err_fg_working;
 static int lcd_attached;
 static int lcd_id;
 int get_lcd_attached(void);
-extern int system_rev;
+extern unsigned int system_rev;
 void __iomem *virt_mmss_gp0_base;
 #define MMSS_GP0_BASE 0xFD8C3420
 #define MMSS_GP0_SIZE  0x28

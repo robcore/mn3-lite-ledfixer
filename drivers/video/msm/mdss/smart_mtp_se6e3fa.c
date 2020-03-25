@@ -4153,7 +4153,7 @@ static int smart_dimming_init(struct SMART_DIM *psmart)
 #endif
 	}
 
-	/* set 300CD max gamma table */
+	/* set 350CD max gamma table */
 	memcpy(&(psmart->gen_table[lux_loop-1].gamma_setting),
 			max_lux_table, GAMMA_SET_MAX);
 

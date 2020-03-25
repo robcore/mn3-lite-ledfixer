@@ -53,6 +53,7 @@
 #include <mach/msm_memtypes.h>
 
 #include "mdss_fb.h"
+#include "mdss_mdp.h"
 #include "mdss_mdp_splash_logo.h"
 #include "mdss_debug.h"
 #include "mdss_mdp_trace.h"
@@ -342,6 +343,8 @@ static ssize_t mdss_fb_get_type(struct device *dev,
 		ret = snprintf(buf, PAGE_SIZE, "unknown panel\n");
 		break;
 	}
+	/* Notify listeners */
+	sysfs_notify(&mfd->fbi->dev->kobj, NULL, "show_blank_event");
 
 	return ret;
 }
@@ -462,6 +465,70 @@ static ssize_t mdss_fb_get_idle_notify(struct device *dev,
 	return ret;
 }
 
+static int pcc_r = 32768, pcc_g = 32768, pcc_b = 32768;
+static ssize_t mdss_get_rgb(struct device *dev,
+			    struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%d %d %d\n", pcc_r, pcc_g, pcc_b);
+}
+
+/*
+ * simple color temperature interface using polynomial color correction
+ *
+ * input values are r/g/b adjustments from 0-32768 representing 0 -> 1
+ *
+ * example adjustment @ 3500K:
+ * 1.0000 / 0.5515 / 0.2520 = 32768 / 25828 / 17347
+ *
+ * reference chart:
+ * http://www.vendian.org/mncharity/dir3/blackbody/UnstableURLs/bbr_color.html
+ */
+static ssize_t mdss_set_rgb(struct device *dev,
+			    struct device_attribute *attr,
+			    const char *buf, size_t count)
+{
+	uint32_t r = 0, g = 0, b = 0;
+	struct mdp_pcc_cfg_data pcc_cfg;
+	u32 copyback = 0;
+	int ret;
+
+	if (count > 19)
+		return -EINVAL;
+
+	sscanf(buf, "%d %d %d", &r, &g, &b);
+
+	if (r < 0 || r > 32768)
+		return -EINVAL;
+	if (g < 0 || g > 32768)
+		return -EINVAL;
+	if (b < 0 || b > 32768)
+		return -EINVAL;
+
+	pr_info("%s: r=%d g=%d b=%d", __func__, r, g, b);
+
+	memset(&pcc_cfg, 0, sizeof(struct mdp_pcc_cfg_data));
+
+	pcc_cfg.block = MDP_LOGICAL_BLOCK_DISP_0;
+	if (r == 32768 && g == 32768 && b == 32768)
+		pcc_cfg.ops = MDP_PP_OPS_DISABLE;
+	else
+		pcc_cfg.ops = MDP_PP_OPS_ENABLE;
+	pcc_cfg.ops |= MDP_PP_OPS_WRITE;
+	pcc_cfg.r.r = r;
+	pcc_cfg.g.g = g;
+	pcc_cfg.b.b = b;
+
+	ret = mdss_mdp_pcc_config(&pcc_cfg, &copyback);
+	if (ret != 0)
+		return ret;
+
+	pcc_r = r;
+	pcc_g = g;
+	pcc_b = b;
+
+	return count;
+}
+
 static ssize_t mdss_fb_get_panel_info(struct device *dev,
 		struct device_attribute *attr, char *buf)
 {
@@ -573,6 +640,7 @@ static DEVICE_ATTR(idle_time, S_IRUGO | S_IWUSR | S_IWGRP,
 	mdss_fb_get_idle_time, mdss_fb_set_idle_time);
 static DEVICE_ATTR(idle_notify, S_IRUGO, mdss_fb_get_idle_notify, NULL);
 static DEVICE_ATTR(msm_fb_panel_info, S_IRUGO, mdss_fb_get_panel_info, NULL);
+static DEVICE_ATTR(rgb, 0644, mdss_get_rgb, mdss_set_rgb);
 
 static struct attribute *mdss_fb_attrs[] = {
 	&dev_attr_msm_fb_type.attr,
@@ -581,6 +649,7 @@ static struct attribute *mdss_fb_attrs[] = {
 	&dev_attr_idle_time.attr,
 	&dev_attr_idle_notify.attr,
 	&dev_attr_msm_fb_panel_info.attr,
+	&dev_attr_rgb.attr,
 	NULL,
 };
 
@@ -924,16 +993,6 @@ static int mdss_fb_pm_resume(struct device *dev)
 		dev_dbg(dev, "Ignore Resume\n");
 		return 0;
 	}
-
-	/*
-	 * It is possible that the runtime status of the fb device may
-	 * have been active when the system was suspended. Reset the runtime
-	 * status to suspended state after a complete system resume.
-	 */
-	pm_runtime_disable(dev);
-	pm_runtime_set_suspended(dev);
-	pm_runtime_enable(dev);
-
 	return mdss_fb_resume_sub(mfd);
 }
 #endif
@@ -1102,8 +1161,6 @@ static int mdss_fb_blank_sub(int blank_mode, struct fb_info *info,
 	if (mfd->dcm_state == DCM_ENTER)
 		return -EPERM;
 
-	mutex_lock(&mfd->power_state);
-
 	mfd->blank_mode = blank_mode;
 
 	switch (blank_mode) {
@@ -1178,8 +1235,6 @@ static int mdss_fb_blank_sub(int blank_mode, struct fb_info *info,
 
 	pr_info("FB_NUM:%d, MDSS_FB_%s -- \n", mfd->panel_info->fb_num,
 			blank_mode ? "BLANK": "UNBLANK");
-
-	mutex_unlock(&mfd->power_state);
 
 	return ret;
 }
@@ -1362,7 +1417,6 @@ int mdss_fb_alloc_fb_ion_memory(struct msm_fb_data_type *mfd, size_t fb_size)
 		}
 	} else {
 		pr_err("No IOMMU Domain");
-		rc = -EINVAL;
 		goto fb_mmap_failed;
 
 	}
@@ -2292,7 +2346,7 @@ static int mdss_fb_wait_for_kickoff(struct msm_fb_data_type *mfd)
 	ret = wait_event_timeout(mfd->kickoff_wait_q,
 			(!atomic_read(&mfd->kickoff_pending) ||
 			 mfd->shutdown_pending),
-			msecs_to_jiffies(WAIT_DISP_OP_TIMEOUT));
+			msecs_to_jiffies(WAIT_DISP_OP_TIMEOUT / 2));
 	if (!ret) {
 		pr_err("wait for kickoff timeout %d pending=%d\n",
 				ret, atomic_read(&mfd->kickoff_pending));
@@ -2477,14 +2531,9 @@ static int __mdss_fb_display_thread(void *data)
 
 	while (1) {
 		ATRACE_BEGIN(__func__);
-		ret = wait_event_interruptible(mfd->commit_wait_q,
+		wait_event(mfd->commit_wait_q,
 				(atomic_read(&mfd->commits_pending) ||
 				 kthread_should_stop()));
-
-		if (ret) {
-			pr_info("%s: interrupted", __func__);
-			continue;
-		}
 
 		if (kthread_should_stop())
 			break;
@@ -2979,8 +3028,7 @@ static int __ioctl_wait_idle(struct msm_fb_data_type *mfd, u32 cmd)
 		(cmd != MSMFB_OVERLAY_VSYNC_CTRL) &&
 		(cmd != MSMFB_ASYNC_BLIT) &&
 		(cmd != MSMFB_BLIT) &&
-		(cmd != MSMFB_NOTIFY_UPDATE) &&
-		(cmd != MSMFB_OVERLAY_PREPARE)) {
+		(cmd != MSMFB_NOTIFY_UPDATE)) {
 		ret = mdss_fb_pan_idle(mfd);
 	}
 

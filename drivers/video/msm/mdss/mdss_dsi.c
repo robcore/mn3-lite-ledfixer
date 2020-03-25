@@ -2574,12 +2574,10 @@ int dsi_panel_device_register(struct device_node *pan_node,
 	if (pinfo->cont_splash_enabled) {
 		pr_info("%s : splash enabled..panel_power_on (1)\n", __func__);
 		pinfo->panel_power_on = 1;
-		if(ctrl_pdata->ndx == DSI_CTRL_0) {
-			rc = mdss_dsi_panel_power_on(&(ctrl_pdata->panel_data), 1);
-			if (rc) {
-				pr_err("%s: Panel power on failed\n", __func__);
-				return rc;
-			}
+		rc = mdss_dsi_panel_power_on(&(ctrl_pdata->panel_data), 1);
+		if (rc) {
+			pr_err("%s: Panel power on failed\n", __func__);
+			return rc;
 		}
 
 		mdss_dsi_clk_ctrl(ctrl_pdata, DSI_ALL_CLKS, 1);

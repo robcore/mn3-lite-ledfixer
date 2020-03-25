@@ -4167,19 +4167,15 @@ int mdss_mdp_ad_input(struct msm_fb_data_type *mfd,
 	u32 bl;
 
 	ret = mdss_mdp_get_ad(mfd, &ad);
-	if (ret == -ENODEV || ret == -EPERM) {
-		pr_debug("AD not supported on device, disp num %d\n",
-			mfd->index);
-		return ret;
-	} else if (ret || !ad) {
+	if (ret || !ad) {
 		pr_debug("Failed to get ad info: ret = %d, ad = 0x%pK\n",
 			ret, ad);
 		return ret;
 	}
 
 	mutex_lock(&ad->lock);
-	if ((!PP_AD_STATE_IS_INITCFG(ad->state) &&
-			!PP_AD_STS_IS_DIRTY(ad->sts)) &&
+	if ((!PP_AD_STATE_IS_INITCFG(ad->state)) &&
+			(!PP_AD_STS_IS_DIRTY(ad->sts)) &&
 			(input->mode != MDSS_AD_MODE_CALIB)) {
 		pr_warn("AD not initialized or configured.\n");
 		ret = -EPERM;
@@ -4246,7 +4242,7 @@ int mdss_mdp_ad_input(struct msm_fb_data_type *mfd,
 	default:
 		pr_warn("invalid default %d", input->mode);
 		ret = -EINVAL;
-		break;
+		goto error;
 	}
 error:
 	mutex_unlock(&ad->lock);
