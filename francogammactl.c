@@ -43,7 +43,6 @@ static ssize_t v255_store(struct kobject *kobj, struct kobj_attribute *attr, con
 	sscanf(buf, "%d %d %d", &new_r, &new_g, &new_b);
 
 	if (new_r != v255_val[0] || new_g != v255_val[1] || new_b != v255_val[2]) {
-		pr_debug("New v255: %d %d %d\n", new_r, new_g, new_b);
 		v255_val[0] = new_r;
 		v255_val[1] = new_g;
 		v255_val[2] = new_b;
@@ -65,7 +64,6 @@ static ssize_t vt_store(struct kobject *kobj, struct kobj_attribute *attr, const
 	sscanf(buf, "%d %d %d", &new_r, &new_g, &new_b);
 
 	if (new_r != vt_val[0] || new_g != vt_val[1] || new_b != vt_val[2]) {
-		pr_debug("New vt: %d %d %d\n", new_r, new_g, new_b);
 		vt_val[0] = new_r;
 		vt_val[1] = new_g;
 		vt_val[2] = new_b;
@@ -87,7 +85,6 @@ static ssize_t v203_store(struct kobject *kobj, struct kobj_attribute *attr, con
 	sscanf(buf, "%d %d %d", &new_r, &new_g, &new_b);
 
 	if (new_r != v203_val[0] || new_g != v203_val[1] || new_b != v203_val[2]) {
-		pr_debug("New v203: %d %d %d\n", new_r, new_g, new_b);
 		v203_val[0] = new_r;
 		v203_val[1] = new_g;
 		v203_val[2] = new_b;
@@ -109,7 +106,6 @@ static ssize_t v151_store(struct kobject *kobj, struct kobj_attribute *attr, con
 	sscanf(buf, "%d %d %d", &new_r, &new_g, &new_b);
 
 	if (new_r != v151_val[0] || new_g != v151_val[1] || new_b != v151_val[2]) {
-		pr_debug("New v151: %d %d %d\n", new_r, new_g, new_b);
 		v151_val[0] = new_r;
 		v151_val[1] = new_g;
 		v151_val[2] = new_b;
@@ -131,7 +127,6 @@ static ssize_t v87_store(struct kobject *kobj, struct kobj_attribute *attr, cons
 	sscanf(buf, "%d %d %d", &new_r, &new_g, &new_b);
 
 	if (new_r != v87_val[0] || new_g != v87_val[1] || new_b != v87_val[2]) {
-		pr_debug("New v87: %d %d %d\n", new_r, new_g, new_b);
 		v87_val[0] = new_r;
 		v87_val[1] = new_g;
 		v87_val[2] = new_b;
@@ -153,7 +148,6 @@ static ssize_t v51_store(struct kobject *kobj, struct kobj_attribute *attr, cons
 	sscanf(buf, "%d %d %d", &new_r, &new_g, &new_b);
 
 	if (new_r != v51_val[0] || new_g != v51_val[1] || new_b != v51_val[2]) {
-		pr_debug("New v51: %d %d %d\n", new_r, new_g, new_b);
 		v51_val[0] = new_r;
 		v51_val[1] = new_g;
 		v51_val[2] = new_b;
@@ -175,7 +169,6 @@ static ssize_t v35_store(struct kobject *kobj, struct kobj_attribute *attr, cons
 	sscanf(buf, "%d %d %d", &new_r, &new_g, &new_b);
 
 	if (new_r != v35_val[0] || new_g != v35_val[1] || new_b != v35_val[2]) {
-		pr_debug("New v35: %d %d %d\n", new_r, new_g, new_b);
 		v35_val[0] = new_r;
 		v35_val[1] = new_g;
 		v35_val[2] = new_b;
@@ -197,7 +190,6 @@ static ssize_t v23_store(struct kobject *kobj, struct kobj_attribute *attr, cons
 	sscanf(buf, "%d %d %d", &new_r, &new_g, &new_b);
 
 	if (new_r != v23_val[0] || new_g != v23_val[1] || new_b != v23_val[2]) {
-		pr_debug("New v23: %d %d %d\n", new_r, new_g, new_b);
 		v23_val[0] = new_r;
 		v23_val[1] = new_g;
 		v23_val[2] = new_b;
@@ -219,7 +211,6 @@ static ssize_t v11_store(struct kobject *kobj, struct kobj_attribute *attr, cons
 	sscanf(buf, "%d %d %d", &new_r, &new_g, &new_b);
 
 	if (new_r != v11_val[0] || new_g != v11_val[1] || new_b != v11_val[2]) {
-		pr_debug("New v11: %d %d %d\n", new_r, new_g, new_b);
 		v11_val[0] = new_r;
 		v11_val[1] = new_g;
 		v11_val[2] = new_b;
@@ -241,7 +232,6 @@ static ssize_t v3_store(struct kobject *kobj, struct kobj_attribute *attr, const
 	sscanf(buf, "%d %d %d", &new_r, &new_g, &new_b);
 
 	if (new_r != v3_val[0] || new_g != v3_val[1] || new_b != v3_val[2]) {
-		pr_debug("New v3: %d %d %d\n", new_r, new_g, new_b);
 		v3_val[0] = new_r;
 		v3_val[1] = new_g;
 		v3_val[2] = new_b;
@@ -251,29 +241,74 @@ static ssize_t v3_store(struct kobject *kobj, struct kobj_attribute *attr, const
 	return size;
 }
 
-static KOBJ_ATTR(v255rgb, 0644, v255_show, v255_store);
-static KOBJ_ATTR(vtrgb, 0644, vt_show, vt_store);
-static KOBJ_ATTR(v203rgb, 0644, v203_show, v203_store);
-static KOBJ_ATTR(v151rgb, 0644, v151_show, v151_store);
-static KOBJ_ATTR(v87rgb, 0644, v87_show, v87_store);
-static KOBJ_ATTR(v51rgb, 0644, v51_show, v51_store);
-static KOBJ_ATTR(v35rgb, 0644, v35_show, v35_store);
-static KOBJ_ATTR(v23rgb, 0644, v23_show, v23_store);
-static KOBJ_ATTR(v11rgb, 0644, v11_show, v11_store);
-static KOBJ_ATTR(v3rgb, 0644, v3_show, v3_store);
+#define show_gamma(vname)	\
+static ssize_t show_##vname	\
+(struct kobject *kobj, struct kobj_attribute *attr, char *buf)	\
+{	\
+	return sprintf(buf, "%d %d %d\n", v255_val[0], v255_val[1], v255_val[2]);	\
+}
+
+#define store_gamma(vname)	\
+static ssize_t ##vname_store(struct kobject *kobj,	\
+struct kobj_attribute *attr, const char *buf, size_t count)	\
+{	\
+	int new_r, new_g, new_b;	\
+	\
+	sscanf(buf, "%d %d %d", &new_r, &new_g, &new_b);	\
+	\
+	##vname_val[0] = new_r;	\
+	##vname_val[1] = new_g;	\
+	##vname_val[2] = new_b;	\
+	\
+	smart_dimming_full_reinit()	\
+	return count; \
+}
+
+show_gamma(v255);
+show_gamma(v203);
+show_gamma(v151);
+show_gamma(v87);
+show_gamma(v51);
+show_gamma(v35);
+show_gamma(v23);
+show_gamma(v11);
+show_gamma(v3);
+
+store_gamma(v255);
+store_gamma(v203);
+store_gamma(v151);
+store_gamma(v87);
+store_gamma(v51);
+store_gamma(v35);
+store_gamma(v23);
+store_gamma(v11);
+store_gamma(v3);
+
+#define MX_ATTR_RW(vname) \
+	static struct kobj_attribute ##vname_attribute = __ATTR(##vname, 0644, ##vname_show, ##vname_store)
+
+MX_ATTR(v255);
+MX_ATTR(v203);
+MX_ATTR(v151);
+MX_ATTR(v87);
+MX_ATTR(v51);
+MX_ATTR(v35);
+MX_ATTR(v23);
+MX_ATTR(v11);
+MX_ATTR(v3);
 
 static struct attribute *gamma_control_attrs[] =
 {
-	&v255rgb_attribute.attr,
-	&vtrgb_attribute.attr,
-	&v203rgb_attribute.attr,
-	&v151rgb_attribute.attr,
-	&v87rgb_attribute.attr,
-	&v51rgb_attribute.attr,
-	&v35rgb_attribute.attr,
-	&v23rgb_attribute.attr,
-	&v11rgb_attribute.attr,
-	&v3rgb_attribute.attr,
+	&v255_attribute.attr,
+	&vt_attribute.attr,
+	&v203_attribute.attr,
+	&v151_attribute.attr,
+	&v87_attribute.attr,
+	&v51_attribute.attr,
+	&v35_attribute.attr,
+	&v23_attribute.attr,
+	&v11_attribute.attr,
+	&v3_attribute.attr,
 	NULL
 };
 

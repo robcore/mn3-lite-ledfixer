@@ -1492,76 +1492,9 @@ static int make_brightcontrol_set(int bl_level)
 #endif
 
 	/*gamma*/
-
-#if (defined(CONFIG_FB_MSM_MDSS_MAGNA_OCTA_VIDEO_720P_PT_PANEL) \
-		&& !defined(CONFIG_FB_MSM_MDSS_MAGNA_LDI_EA8061))\
-		|| defined(CONFIG_FB_MSM_MDSS_SAMSUNG_OCTA_VIDEO_720P_PT_PANEL)
-// kyNam_131228_
-	if( get_oled_id() == 0)
-	{
-		int i,j;
-		cmd_count = 0;
-
-		/* If you cannot use AID-dimming, you can use temporary-gamma */
-		for( i = 1; i<=30; i++ )
-		{
-			// kyNam_140117_ sample for Fresco_KOR
-			/* calculator : 5<x<160 -> 92<gamma<113 */
-			if( bl_level < 160 ) j = (113-92)*(bl_level-5)/(160-5) +92;
-			/* calculator : 160<x<255 -> 113<gamma<130 */
-			else j = (130-113)*(bl_level-160)/(255-160) +113;
-
-			if( i==1 || i==3 || i==5 ) j = ((j*2)>>8);
-			if( i==2 || i==4 || i==6 ) j*=2;
-
-			gamma_cmds_list.cmd_desc[1].payload[i] = (j & 0xFF);
-		}
-
-		gamma_control.cmd_desc = &(gamma_cmds_list.cmd_desc[0]);
-		gamma_control.num_of_cmds = gamma_cmds_list.num_of_cmds;
-		cmd_count = update_bright_packet(cmd_count, &gamma_control);
-	}
-	else
-	{
-		gamma_control = get_gamma_control_set(cd_level);
-		cmd_count = update_bright_packet(cmd_count, &gamma_control);
-	}
-#else
 	gamma_control = get_gamma_control_set(cd_level);
 	cmd_count = update_bright_packet(cmd_count, &gamma_control);
-#endif
-#if defined(CONFIG_FB_MSM_MDSS_MAGNA_OCTA_VIDEO_720P_PANEL)\
-	|| defined(CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_VIDEO_HD_PANEL)
-	testKey = get_testKey_set(0);
-	cmd_count = update_bright_packet(cmd_count, &testKey);
-#endif
-#if defined(CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_VIDEO_WVGA_S6E88A0_PT_PANEL) || defined(CONFIG_FB_MSM_MDSS_SAMSUNG_OCTA_VIDEO_720P_PT_PANEL)
-	LCD_DEBUG("bright_level: %d, candela_idx: %d( %d cd ), "\
-		"cmd_count(aid,acl,elvss,gamma)::(%d,%d,%d,%d)%d\n",
-#elif defined(CONFIG_FB_MSM_MIPI_MAGNA_OCTA_VIDEO_720P_PT_PANEL)\
-	|| defined(CONFIG_FB_MSM_MDSS_MAGNA_OCTA_VIDEO_720P_PANEL)\
-	|| defined(CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_VIDEO_HD_PANEL)
-	LCD_DEBUG("bright_level: %d, candela_idx: %d( %d cd ), "\
-		"cmd_count(aid,acl,elvss,temperature,gamma)::(%d,%d,%d,%d)%d\n",
-#elif defined(TEMPERATURE_ELVSS_S6E3FA0)
-	LCD_DEBUG("bright_level: %d, candela_idx: %d( %d cd ), "\
-		"cmd_count(aid,acl,acl_ctrl,elvss,temperature,gamma)::(%d,%d,%d,%d,%d,%d)%d\n",
-#else
-	LCD_DEBUG("bright_level: %d, candela_idx: %d( %d cd ), "\
-		"cmd_count(aid,acl,acl_ctrl,elvss,temperature,gamma)::(%d,%d,%d,%d,%d)%d\n",
-#endif
-		msd.dstat.bright_level, cd_idx, cd_level,
-		aid_control.num_of_cmds,
-		acl_control.num_of_cmds,
-#if !defined(NOT_USING_ACL_CONT)
-		aclcont_control.num_of_cmds,
-#endif
-		elvss_control.num_of_cmds,
-#if defined(TEMPERATURE_ELVSS_S6E3FA0)
-		temperature_elvss_control.num_of_cmds,
-#endif
-		gamma_control.num_of_cmds,
-		cmd_count);
+
 	return cmd_count;
 
 }
@@ -2998,6 +2931,10 @@ struct mdss_panel_data *mdss_dsi_switching = NULL;
 	&& !defined(CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_VIDEO_FULL_HD_PT_PANEL)
 static bool dsi_first_init = true;
 #endif
+
+void smart_dimming_full_reinit(void) {
+	mdss_dsi_panel_dimming_init(msd.pdata);
+}
 
 static int mdss_dsi_panel_on(struct mdss_panel_data *pdata)
 {

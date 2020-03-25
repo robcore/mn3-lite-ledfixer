@@ -7758,11 +7758,12 @@ static int taiko_codec_probe(struct snd_soc_codec *codec)
 	pr_info("Sound Control: TAIKO_A_RX_HPH_BIAS_PA default reg value: 0x%x\n", hph_bias_pa_default);
 
 	sound_control_kobj = kobject_create_and_add("sound_control", kernel_kobj);
-
 	if (sound_control_kobj) {
 		ret = sysfs_create_group(sound_control_kobj, &sound_control_attr_group);
-        if (ret)
+        if (ret) {
+			kobject_put(sound_control_kobj);
 			pr_warn("%s sysfs file create failed!\n", __func__);
+		}
 	} else {
 		pr_warn("%s kobject create failed!\n", __func__);
 	}

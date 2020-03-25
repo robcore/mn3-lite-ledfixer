@@ -82,9 +82,6 @@ struct attribute_group {
 
 #define attr_name(_attr) (_attr).attr.name
 
-#define KOBJ_ATTR(_name, _mode, _show, _store) \
-	struct kobj_attribute ##_name_attribute = __ATTR(_name, _mode, _show, _store)
-
 struct file;
 struct vm_area_struct;
 
