@@ -1899,10 +1899,9 @@ static ssize_t mipi_samsung_temperature_show(struct device *dev,
 {
 	int rc;
 
-	rc = snprintf((char *)buf, 40,"-20, -19, 0, 1, 30, 40\n");
-
-	pr_info("%s msd.mpd->temperature : %d msd.mpd->temperature_value : 0x%x", __func__,
-				msd.dstat.temperature, msd.dstat.temperature_value);
+//	rc = snprintf((char *)buf, 40,"-20, -19, 0, 1, 30, 40\n");
+	rc = snprintf((char *)buf, PAGE_SIZE, "%d\n",
+					msd.dstat.temperature_value);
 
 	return rc;
 }
