@@ -2947,7 +2947,7 @@ static void gamma_init_H_revJ(struct SMART_DIM *pSmart, char *str, int size)
 
 	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 		if (searching_function(candela_level[cnt],
-			&(bl_index[cnt]), GAMMA_CURVE_2P15)) {
+			&(bl_index[cnt]), GAMMA_CURVE_1P9)) {
 			pr_debug("%s searching function error cnt:%d\n",
 			__func__, cnt);
 		}
@@ -3862,7 +3862,7 @@ static void pure_gamma_init(struct SMART_DIM *pSmart, char *str, int size)
 	/*calculate brightness level*/
 	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 			if (searching_function(candela_level[cnt],
-				&(bl_index[cnt]), GAMMA_CURVE_2P2)) {
+				&(bl_index[cnt]), GAMMA_CURVE_1P9)) {
 				pr_info("%s searching functioin error cnt:%d\n",
 					__func__, cnt);
 			}
