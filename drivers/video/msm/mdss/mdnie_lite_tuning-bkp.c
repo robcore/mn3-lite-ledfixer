@@ -92,7 +92,7 @@ int dsi_ctrl_on;
 static struct mipi_samsung_driver_data *mdnie_msd;
 #endif
 
-//#define MDNIE_LITE_TUN_DEBUG
+#define MDNIE_LITE_TUN_DEBUG
 
 #ifdef MDNIE_LITE_TUN_DEBUG
 #define DPRINT(x...)	printk(KERN_ERR "[mdnie lite] " x)
@@ -124,9 +124,24 @@ static struct mipi_samsung_driver_data *mdnie_msd;
 #define INPUT_PAYLOAD2(x) PAYLOAD2.payload = x
 #endif
 
-static int hijack = 0;
-static int sharpen = 0;
-static int black = 0;
+#if defined(CONFIG_MDNIE_LITE_CONTROL)
+static unsigned int hijack = 0; /* By default, do not enable hijacking */
+static unsigned int curve = 0;
+static unsigned int copy_mode = 0;
+static unsigned int black = 0;
+static unsigned int black_r = 0;
+static unsigned int black_g = 0;
+static unsigned int black_b = 0;
+static unsigned int sharpen_control[3];
+static unsigned int red_control[3];
+static unsigned int green_control[3];
+static unsigned int blue_control[3];
+static unsigned int cyan_control[3];
+static unsigned int magenta_control[3];
+static unsigned int yellow_control[3];
+static unsigned int white_control[3];
+static unsigned int black_control[3];
+#endif
 
 unsigned int play_speed_1_5;
 
@@ -309,13 +324,40 @@ void print_tun_data(void)
 	DPRINT("\n");
 }
 
+#if defined(CONFIG_MDNIE_LITE_CONTROL)
+void update_mdnie_curve(void)
+{
+	char *source;
+	unsigned int i;
+
+	// Determine the source to copy the curves from
+	switch (curve) {
+		case DYNAMIC_MODE:	source = DYNAMIC_UI_2;
+					break;
+		case STANDARD_MODE:	source = STANDARD_UI_2;
+					break;
+		case NATURAL_MODE:	source = NATURAL_UI_2;
+					break;
+		case MOVIE_MODE:	source = MOVIE_UI_2;
+					break;
+		case AUTO_MODE:		source = AUTO_UI_2;
+					break;
+		default: return;
+	}
+
+	for (i = 42; i < 107; i++)
+		LITE_CONTROL_2[i] = source[i];
+
+	pr_debug(" = update curve values =\n");
+}
+
 void update_mdnie_mode(void)
 {
 	char *source_1, *source_2;
-	unsigned int i;
+	int	i;
 
 	// Determine the source to copy the mode from
-	switch (mdnie_tun_state.background) {
+	switch (copy_mode) {
 		case DYNAMIC_MODE:
 			source_1 = DYNAMIC_UI_1;
 			source_2 = DYNAMIC_UI_2;
@@ -340,22 +382,19 @@ void update_mdnie_mode(void)
 			return;
 	}
 
-	for (i = 0; i < 107; i++) {
-		if (i == 37 || i == 39 || i == 41)
-			LITE_CONTROL_2[i] = clamp_val(source_2[i] + black, -128, 128);
-		else
-			LITE_CONTROL_2[i] = source_2[i]; // Copy Everything else
-	}
+	LITE_CONTROL_1[4] = source_1[4]; // Copy sharpen
 
-	i = 0;
+	for (i = 18; i < 107; i++)
+		LITE_CONTROL_2[i] = source_2[i]; // Copy mode
 
-	for (i = 0; i < 5; i++) {
-		if (i == 4)
-			LITE_CONTROL_1[i] = clamp_val(sharpen, 0, 11);
-		else
-			LITE_CONTROL_1[i] = source_1[i];
-	}
+	// Apply black crush delta
+	LITE_CONTROL_2[37] = max(0,min(255, LITE_CONTROL_2[37] + black));
+	LITE_CONTROL_2[39] = max(0,min(255, LITE_CONTROL_2[39] + black));
+	LITE_CONTROL_2[41] = max(0,min(255, LITE_CONTROL_2[41] + black));
+
+	pr_debug(" = update mode values =\n");
 }
+#endif
 
 void free_tun_cmd(void)
 {
@@ -463,30 +502,115 @@ void mDNIe_Set_Mode(void)
 
 	play_speed_1_5 = 0;
 
-	update_mdnie_mode();
+#ifdef CONFIG_MDNIE_LITE_CONTROL
 	if (hijack == HIJACK_ENABLED) {
 		DPRINT(" = CONTROL MODE =\n");
 		INPUT_PAYLOAD1(LITE_CONTROL_1);
 		INPUT_PAYLOAD2(LITE_CONTROL_2);
-	} else if (mdnie_tun_state.accessibility) {
+	} else 
+#endif
+	if (mdnie_tun_state.accessibility) {
 		DPRINT(" = ACCESSIBILITY MODE =\n");
 		INPUT_PAYLOAD1(blind_tune_value[mdnie_tun_state.accessibility][0]);
 		INPUT_PAYLOAD2(blind_tune_value[mdnie_tun_state.accessibility][1]);
-	} else {
+	}
+
+#if defined(CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_CMD_WQHD_PT_PANEL) || defined (CONFIG_FB_MSM_MIPI_MAGNA_OCTA_CMD_HD_PT_PANEL) \
+	|| defined (CONFIG_FB_MSM_MDSS_MAGNA_OCTA_VIDEO_720P_PANEL)
+	else if (mdnie_msd->dstat.auto_brightness == 6) {
+		DPRINT("[LOCAL CE] HBM mode! only LOCAL CE tuning\n");
+#if defined(CONFIG_MDNIE_ENHENCED_LOCAL_CE)
+			INPUT_PAYLOAD1(LOCAL_CE_1_ENHENCED);
+			INPUT_PAYLOAD2(LOCAL_CE_2_ENHENCED);
+#else
+#if defined (CONFIG_FB_MSM_MDSS_MAGNA_OCTA_VIDEO_720P_PANEL)
+			if((mdnie_tun_state.scenario == mDNIe_BROWSER_MODE)||(mdnie_tun_state.scenario == mDNIe_eBOOK_MODE))
+			{
+				INPUT_PAYLOAD1(LOCAL_CE_1_TEXT);
+				INPUT_PAYLOAD2(LOCAL_CE_2_TEXT);
+			}
+			else
+#endif
+			{
+				INPUT_PAYLOAD1(LOCAL_CE_1);
+				INPUT_PAYLOAD2(LOCAL_CE_2);
+			}
+#endif
+	}
+#endif
+#if defined(CONFIG_TDMB)
+	else if (mdnie_tun_state.dmb > DMB_MODE_OFF){
+		if (!dmb_tune_value[mdnie_tun_state.dmb][mdnie_tun_state.background][mdnie_tun_state.outdoor][0] ||
+			!dmb_tune_value[mdnie_tun_state.dmb][mdnie_tun_state.background][mdnie_tun_state.outdoor][1]) {
+			pr_err("dmb tune data is NULL!\n");
+			return;
+		} else {
+			INPUT_PAYLOAD1(
+				dmb_tune_value[mdnie_tun_state.dmb][mdnie_tun_state.background][mdnie_tun_state.outdoor][0]);
+			INPUT_PAYLOAD2(
+				dmb_tune_value[mdnie_tun_state.dmb][mdnie_tun_state.background][mdnie_tun_state.outdoor][1]);
+		}
+	}
+#endif
+	else {
+#if defined(CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_CMD_WQHD_PT_PANEL)
+			if (!mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][0] ||
+				!mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][1]) {
+				pr_err("mdnie tune data is NULL!\n");
+				return;
+			} else {
+				INPUT_PAYLOAD1(
+					mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][0]);
+				INPUT_PAYLOAD2(
+					mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][1]);
+				mdnie_tun_state.scr_white_red = mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][1][ADDRESS_SCR_WHITE_RED];
+				mdnie_tun_state.scr_white_green = mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][1][ADDRESS_SCR_WHITE_GREEN];
+				mdnie_tun_state.scr_white_blue= mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][1][ADDRESS_SCR_WHITE_BLUE];
+			}
+#else
+#if defined(CONFIG_FB_MSM_MIPI_VIDEO_WVGA_NT35502_PT_PANEL)
+		if (!mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][0] ||
+			!mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][1] ||
+			!mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][2] ||
+			!mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][3] ||
+			!mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][4]) {
+#else
 		if (!mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][0] ||
 			!mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][1]) {
+#endif
 			pr_err("mdnie tune data is NULL!\n");
 			return;
 		} else {
+#if defined(CONFIG_FB_MSM_MIPI_VIDEO_WVGA_NT35502_PT_PANEL)
 			INPUT_PAYLOAD1(
 				mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][0]);
 			INPUT_PAYLOAD2(
 				mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][1]);
+			INPUT_PAYLOAD3(
+				mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][2]);
+			INPUT_PAYLOAD4(
+				mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][3]);
+			INPUT_PAYLOAD5(
+				mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][4]);
+#else
+			INPUT_PAYLOAD1(
+				mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][0]);
+			INPUT_PAYLOAD2(
+				mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][1]);
+#endif
 		}
-	}
+#endif
+}
 
 	sending_tuning_cmd();
 	free_tun_cmd();
+
+	DPRINT("mDNIe_Set_Mode end , %s(%d), %s(%d), %s(%d), %s(%d)\n",
+		scenario_name[mdnie_tun_state.scenario], mdnie_tun_state.scenario,
+		background_name[mdnie_tun_state.background], mdnie_tun_state.background,
+		outdoor_name[mdnie_tun_state.outdoor], mdnie_tun_state.outdoor,
+		accessibility_name[mdnie_tun_state.accessibility], mdnie_tun_state.accessibility);
+
 }
 
 void is_play_speed_1_5(int enable)
@@ -515,6 +639,9 @@ void is_play_speed_1_5(int enable)
 static ssize_t mode_show(struct device *dev,
 		struct device_attribute *attr, char *buf)
 {
+	DPRINT("Current Background Mode : %s\n",
+		background_name[mdnie_tun_state.background]);
+
 	return snprintf(buf, 256, "Current Background Mode : %s\n",
 		background_name[mdnie_tun_state.background]);
 }
@@ -527,15 +654,23 @@ static ssize_t mode_store(struct device *dev,
 
 	sscanf(buf, "%d", &value);
 
-	if (value <= DYNAMIC_MODE)
-		value = DYNAMIC_MODE;
-	if (value >= AUTO_MODE)
-		value = AUTO_MODE;
-
+	if (value < DYNAMIC_MODE || value >= MAX_BACKGROUND_MODE) {
+		DPRINT("[ERROR] wrong backgound mode value : %d\n",
+			value);
+		return size;
+	}
+	backup = mdnie_tun_state.background;
 	mdnie_tun_state.background = value;
 
-	if (mdnie_tun_state.accessibility != NEGATIVE)
+	if (mdnie_tun_state.accessibility == NEGATIVE) {
+		DPRINT("already negative mode(%d), do not set background(%d)\n",
+			mdnie_tun_state.accessibility, mdnie_tun_state.background);
+	} else {
+		DPRINT(" %s : (%s) -> (%s)\n",
+			__func__, background_name[backup], background_name[mdnie_tun_state.background]);
+
 		mDNIe_Set_Mode();
+	}
 
 	return size;
 }
@@ -591,6 +726,7 @@ static ssize_t scenario_store(struct device *dev,
 	return size;
 }
 
+#if defined(CONFIG_MDNIE_LITE_CONTROL)
 /* hijack */
 
 static ssize_t hijack_show(struct device *dev, struct device_attribute *attr, char *buf)
@@ -603,8 +739,67 @@ static ssize_t hijack_store(struct device * dev, struct device_attribute * attr,
 	int new_val;
 	sscanf(buf, "%d", &new_val);
 
-	hijack = clamp_val(new_val, 0, 1);
+	if (new_val <= 0)
+		new_val = 0;
+	if (new_val >= 1);
+		new_val = 1;
+
+	hijack = new_val;
 	mDNIe_Set_Mode();
+	return size;
+}
+
+/* curve */
+
+static ssize_t curve_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", curve);
+}
+
+static ssize_t curve_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
+{
+	int new_val;
+	sscanf(buf, "%d", &new_val);
+
+	if (new_val <= DYNAMIC_MODE)
+		new_val = DYNAMIC_MODE;
+	if (new_val >= AUTO_MODE);
+		new_val = AUTO_MODE;
+
+	curve = new_val;
+
+	update_mdnie_curve();
+
+	if (hijack == HIJACK_ENABLED)
+		mDNIe_Set_Mode();
+
+	return size;
+}
+
+/* copy_mode */
+
+static ssize_t copy_mode_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", copy_mode);
+}
+
+static ssize_t copy_mode_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
+{
+	int new_val;
+	sscanf(buf, "%d", &new_val);
+
+	if (new_val <= DYNAMIC_MODE)
+		new_val = DYNAMIC_MODE;
+	if (new_val >= AUTO_MODE);
+		new_val = AUTO_MODE;
+
+	copy_mode = new_val;
+
+	update_mdnie_mode();
+
+	if (hijack == HIJACK_ENABLED)
+		mDNIe_Set_Mode();
+
 	return size;
 }
 
@@ -612,7 +807,7 @@ static ssize_t hijack_store(struct device * dev, struct device_attribute * attr,
 
 static ssize_t sharpen_show(struct device *dev, struct device_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%u\n", sharpen);
+	return sprintf(buf, "%u\n", LITE_CONTROL_1[4]);
 }
 
 static ssize_t sharpen_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
@@ -620,31 +815,798 @@ static ssize_t sharpen_store(struct device * dev, struct device_attribute * attr
 	int new_val;
 	sscanf(buf, "%d", &new_val);
 
-	sharpen = clamp_val(new_val, 0, 1);
-	mDNIe_Set_Mode();
+	if (new_val <= 0)
+		new_val = 0;
+	if (new_val >= 11)
+		new_val = 11;
+
+	LITE_CONTROL_1[4] = new_val;
+
+	if (hijack == HIJACK_ENABLED)
+		mDNIe_Set_Mode();
+
 	return size;
+}
+
+/* red */
+
+static ssize_t red_red_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", LITE_CONTROL_2[19]);
+}
+
+static ssize_t red_red_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
+{
+	int new_val;
+	sscanf(buf, "%d", &new_val);
+
+	if (new_val != LITE_CONTROL_2[19]) {
+		if (new_val < 0 || new_val > 255)
+			return -EINVAL;
+		DPRINT("new red_red: %d\n", new_val);
+		LITE_CONTROL_2[19] = new_val;
+		if (hijack == HIJACK_ENABLED)
+			mDNIe_Set_Mode();
+	}
+	return size;
+}
+
+static ssize_t red_green_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", LITE_CONTROL_2[21]);
+}
+
+static ssize_t red_green_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
+{
+	int new_val;
+	sscanf(buf, "%d", &new_val);
+
+	if (new_val != LITE_CONTROL_2[21]) {
+		if (new_val < 0 || new_val > 255)
+			return -EINVAL;
+		DPRINT("new red_green: %d\n", new_val);
+		LITE_CONTROL_2[21] = new_val;
+		if (hijack == HIJACK_ENABLED)
+			mDNIe_Set_Mode();
+	}
+	return size;
+}
+
+static ssize_t red_blue_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", LITE_CONTROL_2[23]);
+}
+
+static ssize_t red_blue_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
+{
+	int new_val;
+	sscanf(buf, "%d", &new_val);
+
+	if (new_val != LITE_CONTROL_2[23]) {
+		if (new_val < 0 || new_val > 255)
+			return -EINVAL;
+		DPRINT("new red_blue: %d\n", new_val);
+		LITE_CONTROL_2[23] = new_val;
+		if (hijack == HIJACK_ENABLED)
+			mDNIe_Set_Mode();
+	}
+	return size;
+}
+
+/* cyan */
+
+static ssize_t cyan_red_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", LITE_CONTROL_2[18]);
+}
+
+static ssize_t cyan_red_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
+{
+	int new_val;
+	sscanf(buf, "%d", &new_val);
+
+	if (new_val != LITE_CONTROL_2[18]) {
+		if (new_val < 0 || new_val > 255)
+			return -EINVAL;
+		DPRINT("new cyan_red: %d\n", new_val);
+		LITE_CONTROL_2[18] = new_val;
+		if (hijack == HIJACK_ENABLED)
+			mDNIe_Set_Mode();
+	}
+	return size;
+}
+
+static ssize_t cyan_green_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", LITE_CONTROL_2[20]);
+}
+
+static ssize_t cyan_green_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
+{
+    int new_val;
+	sscanf(buf, "%d", &new_val);
+
+	if (new_val != LITE_CONTROL_2[20]) {
+		if (new_val < 0 || new_val > 255)
+			return -EINVAL;
+		DPRINT("new cyan_green: %d\n", new_val);
+		LITE_CONTROL_2[20] = new_val;
+		if (hijack == HIJACK_ENABLED)
+			mDNIe_Set_Mode();
+	}
+	return size;
+}
+
+static ssize_t cyan_blue_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", LITE_CONTROL_2[22]);
+}
+
+static ssize_t cyan_blue_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
+{
+	int new_val;
+	sscanf(buf, "%d", &new_val);
+
+	if (new_val != LITE_CONTROL_2[22]) {
+		if (new_val < 0 || new_val > 255)
+			return -EINVAL;
+		DPRINT("new cyan_blue: %d\n", new_val);
+		LITE_CONTROL_2[22] = new_val;
+		if (hijack == HIJACK_ENABLED)
+			mDNIe_Set_Mode();
+	}
+	return size;
+}
+
+/* green */
+
+static ssize_t green_red_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", LITE_CONTROL_2[25]);
+}
+
+static ssize_t green_red_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
+{
+	int new_val;
+	sscanf(buf, "%d", &new_val);
+
+	if (new_val != LITE_CONTROL_2[25]) {
+		if (new_val < 0 || new_val > 255)
+			return -EINVAL;
+		DPRINT("new green_red: %d\n", new_val);
+		LITE_CONTROL_2[25] = new_val;
+		if (hijack == HIJACK_ENABLED)
+			mDNIe_Set_Mode();
+	}
+	return size;
+}
+
+static ssize_t green_green_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", LITE_CONTROL_2[27]);
+}
+
+static ssize_t green_green_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
+{
+	int new_val;
+	sscanf(buf, "%d", &new_val);
+
+	if (new_val != LITE_CONTROL_2[27]) {
+		if (new_val < 0 || new_val > 255)
+			return -EINVAL;
+		DPRINT("new green_green: %d\n", new_val);
+		LITE_CONTROL_2[27] = new_val;
+		if (hijack == HIJACK_ENABLED)
+			mDNIe_Set_Mode();
+	}
+	return size;
+}
+
+static ssize_t green_blue_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", LITE_CONTROL_2[29]);
+}
+
+static ssize_t green_blue_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
+{
+	int new_val;
+	sscanf(buf, "%d", &new_val);
+
+	if (new_val != LITE_CONTROL_2[29]) {
+		if (new_val < 0 || new_val > 255)
+			return -EINVAL;
+		DPRINT("new green_blue: %d\n", new_val);
+		LITE_CONTROL_2[29] = new_val;
+		if (hijack == HIJACK_ENABLED)
+			mDNIe_Set_Mode();
+	}
+	return size;
+}
+
+/* magenta */
+
+static ssize_t magenta_red_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", LITE_CONTROL_2[24]);
+}
+
+static ssize_t magenta_red_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
+{
+	int new_val;
+	sscanf(buf, "%d", &new_val);
+
+	if (new_val != LITE_CONTROL_2[24]) {
+		if (new_val < 0 || new_val > 255)
+			return -EINVAL;
+		DPRINT("new magenta_red: %d\n", new_val);
+		LITE_CONTROL_2[24] = new_val;
+		if (hijack == HIJACK_ENABLED)
+			mDNIe_Set_Mode();
+	}
+	return size;
+}
+
+static ssize_t magenta_green_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", LITE_CONTROL_2[26]);
+}
+
+static ssize_t magenta_green_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
+{
+	int new_val;
+	sscanf(buf, "%d", &new_val);
+
+	if (new_val != LITE_CONTROL_2[26]) {
+		if (new_val < 0 || new_val > 255)
+			return -EINVAL;
+		DPRINT("new magenta_green: %d\n", new_val);
+		LITE_CONTROL_2[26] = new_val;
+		if (hijack == HIJACK_ENABLED)
+			mDNIe_Set_Mode();
+	}
+	return size;
+}
+
+static ssize_t magenta_blue_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", LITE_CONTROL_2[28]);
+}
+
+static ssize_t magenta_blue_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
+{
+	int new_val;
+	sscanf(buf, "%d", &new_val);
+
+	if (new_val != LITE_CONTROL_2[28]) {
+		if (new_val < 0 || new_val > 255)
+			return -EINVAL;
+		DPRINT("new magenta_blue: %d\n", new_val);
+		LITE_CONTROL_2[28] = new_val;
+		if (hijack == HIJACK_ENABLED)
+			mDNIe_Set_Mode();
+	}
+	return size;
+}
+
+/* blue */
+
+static ssize_t blue_red_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", LITE_CONTROL_2[31]);
+}
+
+static ssize_t blue_red_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
+{
+	int new_val;
+	sscanf(buf, "%d", &new_val);
+
+	if (new_val != LITE_CONTROL_2[31]) {
+		if (new_val < 0 || new_val > 255)
+			return -EINVAL;
+		DPRINT("new blue_red: %d\n", new_val);
+		LITE_CONTROL_2[31] = new_val;
+		if (hijack == HIJACK_ENABLED)
+			mDNIe_Set_Mode();
+	}
+	return size;
+}
+
+static ssize_t blue_green_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", LITE_CONTROL_2[33]);
+}
+
+static ssize_t blue_green_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
+{
+	int new_val;
+	sscanf(buf, "%d", &new_val);
+
+	if (new_val != LITE_CONTROL_2[33]) {
+		if (new_val < 0 || new_val > 255)
+			return -EINVAL;
+		DPRINT("new blue_green: %d\n", new_val);
+		LITE_CONTROL_2[33] = new_val;
+		if (hijack == HIJACK_ENABLED)
+			mDNIe_Set_Mode();
+	}
+	return size;
+}
+
+static ssize_t blue_blue_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", LITE_CONTROL_2[35]);
+}
+
+static ssize_t blue_blue_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
+{
+	int new_val;
+	sscanf(buf, "%d", &new_val);
+
+	if (new_val != LITE_CONTROL_2[35]) {
+		if (new_val < 0 || new_val > 255)
+			return -EINVAL;
+		DPRINT("new blue_blue: %d\n", new_val);
+		LITE_CONTROL_2[35] = new_val;
+		if (hijack == HIJACK_ENABLED)
+			mDNIe_Set_Mode();
+	}
+	return size;
+}
+
+/* yellow */
+
+static ssize_t yellow_red_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", LITE_CONTROL_2[30]);
+}
+
+static ssize_t yellow_red_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
+{
+	int new_val;
+	sscanf(buf, "%d", &new_val);
+
+	if (new_val != LITE_CONTROL_2[30]) {
+		if (new_val < 0 || new_val > 255)
+			return -EINVAL;
+		DPRINT("new yellow_red: %d\n", new_val);
+		LITE_CONTROL_2[30] = new_val;
+		if (hijack == HIJACK_ENABLED)
+			mDNIe_Set_Mode();
+	}
+	return size;
+}
+
+static ssize_t yellow_green_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", LITE_CONTROL_2[32]);
+}
+
+static ssize_t yellow_green_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
+{
+	int new_val;
+	sscanf(buf, "%d", &new_val);
+
+	if (new_val != LITE_CONTROL_2[32]) {
+		if (new_val < 0 || new_val > 255)
+			return -EINVAL;
+		DPRINT("new yellow_green: %d\n", new_val);
+		LITE_CONTROL_2[32] = new_val;
+		if (hijack == HIJACK_ENABLED)
+			mDNIe_Set_Mode();
+	}
+	return size;
+}
+
+static ssize_t yellow_blue_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", LITE_CONTROL_2[34]);
+}
+
+static ssize_t yellow_blue_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
+{
+	int new_val;
+	sscanf(buf, "%d", &new_val);
+
+	if (new_val != LITE_CONTROL_2[34]) {
+		if (new_val < 0 || new_val > 255)
+			return -EINVAL;
+		DPRINT("new yellow_blue: %d\n", new_val);
+		LITE_CONTROL_2[34] = new_val;
+		if (hijack == HIJACK_ENABLED)
+			mDNIe_Set_Mode();
+	}
+	return size;
+}
+
+/* black */
+
+static ssize_t black_crush_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", black);
+}
+
+static ssize_t black_crush_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
+{
+	int new_val;
+	sscanf(buf, "%d", &new_val);
+	black = new_val;
+	LITE_CONTROL_2[37] = max(0,min(255, black_r + black));
+	LITE_CONTROL_2[39] = max(0,min(255, black_g + black));
+	LITE_CONTROL_2[41] = max(0,min(255, black_b + black));
+	if (hijack == HIJACK_ENABLED)
+		mDNIe_Set_Mode();
+
+	return size;
+}
+
+static ssize_t black_red_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", black_r);
+}
+
+static ssize_t black_red_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
+{
+	int new_val;
+	sscanf(buf, "%d", &new_val);
+
+	if (new_val != black_r) {
+		if (new_val < 0 || new_val > 255)
+			return -EINVAL;
+		DPRINT("new black_red: %d\n", new_val);
+		black_r = new_val;
+		LITE_CONTROL_2[37] = max(0,min(255, black_r + black));
+		if (hijack == HIJACK_ENABLED)
+			mDNIe_Set_Mode();
+	}
+	return size;
+}
+
+static ssize_t black_green_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", black_g);
+}
+
+static ssize_t black_green_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
+{
+	int new_val;
+	sscanf(buf, "%d", &new_val);
+
+	if (new_val != black_g) {
+		if (new_val < 0 || new_val > 255)
+			return -EINVAL;
+		DPRINT("new black_green: %d\n", new_val);
+		black_g = new_val;
+		LITE_CONTROL_2[39] = max(0,min(255, black_g + black));
+		if (hijack == HIJACK_ENABLED)
+			mDNIe_Set_Mode();
+	}
+	return size;
+}
+
+static ssize_t black_blue_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", max(0, black_b));
+}
+
+static ssize_t black_blue_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
+{
+	int new_val;
+	sscanf(buf, "%d", &new_val);
+
+	if (new_val != black_b) {
+		if (new_val < 0 || new_val > 255)
+			return -EINVAL;
+		DPRINT("new black_blue: %d\n", new_val);
+		black_b = new_val;
+		LITE_CONTROL_2[41] = max(0,min(255, black_b + black));
+		if (hijack == HIJACK_ENABLED)
+			mDNIe_Set_Mode();
+	}
+	return size;
+}
+
+/* white */
+
+static ssize_t white_red_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", LITE_CONTROL_2[36]);
+}
+
+static ssize_t white_red_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
+{
+	int new_val;
+	sscanf(buf, "%d", &new_val);
+
+	if (new_val != LITE_CONTROL_2[36]) {
+		if (new_val < 0 || new_val > 255)
+			return -EINVAL;
+		DPRINT("new white_red: %d\n", new_val);
+		LITE_CONTROL_2[36] = new_val;
+		if (hijack == HIJACK_ENABLED)
+			mDNIe_Set_Mode();
+	}
+	return size;
+}
+
+static ssize_t white_green_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", LITE_CONTROL_2[38]);
+}
+
+static ssize_t white_green_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
+{
+	int new_val;
+	sscanf(buf, "%d", &new_val);
+
+	if (new_val != LITE_CONTROL_2[38]) {
+		if (new_val < 0 || new_val > 255)
+			return -EINVAL;
+		DPRINT("new white_green: %d\n", new_val);
+		LITE_CONTROL_2[38] = new_val;
+		if (hijack == HIJACK_ENABLED)
+			mDNIe_Set_Mode();
+	}
+	return size;
+}
+
+static ssize_t white_blue_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", LITE_CONTROL_2[40]);
+}
+
+static ssize_t white_blue_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
+{
+	int new_val;
+	sscanf(buf, "%d", &new_val);
+
+	if (new_val != LITE_CONTROL_2[40]) {
+		if (new_val < 0 || new_val > 255)
+			return -EINVAL;
+		DPRINT("new white_blue: %d\n", new_val);
+		LITE_CONTROL_2[40] = new_val;
+		if (hijack == HIJACK_ENABLED)
+			mDNIe_Set_Mode();
+	}
+	return size;
+}
+
+static ssize_t red_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+    return sprintf(buf, "%u %d %d\n", LITE_CONTROL_2[19], LITE_CONTROL_2[21], LITE_CONTROL_2[23]);
+}
+
+static ssize_t red_store(struct device *dev, struct device_attribute *attr, const char *buf, size_t size)
+{
+    int red, green, blue;
+	sscanf(buf, "%d %d %d", &red, &green, &blue);
+
+	if (red != LITE_CONTROL_2[19] || green != LITE_CONTROL_2[21] || blue != LITE_CONTROL_2[23]) {
+		if (red < 0 || red > 255 || green < 0 || green > 255 || blue < 0 || blue > 255)
+			return -EINVAL;
+		DPRINT("[RED] (red: %d) (green: %d) (blue: %d)\n", red, green, blue);
+		LITE_CONTROL_2[19] = red;
+		LITE_CONTROL_2[21] = green;
+		LITE_CONTROL_2[23] = blue;
+		if (hijack == HIJACK_ENABLED)
+			mDNIe_Set_Mode();
+	}
+    return size;
+}
+
+/* green */
+
+static ssize_t green_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+    return sprintf(buf, "%u %d %d\n", LITE_CONTROL_2[25], LITE_CONTROL_2[27], LITE_CONTROL_2[29]);
+}
+
+static ssize_t green_store(struct device *dev, struct device_attribute *attr, const char *buf, size_t size)
+{
+    int red, green, blue;
+	sscanf(buf, "%d %d %d", &red, &green, &blue);
+
+	if (red != LITE_CONTROL_2[25] || green != LITE_CONTROL_2[27] || blue != LITE_CONTROL_2[29]) {
+		if (red < 0 || red > 255 || green < 0 || green > 255 || blue < 0 || blue > 255)
+			return -EINVAL;
+		DPRINT("[GREEN] (red: %d) (green: %d) (blue: %d)\n", red, green, blue);
+		LITE_CONTROL_2[25] = red;
+		LITE_CONTROL_2[27] = green;
+		LITE_CONTROL_2[29] = blue;
+		if (hijack == HIJACK_ENABLED)
+			mDNIe_Set_Mode();
+	}
+    return size;
+}
+
+/* blue */
+
+static ssize_t blue_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+    return sprintf(buf, "%u %d %d\n", LITE_CONTROL_2[31], LITE_CONTROL_2[33], LITE_CONTROL_2[35]);
+}
+
+static ssize_t blue_store(struct device *dev, struct device_attribute *attr, const char *buf, size_t size)
+{
+    int red, green, blue;
+	sscanf(buf, "%d %d %d", &red, &green, &blue);
+
+	if (red != LITE_CONTROL_2[31] || green != LITE_CONTROL_2[33] || blue != LITE_CONTROL_2[35]) {
+		if (red < 0 || red > 255 || green < 0 || green > 255 || blue < 0 || blue > 255)
+			return -EINVAL;
+		DPRINT("[BLUE] (red: %d) (green: %d) (blue: %d)\n", red, green, blue);
+		LITE_CONTROL_2[31] = red;
+		LITE_CONTROL_2[33] = green;
+		LITE_CONTROL_2[35] = blue;
+		if (hijack == HIJACK_ENABLED)
+			mDNIe_Set_Mode();
+	}
+    return size;
+}
+
+/* cyan */
+
+static ssize_t cyan_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+    return sprintf(buf, "%u %d %d\n", LITE_CONTROL_2[18], LITE_CONTROL_2[20], LITE_CONTROL_2[22]);
+}
+
+static ssize_t cyan_store(struct device *dev, struct device_attribute *attr, const char *buf, size_t size)
+{
+    int red, green, blue;
+	sscanf(buf, "%d %d %d", &red, &green, &blue);
+
+	if (red != LITE_CONTROL_2[18] || green != LITE_CONTROL_2[20] || blue != LITE_CONTROL_2[22]) {
+		if (red < 0 || red > 255 || green < 0 || green > 255 || blue < 0 || blue > 255)
+			return -EINVAL;
+		DPRINT("[CYAN] (red: %d) (green: %d) (blue: %d)\n", red, green, blue);
+		LITE_CONTROL_2[18] = red;
+		LITE_CONTROL_2[20] = green;
+		LITE_CONTROL_2[22] = blue;
+		if (hijack == HIJACK_ENABLED)
+			mDNIe_Set_Mode();
+	}
+    return size;
+}
+
+/* magenta */
+
+static ssize_t magenta_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+    return sprintf(buf, "%u %d %d\n", LITE_CONTROL_2[24], LITE_CONTROL_2[26], LITE_CONTROL_2[28]);
+}
+
+static ssize_t magenta_store(struct device *dev, struct device_attribute *attr, const char *buf, size_t size)
+{
+    int red, green, blue;
+	sscanf(buf, "%d %d %d", &red, &green, &blue);
+
+	if (red != LITE_CONTROL_2[24] || green != LITE_CONTROL_2[26] || blue != LITE_CONTROL_2[28]) {
+		if (red < 0 || red > 255 || green < 0 || green > 255 || blue < 0 || blue > 255)
+			return -EINVAL;
+		DPRINT("[MAGENTA] (red: %d) (green: %d) (blue: %d)\n", red, green, blue);
+		LITE_CONTROL_2[24] = red;
+		LITE_CONTROL_2[26] = green;
+		LITE_CONTROL_2[28] = blue;
+		if (hijack == HIJACK_ENABLED)
+			mDNIe_Set_Mode();
+	}
+    return size;
+}
+
+/* yellow */
+
+static ssize_t yellow_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+    return sprintf(buf, "%u %d %d\n", LITE_CONTROL_2[30], LITE_CONTROL_2[32], LITE_CONTROL_2[34]);
+}
+
+static ssize_t yellow_store(struct device *dev, struct device_attribute *attr, const char *buf, size_t size)
+{
+    int red, green, blue;
+	sscanf(buf, "%d %d %d", &red, &green, &blue);
+
+	if (red != LITE_CONTROL_2[30] || green != LITE_CONTROL_2[32] || blue != LITE_CONTROL_2[34]) {
+		if (red < 0 || red > 255 || green < 0 || green > 255 || blue < 0 || blue > 255)
+			return -EINVAL;
+		DPRINT("[YELLOW] (red: %d) (green: %d) (blue: %d)\n", red, green, blue);
+		LITE_CONTROL_2[30] = red;
+		LITE_CONTROL_2[32] = green;
+		LITE_CONTROL_2[34] = blue;
+		if (hijack == HIJACK_ENABLED)
+			mDNIe_Set_Mode();
+	}
+    return size;
+}
+
+/* white */
+
+static ssize_t white_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+    return sprintf(buf, "%u %d %d\n", LITE_CONTROL_2[36], LITE_CONTROL_2[38], LITE_CONTROL_2[40]);
+}
+
+static ssize_t white_store(struct device *dev, struct device_attribute *attr, const char *buf, size_t size)
+{
+    int red, green, blue;
+	sscanf(buf, "%d %d %d", &red, &green, &blue);
+
+	if (red != LITE_CONTROL_2[36] || green != LITE_CONTROL_2[38] || blue != LITE_CONTROL_2[40]) {
+		if (red < 0 || red > 255 || green < 0 || green > 255 || blue < 0 || blue > 255)
+			return -EINVAL;
+		DPRINT("[WHITE] (red: %d) (green: %d) (blue: %d)\n", red, green, blue);
+		LITE_CONTROL_2[36] = red;
+		LITE_CONTROL_2[38] = green;
+		LITE_CONTROL_2[40] = blue;
+		if (hijack == HIJACK_ENABLED)
+			mDNIe_Set_Mode();
+	}
+    return size;
 }
 
 /* black */
 
 static ssize_t black_show(struct device *dev, struct device_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%d\n", black);
+    return sprintf(buf, "%u %d %d\n", LITE_CONTROL_2[37], LITE_CONTROL_2[39], LITE_CONTROL_2[41]);
 }
 
-static ssize_t black_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
+static ssize_t black_store(struct device *dev, struct device_attribute *attr, const char *buf, size_t size)
 {
-	int new_val;
-	sscanf(buf, "%d", &new_val);
-	black = clamp_val(new_val, -128, 128);
-	mDNIe_Set_Mode();
+    int red, green, blue;
+	sscanf(buf, "%d %d %d", &red, &green, &blue);
 
-	return size;
+	if (red != LITE_CONTROL_2[37] || green != LITE_CONTROL_2[39] || blue != LITE_CONTROL_2[41]) {
+		if (red < 0 || red > 255 || green < 0 || green > 255 || blue < 0 || blue > 255)
+			return -EINVAL;
+		DPRINT("[BLACK] (red: %d) (green: %d) (blue: %d)\n", red, green, blue);
+		LITE_CONTROL_2[37] = red;
+		LITE_CONTROL_2[39] = green;
+		LITE_CONTROL_2[41] = blue;
+		if (hijack == HIJACK_ENABLED)
+			mDNIe_Set_Mode();
+	}
+    return size;
 }
 
 static DEVICE_ATTR(hijack, 0664, hijack_show, hijack_store);
+static DEVICE_ATTR(curve, 0664, curve_show, curve_store);
+static DEVICE_ATTR(copy_mode, 0664, copy_mode_show, copy_mode_store);
 static DEVICE_ATTR(sharpen, 0664, sharpen_show, sharpen_store);
-static DEVICE_ATTR(black, 0664, black_show, black_store);
+static DEVICE_ATTR(red_red, 0664, red_red_show, red_red_store);
+static DEVICE_ATTR(red_green, 0664, red_green_show, red_green_store);
+static DEVICE_ATTR(red_blue, 0664, red_blue_show, red_blue_store);
+static DEVICE_ATTR(cyan_red, 0664, cyan_red_show, cyan_red_store);
+static DEVICE_ATTR(cyan_green, 0664, cyan_green_show, cyan_green_store);
+static DEVICE_ATTR(cyan_blue, 0664, cyan_blue_show, cyan_blue_store);
+static DEVICE_ATTR(green_red, 0664, green_red_show, green_red_store);
+static DEVICE_ATTR(green_green, 0664, green_green_show, green_green_store);
+static DEVICE_ATTR(green_blue, 0664, green_blue_show, green_blue_store);
+static DEVICE_ATTR(magenta_red, 0664, magenta_red_show, magenta_red_store);
+static DEVICE_ATTR(magenta_green, 0664, magenta_green_show, magenta_green_store);
+static DEVICE_ATTR(magenta_blue, 0664, magenta_blue_show, magenta_blue_store);
+static DEVICE_ATTR(blue_red, 0664, blue_red_show, blue_red_store);
+static DEVICE_ATTR(blue_green, 0664, blue_green_show, blue_green_store);
+static DEVICE_ATTR(blue_blue, 0664, blue_blue_show, blue_blue_store);
+static DEVICE_ATTR(yellow_red, 0664, yellow_red_show, yellow_red_store);
+static DEVICE_ATTR(yellow_green, 0664, yellow_green_show, yellow_green_store);
+static DEVICE_ATTR(yellow_blue, 0664, yellow_blue_show, yellow_blue_store);
+static DEVICE_ATTR(black, 0664, black_crush_show, black_crush_store);
+static DEVICE_ATTR(black_red, 0664, black_red_show, black_red_store);
+static DEVICE_ATTR(black_green, 0664, black_green_show, black_green_store);
+static DEVICE_ATTR(black_blue, 0664, black_blue_show, black_blue_store);
+static DEVICE_ATTR(white_red, 0664, white_red_show, white_red_store);
+static DEVICE_ATTR(white_green, 0664, white_green_show, white_green_store);
+static DEVICE_ATTR(white_blue, 0664, white_blue_show, white_blue_store);
+static DEVICE_ATTR(control_sharpen, 0664, sharpen_show, sharpen_store);
+static DEVICE_ATTR(control_red, 0664, red_show, red_store);
+static DEVICE_ATTR(control_green, 0664, green_show, green_store);
+static DEVICE_ATTR(control_blue, 0664, blue_show, blue_store);
+static DEVICE_ATTR(control_cyan, 0664, cyan_show, cyan_store);
+static DEVICE_ATTR(control_magenta, 0664, magenta_show, magenta_store);
+static DEVICE_ATTR(control_yellow, 0664, yellow_show, yellow_store);
+static DEVICE_ATTR(control_white, 0664, white_show, white_store);
+static DEVICE_ATTR(control_black, 0664, black_show, black_store);
+#endif
 
 static DEVICE_ATTR(scenario, 0664, scenario_show, scenario_store);
 
@@ -1041,7 +2003,7 @@ static void sending_tune_cmd(char *src, int len)
 	INPUT_PAYLOAD5(tune_data5);
 #endif
 
-	//print_tun_data();
+	print_tun_data();
 
 	sending_tuning_cmd();
 	free_tun_cmd();
@@ -1220,9 +2182,53 @@ void init_mdnie_class(void)
 #endif
 #endif
 
+#if defined(CONFIG_MDNIE_LITE_CONTROL)
 	device_create_file(tune_mdnie_dev, &dev_attr_hijack);
+	device_create_file(tune_mdnie_dev, &dev_attr_curve);
+	device_create_file(tune_mdnie_dev, &dev_attr_copy_mode);
 	device_create_file(tune_mdnie_dev, &dev_attr_sharpen);
+	device_create_file(tune_mdnie_dev, &dev_attr_red_red);
+	device_create_file(tune_mdnie_dev, &dev_attr_red_green);
+	device_create_file(tune_mdnie_dev, &dev_attr_red_blue);
+	device_create_file(tune_mdnie_dev, &dev_attr_cyan_red);
+	device_create_file(tune_mdnie_dev, &dev_attr_cyan_green);
+	device_create_file(tune_mdnie_dev, &dev_attr_cyan_blue);
+	device_create_file(tune_mdnie_dev, &dev_attr_green_red);
+	device_create_file(tune_mdnie_dev, &dev_attr_green_green);
+	device_create_file(tune_mdnie_dev, &dev_attr_green_blue);
+	device_create_file(tune_mdnie_dev, &dev_attr_magenta_red);
+	device_create_file(tune_mdnie_dev, &dev_attr_magenta_green);
+	device_create_file(tune_mdnie_dev, &dev_attr_magenta_blue);
+	device_create_file(tune_mdnie_dev, &dev_attr_blue_red);
+	device_create_file(tune_mdnie_dev, &dev_attr_blue_green);
+	device_create_file(tune_mdnie_dev, &dev_attr_blue_blue);
+	device_create_file(tune_mdnie_dev, &dev_attr_yellow_red);
+	device_create_file(tune_mdnie_dev, &dev_attr_yellow_green);
+	device_create_file(tune_mdnie_dev, &dev_attr_yellow_blue);
 	device_create_file(tune_mdnie_dev, &dev_attr_black);
+	device_create_file(tune_mdnie_dev, &dev_attr_black_red);
+	device_create_file(tune_mdnie_dev, &dev_attr_black_green);
+	device_create_file(tune_mdnie_dev, &dev_attr_black_blue);
+	device_create_file(tune_mdnie_dev, &dev_attr_white_red);
+	device_create_file(tune_mdnie_dev, &dev_attr_white_green);
+	device_create_file(tune_mdnie_dev, &dev_attr_white_blue);
+	/* -------------------------------------------------------
+	 * Add whathub's new interface
+	 * 
+	 * NB: Current interface is kept as more app friendly.
+	 * 
+	 * (Yank555.lu)
+	 * ------------------------------------------------------- */
+	device_create_file(tune_mdnie_dev, &dev_attr_control_sharpen);
+	device_create_file(tune_mdnie_dev, &dev_attr_control_red);
+	device_create_file(tune_mdnie_dev, &dev_attr_control_green);
+	device_create_file(tune_mdnie_dev, &dev_attr_control_blue);
+	device_create_file(tune_mdnie_dev, &dev_attr_control_cyan);
+	device_create_file(tune_mdnie_dev, &dev_attr_control_magenta);
+	device_create_file(tune_mdnie_dev, &dev_attr_control_yellow);
+	device_create_file(tune_mdnie_dev, &dev_attr_control_white);
+	device_create_file(tune_mdnie_dev, &dev_attr_control_black);
+#endif
 
 	mdnie_tun_state.mdnie_enable = true;
 
