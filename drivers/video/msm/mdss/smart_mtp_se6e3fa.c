@@ -120,6 +120,7 @@ static int char_to_int_v255(char data1, char data2)
 }
 
 static bool first_adj_complete = false;
+static unsigned int enabled = 0;
 static int v255_val[3] = {-1, -1, -1};
 static int v203_val[3] = {-1, -1, -1};
 static int v151_val[3] = {-1, -1, -1};
@@ -189,7 +190,7 @@ static int v255_adjustment(struct SMART_DIM *pSmart)
 	int LSB;
 	int v255_value;
 
-	if (!first_adj_complete) {
+	if (!first_adj_complete || !enabled) {
 		v255_value = (V255_300CD_R_MSB << 8) | (V255_300CD_R_LSB);
 		LSB = char_to_int_v255(pSmart->MTP.R_OFFSET.OFFSET_255_MSB,
 					pSmart->MTP.R_OFFSET.OFFSET_255_LSB);
@@ -346,7 +347,7 @@ static int v203_adjustment(struct SMART_DIM *pSmart)
 	int add_mtp;
 	int LSB;
 
-	if (!first_adj_complete) {
+	if (!first_adj_complete || !enabled) {
 		LSB = char_to_int(pSmart->MTP.R_OFFSET.OFFSET_203);
 		add_mtp = LSB + V203_300CD_R;
 		result_1 = (pSmart->GRAY.VT_TABLE.R_Gray) - (pSmart->RGB_OUTPUT.R_VOLTAGE.level_255);
@@ -429,7 +430,7 @@ static int v151_adjustment(struct SMART_DIM *pSmart)
 	int add_mtp;
 	int LSB;
 
-	if (!first_adj_complete) {
+	if (!first_adj_complete || !enabled) {
 		LSB = char_to_int(pSmart->MTP.R_OFFSET.OFFSET_151);
 		add_mtp = LSB + V151_300CD_R;
 		result_1 = (pSmart->GRAY.VT_TABLE.R_Gray)
@@ -514,7 +515,7 @@ static int v87_adjustment(struct SMART_DIM *pSmart)
 	int add_mtp;
 	int LSB;
 
-	if (!first_adj_complete) {
+	if (!first_adj_complete || !enabled) {
 		LSB = char_to_int(pSmart->MTP.R_OFFSET.OFFSET_87);
 		add_mtp = LSB + V87_300CD_R;
 		result_1 = (pSmart->GRAY.VT_TABLE.R_Gray)
@@ -597,7 +598,7 @@ static int v51_adjustment(struct SMART_DIM *pSmart)
 	int add_mtp;
 	int LSB;
 
-	if (!first_adj_complete) {
+	if (!first_adj_complete || !enabled) {
 		LSB = char_to_int(pSmart->MTP.R_OFFSET.OFFSET_51);
 		add_mtp = LSB + V51_300CD_R;
 		result_1 = (pSmart->GRAY.VT_TABLE.R_Gray)
@@ -681,7 +682,7 @@ static int v35_adjustment(struct SMART_DIM *pSmart)
 	int add_mtp;
 	int LSB;
 
-	if (!first_adj_complete) {
+	if (!first_adj_complete || !enabled) {
 		LSB = char_to_int(pSmart->MTP.R_OFFSET.OFFSET_35);
 		add_mtp = LSB + V35_300CD_R;
 		result_1 = (pSmart->GRAY.VT_TABLE.R_Gray)
@@ -764,7 +765,7 @@ static int v23_adjustment(struct SMART_DIM *pSmart)
 	unsigned long long result_1, result_2, result_3;
 	int add_mtp;
 	int LSB;
-	if (!first_adj_complete) {
+	if (!first_adj_complete || !enabled) {
 		LSB = char_to_int(pSmart->MTP.R_OFFSET.OFFSET_23);
 		add_mtp = LSB + V23_300CD_R;
 		result_1 = (pSmart->GRAY.VT_TABLE.R_Gray)
@@ -848,7 +849,7 @@ static int v11_adjustment(struct SMART_DIM *pSmart)
 	int add_mtp;
 	int LSB;
 
-	if (!first_adj_complete) {
+	if (!first_adj_complete || !enabled) {
 		LSB = char_to_int(pSmart->MTP.R_OFFSET.OFFSET_11);
 		add_mtp = LSB + V11_300CD_R;
 		result_1 = (pSmart->GRAY.VT_TABLE.R_Gray)
@@ -932,7 +933,7 @@ static int v3_adjustment(struct SMART_DIM *pSmart)
 	int add_mtp;
 	int LSB;
 
-	if (!first_adj_complete) {
+	if (!first_adj_complete || !enabled) {
 		LSB = char_to_int(pSmart->MTP.R_OFFSET.OFFSET_3);
 		add_mtp = LSB + V3_300CD_R;
 		result_1 = (S6E3FA_VREG0_REF)
