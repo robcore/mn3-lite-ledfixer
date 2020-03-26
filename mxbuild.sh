@@ -480,8 +480,8 @@ create_zip() {
 			adb shell input keyevent KEYCODE_WAKEUP
 			#adb shell input touchscreen swipe 930 880 930 380
 			echo "Transferring via adb to /sdcard/Download/$MX_KERNEL_VERSION.zip"
-			adb push "$RDIR/$MX_KERNEL_VERSION.zip" /sdcard/Download || warnandfail "Failed to push $RDIR/$MX_KERNEL_VERSION.zip to device over ADB!"
-			adb kill-server || warnandfail "Failed to kill ADB server!"
+			adb push "$RDIR/$MX_KERNEL_VERSION.zip" /sdcard/Download || echo "Failed to push $RDIR/$MX_KERNEL_VERSION.zip to device over ADB!"
+			adb kill-server || echo "Failed to kill ADB server!"
 		else
 			echo "Device not Connected.  Skipping adb transfer."
 		fi
