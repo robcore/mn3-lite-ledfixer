@@ -124,9 +124,9 @@ static struct mipi_samsung_driver_data *mdnie_msd;
 #define INPUT_PAYLOAD2(x) PAYLOAD2.payload = x
 #endif
 
-static int hijack = 0;
-static int sharpen = 0;
-static int black = 0;
+static unsigned int hijack = 0;
+static unsigned int sharpen = 0;
+static unsigned int black = 0;
 
 unsigned int play_speed_1_5;
 
@@ -342,7 +342,7 @@ void update_mdnie_mode(void)
 
 	for (i = 0; i < 107; i++) {
 		if (i == 37 || i == 39 || i == 41)
-			LITE_CONTROL_2[i] = clamp_val(source_2[i] + black, -128, 128);
+			LITE_CONTROL_2[i] = clamp_val(source_2[i] + black, 0, 255);
 		else
 			LITE_CONTROL_2[i] = source_2[i]; // Copy Everything else
 	}
@@ -620,7 +620,7 @@ static ssize_t sharpen_store(struct device * dev, struct device_attribute * attr
 	int new_val;
 	sscanf(buf, "%d", &new_val);
 
-	sharpen = clamp_val(new_val, 0, 1);
+	sharpen = clamp_val(new_val, 0, 11);
 	mDNIe_Set_Mode();
 	return size;
 }
@@ -629,14 +629,14 @@ static ssize_t sharpen_store(struct device * dev, struct device_attribute * attr
 
 static ssize_t black_show(struct device *dev, struct device_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%d\n", black);
+	return sprintf(buf, "%u\n", black);
 }
 
 static ssize_t black_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
 {
 	int new_val;
 	sscanf(buf, "%d", &new_val);
-	black = clamp_val(new_val, -128, 128);
+	black = clamp_val(new_val, 0, 255);
 	mDNIe_Set_Mode();
 
 	return size;
