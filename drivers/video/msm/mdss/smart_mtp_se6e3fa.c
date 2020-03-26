@@ -4230,6 +4230,20 @@ static ssize_t v0_store(struct kobject *kobj,
 	return count;
 }
 
+static ssize_t enabled_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", enabled);
+}
+
+static ssize_t enabled_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count) {
+	int newen;
+	sscanf(buf, "%d", &newen);
+	enabled = clamp_val(newen, 0, 1);
+	wrap_smart_dimming_init();
+	return count;
+}
+
 static struct kobj_attribute v255_attribute =
 	__ATTR(v255, 0644,
 		v255_show,
@@ -4280,6 +4294,11 @@ static struct kobj_attribute v0_attribute =
 		v0_show,
 		v0_store);
 
+static struct kobj_attribute enabled_attribute =
+	__ATTR(enabled, 0644,
+		enabled_show,
+		enabled_store);
+
 static struct attribute *gamma_control_attrs[] =
 {
 	&v255_attribute.attr,
@@ -4292,6 +4311,7 @@ static struct attribute *gamma_control_attrs[] =
 	&v11_attribute.attr,
 	&v3_attribute.attr,
 	&v0_attribute.attr,
+	&enabled_attribute.attr,
 	NULL
 };
 
