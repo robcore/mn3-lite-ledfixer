@@ -530,7 +530,7 @@ ssize_t logger_aio_write(struct kiocb *iocb, const struct iovec *iov,
 
 #ifdef CONFIG_SEC_DEBUG
 	if (strncmp(klog_buf, "!@", 2) == 0)
-		printk(KERN_INFO "%s\n", klog_buf);
+		pr_info("%s\n", klog_buf);
 #endif
 
 	return ret;
@@ -787,12 +787,12 @@ static int __init init_log(struct logger_log *log)
 
 	ret = misc_register(&log->misc);
 	if (unlikely(ret)) {
-		printk(KERN_ERR "logger: failed to register misc "
+		pr_err("logger: failed to register misc "
 		       "device for log '%s'!\n", log->misc.name);
 		return ret;
 	}
 
-	printk(KERN_INFO "logger: created %luK log '%s'\n",
+	pr_info(KERN_INFO "logger: created %luK log '%s'\n",
 	       (unsigned long) log->size >> 10, log->misc.name);
 
 	return 0;

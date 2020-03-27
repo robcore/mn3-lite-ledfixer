@@ -21,7 +21,7 @@ QUICKMIN="$(date +%S)"
 QUICKAMPM="$(date +%p)"
 QUICKTIME="$QUICKHOUR:$QUICKMIN${QUICKAMPM}"
 QUICKDATE="$QUICKMONTHDAY-$QUICKTIME"
-CORECOUNT="$(grep processor /proc/cpuinfo | wc -l)"
+#CORECOUNT="$(grep processor /proc/cpuinfo | wc -l)"
 #TOOLCHAIN="/opt/toolchains/arm-cortex_a15-linux-gnueabihf_5.3/bin/arm-cortex_a15-linux-gnueabihf-"
 TOOLCHAIN="/opt/toolchains/gcc-linaro-7.5.0-2019.12-x86_64_arm-linux-gnueabihf/bin/arm-linux-gnueabihf-"
 #TOOLCHAIN="/opt/arm-cortex_a15-linux-gnueabihf-linaro_4.9.4-2015.06/bin/arm-cortex_a15-linux-gnueabihf-"
@@ -101,18 +101,18 @@ clean_build() {
 	if [ "$1" = "standalone" ]
 	then
 		echo -ne "Cleaning build         \r"; \
-		make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -j"$CORECOUNT" clean
+		make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -j12 clean
 		echo -ne "Cleaning build.        \r"; \
-		make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -j"$CORECOUNT" distclean
+		make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -j12 distclean
 		echo -ne "Cleaning build..       \r"; \
-		make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -j"$CORECOUNT" mrproper
+		make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -j12 mrproper
 	else
 		echo -ne "Cleaning build         \r"; \
-		make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -j"$CORECOUNT" clean &>/dev/null
+		make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -j12 clean &>/dev/null
 		echo -ne "Cleaning build.        \r"; \
-		make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -j"$CORECOUNT" distclean &>/dev/null
+		make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -j12 distclean &>/dev/null
 		echo -ne "Cleaning build..       \r"; \
-		make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -j"$CORECOUNT" mrproper &>/dev/null
+		make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -j12 mrproper &>/dev/null
 	fi
 	echo -ne "Cleaning build...      \r"; \
 	takeouttrash &>/dev/null
@@ -360,14 +360,14 @@ build_single_config() {
 	MX_KERNEL_VERSION="buildingsingledriver"
 	mkdir -p "$BUILDIR" || warnandfail "Failed to make $BUILDIR directory!"
 	cp "$MXCONFIG" "$BUILDIR/.config" || warnandfail "Config Copy Error!"
-	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -C "$RDIR" O="$BUILDIR" -j"$CORECOUNT" oldconfig || warnandfail "make oldconfig Failed!"
+	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -C "$RDIR" O="$BUILDIR" -j12 oldconfig || warnandfail "make oldconfig Failed!"
 
 }
 
 build_single_driver() {
 
 	echo "Building Single Driver..."
-	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -C "$RDIR" -S -s -j"$CORECOUNT" O="$BUILDIR/" "$1"
+	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -C "$RDIR" -S -s -j12 O="$BUILDIR/" "$1"
 
 }
 
@@ -377,18 +377,18 @@ build_kernel_config() {
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
 	mkdir -p "$BUILDIR" || warnandfail "Failed to make $BUILDIR directory!"
 	cp "$MXCONFIG" "$BUILDIR/.config" || warnandfail "Config Copy Error!"
-	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -C "$RDIR" O="$BUILDIR" -j"$CORECOUNT" oldconfig || warnandfail "make oldconfig Failed!"
+	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -C "$RDIR" O="$BUILDIR" -j12 oldconfig || warnandfail "make oldconfig Failed!"
 
 }
 
 build_kernel() {
-
-	echo "Backing up .config to config.$QUICKDATE"
-	cp "$BUILDIR/.config" "$RDIR/oldconfigs/config.$QUICKDATE"
+	OLDCFG="/root/mn3-oldconfigs"
+	echo "Backing up .config to $OLDCFG/config.$QUICKDATE"
+	cp "$BUILDIR/.config" "$OLDCFG/config.$QUICKDATE"
 	echo "Snapshot of current environment variables:"
 	env
 	echo "Starting build..."
-	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -S -s -C "$RDIR" O="$BUILDIR" -j"$CORECOUNT" || warnandfail "Kernel Build failed!"
+	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -S -s -C "$RDIR" O="$BUILDIR" -j12 || warnandfail "Kernel Build failed!"
 
 }
 

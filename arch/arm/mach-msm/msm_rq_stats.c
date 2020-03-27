@@ -210,32 +210,36 @@ static int cpu_hotplug_handler(struct notifier_block *nb,
 static unsigned int run_queue_avg_ignore_count = 0;
 static unsigned int sum_avg = 0;
 static unsigned int sum_avg_cnt = 0;
+static void boost_run_queue_avg_ignore_count(void)
+{
+	spin_lock_irqsave(&rq_lock, flags);
+	run_queue_avg_ignore_count += 2;	
+	spin_unlock_irqrestore(&rq_lock, flags);
+}
 #endif
+
+
 
 static int system_suspend_handler(struct notifier_block *nb,
 				unsigned long val, void *data)
 {
 	switch (val) {
-	case PM_POST_HIBERNATION:
-	case PM_POST_RESTORE:
-		rq_info.hotplug_disabled = 0;
-		break;
-	case PM_POST_SUSPEND:
-		rq_info.hotplug_disabled = 0;
+		case PM_POST_HIBERNATION:
+		case PM_POST_RESTORE:
+			rq_info.hotplug_disabled = 0;
+			break;
+		case PM_POST_SUSPEND:
+			rq_info.hotplug_disabled = 0;
 #ifdef CONFIG_SEC_SMART_MGR_RUNQUEUE_AVG
-		{
-			pr_err("system_suspend_handler PM_POST_SUSPEND");
-			run_queue_avg_ignore_count =2;
-		}
+			boost_run_queue_avg_ignore_count();
 #endif
-		break;
-
-	case PM_HIBERNATION_PREPARE:
-	case PM_SUSPEND_PREPARE:
-		rq_info.hotplug_disabled = 1;
-		break;
-	default:
-		return NOTIFY_DONE;
+			break;
+		case PM_HIBERNATION_PREPARE:
+		case PM_SUSPEND_PREPARE:
+			rq_info.hotplug_disabled = 1;
+			break;
+		default:
+			break;
 	}
 	return NOTIFY_OK;
 }
@@ -277,7 +281,7 @@ static ssize_t run_queue_avg_show(struct kobject *kobj,
 	sum_avg += val;
 	sum_avg_cnt++;
 	/*If none read this smt_mgr_run_queue_avg more than 30 seconds clear itself*/
-	if(sum_avg_cnt * 50 /* <- decision_ms*/ >= 30 * 1000) {
+	if ((sum_avg_cnt * 50) > 30000) {
 		sum_avg = 0;
 		sum_avg_cnt = 0;
 	}
@@ -298,14 +302,10 @@ static ssize_t run_queue_smt_mgr_avg_show(struct kobject *kobj,
 
 	spin_lock_irqsave(&rq_lock, flags);
 
-	//added msg for test
-	pr_err("run_queue_smt_mgr_avg_show [%d] [%d]\n",sum_avg_cnt, sum_avg);
-
 	/* ignore 1st 2times resume's run queue counts */
-	if(run_queue_avg_ignore_count > 0)
+	if (run_queue_avg_ignore_count > 0)
 	{
-		pr_err("run_queue_smt_mgr_avg_show cleared ..[%d]\n",run_queue_avg_ignore_count);
-		run_queue_avg_ignore_count --;
+		run_queue_avg_ignore_count -= 1;
 		sum_avg = 0;
 		sum_avg_cnt = 0;
 	}
