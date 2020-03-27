@@ -435,32 +435,10 @@ void mDNIe_Set_Mode(void)
 		return;
 	}
 
-#if defined(CONFIG_LCD_FORCE_VIDEO_MODE)
-	DPRINT("mDNIe_Set_Mode start : return cause of video mode\n");
-	return;
-#endif
-
-	if (mfd->blank_mode) {
-		DPRINT("[ERROR] blank_mode (%d). do not send mipi cmd.\n",
-			mfd->blank_mode);
+	if ((mfd->blank_mode) || (mfd->resume_state == MIPI_SUSPEND_STATE) || \
+		(!mdnie_tun_state.mdnie_enable) || (mdnie_tun_state.scenario < mDNIe_UI_MODE) || \
+		(mdnie_tun_state.scenario >= MAX_mDNIe_MODE))
 		return;
-	}
-
-	if (mfd->resume_state == MIPI_SUSPEND_STATE) {
-		DPRINT("[ERROR] not ST_DSI_RESUME. do not send mipi cmd.\n");
-		return;
-	}
-
-	if (!mdnie_tun_state.mdnie_enable) {
-		DPRINT("[ERROR] mDNIE engine is OFF.\n");
-		return;
-	}
-
-	if (mdnie_tun_state.scenario < mDNIe_UI_MODE || mdnie_tun_state.scenario >= MAX_mDNIe_MODE) {
-		DPRINT("[ERROR] wrong Scenario mode value : %d\n",
-			mdnie_tun_state.scenario);
-		return;
-	}
 
 	play_speed_1_5 = 0;
 
