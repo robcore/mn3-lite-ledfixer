@@ -1940,12 +1940,7 @@ static ssize_t mipi_samsung_force_500cd_store(struct device *dev,
 	int input;
 	sscanf(buf, "%d", &input);
 
-	if (input > 1)
-		input = 1;
-	if (input < 0)
-		input = 0;
-
-	force_500cd_enabled = input;
+	force_500cd_enabled = clamp_val(input, 0, 1);
 	if (force_500cd_enabled == 1) {
 		msd.dstat.force500_need_update = 1;
 		if (msd.mfd->resume_state == MIPI_RESUME_STATE)

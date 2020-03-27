@@ -3981,7 +3981,7 @@ static void generate_gamma(struct SMART_DIM *psmart, char *str, int size)
 
 	/* searching fail... Setting 300CD value on gamma table */
 	if (lux_loop == psmart->lux_table_max) {
-		pr_info("%s searching fail lux : %d\n", __func__,
+		pr_err("%s searching fail lux : %d\n", __func__,
 				psmart->brightness_level);
 		memcpy(str, max_lux_table, size);
 	}
@@ -4325,11 +4325,9 @@ static int smart_dimming_init(struct SMART_DIM *psmart)
 {
 	int lux_loop;
 	int id1, id2, id3;
-#ifdef SMART_DIMMING_DEBUG
 	int cnt;
 	char pBuffer[256];
 	memset(pBuffer, 0x00, 256);
-#endif
 	id1 = (psmart->ldi_revision & 0x00FF0000) >> 16;
 	id2 = (psmart->ldi_revision & 0x0000FF00) >> 8;
 	id3 = psmart->ldi_revision & 0xFF;
