@@ -210,8 +210,11 @@ static int cpu_hotplug_handler(struct notifier_block *nb,
 static unsigned int run_queue_avg_ignore_count = 0;
 static unsigned int sum_avg = 0;
 static unsigned int sum_avg_cnt = 0;
+
 static void boost_run_queue_avg_ignore_count(void)
 {
+	unsigned long flags = 0;
+
 	spin_lock_irqsave(&rq_lock, flags);
 	run_queue_avg_ignore_count += 2;	
 	spin_unlock_irqrestore(&rq_lock, flags);
