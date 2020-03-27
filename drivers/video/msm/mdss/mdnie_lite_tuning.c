@@ -277,10 +277,8 @@ static struct dsi_cmd_desc mdni_tune_cmd[] = {
 	{{DTYPE_DCS_LWRITE, 1, 0, 0, 0, sizeof(tune_data5)}, tune_data5},
 	{{DTYPE_DCS_LWRITE, 1, 0, 0, 0, sizeof(cmd_disable)}, cmd_disable},
 #else
-	{{DTYPE_DCS_LWRITE, 1, 0, 0, 0,
-		sizeof(level1_key)}, level1_key},
-	{{DTYPE_DCS_LWRITE, 1, 0, 0, 0,
-		sizeof(level2_key)}, level2_key},
+	{{DTYPE_DCS_LWRITE, 1, 0, 0, 0, sizeof(level1_key)}, level1_key},
+	{{DTYPE_DCS_LWRITE, 1, 0, 0, 0, sizeof(level2_key)}, level2_key},
 
 	{{DTYPE_DCS_LWRITE, 1, 0, 0, 0,
 		sizeof(tune_data1)}, tune_data1},
@@ -341,15 +339,18 @@ void update_mdnie_mode(void)
 	}
 
 	for (i = 0; i < 107; i++) {
-		if (i == 37 || i == 39 || i == 41)
-			LITE_CONTROL_2[i] = clamp_val(source_2[i] + black, 0, 255);
-		else
+		if (i == 37 || i == 39 || i == 41) {
+			if (black == 0)
+					black = LITE_CONTROL_2[i] = source_2[i];
+			else
+				LITE_CONTROL_2[i] = clamp_val(black, 0, 255);
+		} else
 			LITE_CONTROL_2[i] = source_2[i]; // Copy Everything else
 	}
 
 	i = 0;
 
-	for (i = 0; i < 5; i++) {
+	for (i = 0; i < 4; i++) {
 		if (i == 4)
 			LITE_CONTROL_1[i] = clamp_val(sharpen, 0, 11);
 		else

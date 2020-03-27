@@ -50,28 +50,28 @@ static char SCREEN_CURTAIN_2[] = {
 	0x00, //roi1 y end
 	0x00,
 	0x00, //scr Cr Yb
-	0x00, //scr Rr Bb
-	0x00, //scr Cg Yg
+	0xff, //scr Rr Bb
+	0xff, //scr Cg Yg
 	0x00, //scr Rg Bg
-	0x00, //scr Cb Yr
+	0xff, //scr Cb Yr
 	0x00, //scr Rb Br
-	0x00, //scr Mr Mb
+	0xff, //scr Mr Mb
 	0x00, //scr Gr Gb
 	0x00, //scr Mg Mg
-	0x00, //scr Gg Gg
-	0x00, //scr Mb Mr
+	0xff, //scr Gg Gg
+	0xff, //scr Mb Mr
 	0x00, //scr Gb Gr
-	0x00, //scr Yr Cb
+	0xff, //scr Yr Cb
 	0x00, //scr Br Rb
-	0x00, //scr Yg Cg
+	0xff, //scr Yg Cg
 	0x00, //scr Bg Rg
 	0x00, //scr Yb Cr
-	0x00, //scr Bb Rr
-	0x00, //scr Wr Wb
+	0xff, //scr Bb Rr
+	0xff, //scr Wr Wb
 	0x00, //scr Kr Kb
-	0x00, //scr Wg Wg
+	0xff, //scr Wg Wg
 	0x00, //scr Kg Kg
-	0x00, //scr Wb Wr
+	0xff, //scr Wb Wr
 	0x00, //scr Kb Kr
 	0x00, //curve 1 b
 	0x20, //curve 1 a
@@ -143,7 +143,7 @@ static char SCREEN_CURTAIN_2[] = {
 };
 
 char LITE_CONTROL_1[5];
-char LITE_CONTROL_2[107];
+char LITE_CONTROL_2[108];
 
 static char STANDARD_UI_1[] = {
 	0xEB,
