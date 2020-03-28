@@ -124,9 +124,18 @@ static struct mipi_samsung_driver_data *mdnie_msd;
 #define INPUT_PAYLOAD2(x) PAYLOAD2.payload = x
 #endif
 
-static unsigned int hijack = 0;
-static unsigned int sharpen = 0;
+#define SHARPCCGAM 0xF
+#define SHARPBIT 0x8
+#define CCBIT 0x2
+#define GAMBIT 0x1
+
+static unsigned int hijack_mode = 0;
 static unsigned int black = 0;
+static unsigned int hijack_shccgam = 0;
+static unsigned int sharpen = 0;
+static unsigned int chroma = 0;
+static unsigned int gamma = 0;
+
 
 unsigned int play_speed_1_5;
 
@@ -352,7 +361,7 @@ void update_mdnie_mode(void)
 
 	for (i = 0; i < 4; i++) {
 		if (i == 4)
-			LITE_CONTROL_1[i] = clamp_val(sharpen, 0, 11);
+			LITE_CONTROL_1[i] = clamp_val(sharpen, 0, 15);
 		else
 			LITE_CONTROL_1[i] = source_1[i];
 	}
@@ -599,7 +608,37 @@ static ssize_t sharpen_store(struct device * dev, struct device_attribute * attr
 	int new_val;
 	sscanf(buf, "%d", &new_val);
 
-	sharpen = clamp_val(new_val, 0, 11);
+	sharpen = clamp_val(new_val, 0, 1);
+	mDNIe_Set_Mode();
+	return size;
+}
+
+static ssize_t chroma_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", chroma);
+}
+
+static ssize_t chroma_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
+{
+	int new_val;
+	sscanf(buf, "%d", &new_val);
+
+	chroma = clamp_val(new_val, 0, 1);
+	mDNIe_Set_Mode();
+	return size;
+}
+
+static ssize_t gamma_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", gamma);
+}
+
+static ssize_t gamma_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
+{
+	int new_val;
+	sscanf(buf, "%d", &new_val);
+
+	gamma = clamp_val(new_val, 0, 1);
 	mDNIe_Set_Mode();
 	return size;
 }
@@ -623,6 +662,8 @@ static ssize_t black_store(struct device * dev, struct device_attribute * attr, 
 
 static DEVICE_ATTR(hijack, 0664, hijack_show, hijack_store);
 static DEVICE_ATTR(sharpen, 0664, sharpen_show, sharpen_store);
+static DEVICE_ATTR(chroma, 0664, chroma_show, chroma_store);
+static DEVICE_ATTR(gamma, 0664, gamma_show, gamma_store);
 static DEVICE_ATTR(black, 0664, black_show, black_store);
 
 static DEVICE_ATTR(scenario, 0664, scenario_show, scenario_store);
