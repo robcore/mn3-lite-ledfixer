@@ -127,11 +127,6 @@ static struct mipi_samsung_driver_data *mdnie_msd;
 static unsigned char LITE_CONTROL_1[5];
 static unsigned char LITE_CONTROL_2[108];
 
-static unsigned int effects_bit = 3;
-static unsigned int sharpen_bit = 2;
-static unsigned int chroma_bit = 1;
-static unsigned int gamma_bit = 0;
-
 static unsigned int hijack = 0;
 static unsigned int black[3] = {0, 0, 0};
 static unsigned int white[3] = {0, 0, 0};
@@ -145,9 +140,13 @@ static unsigned int effects = 0;
 static unsigned int sharpen = 0;
 static unsigned int chroma = 0;
 static unsigned int gamma = 0;
+static int effects_bit = 3;
+static int sharpen_bit = 2;
+static int chroma_bit = 1;
+static int gamma_bit = 0;
 /* Hijack Extra End  */
 
-static unsigned int previous_mode;
+//static unsigned int previous_mode;
 unsigned int play_speed_1_5;
 
 struct dsi_buf dsi_mdnie_tx_buf;
@@ -355,42 +354,9 @@ void update_mdnie_mode(void)
 			source_2 = AUTO_UI_2;
 			break;
 		default:
-			source_1 = MOVIE_UI_1;
-			source_2 = MOVIE_UI_2;
-			break;
+			return;
 	}
 
-/*
-Black
-[37]  	0x00, BLACK RED
-[39]  	0x00, BLACK GREEN
-[41]  	0x00, BLACK BLUE
-
-White
-[36]  	0xff, WHITE RED
-[38]  	0xff, WHITE GREEN
-[40]  	0xff, WHITE BLUE
-
-Red
-[19]  	0xff, RED RED
-[21]  	0x00, RED GREEN
-[23]  	0x00, RED BLUE
-
-Green
-[25]  	0x00, GREEN RED
-[27]  	0xff, GREEN GREEN
-[29]  	0x00, GREEN BLUE
-
-Blue
-[31]  	0x00, BLUE RED
-[33]  	0x00, BLUE GREEN
-[35]  	0xff, BLUE BLUE
-
-Yellow
-[30]  	0xff, YELLOW RED
-[32]  	0xff, YELLOW GREEN
-[34]  	0x00, YELLOW BLUE
-*/
 	if (hijack) {
 		for (i = 0; i < 107; i++) {
 			if (i == 37)
@@ -626,7 +592,7 @@ static ssize_t mode_store(struct device *dev,
 	if (value >= AUTO_MODE)
 		value = AUTO_MODE;
 
-	previous_mode = mdnie_tun_state.background;
+	//previous_mode = mdnie_tun_state.background;
 
 	mdnie_tun_state.background = value;
 
