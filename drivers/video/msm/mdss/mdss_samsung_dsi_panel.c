@@ -4328,7 +4328,6 @@ static DEVICE_ATTR(tuning, 0664, tuning_show, tuning_store);
 #endif
 static int samsung_dsi_panel_event_handler(int event)
 {
-	pr_debug("SS DSI Event Handler");
 	switch (event) {
 		case MDSS_EVENT_FRAME_UPDATE:
 			if(msd.dstat.wait_disp_on) {
@@ -4343,9 +4342,7 @@ static int samsung_dsi_panel_event_handler(int event)
 			break;
 #endif
 		default:
-			pr_err("%s : unknown event \n", __func__);
 			break;
-
 	}
 
 	return 0;

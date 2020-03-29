@@ -124,18 +124,15 @@ static struct mipi_samsung_driver_data *mdnie_msd;
 #define INPUT_PAYLOAD2(x) PAYLOAD2.payload = x
 #endif
 
-#define SHARPCCGAM 0xF
-#define SHARPBIT 0x8
-#define CCBIT 0x2
-#define GAMBIT 0x1
-
-static unsigned int hijack_mode = 0;
+static unsigned int hijack = 0;
 static unsigned int black = 0;
-static unsigned int hijack_shccgam = 0;
+/* Hijack Extra includes the following  */
+static unsigned int hijack_extra = 0; 
 static unsigned int sharpen = 0;
+static unsigned int sharpen_extra = 0;
 static unsigned int chroma = 0;
 static unsigned int gamma = 0;
-
+/* Hijack Extra End  */
 
 unsigned int play_speed_1_5;
 
@@ -316,11 +313,12 @@ void print_tun_data(void)
 	DPRINT("\n");
 }
 
+DECLARE_BITMAP(lcfour, 4);
+
 void update_mdnie_mode(void)
 {
 	char *source_1, *source_2;
 	unsigned int i;
-
 	// Determine the source to copy the mode from
 	switch (mdnie_tun_state.background) {
 		case DYNAMIC_MODE:
@@ -349,21 +347,48 @@ void update_mdnie_mode(void)
 
 	for (i = 0; i < 107; i++) {
 		if (i == 37 || i == 39 || i == 41) {
-			if (black == 0)
-					black = LITE_CONTROL_2[i] = source_2[i];
-			else
+			if (hijack) {
 				LITE_CONTROL_2[i] = clamp_val(black, 0, 255);
+			} else {
+				LITE_CONTROL_2[i] = source_2[i];
+			}
 		} else
 			LITE_CONTROL_2[i] = source_2[i]; // Copy Everything else
 	}
 
 	i = 0;
 
+	if (hijack_extra) {
+			bitmap_zero(lcfour, 4);
+			if (sharpen_extra)
+				set_bit(0, lcfour);
+			else
+				clear_bit(0, lcfour);
+			if (sharpen)
+				set_bit(1, lcfour);
+			else
+				clear_bit(1, lcfour);
+			if (chroma)
+				set_bit(2, lcfour);
+			else
+				clear_bit(2, lcfour);
+			if (gamma)
+				set_bit(3, lcfour);
+			else
+				clear_bit(3, lcfour);
+	} else {
+		bitmap_zero(lcfour, 4);
+	}
+
 	for (i = 0; i < 4; i++) {
-		if (i == 4)
-			LITE_CONTROL_1[i] = clamp_val(sharpen, 0, 15);
-		else
+		if (i == 4) {
+			if (hijack_extra)
+				LITE_CONTROL_1[i] = *lcfour;
+			else
+				LITE_CONTROL_1[i] = source_1[i];
+		} else {
 			LITE_CONTROL_1[i] = source_1[i];
+		}
 	}
 }
 
@@ -452,7 +477,7 @@ void mDNIe_Set_Mode(void)
 	play_speed_1_5 = 0;
 
 	update_mdnie_mode();
-	if (hijack == HIJACK_ENABLED) {
+	if (hijack == 1) {
 		DPRINT(" = CONTROL MODE =\n");
 		INPUT_PAYLOAD1(LITE_CONTROL_1);
 		INPUT_PAYLOAD2(LITE_CONTROL_2);
@@ -461,8 +486,8 @@ void mDNIe_Set_Mode(void)
 		INPUT_PAYLOAD1(blind_tune_value[mdnie_tun_state.accessibility][0]);
 		INPUT_PAYLOAD2(blind_tune_value[mdnie_tun_state.accessibility][1]);
 	} else {
-		if (!mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][0] ||
-			!mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][1]) {
+		if (mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][0] == NULL ||
+			mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][1] == NULL) {
 			pr_err("mdnie tune data is NULL!\n");
 			return;
 		} else {
@@ -528,8 +553,6 @@ static ssize_t mode_store(struct device *dev,
 	return size;
 }
 
-static DEVICE_ATTR(mode, 0664, mode_show, mode_store);
-
 static ssize_t scenario_show(struct device *dev,
 					 struct device_attribute *attr,
 					 char *buf)
@@ -579,6 +602,13 @@ static ssize_t scenario_store(struct device *dev,
 	return size;
 }
 
+/* lcfour */
+
+static ssize_t lcfour_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%lu\n", *lcfour);
+}
+
 /* hijack */
 
 static ssize_t hijack_show(struct device *dev, struct device_attribute *attr, char *buf)
@@ -595,6 +625,41 @@ static ssize_t hijack_store(struct device * dev, struct device_attribute * attr,
 	mDNIe_Set_Mode();
 	return size;
 }
+
+/* hijack_extra */
+
+static ssize_t hijack_extra_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", hijack_extra);
+}
+
+static ssize_t hijack_extra_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
+{
+	int new_val;
+	sscanf(buf, "%d", &new_val);
+
+	hijack_extra = clamp_val(new_val, 0, 1);
+	mDNIe_Set_Mode();
+	return size;
+}
+
+/* sharpen_extra */
+
+static ssize_t sharpen_extra_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", sharpen_extra);
+}
+
+static ssize_t sharpen_extra_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
+{
+	int new_val;
+	sscanf(buf, "%d", &new_val);
+
+	sharpen_extra = clamp_val(new_val, 0, 1);
+	mDNIe_Set_Mode();
+	return size;
+}
+
 
 /* sharpen */
 
@@ -660,14 +725,6 @@ static ssize_t black_store(struct device * dev, struct device_attribute * attr, 
 	return size;
 }
 
-static DEVICE_ATTR(hijack, 0664, hijack_show, hijack_store);
-static DEVICE_ATTR(sharpen, 0664, sharpen_show, sharpen_store);
-static DEVICE_ATTR(chroma, 0664, chroma_show, chroma_store);
-static DEVICE_ATTR(gamma, 0664, gamma_show, gamma_store);
-static DEVICE_ATTR(black, 0664, black_show, black_store);
-
-static DEVICE_ATTR(scenario, 0664, scenario_show, scenario_store);
-
 static ssize_t mdnieset_user_select_file_cmd_show(struct device *dev,
 						  struct device_attribute *attr,
 						  char *buf)
@@ -692,10 +749,6 @@ static ssize_t mdnieset_user_select_file_cmd_store(struct device *dev,
 
 	return size;
 }
-
-static DEVICE_ATTR(mdnieset_user_select_file_cmd, 0664,
-		   mdnieset_user_select_file_cmd_show,
-		   mdnieset_user_select_file_cmd_store);
 
 static ssize_t mdnieset_init_file_cmd_show(struct device *dev,
 					   struct device_attribute *attr,
@@ -731,9 +784,6 @@ static ssize_t mdnieset_init_file_cmd_store(struct device *dev,
 
 	return size;
 }
-
-static DEVICE_ATTR(mdnieset_init_file_cmd, 0664, mdnieset_init_file_cmd_show,
-		   mdnieset_init_file_cmd_store);
 
 static ssize_t outdoor_show(struct device *dev,
 					      struct device_attribute *attr,
@@ -780,8 +830,6 @@ static ssize_t outdoor_store(struct device *dev,
 
 	return size;
 }
-
-static DEVICE_ATTR(outdoor, 0664, outdoor_show, outdoor_store);
 
 #if 0 // accessibility
 static ssize_t negative_show(struct device *dev,
@@ -843,9 +891,6 @@ static ssize_t playspeed_store(struct device *dev,
 	is_play_speed_1_5(value);
 	return size;
 }
-static DEVICE_ATTR(playspeed, 0664,
-			playspeed_show,
-			playspeed_store);
 
 static ssize_t accessibility_show(struct device *dev,
 			struct device_attribute *attr,
@@ -903,14 +948,9 @@ static ssize_t accessibility_store(struct device *dev,
 				buffer, MDNIE_COLOR_BLINDE_CMD);
 		}
 		#endif
-#if defined(CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_CMD_WQHD_PT_PANEL) || \
-	defined(CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_CMD_FULL_HD_PT_PANEL) || defined (CONFIG_FB_MSM_MIPI_MAGNA_OCTA_CMD_HD_PT_PANEL) ||\
-	defined(CONFIG_FB_MSM_MDSS_MAGNA_OCTA_VIDEO_720P_PANEL) || defined(CONFIG_FB_MSM_MIPI_MAGNA_OCTA_VIDEO_WXGA_PT_DUAL_PANEL) ||\
-	defined(CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_CMD_WQXGA_S6E3HA1_PT_PANEL) || defined(CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_VIDEO_FULL_HD_PT_PANEL)
 	else if (cmd_value == SCREEN_CURTAIN) {
 		mdnie_tun_state.accessibility = SCREEN_CURTAIN;
 	}
-#endif
 #endif /* NEGATIVE_COLOR_USE_ACCESSIBILLITY */
 	else if (cmd_value == ACCESSIBILITY_OFF) {
 		mdnie_tun_state.accessibility = ACCESSIBILITY_OFF;
@@ -927,237 +967,28 @@ static ssize_t accessibility_store(struct device *dev,
 	return size;
 }
 
+static DEVICE_ATTR(lcfour, 0440, lcfour_show, NULL);
+static DEVICE_ATTR(hijack, 0664, hijack_show, hijack_store);
+static DEVICE_ATTR(hijack_extra, 0664, hijack_extra_show, hijack_extra_store);
+static DEVICE_ATTR(sharpen_extra, 0664, sharpen_extra_show, sharpen_extra_store);
+static DEVICE_ATTR(sharpen, 0664, sharpen_show, sharpen_store);
+static DEVICE_ATTR(chroma, 0664, chroma_show, chroma_store);
+static DEVICE_ATTR(gamma, 0664, gamma_show, gamma_store);
+static DEVICE_ATTR(black, 0664, black_show, black_store);
+static DEVICE_ATTR(scenario, 0664, scenario_show, scenario_store);
+static DEVICE_ATTR(mode, 0664, mode_show, mode_store);
+static DEVICE_ATTR(mdnieset_user_select_file_cmd, 0664,
+		   mdnieset_user_select_file_cmd_show,
+		   mdnieset_user_select_file_cmd_store);
+static DEVICE_ATTR(mdnieset_init_file_cmd, 0664, mdnieset_init_file_cmd_show,
+		   mdnieset_init_file_cmd_store);
+static DEVICE_ATTR(outdoor, 0664, outdoor_show, outdoor_store);
+static DEVICE_ATTR(playspeed, 0664,
+			playspeed_show,
+			playspeed_store);
 static DEVICE_ATTR(accessibility, 0664,
 			accessibility_show,
 			accessibility_store);
-
-#if defined(CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_CMD_WQHD_PT_PANEL)
-static ssize_t sensorRGB_show(struct device *dev,
-		struct device_attribute *attr, char *buf)
-{
-		return sprintf(buf, "%d %d %d\n", mdnie_tun_state.scr_white_red, mdnie_tun_state.scr_white_green, mdnie_tun_state.scr_white_blue);
-}
-
-static ssize_t sensorRGB_store(struct device *dev,
-		struct device_attribute *attr, const char *buf, size_t size)
-{
-	int red, green, blue;
-	char white_red, white_green, white_blue;
-
-	sscanf(buf, "%d %d %d", &red, &green, &blue);
-
-	if ((mdnie_tun_state.accessibility == ACCESSIBILITY_OFF) && (mdnie_tun_state.background == AUTO_MODE) &&	\
-		((mdnie_tun_state.scenario == mDNIe_BROWSER_MODE) || (mdnie_tun_state.scenario == mDNIe_eBOOK_MODE)))
-	{
-		white_red = (char)(red);
-		white_green = (char)(green);
-		white_blue= (char)(blue);
-		mdnie_tun_state.scr_white_red = red;
-		mdnie_tun_state.scr_white_green = green;
-		mdnie_tun_state.scr_white_blue= blue;
-		DPRINT("%s: white_red = %d, white_green = %d, white_blue = %d\n", __func__, white_red, white_green, white_blue);
-
-			INPUT_PAYLOAD1(mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][0]);
-			memcpy( white_rgb_buf, mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][1], MDNIE_TUNE_FIRST_SIZE);
-
-		white_rgb_buf[ADDRESS_SCR_WHITE_RED] = white_red;
-		white_rgb_buf[ADDRESS_SCR_WHITE_GREEN] = white_green;
-		white_rgb_buf[ADDRESS_SCR_WHITE_BLUE] = white_blue;
-
-		INPUT_PAYLOAD2(white_rgb_buf);
-		sending_tuning_cmd();
-		free_tun_cmd();
-	}
-
-	return size;
-}
-
-static DEVICE_ATTR(sensorRGB, 0664, sensorRGB_show, sensorRGB_store);
-#endif
-
-#if defined(CONFIG_FB_MSM_MDSS_MDP3)
-#if defined(DDI_VIDEO_ENHANCE_TUNING)
-#define MAX_FILE_NAME	128
-#define TUNING_FILE_PATH "/sdcard/"
-static char tuning_file[MAX_FILE_NAME];
-
-static char char_to_dec(char data1, char data2)
-{
-	char dec;
-
-	dec = 0;
-
-	if (data1 >= 'a') {
-		data1 -= 'a';
-		data1 += 10;
-	} else if (data1 >= 'A') {
-		data1 -= 'A';
-		data1 += 10;
-	} else
-		data1 -= '0';
-
-	dec = data1 << 4;
-
-	if (data2 >= 'a') {
-		data2 -= 'a';
-		data2 += 10;
-	} else if (data2 >= 'A') {
-		data2 -= 'A';
-		data2 += 10;
-	} else
-		data2 -= '0';
-
-	dec |= data2;
-
-	return dec;
-}
-
-static void sending_tune_cmd(char *src, int len)
-{
-	int data_pos = 0;
-	int cmd_step = 0;
-	int cmd_pos = 0;
-	int tbl_cnt = 0;
-
-	for (data_pos = 0; data_pos < len;) {
-		if (*(src + data_pos) == '0') {
-			if (*(src + data_pos + 1) == 'x') {
-
-#if defined(CONFIG_FB_MSM_MIPI_VIDEO_WVGA_NT35502_PT_PANEL)
-				if (cmd_step == 0) {
-					tune_data1[cmd_pos] = char_to_dec(*(src + data_pos + 2), *(src + data_pos + 3));
-				} else if (cmd_step == 1) {
-					tune_data2[cmd_pos] = char_to_dec(*(src + data_pos + 2), *(src + data_pos + 3));
-				} else if (cmd_step == 2) {
-					tune_data3[cmd_pos] = char_to_dec(*(src + data_pos + 2), *(src + data_pos + 3));
-				} else if (cmd_step == 3) {
-					tune_data4[cmd_pos] = char_to_dec(*(src + data_pos + 2), *(src + data_pos + 3));
-				} else if (cmd_step == 4) {
-					tune_data5[cmd_pos] = char_to_dec(*(src + data_pos + 2), *(src + data_pos + 3));
-				}
-#endif
-
-				data_pos += 3;
-				cmd_pos++;
-
-				if (cmd_pos == tune_size_tbl[tbl_cnt] && cmd_step == tbl_cnt) {
-					cmd_pos = 0;
-					cmd_step++;
-					tbl_cnt++;
-				}
-			} else
-				data_pos++;
-		} else {
-			data_pos++;
-		}
-	}
-
-
-#if defined(CONFIG_FB_MSM_MIPI_VIDEO_WVGA_NT35502_PT_PANEL)
-	INPUT_PAYLOAD1(tune_data1);
-	INPUT_PAYLOAD2(tune_data2);
-	INPUT_PAYLOAD3(tune_data3);
-	INPUT_PAYLOAD4(tune_data4);
-	INPUT_PAYLOAD5(tune_data5);
-#endif
-
-	//print_tun_data();
-
-	sending_tuning_cmd();
-	free_tun_cmd();
-}
-
-static void load_tuning_file(char *filename)
-{
-	struct file *filp;
-	char *dp;
-	long l;
-	loff_t pos;
-	int ret;
-	mm_segment_t fs;
-
-	pr_info("%s called loading file name : [%s]\n", __func__,
-	       filename);
-
-	fs = get_fs();
-	set_fs(get_ds());
-
-	filp = filp_open(filename, O_RDONLY, 0);
-	if (IS_ERR(filp)) {
-		printk(KERN_ERR "%s File open failed\n", __func__);
-		return;
-	}
-
-	l = filp->f_path.dentry->d_inode->i_size;
-	pr_info("%s Loading File Size : %ld(bytes)", __func__, l);
-
-	dp = kmalloc(l + 10, GFP_KERNEL);
-	if (dp == NULL) {
-		pr_info("Can't not alloc memory for tuning file load\n");
-		filp_close(filp, current->files);
-		return;
-	}
-	pos = 0;
-	memset(dp, 0, l);
-
-	pr_info("%s before vfs_read()\n", __func__);
-	ret = vfs_read(filp, (char __user *)dp, l, &pos);
-	pr_info("%s after vfs_read()\n", __func__);
-
-	if (ret != l) {
-		pr_info("vfs_read() filed ret : %d\n", ret);
-		kfree(dp);
-		filp_close(filp, current->files);
-		return;
-	}
-
-	filp_close(filp, current->files);
-
-	set_fs(fs);
-
-	sending_tune_cmd(dp, l);
-
-	kfree(dp);
-}
-
-static ssize_t tuning_show(struct device *dev,
-			struct device_attribute *attr, char *buf)
-{
-	int ret = 0;
-
-	ret = snprintf(buf, MAX_FILE_NAME, "tuned file name : %s\n", tuning_file);
-
-	return ret;
-}
-
-static ssize_t tuning_store(struct device *dev,
-			struct device_attribute *attr, const char *buf, size_t size)
-{
-	char *pt;
-	memset(tuning_file, 0, sizeof(tuning_file));
-	snprintf(tuning_file, MAX_FILE_NAME, "%s%s", TUNING_FILE_PATH, buf);
-
-	pt = tuning_file;
-	while (*pt) {
-		if (*pt == '\r' || *pt == '\n') {
-			*pt = 0;
-			break;
-		}
-		pt++;
-	}
-
-	DPRINT("%s\n", tuning_file);
-
-	load_tuning_file(tuning_file);
-
-	return size;
-}
-static DEVICE_ATTR(tuning, S_IRUGO | S_IWUSR | S_IWGRP,
-						tuning_show,
-						tuning_store);
-
-#endif /* DDI_VIDEO_ENHANCE_TUNING */
-#endif /* CONFIG_FB_MSM_MDSS_MDP3 */
 
 static struct class *mdnie_class;
 struct device *tune_mdnie_dev;
@@ -1169,7 +1000,7 @@ void init_mdnie_class(void)
 		return;
 	}
 
-	DPRINT("start!\n");
+	bitmap_zero(lcfour, 4);
 
 	mdnie_class = class_create(THIS_MODULE, "mdnie");
 	if (IS_ERR(mdnie_class))
@@ -1224,35 +1055,14 @@ void init_mdnie_class(void)
 		pr_err("Failed to create device file(%s)!=n",
 			dev_attr_accessibility.attr.name);
 
-#if defined(CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_CMD_WQHD_PT_PANEL)
-	if (device_create_file
-		(tune_mdnie_dev, &dev_attr_sensorRGB) < 0)
-		pr_err("Failed to create device file(%s)!=n",
-			dev_attr_sensorRGB.attr.name);
-#endif
-
-#if defined(CONFIG_FB_MSM_MDSS_MDP3)
-#if defined(DDI_VIDEO_ENHANCE_TUNING)
-	if (device_create_file
-		(tune_mdnie_dev, &dev_attr_tuning) < 0)
-		pr_err("Failed to create device file(%s)!=n",
-			dev_attr_tuning.attr.name);
-#endif
-#endif
-
 	device_create_file(tune_mdnie_dev, &dev_attr_hijack);
+	device_create_file(tune_mdnie_dev, &dev_attr_hijack_extra);
+	device_create_file(tune_mdnie_dev, &dev_attr_sharpen_extra);
 	device_create_file(tune_mdnie_dev, &dev_attr_sharpen);
 	device_create_file(tune_mdnie_dev, &dev_attr_black);
-
+	device_create_file(tune_mdnie_dev, &dev_attr_gamma);
+	device_create_file(tune_mdnie_dev, &dev_attr_chroma);
 	mdnie_tun_state.mdnie_enable = true;
-
-#if defined(CONFIG_TDMB)
-	strcpy((char*) scenario_name[mDNIe_DMB_MODE], "DMB_MODE");
-	strcpy((char*) scenario_name[mDNIe_DMB_WARM_MODE], "DMB_WARM_MODE");
-	strcpy((char*) scenario_name[mDNIe_DMB_COLD_MODE], "DMB_COLD_MODE");
-#endif
-
-	DPRINT("end!\n");
 }
 
 #if defined(CONFIG_FB_MSM_MDSS_MDP3)
