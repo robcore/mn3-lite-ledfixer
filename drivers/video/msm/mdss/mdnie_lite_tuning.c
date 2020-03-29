@@ -702,7 +702,7 @@ static ssize_t black_store(struct device * dev, struct device_attribute * attr, 
 		black[1] = clamp_val(new_val, 0, 255);
 		black[2] = clamp_val(new_val, 0, 255);
 	} else {
-		return -EINVAL;
+		return size;
 	}
 
 	mDNIe_Set_Mode();
