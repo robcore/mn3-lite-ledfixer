@@ -480,11 +480,28 @@ create_zip() {
 		local SAMSTRING
 		SAMSTRING="$(lsusb | grep '04e8:6860')"
 		RECOVSTRING="$(lsusb | grep '18d1:4ee2')"
-		if [ -n "$SAMSTRING" ] || [ -n "$RECOVSTRING" ]
+		if [ -n "$SAMSTRING" ]
 		then
-			echo "Device is Connected via Usb!"
+			echo "Device is Connected via Usb in System Mode!"
 			echo "$SAMSTRING"
 			adb shell input keyevent KEYCODE_WAKEUP
+			#adb shell input touchscreen swipe 930 880 930 380
+			echo "Transferring via adb to $ADBPUSHLOCATION/$MX_KERNEL_VERSION.zip"
+			adb push "$RDIR/$MX_KERNEL_VERSION.zip" "$ADBPUSHLOCATION"
+			if [ "$?" -eq "0" ]
+			then
+				echo "Successfully pushed $RDIR/$MX_KERNEL_VERSION.zip to $ADBPUSHLOCATION over ADB!"
+				echo "Rebooting Device into Recovery"
+				adb reboot recovery
+			else
+				echo "Failed to push $RDIR/$MX_KERNEL_VERSION.zip to $ADBPUSHLOCATION over ADB!"
+			fi
+			adb kill-server || echo "Failed to kill ADB server!"
+		elif [ -n "$RECOVSTRING" ]
+		then
+			echo "Device is Connected via Usb in Recovery Mode!"
+			echo "$RECOVSTRING"
+			#adb shell input keyevent KEYCODE_WAKEUP
 			#adb shell input touchscreen swipe 930 880 930 380
 			echo "Transferring via adb to $ADBPUSHLOCATION/$MX_KERNEL_VERSION.zip"
 			adb push "$RDIR/$MX_KERNEL_VERSION.zip" "$ADBPUSHLOCATION"
