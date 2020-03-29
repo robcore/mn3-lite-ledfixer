@@ -419,7 +419,38 @@ Yellow
 			else
 				LITE_CONTROL_2[i] = source_2[i];
 		} else {
-			LITE_CONTROL_2[i] = source_2[i]; // Copy Everything else
+			if (i == 37)
+				black[0] = LITE_CONTROL_2[i] = source_2[i];
+			else if (i == 39)
+				black[1] = LITE_CONTROL_2[i] = source_2[i];
+			else if (i == 41)
+				black[2] = LITE_CONTROL_2[i] = source_2[i];
+			else if (i == 36)
+				white[0] = LITE_CONTROL_2[i] = source_2[i];
+			else if (i == 38)
+				white[1] = LITE_CONTROL_2[i] = source_2[i];
+			else if (i == 40)
+				white[2] = LITE_CONTROL_2[i] = source_2[i];
+			else if (i == 19)
+				red[0] = LITE_CONTROL_2[i] = source_2[i];
+			else if (i == 21)
+				red[1] = LITE_CONTROL_2[i] = source_2[i];
+			else if (i == 23)
+				red[2] = LITE_CONTROL_2[i] = source_2[i];
+			else if (i == 25)
+				green[0] = LITE_CONTROL_2[i] = source_2[i];
+			else if (i == 27)
+				green[1] = LITE_CONTROL_2[i] = source_2[i];
+			else if (i == 29)
+				green[2] = LITE_CONTROL_2[i] = source_2[i];
+			else if (i == 31)
+				blue[0] = LITE_CONTROL_2[i] = source_2[i];
+			else if (i == 33)
+				blue[1] = LITE_CONTROL_2[i] = source_2[i];
+			else if (i == 35)
+				blue[2] = LITE_CONTROL_2[i] = source_2[i];
+			else
+				LITE_CONTROL_2[i] = source_2[i]; // Copy Everything else
 		}
 	}
 
