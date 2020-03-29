@@ -7344,36 +7344,28 @@ static ssize_t headphone_gain_store(struct kobject *kobj, struct kobj_attribute 
 	int dualinput;
 
 	if (sscanf(buf, "%d %d", &leftinput, &rightinput) == 2) {
-		if (leftinput < -84)
-			leftinput = -84;
-		if (leftinput > 40)
-			leftinput = 40;
-		if (rightinput < -84)
-			rightinput = -84;
-		if (rightinput > 40)
-			rightinput = 40;
-
+		leftinput = clamp_val(leftinput, -84, 40);
+		rightinput = clamp_val(rightinput, -84, 40);
 		if (leftinput < 0)
-			hphl_cached_gain = (leftinput + 256);
+			hphl_cached_gain = (u8)(leftinput + 256);
 		else
-			hphl_cached_gain = leftinput;
+			hphl_cached_gain = (u8)leftinput;
 		if (rightinput < 0)
-			hphr_cached_gain = (rightinput + 256);
+			hphr_cached_gain = (u8)(rightinput + 256);
 		else
-			hphr_cached_gain = rightinput;
+			hphr_cached_gain = (u8)rightinput;
 	} else if (sscanf(buf, "%d", &dualinput) == 1) {
-		if (dualinput < -84)
-			dualinput = -84;
-		if (dualinput > 40)
-			dualinput = 40;
+			dualinput = clamp_val(dualinput, -84, 40);
 
 		if (dualinput < 0) {
-			hphl_cached_gain = (dualinput + 256);
-			hphr_cached_gain = (dualinput + 256);
+			hphl_cached_gain = (u8)(dualinput + 256);
+			hphr_cached_gain = (u8)(dualinput + 256);
 		} else {
-			hphl_cached_gain = dualinput;
-			hphr_cached_gain = dualinput;
+			hphl_cached_gain = (u8)dualinput;
+			hphr_cached_gain = (u8)dualinput;
 		}
+	} else {
+		return -EINVAL;
 	}
 
 	update_headphone_gain();
@@ -7394,10 +7386,7 @@ static ssize_t speaker_gain_store(struct kobject *kobj,
 
 	sscanf(buf, "%d", &spkinput);
 
-	if (spkinput < -84)
-		spkinput = -84;
-	if (spkinput > 40)
-		spkinput = 40;
+	spkinput = clamp_val(spkinput, -84, 40);
 
 	if (spkinput < 0)
 		speaker_cached_gain = (u8)(spkinput + 256);
@@ -7425,7 +7414,7 @@ static ssize_t uhqa_mode_store(struct kobject *kobj,
 	if (uval > 1)
 		uval = 1;
 
-	uhqa_mode = uval;
+	uhqa_mode = clamp_val(uval, 0, 1);
 	set_uhqa_mode(uhqa_mode);
 	return count;
 }
@@ -7839,7 +7828,7 @@ static int taiko_resume(struct device *dev)
 
 	if (!taiko) {
 		dev_err(dev, "%s: taiko private data is NULL\n", __func__);
-		return -EINVAL;
+		return -ENODEV;
 	}
 	dev_dbg(dev, "%s: system resume\n", __func__);
 	/* Notify */

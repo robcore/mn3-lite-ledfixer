@@ -125,7 +125,7 @@ static struct mipi_samsung_driver_data *mdnie_msd;
 #endif
 
 static unsigned int hijack = 0;
-static unsigned int black = 0;
+static unsigned int black[3] = {0, 0, 0};
 /* Hijack Extra includes the following  */
 static unsigned int hijack_extra = 0; 
 static unsigned int sharpen = 0;
@@ -320,74 +320,59 @@ void update_mdnie_mode(void)
 	char *source_1, *source_2;
 	unsigned int i;
 	// Determine the source to copy the mode from
-	switch (mdnie_tun_state.background) {
-		case DYNAMIC_MODE:
-			source_1 = DYNAMIC_UI_1;
-			source_2 = DYNAMIC_UI_2;
-			break;
-		case STANDARD_MODE:
-			source_1 = STANDARD_UI_1;
-			source_2 = STANDARD_UI_2;
-			break;
-		case NATURAL_MODE:
-			source_1 = NATURAL_UI_1;
-			source_2 = NATURAL_UI_2;
-			break;
-		case MOVIE_MODE:
-			source_1 = MOVIE_UI_1;
-			source_2 = MOVIE_UI_2;
-			break;
-		case AUTO_MODE:
-			source_1 = AUTO_UI_1;
-			source_2 = AUTO_UI_2;
-			break;
-		default:
-			return;
-	}
+	source_1 = mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][0];
+	source_2 = mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][1];
+
+	if ((source_1 == NULL) || (source_2 == NULL))
+		return;
 
 	for (i = 0; i < 107; i++) {
-		if (i == 37 || i == 39 || i == 41) {
-			if (hijack) {
-				LITE_CONTROL_2[i] = clamp_val(black, 0, 255);
-			} else {
+		if (hijack) {
+			if (i == 37)
+				LITE_CONTROL_2[i] = clamp_val(black[0], 0, 255);
+			else if (i == 39)
+				LITE_CONTROL_2[i] = clamp_val(black[1], 0, 255);
+			else if (i == 41)
+				LITE_CONTROL_2[i] = clamp_val(black[2], 0, 255);
+			else
 				LITE_CONTROL_2[i] = source_2[i];
-			}
-		} else
+		} else {
 			LITE_CONTROL_2[i] = source_2[i]; // Copy Everything else
+		}
+	}
+
+	bitmap_zero(lcfour, 4);
+	if (hijack_extra) {
+		if (sharpen_extra)
+			set_bit(3, lcfour);
+		else
+			clear_bit(3, lcfour);
+
+		if (sharpen)
+			set_bit(2, lcfour);
+		else
+			clear_bit(2, lcfour);
+
+		if (chroma)
+			set_bit(1, lcfour);
+		else
+			clear_bit(1, lcfour);
+
+		if (gamma)
+			set_bit(0, lcfour);
+		else
+			clear_bit(0, lcfour);
 	}
 
 	i = 0;
-
-	if (hijack_extra) {
-			bitmap_zero(lcfour, 4);
-			if (sharpen_extra)
-				set_bit(0, lcfour);
-			else
-				clear_bit(0, lcfour);
-			if (sharpen)
-				set_bit(1, lcfour);
-			else
-				clear_bit(1, lcfour);
-			if (chroma)
-				set_bit(2, lcfour);
-			else
-				clear_bit(2, lcfour);
-			if (gamma)
-				set_bit(3, lcfour);
-			else
-				clear_bit(3, lcfour);
-	} else {
-		bitmap_zero(lcfour, 4);
-	}
-
 	for (i = 0; i < 4; i++) {
-		if (i == 4) {
-			if (hijack_extra)
+		if (hijack_extra) {
+			if (i == 4)
 				LITE_CONTROL_1[i] = *lcfour;
 			else
-				LITE_CONTROL_1[i] = source_1[i];
+				*lcfour = LITE_CONTROL_1[i] = source_1[i];
 		} else {
-			LITE_CONTROL_1[i] = source_1[i];
+			*lcfour = LITE_CONTROL_1[i] = source_1[i];
 		}
 	}
 }
@@ -419,39 +404,13 @@ void sending_tuning_cmd(void)
 		return;
 	}
 
-#if defined(CONFIG_FB_MSM_MDSS_MDP3)
-	if (!mdnie_tun_state.mdnie_enable) {
-		DPRINT("[ERROR] mDNIE engine is OFF.\n");
-		return;
-	}
-
-#if defined(CONFIG_FB_MSM_MDSS_DSI_DBG)
-	if(!dsi_ctrl_on) {
-		DPRINT("[ERROR] dsi_on (%d). do not send mipi cmd.\n", dsi_ctrl_on);
-		return;
-	}
-#endif
-#endif
-
-#if defined(CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_CMD_WQHD_PT_PANEL)|| defined(CONFIG_FB_MSM_MIPI_MAGNA_OCTA_CMD_HD_PT_PANEL)
-#if defined(CONFIG_LCD_CLASS_DEVICE) && defined(DDI_VIDEO_ENHANCE_TUNING)
-	if (mdnie_adb_test) {
-		DPRINT("[ERROR] mdnie_adb_test is doning .. copy from adb data .. \n");
-		INPUT_PAYLOAD1(tune_data2_adb);
-		INPUT_PAYLOAD2(tune_data1_adb);
-	}
-#endif
-#endif
-
 	mutex_lock(&mdnie_msd->lock);
 
 #ifdef MDNIE_LITE_TUN_DATA_DEBUG
-		print_tun_data();
+	print_tun_data();
 #endif
-
-		mdss_dsi_cmds_send(ctrl_pdata, mdni_tune_cmd, ARRAY_SIZE(mdni_tune_cmd), 0);
-
-		mutex_unlock(&mdnie_msd->lock);
+	mdss_dsi_cmds_send(ctrl_pdata, mdni_tune_cmd, ARRAY_SIZE(mdni_tune_cmd), 0);
+	mutex_unlock(&mdnie_msd->lock);
 	}
 /*
  * mDnie priority
@@ -469,9 +428,14 @@ void mDNIe_Set_Mode(void)
 		return;
 	}
 
+	mdnie_tun_state.scenario = clamp_val(mdnie_tun_state.scenario, mDNIe_UI_MODE, mDNIe_EMAIL_MODE);
+	mdnie_tun_state.background = clamp_val(mdnie_tun_state.scenario, DYNAMIC_MODE, AUTO_MODE);
+	mdnie_tun_state.outdoor = clamp_val(mdnie_tun_state.outdoor, OUTDOOR_OFF_MODE, OUTDOOR_ON_MODE);
+
 	if ((mfd->blank_mode) || (mfd->resume_state == MIPI_SUSPEND_STATE) || \
-		(!mdnie_tun_state.mdnie_enable) || (mdnie_tun_state.scenario < mDNIe_UI_MODE) || \
-		(mdnie_tun_state.scenario >= MAX_mDNIe_MODE))
+		(!mdnie_tun_state.mdnie_enable) || \
+		(mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][0] == NULL) || \
+		(mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][1] == NULL))
 		return;
 
 	play_speed_1_5 = 0;
@@ -486,16 +450,10 @@ void mDNIe_Set_Mode(void)
 		INPUT_PAYLOAD1(blind_tune_value[mdnie_tun_state.accessibility][0]);
 		INPUT_PAYLOAD2(blind_tune_value[mdnie_tun_state.accessibility][1]);
 	} else {
-		if (mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][0] == NULL ||
-			mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][1] == NULL) {
-			pr_err("mdnie tune data is NULL!\n");
-			return;
-		} else {
-			INPUT_PAYLOAD1(
-				mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][0]);
-			INPUT_PAYLOAD2(
-				mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][1]);
-		}
+		INPUT_PAYLOAD1(
+			mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][0]);
+		INPUT_PAYLOAD2(
+			mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][1]);
 	}
 
 	sending_tuning_cmd();
@@ -712,14 +670,24 @@ static ssize_t gamma_store(struct device * dev, struct device_attribute * attr, 
 
 static ssize_t black_show(struct device *dev, struct device_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%u\n", black);
+	return sprintf(buf, "%u %u %u\n", black[0], black[1], black[2]);
 }
 
 static ssize_t black_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
 {
-	int new_val;
-	sscanf(buf, "%d", &new_val);
-	black = clamp_val(new_val, 0, 255);
+	int i, new_val, newred, newgreen, newblue;
+
+	if (sscanf(buf, "%d", &new_val) == 1) {
+		for (i = 0; i < 2; i++)
+			black[i] = clamp_val(new_val, 0, 255);
+	} else if (sscanf(buf, "%d %d %d", &newred, &newgreen, &newblue) == 3) {
+		black[0] = clamp_val(new_val, 0, 255);
+		black[1] = clamp_val(new_val, 0, 255);
+		black[2] = clamp_val(new_val, 0, 255);
+	} else {
+		return -EINVAL;
+	}
+
 	mDNIe_Set_Mode();
 
 	return size;
@@ -1225,19 +1193,9 @@ static char coordinate_data[][coordinate_data_size] = {
 
 void coordinate_tunning(int x, int y)
 {
-	int tune_number;
+	int tune_number = 0;
 #if defined(CONFIG_FB_MSM_MIPI_MAGNA_OCTA_CMD_HD_PT_PANEL) || defined(CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_CMD_WQXGA_S6E3HA1_PT_PANEL)
 	int i, j;
-#endif
-	tune_number = 0;
-
-#if defined(CONFIG_FB_MSM_MIPI_MAGNA_OCTA_VIDEO_WXGA_PT_DUAL_PANEL)
-	pr_info("%s : coordinate for %s panel\n", __func__, flip?"main":"sub");
-
-	if (flip)
-		memcpy(coordinate_data, coordinate_data_main, 60);
-	else
-		memcpy(coordinate_data, coordinate_data_sub, 60);
 #endif
 
 	if (F1(x,y) > 0) {
@@ -1271,22 +1229,7 @@ void coordinate_tunning(int x, int y)
 		}
 	}
 
-	pr_info("%s x : %d, y : %d, tune_number : %d", __func__, x, y, tune_number);
-#if defined(CONFIG_FB_MSM_MIPI_MAGNA_OCTA_CMD_HD_PT_PANEL) || defined(CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_CMD_WQXGA_S6E3HA1_PT_PANEL)
-	for(i = 0; i < mDNIe_eBOOK_MODE; i++)
-	{
-		for(j = 0; j < AUTO_MODE; j++)
-		{
-			if(mdnie_tune_value[i][j][0][1] != NULL)
-			{
-				if((mdnie_tune_value[i][j][0][1][scr_wr_addr] == 0xff) && (mdnie_tune_value[i][j][0][1][scr_wr_addr+2] == 0xff) && (mdnie_tune_value[i][j][0][1][scr_wr_addr+4] == 0xff))
-				{
-					memcpy(&mdnie_tune_value[i][j][0][1][scr_wr_addr], &coordinate_data[tune_number][0], coordinate_data_size);
-				}
-			}
-		}
-	}
-#else
+	pr_info("MDNIE %s x : %d, y : %d, tune_number : %d", __func__, x, y, tune_number);
 	memcpy(&DYNAMIC_BROWSER_2[scr_wr_addr], &coordinate_data[tune_number][0], coordinate_data_size);
 	memcpy(&DYNAMIC_GALLERY_2[scr_wr_addr], &coordinate_data[tune_number][0], coordinate_data_size);
 	memcpy(&DYNAMIC_UI_2[scr_wr_addr], &coordinate_data[tune_number][0], coordinate_data_size);
@@ -1309,8 +1252,6 @@ void coordinate_tunning(int x, int y)
 	memcpy(&AUTO_VT_2[scr_wr_addr], &coordinate_data[tune_number][0], coordinate_data_size);
 
 	memcpy(&CAMERA_2[scr_wr_addr], &coordinate_data[tune_number][0], coordinate_data_size);
-#endif
-
 }
 #endif /* COORDINATE_DATA_NONE */
 
