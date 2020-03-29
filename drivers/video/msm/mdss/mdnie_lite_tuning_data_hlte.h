@@ -291,30 +291,30 @@ static char NATURAL_UI_2[] = {
 	0x00,
 	0x00, //roi1 y end
 	0x00,
-	0x00, //scr Cr Yb
-	0xf9, //scr Rr Bb
-	0xec, //scr Cg Yg
-	0x0d, //scr Rg Bg
-	0xd0, //scr Cb Yr
-	0x0b, //scr Rb Br
-	0xff, //scr Mr Mb
-	0x00, //scr Gr Gb
-	0x14, //scr Mg Mg
-	0xde, //scr Gg Gg
-	0xd8, //scr Mb Mr
-	0x00, //scr Gb Gr
-	0xee, //scr Yr Cb
-	0x1c, //scr Br Rb
-	0xeb, //scr Yg Cg
-	0x16, //scr Bg Rg
-	0x24, //scr Yb Cr
-	0xf2, //scr Bb Rr
-	0xff, //scr Wr Wb
-	0x00, //scr Kr Kb
-	0xf7, //scr Wg Wg
-	0x00, //scr Kg Kg
-	0xee, //scr Wb Wr
-	0x00, //scr Kb Kr
+	0x00, //scr Cr Yb CYAN R
+	0xf9, //scr Rr Bb RED R
+	0xec, //scr Cg Yg CYAN G
+	0x0d, //scr Rg Bg RED G
+	0xd0, //scr Cb Yr CYAN B
+	0x0b, //scr Rb Br RED b
+	0xff, //scr Mr Mb MAGENTA R
+	0x00, //scr Gr Gb GREEN R
+	0x14, //scr Mg Mg MAGENTA G
+	0xde, //scr Gg Gg GREEN G
+	0xd8, //scr Mb Mr MAGENTA B
+	0x00, //scr Gb Gr GREEN B
+	0xee, //scr Yr Cb YELLOW R
+	0x1c, //scr Br Rb BLUE R
+	0xeb, //scr Yg Cg YELLOW G
+	0x16, //scr Bg Rg BLUE G
+	0x24, //scr Yb Cr YELLOW B
+	0xf2, //scr Bb Rr BLUE B
+	0xff, //scr Wr Wb WHITE R
+	0x00, //scr Kr Kb BLACK R
+	0xf7, //scr Wg Wg WHITE G
+	0x00, //scr Kg Kg BLACK G
+	0xee, //scr Wb Wr WHITE B
+	0x00, //scr Kb Kr BLACK B
 	0x00, //curve 1 b
 	0x20, //curve 1 a
 	0x00, //curve 2 b

@@ -126,6 +126,11 @@ static struct mipi_samsung_driver_data *mdnie_msd;
 
 static unsigned int hijack = 0;
 static unsigned int black[3] = {0, 0, 0};
+static unsigned int white[3] = {0, 0, 0};
+static unsigned int red[3] = {0, 0, 0};
+static unsigned int green[3] = {0, 0, 0};
+static unsigned int blue[3] = {0, 0, 0};
+
 /* Hijack Extra includes the following  */
 static unsigned int hijack_extra = 0; 
 static unsigned int sharpen = 0;
@@ -313,7 +318,7 @@ void print_tun_data(void)
 	DPRINT("\n");
 }
 
-DECLARE_BITMAP(lcfour, 4);
+static unsigned char lcfour;
 
 void update_mdnie_mode(void)
 {
@@ -342,8 +347,42 @@ void update_mdnie_mode(void)
 			source_2 = AUTO_UI_2;
 			break;
 		default:
-			return;
+			source_1 = MOVIE_UI_1;
+			source_2 = MOVIE_UI_2;
+			break;
 	}
+
+/*
+Black
+[37]  	0x00, BLACK RED
+[39]  	0x00, BLACK GREEN
+[41]  	0x00, BLACK BLUE
+
+White
+[36]  	0xff, WHITE RED
+[38]  	0xff, WHITE GREEN
+[40]  	0xff, WHITE BLUE
+
+Red
+[19]  	0xff, RED RED
+[21]  	0x00, RED GREEN
+[23]  	0x00, RED BLUE
+
+Green
+[25]  	0x00, GREEN RED
+[27]  	0xff, GREEN GREEN
+[29]  	0x00, GREEN BLUE
+
+Blue
+[31]  	0x00, BLUE RED
+[33]  	0x00, BLUE GREEN
+[35]  	0xff, BLUE BLUE
+
+Yellow
+[30]  	0xff, YELLOW RED
+[32]  	0xff, YELLOW GREEN
+[34]  	0x00, YELLOW BLUE
+*/
 
 	for (i = 0; i < 107; i++) {
 		if (hijack) {
@@ -353,6 +392,30 @@ void update_mdnie_mode(void)
 				LITE_CONTROL_2[i] = clamp_val(black[1], 0, 255);
 			else if (i == 41)
 				LITE_CONTROL_2[i] = clamp_val(black[2], 0, 255);
+			else if (i == 36)
+				LITE_CONTROL_2[i] = clamp_val(white[0], 0, 255);
+			else if (i == 38)
+				LITE_CONTROL_2[i] = clamp_val(white[1], 0, 255);
+			else if (i == 40)
+				LITE_CONTROL_2[i] = clamp_val(white[2], 0, 255);
+			else if (i == 19)
+				LITE_CONTROL_2[i] = clamp_val(red[0], 0, 255);
+			else if (i == 21)
+				LITE_CONTROL_2[i] = clamp_val(red[1], 0, 255);
+			else if (i == 23)
+				LITE_CONTROL_2[i] = clamp_val(red[2], 0, 255);
+			else if (i == 25)
+				LITE_CONTROL_2[i] = clamp_val(green[0], 0, 255);
+			else if (i == 27)
+				LITE_CONTROL_2[i] = clamp_val(green[1], 0, 255);
+			else if (i == 29)
+				LITE_CONTROL_2[i] = clamp_val(green[2], 0, 255);
+			else if (i == 31)
+				LITE_CONTROL_2[i] = clamp_val(blue[0], 0, 255);
+			else if (i == 33)
+				LITE_CONTROL_2[i] = clamp_val(blue[1], 0, 255);
+			else if (i == 35)
+				LITE_CONTROL_2[i] = clamp_val(blue[2], 0, 255);
 			else
 				LITE_CONTROL_2[i] = source_2[i];
 		} else {
@@ -360,38 +423,37 @@ void update_mdnie_mode(void)
 		}
 	}
 
-	bitmap_zero(lcfour, 4);
+	lcfour = 0;
 	if (hijack_extra) {
 		if (sharpen_extra)
-			set_bit(3, lcfour);
+			lcfour |= 1 << 3;
 		else
-			clear_bit(3, lcfour);
-
+			lcfour &= ~(1 << 3);
 		if (sharpen)
-			set_bit(2, lcfour);
+			lcfour |= 1 << 2;
 		else
-			clear_bit(2, lcfour);
+			lcfour &= ~(1 << 2);
 
 		if (chroma)
-			set_bit(1, lcfour);
+			lcfour |= 1 << 1;
 		else
-			clear_bit(1, lcfour);
+			lcfour &= ~(1 << 1);
 
 		if (gamma)
-			set_bit(0, lcfour);
+			lcfour |= 1 << 0;
 		else
-			clear_bit(0, lcfour);
+			lcfour &= ~(1 << 0);
 	}
 
 	i = 0;
 	for (i = 0; i < 4; i++) {
-		if (hijack_extra) {
-			if (i == 4)
-				LITE_CONTROL_1[i] = *lcfour;
+		if (i == 4) {
+			if (hijack_extra)
+				LITE_CONTROL_1[i] = lcfour;
 			else
-				*lcfour = LITE_CONTROL_1[i] = source_1[i];
+				lcfour = LITE_CONTROL_1[i] = source_1[i];
 		} else {
-			*lcfour = LITE_CONTROL_1[i] = source_1[i];
+			LITE_CONTROL_1[i] = source_1[i];
 		}
 	}
 }
@@ -581,7 +643,7 @@ static ssize_t scenario_store(struct device *dev,
 
 static ssize_t lcfour_show(struct device *dev, struct device_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%lu\n", *lcfour);
+	return sprintf(buf, "Decimal:%u\nHex:0x%x\n", lcfour);
 }
 
 /* hijack */
@@ -694,13 +756,126 @@ static ssize_t black_store(struct device * dev, struct device_attribute * attr, 
 {
 	int i, new_val, newred, newgreen, newblue;
 
-	if (sscanf(buf, "%d", &new_val) == 1) {
-		for (i = 0; i < 2; i++)
-			black[i] = clamp_val(new_val, 0, 255);
-	} else if (sscanf(buf, "%d %d %d", &newred, &newgreen, &newblue) == 3) {
+	if (sscanf(buf, "%d %d %d", &newred, &newgreen, &newblue) == 3) {
+		black[0] = clamp_val(newred, 0, 255);
+		black[1] = clamp_val(newgreen, 0, 255);
+		black[2] = clamp_val(newblue, 0, 255);
+	} else if (sscanf(buf, "%d", &new_val) == 1) {
 		black[0] = clamp_val(new_val, 0, 255);
 		black[1] = clamp_val(new_val, 0, 255);
 		black[2] = clamp_val(new_val, 0, 255);
+	} else {
+		return size;
+	}
+
+	mDNIe_Set_Mode();
+
+	return size;
+}
+
+/* white */
+
+static ssize_t white_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u %u %u\n", white[0], white[1], white[2]);
+}
+
+static ssize_t white_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
+{
+	int i, new_val, newred, newgreen, newblue;
+
+	if (sscanf(buf, "%d %d %d", &newred, &newgreen, &newblue) == 3) {
+		white[0] = clamp_val(newred, 0, 255);
+		white[1] = clamp_val(newgreen, 0, 255);
+		white[2] = clamp_val(newblue, 0, 255);
+	} else if (sscanf(buf, "%d", &new_val) == 1) {
+		white[0] = clamp_val(new_val, 0, 255);
+		white[1] = clamp_val(new_val, 0, 255);
+		white[2] = clamp_val(new_val, 0, 255);
+	} else {
+		return size;
+	}
+
+	mDNIe_Set_Mode();
+
+	return size;
+}
+
+/* red */
+
+static ssize_t red_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u %u %u\n", red[0], red[1], red[2]);
+}
+
+static ssize_t red_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
+{
+	int i, new_val, newred, newgreen, newblue;
+
+	if (sscanf(buf, "%d %d %d", &newred, &newgreen, &newblue) == 3) {
+		red[0] = clamp_val(newred, 0, 255);
+		red[1] = clamp_val(newgreen, 0, 255);
+		red[2] = clamp_val(newblue, 0, 255);
+	} else if (sscanf(buf, "%d", &new_val) == 1) {
+		red[0] = clamp_val(new_val, 0, 255);
+		red[1] = clamp_val(new_val, 0, 255);
+		red[2] = clamp_val(new_val, 0, 255);
+	} else {
+		return size;
+	}
+
+	mDNIe_Set_Mode();
+
+	return size;
+}
+
+/* green */
+
+static ssize_t green_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u %u %u\n", green[0], green[1], green[2]);
+}
+
+static ssize_t green_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
+{
+	int i, new_val, newred, newgreen, newblue;
+
+	if (sscanf(buf, "%d %d %d", &newred, &newgreen, &newblue) == 3) {
+		green[0] = clamp_val(newred, 0, 255);
+		green[1] = clamp_val(newgreen, 0, 255);
+		green[2] = clamp_val(newblue, 0, 255);
+	} else if (sscanf(buf, "%d", &new_val) == 1) {
+		green[0] = clamp_val(new_val, 0, 255);
+		green[1] = clamp_val(new_val, 0, 255);
+		green[2] = clamp_val(new_val, 0, 255);
+	} else {
+		return size;
+	}
+
+	mDNIe_Set_Mode();
+
+	return size;
+}
+
+/* blue */
+
+static ssize_t blue_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u %u %u\n", blue[0], blue[1], blue[2]);
+}
+
+static ssize_t blue_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
+{
+	int i, new_val, newred, newgreen, newblue;
+
+	if (sscanf(buf, "%d %d %d", &newred, &newgreen, &newblue) == 3) {
+		blue[0] = clamp_val(newred, 0, 255);
+		blue[1] = clamp_val(newgreen, 0, 255);
+		blue[2] = clamp_val(newblue, 0, 255);
+	} else if (sscanf(buf, "%d", &new_val) == 1) {
+		blue[0] = clamp_val(new_val, 0, 255);
+		blue[1] = clamp_val(new_val, 0, 255);
+		blue[2] = clamp_val(new_val, 0, 255);
 	} else {
 		return size;
 	}
@@ -960,6 +1135,10 @@ static DEVICE_ATTR(sharpen, 0664, sharpen_show, sharpen_store);
 static DEVICE_ATTR(chroma, 0664, chroma_show, chroma_store);
 static DEVICE_ATTR(gamma, 0664, gamma_show, gamma_store);
 static DEVICE_ATTR(black, 0664, black_show, black_store);
+static DEVICE_ATTR(white, 0664, white_show, white_store);
+static DEVICE_ATTR(red, 0664, red_show, red_store);
+static DEVICE_ATTR(green, 0664, green_show, green_store);
+static DEVICE_ATTR(blue, 0664, blue_show, blue_store);
 static DEVICE_ATTR(scenario, 0664, scenario_show, scenario_store);
 static DEVICE_ATTR(mode, 0664, mode_show, mode_store);
 static DEVICE_ATTR(mdnieset_user_select_file_cmd, 0664,
@@ -984,8 +1163,6 @@ void init_mdnie_class(void)
 		pr_err("%s : mdnie already enable.. \n",__func__);
 		return;
 	}
-
-	bitmap_zero(lcfour, 4);
 
 	mdnie_class = class_create(THIS_MODULE, "mdnie");
 	if (IS_ERR(mdnie_class))
@@ -1045,17 +1222,17 @@ void init_mdnie_class(void)
 	device_create_file(tune_mdnie_dev, &dev_attr_sharpen_extra);
 	device_create_file(tune_mdnie_dev, &dev_attr_sharpen);
 	device_create_file(tune_mdnie_dev, &dev_attr_black);
+	device_create_file(tune_mdnie_dev, &dev_attr_white);
+	device_create_file(tune_mdnie_dev, &dev_attr_red);
+	device_create_file(tune_mdnie_dev, &dev_attr_green);
+	device_create_file(tune_mdnie_dev, &dev_attr_blue);
 	device_create_file(tune_mdnie_dev, &dev_attr_gamma);
 	device_create_file(tune_mdnie_dev, &dev_attr_chroma);
 	device_create_file(tune_mdnie_dev, &dev_attr_lcfour);
 	mdnie_tun_state.mdnie_enable = true;
 }
 
-#if defined(CONFIG_FB_MSM_MDSS_MDP3)
-void mdnie_lite_tuning_init(struct mdss_dsi_driver_data *msd)
-#else
 void mdnie_lite_tuning_init(struct mipi_samsung_driver_data *msd)
-#endif
 {
 	mdnie_msd = msd;
 }
@@ -1081,6 +1258,12 @@ static char coordinate_data[][coordinate_data_size] = {
 	{0xf9, 0x00, 0xff, 0x00, 0xff, 0x00}, /* Tune_9 */
 };
 
+void coordinate_tunning(int x, int y)
+{
+	return;
+}
+
+#if 0
 void coordinate_tunning(int x, int y)
 {
 	int tune_number = 0;
@@ -1140,7 +1323,7 @@ void coordinate_tunning(int x, int y)
 
 	memcpy(&CAMERA_2[scr_wr_addr], &coordinate_data[tune_number][0], coordinate_data_size);
 }
-
+#endif
 #if 0
 void mDNIe_Set_Mode(enum Lcd_mDNIe_UI mode)
 {
