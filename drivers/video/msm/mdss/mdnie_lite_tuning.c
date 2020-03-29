@@ -643,7 +643,7 @@ static ssize_t scenario_store(struct device *dev,
 
 static ssize_t lcfour_show(struct device *dev, struct device_attribute *attr, char *buf)
 {
-	return sprintf(buf, "Decimal:%u\nHex:0x%x\n", lcfour);
+	return sprintf(buf, "Decimal:%u\nHex:0x%x\n", lcfour, lcfour);
 }
 
 /* hijack */
