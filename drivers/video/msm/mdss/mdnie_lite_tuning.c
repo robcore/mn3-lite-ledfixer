@@ -391,7 +391,7 @@ Yellow
 [32]  	0xff, YELLOW GREEN
 [34]  	0x00, YELLOW BLUE
 */
-	if (hijack && (mdnie_tun_state.background == previous_mode)) {
+	if (hijack) {
 		for (i = 0; i < 107; i++) {
 			if (i == 37)
 				LITE_CONTROL_2[i] = black[0];
