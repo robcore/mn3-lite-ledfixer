@@ -1062,6 +1062,7 @@ void init_mdnie_class(void)
 	device_create_file(tune_mdnie_dev, &dev_attr_black);
 	device_create_file(tune_mdnie_dev, &dev_attr_gamma);
 	device_create_file(tune_mdnie_dev, &dev_attr_chroma);
+	device_create_file(tune_mdnie_dev, &dev_attr_lcfour);
 	mdnie_tun_state.mdnie_enable = true;
 }
 
