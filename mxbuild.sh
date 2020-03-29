@@ -442,6 +442,8 @@ build_boot_img() {
 
 }
 
+ADBPUSHLOCATION="/sdcard/Download"
+
 create_zip() {
 
 	echo "Compressing to TWRP flashable zip file..."
@@ -466,9 +468,14 @@ create_zip() {
 	if [ -s "$RDIR/$MX_KERNEL_VERSION.zip" ]
 	then
 		echo "Uploading $MX_KERNEL_VERSION.zip to Google Drive"
-		/bin/bash /root/google-drive-upload/upload.sh "$RDIR/$MX_KERNEL_VERSION.zip" || warnandfail "$RDIR/$MX_KERNEL_VERSION.zip failed to upload!"
+		/bin/bash /root/google-drive-upload/upload.sh "$RDIR/$MX_KERNEL_VERSION.zip"
+		if [ "$?" -eq "0" ]
+		then
+			echo "$RDIR/$MX_KERNEL_VERSION.zip upload SUCCESS!"
+		else
+			echo "$RDIR/$MX_KERNEL_VERSION.zip upload FAILED!"
+		fi
 		echo -n "$MX_KERNEL_VERSION.zip" > "$RDIR/.lastzip"
-		#/bin/bash /bin/robmail "$MX_KERNEL_VERSION.zip uploaded!"
 		echo "Checking if Device is Connected..."
 		local SAMSTRING
 		SAMSTRING="$(lsusb | grep '04e8:6860')"
@@ -479,8 +486,14 @@ create_zip() {
 			echo "$SAMSTRING"
 			adb shell input keyevent KEYCODE_WAKEUP
 			#adb shell input touchscreen swipe 930 880 930 380
-			echo "Transferring via adb to /sdcard/Download/$MX_KERNEL_VERSION.zip"
-			adb push "$RDIR/$MX_KERNEL_VERSION.zip" /sdcard/Download || echo "Failed to push $RDIR/$MX_KERNEL_VERSION.zip to device over ADB!"
+			echo "Transferring via adb to $ADBPUSHLOCATION/$MX_KERNEL_VERSION.zip"
+			adb push "$RDIR/$MX_KERNEL_VERSION.zip" "$ADBPUSHLOCATION"
+			if [ "$?" -eq "0" ]
+			then
+				echo "Successfully pushed $RDIR/$MX_KERNEL_VERSION.zip to $ADBPUSHLOCATION over ADB!"
+			else
+				echo "Failed to push $RDIR/$MX_KERNEL_VERSION.zip to $ADBPUSHLOCATION over ADB!"
+			fi
 			adb kill-server || echo "Failed to kill ADB server!"
 		else
 			echo "Device not Connected.  Skipping adb transfer."
