@@ -124,6 +124,14 @@ static struct mipi_samsung_driver_data *mdnie_msd;
 #define INPUT_PAYLOAD2(x) PAYLOAD2.payload = x
 #endif
 
+static unsigned char LITE_CONTROL_1[5];
+static unsigned char LITE_CONTROL_2[108];
+
+static unsigned int effects_bit = 3;
+static unsigned int sharpen_bit = 2;
+static unsigned int chroma_bit = 1;
+static unsigned int gamma_bit = 0;
+
 static unsigned int hijack = 0;
 static unsigned int black[3] = {0, 0, 0};
 static unsigned int white[3] = {0, 0, 0};
@@ -132,13 +140,14 @@ static unsigned int green[3] = {0, 0, 0};
 static unsigned int blue[3] = {0, 0, 0};
 
 /* Hijack Extra includes the following  */
-static unsigned int hijack_extra = 0; 
+static unsigned int hijack_effects = 0;
+static unsigned int effects = 0;
 static unsigned int sharpen = 0;
-static unsigned int sharpen_extra = 0;
 static unsigned int chroma = 0;
 static unsigned int gamma = 0;
 /* Hijack Extra End  */
 
+static unsigned int previous_mode;
 unsigned int play_speed_1_5;
 
 struct dsi_buf dsi_mdnie_tx_buf;
@@ -318,12 +327,11 @@ void print_tun_data(void)
 	DPRINT("\n");
 }
 
-static unsigned char lcfour;
-
 void update_mdnie_mode(void)
 {
 	char *source_1, *source_2;
-	unsigned int i;
+	unsigned int i = 0;
+	int result;
 	// Determine the source to copy the mode from
 	switch (mdnie_tun_state.background) {
 		case DYNAMIC_MODE:
@@ -383,9 +391,8 @@ Yellow
 [32]  	0xff, YELLOW GREEN
 [34]  	0x00, YELLOW BLUE
 */
-
-	for (i = 0; i < 107; i++) {
-		if (hijack) {
+	if (hijack && (mdnie_tun_state.background == previous_mode)) {
+		for (i = 0; i < 107; i++) {
 			if (i == 37)
 				LITE_CONTROL_2[i] = clamp_val(black[0], 0, 255);
 			else if (i == 39)
@@ -418,7 +425,9 @@ Yellow
 				LITE_CONTROL_2[i] = clamp_val(blue[2], 0, 255);
 			else
 				LITE_CONTROL_2[i] = source_2[i];
-		} else {
+		}
+	} else {
+		for (i = 0; i < 107; i++) {
 			if (i == 37)
 				black[0] = LITE_CONTROL_2[i] = source_2[i];
 			else if (i == 39)
@@ -454,38 +463,43 @@ Yellow
 		}
 	}
 
-	lcfour = 0;
-	if (hijack_extra) {
-		if (sharpen_extra)
-			lcfour |= 1 << 3;
-		else
-			lcfour &= ~(1 << 3);
-		if (sharpen)
-			lcfour |= 1 << 2;
-		else
-			lcfour &= ~(1 << 2);
+	for (i = 0; i < 3; i++)
+		LITE_CONTROL_1[i] = source_1[i];
 
-		if (chroma)
-			lcfour |= 1 << 1;
+	if (hijack_effects) {
+		if (effects)
+			LITE_CONTROL_1[4] |= 1 << effects_bit;
 		else
-			lcfour &= ~(1 << 1);
+			LITE_CONTROL_1[4] &= ~(1 << effects_bit);
+
+		if (sharpen)
+			LITE_CONTROL_1[4] |= 1 << sharpen_bit;
+		else
+			LITE_CONTROL_1[4] &= ~(1 << sharpen_bit);
+		
+		if (chroma)
+			LITE_CONTROL_1[4] |= 1 << chroma_bit;
+		else
+			LITE_CONTROL_1[4] &= ~(1 << chroma_bit);
 
 		if (gamma)
-			lcfour |= 1 << 0;
+			LITE_CONTROL_1[4] |= 1 << gamma_bit;
 		else
-			lcfour &= ~(1 << 0);
-	}
+			LITE_CONTROL_1[4] &= ~(1 << gamma_bit);
+	} else {
+		LITE_CONTROL_1[4] = source_1[4];
 
-	i = 0;
-	for (i = 0; i < 4; i++) {
-		if (i == 4) {
-			if (hijack_extra)
-				LITE_CONTROL_1[i] = lcfour;
-			else
-				lcfour = LITE_CONTROL_1[i] = source_1[i];
-		} else {
-			LITE_CONTROL_1[i] = source_1[i];
-		}
+		result = (LITE_CONTROL_1[4] >> (effects_bit));
+		effects = result & 1;
+
+		result = (LITE_CONTROL_1[4] >> (sharpen_bit));
+		sharpen = result & 1;
+
+		result = (LITE_CONTROL_1[4] >> (chroma_bit));
+		chroma = result & 1;
+
+		result = (LITE_CONTROL_1[4] >> (gamma_bit));
+		gamma = result & 1;
 	}
 }
 
@@ -604,7 +618,6 @@ static ssize_t mode_store(struct device *dev,
 		struct device_attribute *attr, const char *buf, size_t size)
 {
 	int value;
-	int backup;
 
 	sscanf(buf, "%d", &value);
 
@@ -612,6 +625,8 @@ static ssize_t mode_store(struct device *dev,
 		value = DYNAMIC_MODE;
 	if (value >= AUTO_MODE)
 		value = AUTO_MODE;
+
+	previous_mode = mdnie_tun_state.background;
 
 	mdnie_tun_state.background = value;
 
@@ -670,11 +685,11 @@ static ssize_t scenario_store(struct device *dev,
 	return size;
 }
 
-/* lcfour */
+/* LITE_CONTROL_1[4] */
 
 static ssize_t lcfour_show(struct device *dev, struct device_attribute *attr, char *buf)
 {
-	return sprintf(buf, "Decimal:%u\nHex:0x%x\n", lcfour, lcfour);
+	return sprintf(buf, "Decimal:%u\nHex:0x%x\n", LITE_CONTROL_1[4], LITE_CONTROL_1[4]);
 }
 
 /* hijack */
@@ -694,36 +709,36 @@ static ssize_t hijack_store(struct device * dev, struct device_attribute * attr,
 	return size;
 }
 
-/* hijack_extra */
+/* hijack_effects */
 
-static ssize_t hijack_extra_show(struct device *dev, struct device_attribute *attr, char *buf)
+static ssize_t hijack_effects_show(struct device *dev, struct device_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%u\n", hijack_extra);
+	return sprintf(buf, "%u\n", hijack_effects);
 }
 
-static ssize_t hijack_extra_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
+static ssize_t hijack_effects_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
 {
 	int new_val;
 	sscanf(buf, "%d", &new_val);
 
-	hijack_extra = clamp_val(new_val, 0, 1);
+	hijack_effects = clamp_val(new_val, 0, 1);
 	mDNIe_Set_Mode();
 	return size;
 }
 
-/* sharpen_extra */
+/* effects */
 
-static ssize_t sharpen_extra_show(struct device *dev, struct device_attribute *attr, char *buf)
+static ssize_t effects_show(struct device *dev, struct device_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%u\n", sharpen_extra);
+	return sprintf(buf, "%u\n", effects);
 }
 
-static ssize_t sharpen_extra_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
+static ssize_t effects_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
 {
 	int new_val;
 	sscanf(buf, "%d", &new_val);
 
-	sharpen_extra = clamp_val(new_val, 0, 1);
+	effects = clamp_val(new_val, 0, 1);
 	mDNIe_Set_Mode();
 	return size;
 }
@@ -1160,8 +1175,8 @@ static ssize_t accessibility_store(struct device *dev,
 
 static DEVICE_ATTR(lcfour, 0440, lcfour_show, NULL);
 static DEVICE_ATTR(hijack, 0664, hijack_show, hijack_store);
-static DEVICE_ATTR(hijack_extra, 0664, hijack_extra_show, hijack_extra_store);
-static DEVICE_ATTR(sharpen_extra, 0664, sharpen_extra_show, sharpen_extra_store);
+static DEVICE_ATTR(hijack_effects, 0664, hijack_effects_show, hijack_effects_store);
+static DEVICE_ATTR(effects, 0664, effects_show, effects_store);
 static DEVICE_ATTR(sharpen, 0664, sharpen_show, sharpen_store);
 static DEVICE_ATTR(chroma, 0664, chroma_show, chroma_store);
 static DEVICE_ATTR(gamma, 0664, gamma_show, gamma_store);
@@ -1249,8 +1264,8 @@ void init_mdnie_class(void)
 			dev_attr_accessibility.attr.name);
 
 	device_create_file(tune_mdnie_dev, &dev_attr_hijack);
-	device_create_file(tune_mdnie_dev, &dev_attr_hijack_extra);
-	device_create_file(tune_mdnie_dev, &dev_attr_sharpen_extra);
+	device_create_file(tune_mdnie_dev, &dev_attr_hijack_effects);
+	device_create_file(tune_mdnie_dev, &dev_attr_effects);
 	device_create_file(tune_mdnie_dev, &dev_attr_sharpen);
 	device_create_file(tune_mdnie_dev, &dev_attr_black);
 	device_create_file(tune_mdnie_dev, &dev_attr_white);
