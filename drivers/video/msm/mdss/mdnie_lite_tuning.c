@@ -394,35 +394,35 @@ Yellow
 	if (hijack && (mdnie_tun_state.background == previous_mode)) {
 		for (i = 0; i < 107; i++) {
 			if (i == 37)
-				LITE_CONTROL_2[i] = clamp_val(black[0], 0, 255);
+				LITE_CONTROL_2[i] = black[0];
 			else if (i == 39)
-				LITE_CONTROL_2[i] = clamp_val(black[1], 0, 255);
+				LITE_CONTROL_2[i] = black[1];
 			else if (i == 41)
-				LITE_CONTROL_2[i] = clamp_val(black[2], 0, 255);
+				LITE_CONTROL_2[i] = black[2];
 			else if (i == 36)
-				LITE_CONTROL_2[i] = clamp_val(white[0], 0, 255);
+				LITE_CONTROL_2[i] = white[0];
 			else if (i == 38)
-				LITE_CONTROL_2[i] = clamp_val(white[1], 0, 255);
+				LITE_CONTROL_2[i] = white[1];
 			else if (i == 40)
-				LITE_CONTROL_2[i] = clamp_val(white[2], 0, 255);
+				LITE_CONTROL_2[i] = white[2];
 			else if (i == 19)
-				LITE_CONTROL_2[i] = clamp_val(red[0], 0, 255);
+				LITE_CONTROL_2[i] = red[0];
 			else if (i == 21)
-				LITE_CONTROL_2[i] = clamp_val(red[1], 0, 255);
+				LITE_CONTROL_2[i] = red[1];
 			else if (i == 23)
-				LITE_CONTROL_2[i] = clamp_val(red[2], 0, 255);
+				LITE_CONTROL_2[i] = red[2];
 			else if (i == 25)
-				LITE_CONTROL_2[i] = clamp_val(green[0], 0, 255);
+				LITE_CONTROL_2[i] = green[0];
 			else if (i == 27)
-				LITE_CONTROL_2[i] = clamp_val(green[1], 0, 255);
+				LITE_CONTROL_2[i] = green[1];
 			else if (i == 29)
-				LITE_CONTROL_2[i] = clamp_val(green[2], 0, 255);
+				LITE_CONTROL_2[i] = green[2];
 			else if (i == 31)
-				LITE_CONTROL_2[i] = clamp_val(blue[0], 0, 255);
+				LITE_CONTROL_2[i] = blue[0];
 			else if (i == 33)
-				LITE_CONTROL_2[i] = clamp_val(blue[1], 0, 255);
+				LITE_CONTROL_2[i] = blue[1];
 			else if (i == 35)
-				LITE_CONTROL_2[i] = clamp_val(blue[2], 0, 255);
+				LITE_CONTROL_2[i] = blue[2];
 			else
 				LITE_CONTROL_2[i] = source_2[i];
 		}
