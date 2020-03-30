@@ -1283,12 +1283,13 @@ static char coordinate_data[][coordinate_data_size] = {
 	{0xf9, 0x00, 0xff, 0x00, 0xff, 0x00}, /* Tune_9 */
 };
 
+#if 0
 void coordinate_tunning(int x, int y)
 {
 	return;
 }
+#endif
 
-#if 0
 void coordinate_tunning(int x, int y)
 {
 	int tune_number = 0;
@@ -1348,7 +1349,7 @@ void coordinate_tunning(int x, int y)
 
 	memcpy(&CAMERA_2[scr_wr_addr], &coordinate_data[tune_number][0], coordinate_data_size);
 }
-#endif
+
 #if 0
 void mDNIe_Set_Mode(enum Lcd_mDNIe_UI mode)
 {
