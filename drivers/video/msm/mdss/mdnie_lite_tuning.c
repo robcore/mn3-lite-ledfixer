@@ -328,9 +328,12 @@ void print_tun_data(void)
 
 void update_mdnie_mode(void)
 {
-	char *source_1, *source_2;
-	unsigned int i = 0;
+	unsigned char *source_1, *source_2;
 	int result;
+	unsigned int i;
+
+	if (mdnie_tun_state.scenario != mDNIe_UI_MODE)
+		return;
 	// Determine the source to copy the mode from
 	switch (mdnie_tun_state.background) {
 		case DYNAMIC_MODE:
@@ -356,102 +359,83 @@ void update_mdnie_mode(void)
 		default:
 			return;
 	}
+	for (i = 0; i < 107 ; i++)
+		LITE_CONTROL_2[i] = source_2[i];
 
 	if (hijack) {
-		for (i = 0; i < 107; i++) {
-			if (i == 37)
-				LITE_CONTROL_2[i] = black[0];
-			else if (i == 39)
-				LITE_CONTROL_2[i] = black[1];
-			else if (i == 41)
-				LITE_CONTROL_2[i] = black[2];
-			else if (i == 36)
-				LITE_CONTROL_2[i] = white[0];
-			else if (i == 38)
-				LITE_CONTROL_2[i] = white[1];
-			else if (i == 40)
-				LITE_CONTROL_2[i] = white[2];
-			else if (i == 19)
-				LITE_CONTROL_2[i] = red[0];
-			else if (i == 21)
-				LITE_CONTROL_2[i] = red[1];
-			else if (i == 23)
-				LITE_CONTROL_2[i] = red[2];
-			else if (i == 25)
-				LITE_CONTROL_2[i] = green[0];
-			else if (i == 27)
-				LITE_CONTROL_2[i] = green[1];
-			else if (i == 29)
-				LITE_CONTROL_2[i] = green[2];
-			else if (i == 31)
-				LITE_CONTROL_2[i] = blue[0];
-			else if (i == 33)
-				LITE_CONTROL_2[i] = blue[1];
-			else if (i == 35)
-				LITE_CONTROL_2[i] = blue[2];
-			else
-				LITE_CONTROL_2[i] = source_2[i];
-		}
+		LITE_CONTROL_2[19] = red[0];
+		LITE_CONTROL_2[21] = red[1];
+		LITE_CONTROL_2[23] = red[2];
+		LITE_CONTROL_2[25] = green[0];
+		LITE_CONTROL_2[27] = green[1];
+		LITE_CONTROL_2[29] = green[2];
+		LITE_CONTROL_2[31] = blue[0];
+		LITE_CONTROL_2[33] = blue[1];
+		LITE_CONTROL_2[35] = blue[2];
+		LITE_CONTROL_2[36] = white[0];
+		LITE_CONTROL_2[37] = black[0];
+		LITE_CONTROL_2[38] = white[1];
+		LITE_CONTROL_2[39] = black[1];
+		LITE_CONTROL_2[40] = white[2];
+		LITE_CONTROL_2[41] = black[2];
 	} else {
-		for (i = 0; i < 107; i++) {
-			if (i == 37)
-				black[0] = LITE_CONTROL_2[i] = source_2[i];
-			else if (i == 39)
-				black[1] = LITE_CONTROL_2[i] = source_2[i];
-			else if (i == 41)
-				black[2] = LITE_CONTROL_2[i] = source_2[i];
-			else if (i == 36)
-				white[0] = LITE_CONTROL_2[i] = source_2[i];
-			else if (i == 38)
-				white[1] = LITE_CONTROL_2[i] = source_2[i];
-			else if (i == 40)
-				white[2] = LITE_CONTROL_2[i] = source_2[i];
-			else if (i == 19)
-				red[0] = LITE_CONTROL_2[i] = source_2[i];
-			else if (i == 21)
-				red[1] = LITE_CONTROL_2[i] = source_2[i];
-			else if (i == 23)
-				red[2] = LITE_CONTROL_2[i] = source_2[i];
-			else if (i == 25)
-				green[0] = LITE_CONTROL_2[i] = source_2[i];
-			else if (i == 27)
-				green[1] = LITE_CONTROL_2[i] = source_2[i];
-			else if (i == 29)
-				green[2] = LITE_CONTROL_2[i] = source_2[i];
-			else if (i == 31)
-				blue[0] = LITE_CONTROL_2[i] = source_2[i];
-			else if (i == 33)
-				blue[1] = LITE_CONTROL_2[i] = source_2[i];
-			else if (i == 35)
-				blue[2] = LITE_CONTROL_2[i] = source_2[i];
-			else
-				LITE_CONTROL_2[i] = source_2[i]; // Copy Everything else
-		}
+		red[0] = LITE_CONTROL_2[19];
+		red[1] = LITE_CONTROL_2[21];
+		red[2] = LITE_CONTROL_2[23];
+		green[0] = LITE_CONTROL_2[25];
+		green[1] = LITE_CONTROL_2[27];
+		green[2] = LITE_CONTROL_2[29];
+		blue[0] = LITE_CONTROL_2[31];
+		blue[1] = LITE_CONTROL_2[33];
+		blue[2] = LITE_CONTROL_2[35];
+		white[0] = LITE_CONTROL_2[36];
+		black[0] = LITE_CONTROL_2[37];
+		white[1] = LITE_CONTROL_2[38];
+		black[1] = LITE_CONTROL_2[39];
+		white[2] = LITE_CONTROL_2[40];
+		black[2] = LITE_CONTROL_2[41];
 	}
 
-	for (i = 0; i < 3; i++)
+	for (i = 0; i < 4 ; i++)
 		LITE_CONTROL_1[i] = source_1[i];
 
 	if (hijack_effects) {
-		if (effects)
-			LITE_CONTROL_1[4] |= 1 << effects_bit;
-		else
-			LITE_CONTROL_1[4] &= ~(1 << effects_bit);
 
-		if (sharpen)
-			LITE_CONTROL_1[4] |= 1 << sharpen_bit;
-		else
-			LITE_CONTROL_1[4] &= ~(1 << sharpen_bit);
-		
-		if (chroma)
-			LITE_CONTROL_1[4] |= 1 << chroma_bit;
-		else
-			LITE_CONTROL_1[4] &= ~(1 << chroma_bit);
+		result = (LITE_CONTROL_1[4] >> (effects_bit));
+		if (effects) {
+			if (!(result & 1))
+				LITE_CONTROL_1[4] |= 1 << effects_bit;
+		} else {
+			if (result & 1)
+				LITE_CONTROL_1[4] &= ~(1 << effects_bit);
+		}
 
-		if (gamma)
-			LITE_CONTROL_1[4] |= 1 << gamma_bit;
-		else
-			LITE_CONTROL_1[4] &= ~(1 << gamma_bit);
+		result = (LITE_CONTROL_1[4] >> (sharpen_bit));
+		if (sharpen) {
+			if (!(result & 1))
+				LITE_CONTROL_1[4] |= 1 << sharpen_bit;
+		} else {
+			if (result & 1)
+				LITE_CONTROL_1[4] &= ~(1 << sharpen_bit);
+		}
+
+		result = (LITE_CONTROL_1[4] >> (chroma_bit));
+		if (chroma) {
+			if (!(result & 1))
+				LITE_CONTROL_1[4] |= 1 << chroma_bit;
+		} else {
+			if (result & 1)
+				LITE_CONTROL_1[4] &= ~(1 << chroma_bit);
+		}
+
+		result = (LITE_CONTROL_1[4] >> (gamma_bit));
+		if (gamma) {
+			if (!(result & 1))
+				LITE_CONTROL_1[4] |= 1 << gamma_bit;
+		} else {
+			if (result & 1)
+				LITE_CONTROL_1[4] &= ~(1 << gamma_bit);
+		}
 	} else {
 		LITE_CONTROL_1[4] = source_1[4];
 
@@ -536,14 +520,10 @@ void mDNIe_Set_Mode(void)
 		INPUT_PAYLOAD1(blind_tune_value[mdnie_tun_state.accessibility][0]);
 		INPUT_PAYLOAD2(blind_tune_value[mdnie_tun_state.accessibility][1]);
 	} else {
-		if ((!mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][0]) || \
-			(!mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][1]))
-			return;
-		else
-			INPUT_PAYLOAD1(
-				mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][0]);
-			INPUT_PAYLOAD2(
-				mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][1]);
+		INPUT_PAYLOAD1(
+			mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][0]);
+		INPUT_PAYLOAD2(
+			mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][1]);
 	}
 
 	sending_tuning_cmd();
@@ -669,8 +649,11 @@ static ssize_t hijack_store(struct device * dev, struct device_attribute * attr,
 {
 	int new_val;
 	sscanf(buf, "%d", &new_val);
-
-	hijack = clamp_val(new_val, 0, 1);
+	if (new_val < 0)
+		new_val = 0;
+	if (new_val > 1)
+		new_val = 1;
+	hijack = new_val;
 	mDNIe_Set_Mode();
 	return size;
 }
@@ -686,8 +669,11 @@ static ssize_t hijack_effects_store(struct device * dev, struct device_attribute
 {
 	int new_val;
 	sscanf(buf, "%d", &new_val);
-
-	hijack_effects = clamp_val(new_val, 0, 1);
+	if (new_val < 0)
+		new_val = 0;
+	if (new_val > 1)
+		new_val = 1;
+	hijack_effects = new_val;
 	mDNIe_Set_Mode();
 	return size;
 }
@@ -703,8 +689,11 @@ static ssize_t effects_store(struct device * dev, struct device_attribute * attr
 {
 	int new_val;
 	sscanf(buf, "%d", &new_val);
-
-	effects = clamp_val(new_val, 0, 1);
+	if (new_val < 0)
+		new_val = 0;
+	if (new_val > 1)
+		new_val = 1;
+	effects = new_val;
 	mDNIe_Set_Mode();
 	return size;
 }
@@ -721,8 +710,11 @@ static ssize_t sharpen_store(struct device * dev, struct device_attribute * attr
 {
 	int new_val;
 	sscanf(buf, "%d", &new_val);
-
-	sharpen = clamp_val(new_val, 0, 1);
+	if (new_val < 0)
+		new_val = 0;
+	if (new_val > 1)
+		new_val = 1;
+	sharpen = new_val;
 	mDNIe_Set_Mode();
 	return size;
 }
@@ -736,8 +728,11 @@ static ssize_t chroma_store(struct device * dev, struct device_attribute * attr,
 {
 	int new_val;
 	sscanf(buf, "%d", &new_val);
-
-	chroma = clamp_val(new_val, 0, 1);
+	if (new_val < 0)
+		new_val = 0;
+	if (new_val > 1)
+		new_val = 1;
+	chroma = new_val;
 	mDNIe_Set_Mode();
 	return size;
 }
@@ -751,8 +746,11 @@ static ssize_t gamma_store(struct device * dev, struct device_attribute * attr, 
 {
 	int new_val;
 	sscanf(buf, "%d", &new_val);
-
-	gamma = clamp_val(new_val, 0, 1);
+	if (new_val < 0)
+		new_val = 0;
+	if (new_val > 1)
+		new_val = 1;
+	gamma = new_val;
 	mDNIe_Set_Mode();
 	return size;
 }
@@ -769,16 +767,19 @@ static ssize_t black_store(struct device * dev, struct device_attribute * attr, 
 	int i, new_val, newred, newgreen, newblue;
 
 	if (sscanf(buf, "%d %d %d", &newred, &newgreen, &newblue) == 3) {
-		black[0] = clamp_val(newred, 0, 255);
-		black[1] = clamp_val(newgreen, 0, 255);
-		black[2] = clamp_val(newblue, 0, 255);
+		black[0] = newred;
+		black[1] = newgreen;
+		black[2] = newblue;
 	} else if (sscanf(buf, "%d", &new_val) == 1) {
-		black[0] = clamp_val(new_val, 0, 255);
-		black[1] = clamp_val(new_val, 0, 255);
-		black[2] = clamp_val(new_val, 0, 255);
+		black[0] = new_val;
+		black[1] = new_val;
+		black[2] = new_val;
 	} else {
 		return size;
 	}
+
+	for (i = 0; i < 2; i++)
+		clamp_val(black[i], 0, 255);
 
 	mDNIe_Set_Mode();
 
@@ -797,16 +798,19 @@ static ssize_t white_store(struct device * dev, struct device_attribute * attr, 
 	int i, new_val, newred, newgreen, newblue;
 
 	if (sscanf(buf, "%d %d %d", &newred, &newgreen, &newblue) == 3) {
-		white[0] = clamp_val(newred, 0, 255);
-		white[1] = clamp_val(newgreen, 0, 255);
-		white[2] = clamp_val(newblue, 0, 255);
+		white[0] = newred;
+		white[1] = newgreen;
+		white[2] = newblue;
 	} else if (sscanf(buf, "%d", &new_val) == 1) {
-		white[0] = clamp_val(new_val, 0, 255);
-		white[1] = clamp_val(new_val, 0, 255);
-		white[2] = clamp_val(new_val, 0, 255);
+		white[0] = new_val;
+		white[1] = new_val;
+		white[2] = new_val;
 	} else {
 		return size;
 	}
+
+	for (i = 0; i < 2; i++)
+		clamp_val(white[i], 0, 255);
 
 	mDNIe_Set_Mode();
 
@@ -825,16 +829,19 @@ static ssize_t red_store(struct device * dev, struct device_attribute * attr, co
 	int i, new_val, newred, newgreen, newblue;
 
 	if (sscanf(buf, "%d %d %d", &newred, &newgreen, &newblue) == 3) {
-		red[0] = clamp_val(newred, 0, 255);
-		red[1] = clamp_val(newgreen, 0, 255);
-		red[2] = clamp_val(newblue, 0, 255);
+		red[0] = newred;
+		red[1] = newgreen;
+		red[2] = newblue;
 	} else if (sscanf(buf, "%d", &new_val) == 1) {
-		red[0] = clamp_val(new_val, 0, 255);
-		red[1] = clamp_val(new_val, 0, 255);
-		red[2] = clamp_val(new_val, 0, 255);
+		red[0] = new_val;
+		red[1] = new_val;
+		red[2] = new_val;
 	} else {
 		return size;
 	}
+
+	for (i = 0; i < 2; i++)
+		clamp_val(red[i], 0, 255);
 
 	mDNIe_Set_Mode();
 
@@ -853,16 +860,19 @@ static ssize_t green_store(struct device * dev, struct device_attribute * attr, 
 	int i, new_val, newred, newgreen, newblue;
 
 	if (sscanf(buf, "%d %d %d", &newred, &newgreen, &newblue) == 3) {
-		green[0] = clamp_val(newred, 0, 255);
-		green[1] = clamp_val(newgreen, 0, 255);
-		green[2] = clamp_val(newblue, 0, 255);
+		green[0] = newred;
+		green[1] = newgreen;
+		green[2] = newblue;
 	} else if (sscanf(buf, "%d", &new_val) == 1) {
-		green[0] = clamp_val(new_val, 0, 255);
-		green[1] = clamp_val(new_val, 0, 255);
-		green[2] = clamp_val(new_val, 0, 255);
+		green[0] = new_val;
+		green[1] = new_val;
+		green[2] = new_val;
 	} else {
 		return size;
 	}
+
+	for (i = 0; i < 2; i++)
+		clamp_val(green[i], 0, 255);
 
 	mDNIe_Set_Mode();
 
@@ -881,16 +891,19 @@ static ssize_t blue_store(struct device * dev, struct device_attribute * attr, c
 	int i, new_val, newred, newgreen, newblue;
 
 	if (sscanf(buf, "%d %d %d", &newred, &newgreen, &newblue) == 3) {
-		blue[0] = clamp_val(newred, 0, 255);
-		blue[1] = clamp_val(newgreen, 0, 255);
-		blue[2] = clamp_val(newblue, 0, 255);
+		blue[0] = newred;
+		blue[1] = newgreen;
+		blue[2] = newblue;
 	} else if (sscanf(buf, "%d", &new_val) == 1) {
-		blue[0] = clamp_val(new_val, 0, 255);
-		blue[1] = clamp_val(new_val, 0, 255);
-		blue[2] = clamp_val(new_val, 0, 255);
+		blue[0] = new_val;
+		blue[1] = new_val;
+		blue[2] = new_val;
 	} else {
 		return size;
 	}
+
+	for (i = 0; i < 2; i++)
+		clamp_val(blue[i], 0, 255);
 
 	mDNIe_Set_Mode();
 
