@@ -632,12 +632,18 @@ static ssize_t scenario_store(struct device *dev,
 }
 
 /* LITE_CONTROL_1[4] */
-
 static ssize_t effect_mask_show(struct device *dev, struct device_attribute *attr, char *buf)
 {
 	return sprintf(buf, "Decimal:%u\nHex:0x%x\n", LITE_CONTROL_1[4], LITE_CONTROL_1[4]);
 }
 
+/* Real tuning value */
+static ssize_t mdnie_tune_value_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "Tune Value 0:%s\nTune Value 1:%s\n",
+				   mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][0],
+				   mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][1]);
+}
 /* hijack */
 static ssize_t hijack_show(struct device *dev, struct device_attribute *attr, char *buf)
 {
@@ -1152,6 +1158,7 @@ static ssize_t accessibility_store(struct device *dev,
 }
 
 static DEVICE_ATTR(effect_mask, 0440, effect_mask_show, NULL);
+static DEVICE_ATTR(mdnie_tune_value, 0440, mdnie_tune_value_show, NULL);
 static DEVICE_ATTR(hijack, 0664, hijack_show, hijack_store);
 static DEVICE_ATTR(hijack_effects, 0664, hijack_effects_show, hijack_effects_store);
 static DEVICE_ATTR(effects, 0664, effects_show, effects_store);
@@ -1253,6 +1260,7 @@ void init_mdnie_class(void)
 	device_create_file(tune_mdnie_dev, &dev_attr_gamma);
 	device_create_file(tune_mdnie_dev, &dev_attr_chroma);
 	device_create_file(tune_mdnie_dev, &dev_attr_effect_mask);
+	device_create_file(tune_mdnie_dev, &dev_attr_mdnie_tune_value);
 	mdnie_tun_state.mdnie_enable = true;
 }
 
