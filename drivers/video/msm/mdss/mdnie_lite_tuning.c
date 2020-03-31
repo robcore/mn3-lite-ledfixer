@@ -332,10 +332,9 @@ void update_mdnie_mode(void)
 	int result;
 	unsigned int i;
 
-	if (mdnie_tun_state.scenario != mDNIe_UI_MODE)
-		return;
-	// Determine the source to copy the mode from
-	switch (mdnie_tun_state.background) {
+	switch (mdnie_tun_state.scenario) {
+	case mDNIe_UI_MODE:
+		switch (mdnie_tun_state.background) {
 		case DYNAMIC_MODE:
 			source_1 = DYNAMIC_UI_1;
 			source_2 = DYNAMIC_UI_2;
@@ -358,6 +357,223 @@ void update_mdnie_mode(void)
 			break;
 		default:
 			return;
+		}
+		break;
+	case mDNIe_VIDEO_MODE:
+		switch (mdnie_tun_state.background) {
+		case DYNAMIC_MODE:
+			source_1 = DYNAMIC_VIDEO_1;
+			source_2 = DYNAMIC_VIDEO_2;
+			break;
+		case STANDARD_MODE:
+			source_1 = STANDARD_VIDEO_1;
+			source_2 = STANDARD_VIDEO_2;
+			break;
+		case NATURAL_MODE:
+			source_1 = NATURAL_VIDEO_1;
+			source_2 = NATURAL_VIDEO_2;
+			break;
+		case MOVIE_MODE:
+			source_1 = MOVIE_VIDEO_1;
+			source_2 = MOVIE_VIDEO_2;
+			break;
+		case AUTO_MODE:
+			source_1 = AUTO_VIDEO_1;
+			source_2 = AUTO_VIDEO_2;
+			break;
+		default:
+			return;
+		}
+		break;
+	case mDNIe_VIDEO_WARM_MODE:
+		switch (mdnie_tun_state.background) {
+		case DYNAMIC_MODE:
+		case STANDARD_MODE:
+		case NATURAL_MODE:
+		case MOVIE_MODE:
+		case AUTO_MODE:
+			source_1 = WARM_1;
+			source_2 = WARM_2;
+			break;
+		default:
+			return;
+		}
+		break;
+	case mDNIe_VIDEO_COLD_MODE:
+		switch (mdnie_tun_state.background) {
+		case DYNAMIC_MODE:
+		case STANDARD_MODE:
+		case NATURAL_MODE:
+		case MOVIE_MODE:
+		case AUTO_MODE:
+			source_1 = COLD_1;
+			source_2 = COLD_2;
+			break;
+		default:
+			return;
+		}
+	case mDNIe_CAMERA_MODE:
+		switch (mdnie_tun_state.background) {
+		case DYNAMIC_MODE:
+		case STANDARD_MODE:
+		case NATURAL_MODE:
+		case MOVIE_MODE:
+			source_1 = CAMERA_1;
+			source_2 = CAMERA_2;
+			break;
+		case AUTO_MODE:
+			source_1 = AUTO_CAMERA_1;
+			source_2 = AUTO_CAMERA_2;
+			break;
+		default:
+			return;
+		}
+		break;
+	case mDNIe_NAVI:
+		switch (mdnie_tun_state.background) {
+		case DYNAMIC_MODE:
+			source_1 = DYNAMIC_BROWSER_1;
+			source_2 = DYNAMIC_BROWSER_2;
+			break;
+		case STANDARD_MODE:
+			source_1 = STANDARD_BROWSER_1;
+			source_2 = STANDARD_BROWSER_2;
+			break;
+		case NATURAL_MODE:
+			source_1 = NATURAL_BROWSER_1;
+			source_2 = NATURAL_BROWSER_2;
+			break;
+		case MOVIE_MODE:
+			source_1 = MOVIE_BROWSER_1;
+			source_2 = MOVIE_BROWSER_2;
+			break;
+		case AUTO_MODE:
+			source_1 = AUTO_BROWSER_1;
+			source_2 = AUTO_BROWSER_2;
+			break;
+		default:
+			return;
+		}
+		break;
+	case mDNIe_GALLERY:
+		switch (mdnie_tun_state.background) {
+		case DYNAMIC_MODE:
+			source_1 = DYNAMIC_GALLERY_1;
+			source_2 = DYNAMIC_GALLERY_2;
+			break;
+		case STANDARD_MODE:
+			source_1 = STANDARD_GALLERY_1;
+			source_2 = STANDARD_GALLERY_2;
+			break;
+		case NATURAL_MODE:
+			source_1 = NATURAL_GALLERY_1;
+			source_2 = NATURAL_GALLERY_2;
+			break;
+		case MOVIE_MODE:
+			source_1 = MOVIE_GALLERY_1;
+			source_2 = MOVIE_GALLERY_2;
+			break;
+		case AUTO_MODE:
+			source_1 = AUTO_GALLERY_1;
+			source_2 = AUTO_GALLERY_2;
+			break;
+		default:
+			return;
+		}
+		break;
+	case mDNIe_VT_MODE:
+		switch (mdnie_tun_state.background) {
+		case DYNAMIC_MODE:
+			source_1 = DYNAMIC_VT_1;
+			source_2 = DYNAMIC_VT_2;
+			break;
+		case STANDARD_MODE:
+			source_1 = STANDARD_VT_1;
+			source_2 = STANDARD_VT_2;
+			break;
+		case NATURAL_MODE:
+			source_1 = NATURAL_VT_1;
+			source_2 = NATURAL_VT_2;
+			break;
+		case MOVIE_MODE:
+			source_1 = MOVIE_VT_1;
+			source_2 = MOVIE_VT_2;
+			break;
+		case AUTO_MODE:
+			source_1 = AUTO_VT_1;
+			source_2 = AUTO_VT_2;
+			break;
+		default:
+			return;
+		}
+		break;
+	case mDNIe_BROWSER_MODE:
+		switch (mdnie_tun_state.background) {
+		case DYNAMIC_MODE:
+			source_1 = DYNAMIC_BROWSER_1;
+			source_2 = DYNAMIC_BROWSER_2;
+			break;
+		case STANDARD_MODE:
+			source_1 = STANDARD_BROWSER_1;
+			source_2 = STANDARD_BROWSER_2;
+			break;
+		case NATURAL_MODE:
+			source_1 = NATURAL_BROWSER_1;
+			source_2 = NATURAL_BROWSER_2;
+			break;
+		case MOVIE_MODE:
+			source_1 = MOVIE_BROWSER_1;
+			source_2 = MOVIE_BROWSER_2;
+			break;
+		case AUTO_MODE:
+			source_1 = AUTO_BROWSER_1;
+			source_2 = AUTO_BROWSER_2;
+			break;
+		default:
+			return;
+		}
+		break;
+	case mDNIe_eBOOK_MODE:
+		switch (mdnie_tun_state.background) {
+		case DYNAMIC_MODE:
+			source_1 = DYNAMIC_EBOOK_1;
+			source_2 = DYNAMIC_EBOOK_2;
+			break;
+		case STANDARD_MODE:
+			source_1 = STANDARD_EBOOK_1;
+			source_2 = STANDARD_EBOOK_2;
+			break;
+		case NATURAL_MODE:
+			source_1 = NATURAL_EBOOK_1;
+			source_2 = NATURAL_EBOOK_2;
+			break;
+		case MOVIE_MODE:
+			source_1 = MOVIE_EBOOK_1;
+			source_2 = MOVIE_EBOOK_2;
+			break;
+		case AUTO_MODE:
+			source_1 = AUTO_EBOOK_1;
+			source_2 = AUTO_EBOOK_2;
+			break;
+		default:
+			return;
+		}
+		break;
+	case mDNIe_EMAIL_MODE:
+		switch (mdnie_tun_state.background) {
+		case DYNAMIC_MODE:
+		case STANDARD_MODE:
+		case NATURAL_MODE:
+		case MOVIE_MODE:
+		case AUTO_MODE:
+			source_1 = AUTO_EMAIL_1;
+			source_2 = AUTO_EMAIL_2;
+			break;
+		default:
+			return;
+		}
+	default:
+		return;
 	}
 	for (i = 0; i < 107 ; i++)
 		LITE_CONTROL_2[i] = source_2[i];
