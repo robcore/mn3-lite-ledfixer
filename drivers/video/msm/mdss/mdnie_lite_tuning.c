@@ -326,7 +326,43 @@ void print_tun_data(void)
 	DPRINT("\n");
 }
 
-void update_mdnie_mode(void)
+void free_tun_cmd(void)
+{
+#if defined(CONFIG_FB_MSM_MIPI_VIDEO_WVGA_NT35502_PT_PANEL)
+	memset(tune_data1, 0, MDNIE_TUNE_FIRST_SIZE);
+	memset(tune_data2, 0, MDNIE_TUNE_SECOND_SIZE);
+	memset(tune_data3, 0, MDNIE_TUNE_THIRD_SIZE);
+	memset(tune_data4, 0, MDNIE_TUNE_FOURTH_SIZE);
+	memset(tune_data5, 0, MDNIE_TUNE_FIFTH_SIZE);
+#else
+	memset(tune_data1, 0, MDNIE_TUNE_FIRST_SIZE);
+	memset(tune_data2, 0, MDNIE_TUNE_SECOND_SIZE);
+#endif
+}
+
+void sending_tuning_cmd(void)
+{
+	struct msm_fb_data_type *mfd;
+	struct mdss_dsi_ctrl_pdata *ctrl_pdata;
+
+	mfd = mdnie_msd->mfd;
+	ctrl_pdata = mdnie_msd->ctrl_pdata;
+
+	if (mfd->resume_state == MIPI_SUSPEND_STATE) {
+		DPRINT("[ERROR] not ST_DSI_RESUME. do not send mipi cmd.\n");
+		return;
+	}
+
+	mutex_lock(&mdnie_msd->lock);
+
+#ifdef MDNIE_LITE_TUN_DATA_DEBUG
+	print_tun_data();
+#endif
+	mdss_dsi_cmds_send(ctrl_pdata, mdni_tune_cmd, ARRAY_SIZE(mdni_tune_cmd), 0);
+	mutex_unlock(&mdnie_msd->lock);
+	}
+
+static void update_mdnie_mode(void)
 {
 	unsigned char *source_1, *source_2;
 	int result;
@@ -669,41 +705,6 @@ void update_mdnie_mode(void)
 	}
 }
 
-void free_tun_cmd(void)
-{
-#if defined(CONFIG_FB_MSM_MIPI_VIDEO_WVGA_NT35502_PT_PANEL)
-	memset(tune_data1, 0, MDNIE_TUNE_FIRST_SIZE);
-	memset(tune_data2, 0, MDNIE_TUNE_SECOND_SIZE);
-	memset(tune_data3, 0, MDNIE_TUNE_THIRD_SIZE);
-	memset(tune_data4, 0, MDNIE_TUNE_FOURTH_SIZE);
-	memset(tune_data5, 0, MDNIE_TUNE_FIFTH_SIZE);
-#else
-	memset(tune_data1, 0, MDNIE_TUNE_FIRST_SIZE);
-	memset(tune_data2, 0, MDNIE_TUNE_SECOND_SIZE);
-#endif
-}
-
-void sending_tuning_cmd(void)
-{
-	struct msm_fb_data_type *mfd;
-	struct mdss_dsi_ctrl_pdata *ctrl_pdata;
-
-	mfd = mdnie_msd->mfd;
-	ctrl_pdata = mdnie_msd->ctrl_pdata;
-
-	if (mfd->resume_state == MIPI_SUSPEND_STATE) {
-		DPRINT("[ERROR] not ST_DSI_RESUME. do not send mipi cmd.\n");
-		return;
-	}
-
-	mutex_lock(&mdnie_msd->lock);
-
-#ifdef MDNIE_LITE_TUN_DATA_DEBUG
-	print_tun_data();
-#endif
-	mdss_dsi_cmds_send(ctrl_pdata, mdni_tune_cmd, ARRAY_SIZE(mdni_tune_cmd), 0);
-	mutex_unlock(&mdnie_msd->lock);
-	}
 /*
  * mDnie priority
  * Accessibility > HBM > Screen Mode

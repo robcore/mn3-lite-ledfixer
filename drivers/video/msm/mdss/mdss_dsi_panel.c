@@ -492,14 +492,79 @@ static int mdss_dsi_panel_event_handler(int event)
 {
 	pr_info("%s : %d",__func__,event);
 	switch (event) {
+		case MDSS_EVENT_RESET:
+			pr_info("%s : Panel Reset\n",__func__);
+			break;
+		case MDSS_EVENT_UNBLANK:
+			pr_info("%s : Panel Unblank\n",__func__);
+			break;
+		case MDSS_EVENT_PANEL_ON:
+			pr_info("%s : Panel On\n",__func__);
+			break;
+		case MDSS_EVENT_BLANK:
+			pr_info("%s : Panel Blank\n",__func__);
+			break;
+		case MDSS_EVENT_PANEL_OFF:
+			pr_info("%s : Panel off\n",__func__);
+			break;
+		case MDSS_EVENT_CLOSE:
+			pr_info("%s : Cover Closed\n",__func__);
+			break;
+		case MDSS_EVENT_SUSPEND:
+			pr_info("%s : Panel Suspend\n",__func__);
+			break;
+		case MDSS_EVENT_RESUME:
+			pr_info("%s : Panel Resume\n",__func__);
+			break;
+		case MDSS_EVENT_CHECK_PARAMS:
+			pr_info("%s : Panel Check Params\n",__func__);
+			break;
+		case MDSS_EVENT_CONT_SPLASH_BEGIN:
+			pr_info("%s : Panel Splash Begin\n",__func__);
+			break;
+		case MDSS_EVENT_CONT_SPLASH_FINISH:
+			pr_info("%s : Panel Splash Finish\n",__func__);
+			break;
+		case MDSS_EVENT_FIRST_FRAME_UPDATE:
+			pr_info("%s : Panel First Frame Update\n",__func__);
+			break;
+		case MDSS_EVENT_PANEL_UPDATE_FPS:
+			pr_info("%s : Panel Update FPS\n",__func__);
+			break;
+		case MDSS_EVENT_FB_REGISTERED:
+			pr_info("%s : Panel Framebuffer Registered\n",__func__);
+			break;
+		case MDSS_EVENT_FRAME_UPDATE:
+			pr_info("%s : Panel Frame Update\n",__func__);
+			break;
+		case MDSS_EVENT_PANEL_CLK_CTRL:
+			pr_info("%s : Panel Clock Control\n",__func__);
+			break;
+		case MDSS_EVENT_DSI_CMDLIST_KOFF:
+			pr_info("%s : Panel Kickoff\n",__func__);
+			break;
 #if defined(CONFIG_MDNIE_LITE_TUNING)
 		case MDSS_EVENT_MDNIE_DEFAULT_UPDATE:
-			pr_info("%s : send CONFIG_MDNIE_LITE_TUNING... \n",__func__);
+			pr_info("%s : Setting mDNIe Mode\n",__func__);
 			mDNIe_Set_Mode();
 			break;
 #endif
+		case MDSS_EVENT_ENABLE_PARTIAL_UPDATE:
+			pr_info("%s : Enable Partial Update\n",__func__);
+			break;
+		case MDSS_EVENT_DSI_ULPS_CTRL:
+			pr_info("%s : DSI ULPS CTRL\n",__func__);
+			break;
+		case MDSS_EVENT_REGISTER_RECOVERY_HANDLER:
+			pr_info("%s : Registered Recovery Handler\n",__func__);
+			break;
+		case MDSS_EVENT_DSI_DYNAMIC_SWITCH:
+			pr_info("%s : DSI Dynamic Switch\n",__func__);
+			break;
+		case MDSS_EVENT_BACKLIGHT_LATE_ON:
+			pr_info("%s : Backlight Late On\n",__func__);
+			break;
 		default:
-			pr_err("%s : unknown event (%d)\n", __func__, event);
 			break;
 	}
 
@@ -566,8 +631,8 @@ static int mdss_dsi_panel_off(struct mdss_panel_data *pdata)
 		mdss_dsi_panel_cmds_send(ctrl, &ctrl->off_cmds);
 
 #if defined(CONFIG_MDSS_DSI_EVENT_HANDLER_PANEL)
-#if defined(CONFIG_FB_MSM_MDSS_MDP3)
 	msd.mfd->resume_state = MIPI_SUSPEND_STATE;
+#if defined(CONFIG_FB_MSM_MDSS_MDP3)
 	mutex_unlock(&msd.lock);
 #endif
 #endif
