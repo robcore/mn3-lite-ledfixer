@@ -1657,7 +1657,7 @@ static int gcontrol_offset(int input_color)
 		case 20:
 		case 23:
 			ret = gcontrol_blue;
-			break
+			break;
 		default:
 			break;
 	}
