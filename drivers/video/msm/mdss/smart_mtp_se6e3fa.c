@@ -224,7 +224,7 @@ static void v255_hexa(int *index, struct SMART_DIM *pSmart, char *str)
 	(pSmart->GRAY.TABLE[index[V255_INDEX]].R_Gray);
 	result_2 = result_1 * v255_denominator;
 	do_div(result_2, S6E3FA_VREG0_REF);
-	result_3 = result_2  - v255_coefficient;
+	result_3 = result_2 - v255_coefficient;
 	str[0] = (result_3 & 0xff00) >> 8;
 	str[1] = result_3 & 0xff;
 
@@ -232,7 +232,7 @@ static void v255_hexa(int *index, struct SMART_DIM *pSmart, char *str)
 	(pSmart->GRAY.TABLE[index[V255_INDEX]].G_Gray);
 	result_2 = result_1 * v255_denominator;
 	do_div(result_2, S6E3FA_VREG0_REF);
-	result_3 = result_2  - v255_coefficient;
+	result_3 = result_2 - v255_coefficient;
 	str[2] = (result_3 & 0xff00) >> 8;
 	str[3] = result_3 & 0xff;
 
@@ -240,7 +240,7 @@ static void v255_hexa(int *index, struct SMART_DIM *pSmart, char *str)
 		(pSmart->GRAY.TABLE[index[V255_INDEX]].B_Gray);
 	result_2 = result_1 * v255_denominator;
 	do_div(result_2, S6E3FA_VREG0_REF);
-	result_3 = result_2  - v255_coefficient;
+	result_3 = result_2 - v255_coefficient;
 	str[4] = (result_3 & 0xff00) >> 8;
 	str[5] = result_3 & 0xff;
 }
@@ -1622,6 +1622,10 @@ static int ccg6_candela_table[][2] = {
 
 static int gcontrol_offset(int input_color)
 {
+	int ret = 0;
+
+	if (!gcontrol_enabled)
+		return ret;
 
 	switch (input_color) {
 		case 0:
@@ -1632,7 +1636,8 @@ static int gcontrol_offset(int input_color)
 		case 15:
 		case 18:
 		case 21:
-			return gcontrol_red;
+			ret = gcontrol_red;
+			break;
 		case 1: //G
 		case 4:
 		case 7:
@@ -1641,7 +1646,8 @@ static int gcontrol_offset(int input_color)
 		case 16:
 		case 19:
 		case 22:
-			return gcontrol_green;
+			ret = gcontrol_green;
+			break;
 		case 2: //B
 		case 5:
 		case 8:
@@ -1650,11 +1656,12 @@ static int gcontrol_offset(int input_color)
 		case 17:
 		case 20:
 		case 23:
-			return gcontrol_blue;
+			ret = gcontrol_blue;
+			break
 		default:
 			break;
 	}
-	return 0;
+	return ret;
 }
 
 static void gamma_init_H_revJ(struct SMART_DIM *pSmart, char *str, int size)
