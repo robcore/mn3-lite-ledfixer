@@ -140,8 +140,8 @@ static unsigned int effects = 0;
 static unsigned int sharpen = 0;
 static unsigned int chroma = 0;
 static unsigned int gamma = 0;
-static int effects_bit = 3;
-static int sharpen_bit = 2;
+static int sharpen_bit = 3;
+static int effects_bit = 2;
 static int chroma_bit = 1;
 static int gamma_bit = 0;
 /* Hijack Extra End  */
@@ -178,10 +178,7 @@ struct mdnie_lite_tun_type mdnie_tun_state = {
 #endif
 };
 
-#if !defined(CONFIG_TDMB)
-const
-#endif
-char scenario_name[MAX_mDNIe_MODE][16] = {
+const char scenario_name[MAX_mDNIe_MODE][16] = {
 	"UI_MODE",
 	"VIDEO_MODE",
 	"VIDEO_WARM_MODE",
@@ -193,10 +190,6 @@ char scenario_name[MAX_mDNIe_MODE][16] = {
 	"BROWSER",
 	"eBOOK",
 	"EMAIL",
-#if defined(CONFIG_LCD_HMT)
-	"HMT_8",
-	"HMT_16",
-#endif
 };
 
 const char background_name[MAX_BACKGROUND_MODE][10] = {
@@ -217,15 +210,9 @@ const char outdoor_name[MAX_OUTDOOR_MODE][20] = {
 const char accessibility_name[ACCESSIBILITY_MAX][20] = {
 	"ACCESSIBILITY_OFF",
 	"NEGATIVE_MODE",
-#ifndef	NEGATIVE_COLOR_USE_ACCESSIBILLITY
 	"COLOR_BLIND_MODE",
-#if defined(CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_CMD_WQHD_PT_PANEL) || \
-	defined(CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_CMD_FULL_HD_PT_PANEL) || defined (CONFIG_FB_MSM_MIPI_MAGNA_OCTA_CMD_HD_PT_PANEL)||\
-	defined(CONFIG_FB_MSM_MDSS_MAGNA_OCTA_VIDEO_720P_PANEL)	|| defined(CONFIG_FB_MSM_MIPI_MAGNA_OCTA_VIDEO_WXGA_PT_DUAL_PANEL) ||\
-	defined(CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_CMD_WQXGA_S6E3HA1_PT_PANEL) || defined(CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_VIDEO_FULL_HD_PT_PANEL)
 	"SCREEN_CURTAIN_MODE",
-#endif
-#endif /* NEGATIVE_COLOR_USE_ACCESSIBILLITY */
+
 };
 
 #if defined(CONFIG_FB_MSM_MIPI_VIDEO_WVGA_NT35502_PT_PANEL)
@@ -328,16 +315,8 @@ void print_tun_data(void)
 
 void free_tun_cmd(void)
 {
-#if defined(CONFIG_FB_MSM_MIPI_VIDEO_WVGA_NT35502_PT_PANEL)
 	memset(tune_data1, 0, MDNIE_TUNE_FIRST_SIZE);
 	memset(tune_data2, 0, MDNIE_TUNE_SECOND_SIZE);
-	memset(tune_data3, 0, MDNIE_TUNE_THIRD_SIZE);
-	memset(tune_data4, 0, MDNIE_TUNE_FOURTH_SIZE);
-	memset(tune_data5, 0, MDNIE_TUNE_FIFTH_SIZE);
-#else
-	memset(tune_data1, 0, MDNIE_TUNE_FIRST_SIZE);
-	memset(tune_data2, 0, MDNIE_TUNE_SECOND_SIZE);
-#endif
 }
 
 void sending_tuning_cmd(void)
@@ -721,12 +700,13 @@ void mDNIe_Set_Mode(void)
 		return;
 	}
 
-	if ((mfd->blank_mode) || (mfd->resume_state == MIPI_SUSPEND_STATE) || \
-		(!mdnie_tun_state.mdnie_enable))
+	if (!mdnie_tun_state.mdnie_enable)
+		return;
+
+	if ((mfd->blank_mode) || (mfd->resume_state == MIPI_SUSPEND_STATE))
 		return;
 
 	play_speed_1_5 = 0;
-
 	update_mdnie_mode();
 	if (hijack == 1) {
 		DPRINT(" = CONTROL MODE =\n");
@@ -854,13 +834,6 @@ static ssize_t effect_mask_show(struct device *dev, struct device_attribute *att
 	return sprintf(buf, "Decimal:%u\nHex:0x%x\n", LITE_CONTROL_1[4], LITE_CONTROL_1[4]);
 }
 
-/* Real tuning value */
-static ssize_t mdnie_tune_value_show(struct device *dev, struct device_attribute *attr, char *buf)
-{
-	return sprintf(buf, "Tune Value 0:%s\nTune Value 1:%s\n",
-				   mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][0],
-				   mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][1]);
-}
 /* hijack */
 static ssize_t hijack_show(struct device *dev, struct device_attribute *attr, char *buf)
 {
@@ -1346,15 +1319,9 @@ static ssize_t accessibility_store(struct device *dev,
 #ifndef	NEGATIVE_COLOR_USE_ACCESSIBILLITY
 	else if (cmd_value == COLOR_BLIND) {
 		mdnie_tun_state.accessibility = COLOR_BLIND;
-
-		#if defined (CONFIG_FB_MSM_MDSS_SHARP_HD_PANEL)
-        memcpy(&COLOR_BLIND_2[MDNIE_COLOR_BLINDE_CMD],
-                                buffer, MDNIE_COLOR_BLINDE_CMD);
-		#else
 		memcpy(&COLOR_BLIND_2[MDNIE_COLOR_BLINDE_OFFSET],
 				buffer, MDNIE_COLOR_BLINDE_CMD);
 		}
-		#endif
 	else if (cmd_value == SCREEN_CURTAIN) {
 		mdnie_tun_state.accessibility = SCREEN_CURTAIN;
 	}
@@ -1375,7 +1342,6 @@ static ssize_t accessibility_store(struct device *dev,
 }
 
 static DEVICE_ATTR(effect_mask, 0440, effect_mask_show, NULL);
-static DEVICE_ATTR(mdnie_tune_value, 0440, mdnie_tune_value_show, NULL);
 static DEVICE_ATTR(hijack, 0664, hijack_show, hijack_store);
 static DEVICE_ATTR(hijack_effects, 0664, hijack_effects_show, hijack_effects_store);
 static DEVICE_ATTR(effects, 0664, effects_show, effects_store);
@@ -1477,7 +1443,6 @@ void init_mdnie_class(void)
 	device_create_file(tune_mdnie_dev, &dev_attr_gamma);
 	device_create_file(tune_mdnie_dev, &dev_attr_chroma);
 	device_create_file(tune_mdnie_dev, &dev_attr_effect_mask);
-	device_create_file(tune_mdnie_dev, &dev_attr_mdnie_tune_value);
 	mdnie_tun_state.mdnie_enable = true;
 }
 

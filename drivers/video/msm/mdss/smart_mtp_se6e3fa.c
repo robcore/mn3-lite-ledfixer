@@ -262,7 +262,9 @@ static void v255_hexa(int *index, struct SMART_DIM *pSmart, char *str)
 	do_div(result_2, S6E3FA_VREG0_REF);
 	result_3 = result_2  - v255_coefficient;
 	str[0] = (result_3 & 0xff00) >> 8;
+	pr_info("%s: V255 R str[0]: %lu\n", __func__, (result_3 & 0xff00) >> 8));
 	str[1] = result_3 & 0xff;
+	pr_info("%s: V255 R str[1]: %lu\n", __func__, (result_3 & 0xff));
 
 	result_1 = S6E3FA_VREG0_REF -
 		(pSmart->GRAY.TABLE[index[V255_INDEX]].G_Gray);
@@ -270,7 +272,9 @@ static void v255_hexa(int *index, struct SMART_DIM *pSmart, char *str)
 	do_div(result_2, S6E3FA_VREG0_REF);
 	result_3 = result_2  - v255_coefficient;
 	str[2] = (result_3 & 0xff00) >> 8;
+	pr_info("%s: V255 G str[2]: %lu\n", __func__, ((result_3 & 0xff00) >> 8));
 	str[3] = result_3 & 0xff;
+	pr_info("%s: V255 G str[3]: %lu\n", __func__, (result_3 & 0xff));
 
 	result_1 = S6E3FA_VREG0_REF -
 			(pSmart->GRAY.TABLE[index[V255_INDEX]].B_Gray);
@@ -278,8 +282,9 @@ static void v255_hexa(int *index, struct SMART_DIM *pSmart, char *str)
 	do_div(result_2, S6E3FA_VREG0_REF);
 	result_3 = result_2  - v255_coefficient;
 	str[4] = (result_3 & 0xff00) >> 8;
+	pr_info("%s: V255 B str[4]: %lu\n", __func__, ((result_3 & 0xff00) >> 8));
 	str[5] = result_3 & 0xff;
-
+	pr_info("%s: V255 B str[5]: %lu\n", __func__, (result_3 & 0xff));
 }
 /*
 static int vt_coefficient[] = {
@@ -335,8 +340,11 @@ static int vt_adjustment(struct SMART_DIM *pSmart)
 static void vt_hexa(int *index, struct SMART_DIM *pSmart, char *str)
 {
 	str[30] = VT_300CD_R;
+	pr_info("%s: VT R str[30]: %lu\n", __func__, VT_300CD_R);
 	str[31] = VT_300CD_G;
+	pr_info("%s: VT G str[31]: %lu\n", __func__, VT_300CD_G);
 	str[32] = VT_300CD_B;
+	pr_info("%s: VT B str[32]: %lu\n", __func__, VT_300CD_B);
 }
 
 #define v203_coefficient 64
@@ -403,6 +411,7 @@ static void v203_hexa(int *index, struct SMART_DIM *pSmart, char *str)
 			- (pSmart->GRAY.TABLE[index[V255_INDEX]].R_Gray);
 	do_div(result_2, result_3);
 	str[6] = (result_2  - v203_coefficient) & 0xff;
+	pr_info("%s: V203 R str[6]: %lu\n", __func__, ((result_2  - v203_coefficient) & 0xff));
 
 	result_1 = (pSmart->GRAY.VT_TABLE.G_Gray)
 			- (pSmart->GRAY.TABLE[index[V203_INDEX]].G_Gray);
@@ -411,6 +420,7 @@ static void v203_hexa(int *index, struct SMART_DIM *pSmart, char *str)
 			- (pSmart->GRAY.TABLE[index[V255_INDEX]].G_Gray);
 	do_div(result_2, result_3);
 	str[7] = (result_2  - v203_coefficient) & 0xff;
+	pr_info("%s: V203 G str[7]: %lu\n", __func__, ((result_2  - v203_coefficient) & 0xff));
 
 	result_1 = (pSmart->GRAY.VT_TABLE.B_Gray)
 			- (pSmart->GRAY.TABLE[index[V203_INDEX]].B_Gray);
@@ -419,7 +429,7 @@ static void v203_hexa(int *index, struct SMART_DIM *pSmart, char *str)
 			- (pSmart->GRAY.TABLE[index[V255_INDEX]].B_Gray);
 	do_div(result_2, result_3);
 	str[8] = (result_2  - v203_coefficient) & 0xff;
-
+	pr_info("%s: V203 B str[7]: %lu\n", __func__, ((result_2  - v203_coefficient) & 0xff));
 }
 
 #define v151_coefficient 64
@@ -489,6 +499,7 @@ static void v151_hexa(int *index, struct SMART_DIM *pSmart, char *str)
 			- (pSmart->GRAY.TABLE[index[V203_INDEX]].R_Gray);
 	do_div(result_2, result_3);
 	str[9] = (result_2  - v151_coefficient) & 0xff;
+	pr_info("%s: V151 R str[9]: %lu\n", __func__, ((result_2  - v151_coefficient) & 0xff));
 
 	result_1 = (pSmart->GRAY.VT_TABLE.G_Gray)
 			- (pSmart->GRAY.TABLE[index[V151_INDEX]].G_Gray);
@@ -497,6 +508,7 @@ static void v151_hexa(int *index, struct SMART_DIM *pSmart, char *str)
 			- (pSmart->GRAY.TABLE[index[V203_INDEX]].G_Gray);
 	do_div(result_2, result_3);
 	str[10] = (result_2  - v151_coefficient) & 0xff;
+	pr_info("%s: V151 G str[10]: %lu\n", __func__, ((result_2  - v151_coefficient) & 0xff));
 
 	result_1 = (pSmart->GRAY.VT_TABLE.B_Gray)
 			- (pSmart->GRAY.TABLE[index[V151_INDEX]].B_Gray);
@@ -505,6 +517,7 @@ static void v151_hexa(int *index, struct SMART_DIM *pSmart, char *str)
 			- (pSmart->GRAY.TABLE[index[V203_INDEX]].B_Gray);
 	do_div(result_2, result_3);
 	str[11] = (result_2  - v151_coefficient) & 0xff;
+	pr_info("%s: V151 B str[11]: %lu\n", __func__, ((result_2  - v151_coefficient) & 0xff));
 }
 
 #define v87_coefficient 64
