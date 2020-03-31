@@ -491,7 +491,7 @@ create_zip() {
 			if [ "$?" -eq "0" ]
 			then
 				echo "Successfully pushed $RDIR/$MX_KERNEL_VERSION.zip to $ADBPUSHLOCATION over ADB!"
-				echo "Rebooting Device into Recovery"
+				#echo "Rebooting Device into Recovery"
 				#adb reboot recovery
 			else
 				echo "Failed to push $RDIR/$MX_KERNEL_VERSION.zip to $ADBPUSHLOCATION over ADB!"
