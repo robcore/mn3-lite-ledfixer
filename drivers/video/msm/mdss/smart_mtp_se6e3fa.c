@@ -121,9 +121,12 @@ static int char_to_int_v255(char data1, char data2)
 
 static bool first_adj_complete = false;
 static unsigned int gcontrol_enabled = 0;
-static int gcontrol_red = 0;
-static int gcontrol_green = 0;
-static int gcontrol_blue = 0;
+static int gcontrol_red_offset = 0;
+static int gcontrol_green_offset = 0;
+static int gcontrol_blue_offset = 0;
+static int gcontrol_red_override = 0;
+static int gcontrol_green_override = 0;
+static int gcontrol_blue_override = 0;
 
 #ifdef SMART_DIMMING_DEBUG
 static void print_RGB_offset(struct SMART_DIM *pSmart)
@@ -1404,14 +1407,13 @@ static int ccg6_candela_table[][2] = {
 static int find_cadela_table(int brightness)
 {
 	int loop;
-	int err = -1;
 
-	for (loop = 0; loop <= CCG6_MAX_TABLE; loop++) {
+	for (loop = 0; loop < CCG6_MAX_TABLE; loop++) {
 		if (ccg6_candela_table[loop][0] == brightness)
 			return ccg6_candela_table[loop][1];
 	}
 
-	return err;
+	return ccg6_candela_table[CCG6_MAX_TABLE][1];
 }
 
 #define RGB_COMPENSATION 24
@@ -1479,7 +1481,7 @@ static int gradation_offset_H_revJ[][9] = {
 	{1, 0, 0, 0, 0, 0, 0, 0, 0},
 	{1, 0, 0, 0, 0, 0, 0, 0, 0},
 	{1, 0, 0, 0, -1, -1, -1, -1, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{1, 1, 0, 0, 0, 0, 0, 0, 0},
 };
 
 static int rgb_offset_H_revJ[][RGB_COMPENSATION] = {
@@ -1551,76 +1553,15 @@ static int rgb_offset_H_revJ[][RGB_COMPENSATION] = {
 	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 };
 
-/*
-for reference
-#define CCG6_MAX_TABLE 61
-static int ccg6_candela_table[][2] = {
-{5, 0,},
-{6, 1,},
-{7, 2,},
-{8, 3,},
-{9, 4,},
-{10, 5,},
-{11, 6,},
-{12, 7,},
-{13, 8,},
-{14, 9,},
-{15, 10,},
-{16, 11,},
-{17, 12,},
-{19, 13,},
-{20, 14,},
-{21, 15,},
-{22, 16,},
-{24, 17,},
-{25, 18,},
-{27, 19,},
-{29, 20,},
-{30, 21,},
-{32, 22,},
-{34, 23,},
-{37, 24,},
-{39, 25,},
-{41, 26,},
-{44, 27,},
-{47, 28,},
-{50, 29,},
-{53, 30,},
-{56, 31,},
-{60, 32,},
-{64, 33,},
-{68, 34,},
-{72, 35,},
-{77, 36,},
-{82, 37,},
-{87, 38,},
-{93, 39,},
-{98, 40,},
-{105, 41,},
-{111, 42,},
-{119, 43,},
-{126, 44,},
-{134, 45,},
-{143, 46,},
-{152, 47,},
-{162, 48,},
-{172, 49,},
-{183, 50,},
-{195, 51,},
-{207, 52,},
-{220, 53,},
-{234, 54,},
-{249, 55,},
-{265, 56,},
-{282, 57,},
-{300, 58,},
-{316, 59,},
-{333, 60,},
-{350, 61,},
-};
-*/
+static bool gc_override(void)
+{
+	if (!gcontrol_red_override && !gcontrol_green_override && !gcontrol_blue_override)
+		return false;
 
-static int gcontrol_offset(int input_color)
+	return true;
+}
+
+static int gcontrol_rgb_override(int input_color)
 {
 	int ret = 0;
 
@@ -1636,7 +1577,7 @@ static int gcontrol_offset(int input_color)
 		case 15:
 		case 18:
 		case 21:
-			ret = gcontrol_red;
+			ret = gcontrol_red_override;
 			break;
 		case 1: //G
 		case 4:
@@ -1646,7 +1587,7 @@ static int gcontrol_offset(int input_color)
 		case 16:
 		case 19:
 		case 22:
-			ret = gcontrol_green;
+			ret = gcontrol_green_override;
 			break;
 		case 2: //B
 		case 5:
@@ -1656,7 +1597,51 @@ static int gcontrol_offset(int input_color)
 		case 17:
 		case 20:
 		case 23:
-			ret = gcontrol_blue;
+			ret = gcontrol_blue_override;
+			break;
+		default:
+			break;
+	}
+	return ret;
+}
+
+static int gcontrol_rgb_offset(int input_color)
+{
+	int ret = 0;
+
+	if (!gcontrol_enabled)
+		return ret;
+
+	switch (input_color) {
+		case 0:
+		case 3:
+		case 6:
+		case 9:
+		case 12:
+		case 15:
+		case 18:
+		case 21:
+			ret = gcontrol_red_offset;
+			break;
+		case 1: //G
+		case 4:
+		case 7:
+		case 10:
+		case 13:
+		case 16:
+		case 19:
+		case 22:
+			ret = gcontrol_green_offset;
+			break;
+		case 2: //B
+		case 5:
+		case 8:
+		case 11:
+		case 14:
+		case 17:
+		case 20:
+		case 23:
+			ret = gcontrol_blue_offset;
 			break;
 		default:
 			break;
@@ -1748,10 +1733,6 @@ static void gamma_init_H_revJ(struct SMART_DIM *pSmart, char *str, int size)
 	for (cnt = 1; cnt < S6E3FA_TABLE_MAX; cnt++) {
 		table_index = find_cadela_table(pSmart->brightness_level);
 
-		if (table_index == -1) {
-			table_index = CCG6_MAX_TABLE;
-		}
-
 		bl_index[S6E3FA_TABLE_MAX - cnt] +=
 			gradation_offset_H_revJ[table_index][cnt - 1];
 
@@ -1769,71 +1750,28 @@ static void gamma_init_H_revJ(struct SMART_DIM *pSmart, char *str, int size)
 	for (cnt = 0; cnt < RGB_COMPENSATION; cnt++) {
 		table_index = find_cadela_table(pSmart->brightness_level);
 
-		if (table_index == -1)
-			table_index = CCG6_MAX_TABLE;
-
 		if (cnt < 3) {
 			level_V255 = str[cnt * 2] << 8 | str[(cnt * 2) + 1];
-			level_V255 +=
-				rgb_offset_H_revJ[table_index][cnt] + gcontrol_offset(cnt);
+			if (gcontrol_enabled && gc_override())
+				level_V255 += gcontrol_rgb_override(cnt);				
+			else
+				level_V255 +=
+					rgb_offset_H_revJ[table_index][cnt] + gcontrol_rgb_offset(cnt);
+
 			level_255_temp_MSB = level_V255 / 256;
 
 			str[cnt * 2] = level_255_temp_MSB & 0xff;
 			str[(cnt * 2) + 1] = level_V255 & 0xff;
 		} else {
-			str[cnt+3] += rgb_offset_H_revJ[table_index][cnt] + gcontrol_offset(cnt);
+			if (gcontrol_enabled && gc_override())
+				str[cnt+3] += gcontrol_rgb_override(cnt);
+			else
+				str[cnt+3] += rgb_offset_H_revJ[table_index][cnt] + gcontrol_rgb_offset(cnt);
 		}
 	}
 	/*subtration MTP_OFFSET value from generated gamma table*/
 	mtp_offset_substraction(pSmart, str);
 }
-
-static void pure_gamma_init(struct SMART_DIM *pSmart, char *str, int size)
-{
-	long long candela_level[S6E3FA_TABLE_MAX] = {-1, };
-	int bl_index[S6E3FA_TABLE_MAX] = {-1, };
-	int bl_level, cnt, point_index;
-
-	bl_level = pSmart->brightness_level;
-
-	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
-			point_index = S6E3FA_ARRAY[cnt+1];
-			candela_level[cnt] = ((long long)(candela_coeff_2p2[point_index])) * ((long long)(bl_level));
-	}
-
-	/*calculate brightness level*/
-	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
-			if (searching_function(candela_level[cnt],
-				&(bl_index[cnt]), GAMMA_CURVE_1P9)) {
-				pr_info("%s searching functioin error cnt:%d\n",
-					__func__, cnt);
-			}
-	}
-
-	/*
-	*	210CD ~ 190CD compensation
-	*	V3 level + 1
-	*/
-	if ((bl_level >= 190) && (bl_level <= 210))
-		bl_index[1] += 1;
-
-#ifdef SMART_DIMMING_DEBUG
-	pr_info("\n bl_index_1:%d  bl_index_3:%d  bl_index_11:%d",
-	bl_index[0], bl_index[1], bl_index[2]);
-	pr_info("bl_index_23:%d bl_index_35:%d  bl_index_51:%d",
-		bl_index[3], bl_index[4], bl_index[5]);
-	pr_info("bl_index_87:%d  bl_index_151:%d bl_index_203:%d",
-		bl_index[5], bl_index[7], bl_index[8]);
-	pr_info("bl_index_255:%d\n", bl_index[9]);
-#endif
-
-	/*Generate Gamma table*/
-	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++)
-		(void)Make_hexa[cnt](bl_index , pSmart, str);
-
-	mtp_offset_substraction(pSmart, str);
-}
-
 
 static void set_max_lux_table(void)
 {
@@ -1888,7 +1826,7 @@ static void set_max_lux_table(void)
 static void set_min_lux_table(struct SMART_DIM *psmart)
 {
 	psmart->brightness_level = MIN_CANDELA;
-	pure_gamma_init(psmart, min_lux_table, GAMMA_SET_MAX);
+	gamma_init_H_revJ(psmart, min_lux_table, GAMMA_SET_MAX);
 }
 
 static void get_min_lux_table(char *str, int size)
@@ -1993,44 +1931,86 @@ static void mtp_sorting(struct SMART_DIM *psmart)
 
 static void wrap_smart_dimming_init(void);
 
-static ssize_t gcontrol_red_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+static ssize_t gcontrol_red_offset_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%d\n", gcontrol_red);
+	return sprintf(buf, "%d\n", gcontrol_red_offset);
 }
 
-static ssize_t gcontrol_red_store(struct kobject *kobj,
+static ssize_t gcontrol_red_offset_store(struct kobject *kobj,
 			   struct kobj_attribute *attr, const char *buf, size_t count) {
 	int newval;
 	sscanf(buf, "%d", &newval);
-	gcontrol_red = newval;
+	gcontrol_red_offset = newval;
 	wrap_smart_dimming_init();
 	return count;
 }
 
-static ssize_t gcontrol_green_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+static ssize_t gcontrol_green_offset_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%d\n", gcontrol_green);
+	return sprintf(buf, "%d\n", gcontrol_green_offset);
 }
 
-static ssize_t gcontrol_green_store(struct kobject *kobj,
+static ssize_t gcontrol_green_offset_store(struct kobject *kobj,
 			   struct kobj_attribute *attr, const char *buf, size_t count) {
 	int newval;
 	sscanf(buf, "%d", &newval);
-	gcontrol_green = newval;
+	gcontrol_green_offset = newval;
 	wrap_smart_dimming_init();
 	return count;
 }
 
-static ssize_t gcontrol_blue_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+static ssize_t gcontrol_blue_offset_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%d\n", gcontrol_blue);
+	return sprintf(buf, "%d\n", gcontrol_blue_offset);
 }
 
-static ssize_t gcontrol_blue_store(struct kobject *kobj,
+static ssize_t gcontrol_blue_offset_store(struct kobject *kobj,
 			   struct kobj_attribute *attr, const char *buf, size_t count) {
 	int newval;
 	sscanf(buf, "%d", &newval);
-	gcontrol_blue = newval;
+	gcontrol_blue_offset = newval;
+	wrap_smart_dimming_init();
+	return count;
+}
+
+static ssize_t gcontrol_red_override_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%d\n", gcontrol_red_override);
+}
+
+static ssize_t gcontrol_red_override_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count) {
+	int newval;
+	sscanf(buf, "%d", &newval);
+	gcontrol_red_override = newval;
+	wrap_smart_dimming_init();
+	return count;
+}
+
+static ssize_t gcontrol_green_override_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%d\n", gcontrol_green_override);
+}
+
+static ssize_t gcontrol_green_override_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count) {
+	int newval;
+	sscanf(buf, "%d", &newval);
+	gcontrol_green_override = newval;
+	wrap_smart_dimming_init();
+	return count;
+}
+
+static ssize_t gcontrol_blue_override_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%d\n", gcontrol_blue_override);
+}
+
+static ssize_t gcontrol_blue_override_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count) {
+	int newval;
+	sscanf(buf, "%d", &newval);
+	gcontrol_blue_override = newval;
 	wrap_smart_dimming_init();
 	return count;
 }
@@ -2049,20 +2029,35 @@ static ssize_t gcontrol_enabled_store(struct kobject *kobj,
 	return count;
 }
 
-static struct kobj_attribute gcontrol_red_attribute =
-	__ATTR(gcontrol_red, 0644,
-		gcontrol_red_show,
-		gcontrol_red_store);
+static struct kobj_attribute gcontrol_red_offset_attribute =
+	__ATTR(gcontrol_red_offset, 0644,
+		gcontrol_red_offset_show,
+		gcontrol_red_offset_store);
 
-static struct kobj_attribute gcontrol_green_attribute =
-	__ATTR(gcontrol_green, 0644,
-		gcontrol_green_show,
-		gcontrol_green_store);
+static struct kobj_attribute gcontrol_green_offset_attribute =
+	__ATTR(gcontrol_green_offset, 0644,
+		gcontrol_green_offset_show,
+		gcontrol_green_offset_store);
 
-static struct kobj_attribute gcontrol_blue_attribute =
-	__ATTR(gcontrol_blue, 0644,
-		gcontrol_blue_show,
-		gcontrol_blue_store);
+static struct kobj_attribute gcontrol_blue_offset_attribute =
+	__ATTR(gcontrol_blue_offset, 0644,
+		gcontrol_blue_offset_show,
+		gcontrol_blue_offset_store);
+
+static struct kobj_attribute gcontrol_red_override_attribute =
+	__ATTR(gcontrol_red_override, 0644,
+		gcontrol_red_override_show,
+		gcontrol_red_override_store);
+
+static struct kobj_attribute gcontrol_green_override_attribute =
+	__ATTR(gcontrol_green_override, 0644,
+		gcontrol_green_override_show,
+		gcontrol_green_override_store);
+
+static struct kobj_attribute gcontrol_blue_override_attribute =
+	__ATTR(gcontrol_blue_override, 0644,
+		gcontrol_blue_override_show,
+		gcontrol_blue_override_store);
 
 static struct kobj_attribute gcontrol_enabled_attribute =
 	__ATTR(gcontrol_enabled, 0644,
@@ -2071,9 +2066,12 @@ static struct kobj_attribute gcontrol_enabled_attribute =
 
 static struct attribute *gamma_control_attrs[] =
 {
-	&gcontrol_red_attribute.attr,
-	&gcontrol_green_attribute.attr,
-	&gcontrol_blue_attribute.attr,
+	&gcontrol_red_offset_attribute.attr,
+	&gcontrol_green_offset_attribute.attr,
+	&gcontrol_blue_offset_attribute.attr,
+	&gcontrol_red_override_attribute.attr,
+	&gcontrol_green_override_attribute.attr,
+	&gcontrol_blue_override_attribute.attr,
 	&gcontrol_enabled_attribute.attr,
 	NULL
 };
