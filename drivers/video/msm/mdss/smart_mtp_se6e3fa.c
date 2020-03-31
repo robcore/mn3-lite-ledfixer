@@ -120,17 +120,10 @@ static int char_to_int_v255(char data1, char data2)
 }
 
 static bool first_adj_complete = false;
-static unsigned int enabled = 0;
-static int v255_val[3] = {-1, -1, -1};
-static int v203_val[3] = {-1, -1, -1};
-static int v151_val[3] = {-1, -1, -1};
-static int v87_val[3] = {-1, -1, -1};
-static int v51_val[3] = {-1, -1, -1};
-static int v35_val[3] = {-1, -1, -1};
-static int v23_val[3] = {-1, -1, -1};
-static int v11_val[3] = {-1, -1, -1};
-static int v3_val[3] = {-1, -1, -1};
-static int v0_val[3] = {-1, -1, -1};
+static unsigned int gcontrol_enabled = 0;
+static int gcontrol_red = 0;
+static int gcontrol_green = 0;
+static int gcontrol_blue = 0;
 
 #ifdef SMART_DIMMING_DEBUG
 static void print_RGB_offset(struct SMART_DIM *pSmart)
@@ -181,7 +174,7 @@ static void print_RGB_offset(struct SMART_DIM *pSmart)
 }
 #endif
 
-#define v255_coefficient 72
+#define v255_coefficient 129
 #define v255_denominator 860
 static int v255_adjustment(struct SMART_DIM *pSmart)
 {
@@ -190,64 +183,35 @@ static int v255_adjustment(struct SMART_DIM *pSmart)
 	int LSB;
 	int v255_value;
 
-	if (!first_adj_complete || !enabled) {
-		v255_value = (V255_300CD_R_MSB << 8) | (V255_300CD_R_LSB);
-		LSB = char_to_int_v255(pSmart->MTP.R_OFFSET.OFFSET_255_MSB,
-					pSmart->MTP.R_OFFSET.OFFSET_255_LSB);
-		add_mtp = LSB + v255_value;
-		result_2 = (v255_coefficient+add_mtp) << BIT_SHIFT;
-		do_div(result_2, v255_denominator);
-		result_3 = (S6E3FA_VREG0_REF * result_2) >> BIT_SHIFT;
-		pSmart->RGB_OUTPUT.R_VOLTAGE.level_255 = S6E3FA_VREG0_REF - result_3;
-		pSmart->RGB_OUTPUT.R_VOLTAGE.level_0 = S6E3FA_VREG0_REF;
+	v255_value = (V255_300CD_R_MSB << 8) | (V255_300CD_R_LSB);
+	LSB = char_to_int_v255(pSmart->MTP.R_OFFSET.OFFSET_255_MSB,
+			pSmart->MTP.R_OFFSET.OFFSET_255_LSB);
+	add_mtp = LSB + v255_value;
+	result_2 = (v255_coefficient+add_mtp) << BIT_SHIFT;
+	do_div(result_2, v255_denominator);
+	result_3 = (S6E3FA_VREG0_REF * result_2) >> BIT_SHIFT;
+	pSmart->RGB_OUTPUT.R_VOLTAGE.level_255 = S6E3FA_VREG0_REF - result_3;
+	pSmart->RGB_OUTPUT.R_VOLTAGE.level_0 = S6E3FA_VREG0_REF;
 
-		v255_value = (V255_300CD_G_MSB << 8) | (V255_300CD_G_LSB);
-		LSB = char_to_int_v255(pSmart->MTP.G_OFFSET.OFFSET_255_MSB,
-					pSmart->MTP.G_OFFSET.OFFSET_255_LSB);
-		add_mtp = LSB + v255_value;
-		result_2 = (v255_coefficient+add_mtp) << BIT_SHIFT;
-		do_div(result_2, v255_denominator);
-		result_3 = (S6E3FA_VREG0_REF * result_2) >> BIT_SHIFT;
-		pSmart->RGB_OUTPUT.G_VOLTAGE.level_255 = S6E3FA_VREG0_REF - result_3;
-		pSmart->RGB_OUTPUT.G_VOLTAGE.level_0 = S6E3FA_VREG0_REF;
+	v255_value = (V255_300CD_G_MSB << 8) | (V255_300CD_G_LSB);
+	LSB = char_to_int_v255(pSmart->MTP.G_OFFSET.OFFSET_255_MSB,
+			pSmart->MTP.G_OFFSET.OFFSET_255_LSB);
+	add_mtp = LSB + v255_value;
+	result_2 = (v255_coefficient+add_mtp) << BIT_SHIFT;
+	do_div(result_2, v255_denominator);
+	result_3 = (S6E3FA_VREG0_REF * result_2) >> BIT_SHIFT;
+	pSmart->RGB_OUTPUT.G_VOLTAGE.level_255 = S6E3FA_VREG0_REF - result_3;
+	pSmart->RGB_OUTPUT.G_VOLTAGE.level_0 = S6E3FA_VREG0_REF;
 
-		v255_value = (V255_300CD_B_MSB << 8) | (V255_300CD_B_LSB);
-		LSB = char_to_int_v255(pSmart->MTP.B_OFFSET.OFFSET_255_MSB,
-					pSmart->MTP.B_OFFSET.OFFSET_255_LSB);
-		add_mtp = LSB + v255_value;
-		result_2 = (v255_coefficient+add_mtp) << BIT_SHIFT;
-		do_div(result_2, v255_denominator);
-		result_3 = (S6E3FA_VREG0_REF * result_2) >> BIT_SHIFT;
-		pSmart->RGB_OUTPUT.B_VOLTAGE.level_255 = S6E3FA_VREG0_REF - result_3;
-		pSmart->RGB_OUTPUT.B_VOLTAGE.level_0 = S6E3FA_VREG0_REF;
-
-		v255_val[0] = pSmart->RGB_OUTPUT.R_VOLTAGE.level_255;
-		v255_val[1] = pSmart->RGB_OUTPUT.G_VOLTAGE.level_255;
-		v255_val[2] = pSmart->RGB_OUTPUT.B_VOLTAGE.level_255;
-		v0_val[0] = pSmart->RGB_OUTPUT.R_VOLTAGE.level_0;
-		v0_val[1] = pSmart->RGB_OUTPUT.G_VOLTAGE.level_0;
-		v0_val[2] = pSmart->RGB_OUTPUT.B_VOLTAGE.level_0;
-	} else {
-		pSmart->RGB_OUTPUT.R_VOLTAGE.level_255 = v255_val[0];
-		pSmart->RGB_OUTPUT.G_VOLTAGE.level_255 = v255_val[1];
-		pSmart->RGB_OUTPUT.B_VOLTAGE.level_255 = v255_val[2];
-		pSmart->RGB_OUTPUT.R_VOLTAGE.level_0 = v0_val[0];
-		pSmart->RGB_OUTPUT.G_VOLTAGE.level_0 = v0_val[1];
-		pSmart->RGB_OUTPUT.B_VOLTAGE.level_0 = v0_val[2];
-	}
-
-	pr_info("%s RED level_0: %d\n", __func__,
-			 pSmart->RGB_OUTPUT.R_VOLTAGE.level_0);
-	pr_info("%s GREEN level_0: %d\n", __func__,
-			 pSmart->RGB_OUTPUT.G_VOLTAGE.level_0);
-	pr_info("%s BLUE level_0: %d\n", __func__,
-			 pSmart->RGB_OUTPUT.B_VOLTAGE.level_0);
-	pr_info("%s RED level_255: %d\n", __func__,
-			 pSmart->RGB_OUTPUT.R_VOLTAGE.level_255);
-	pr_info("%s GREEN level_255: %d\n", __func__,
-			 pSmart->RGB_OUTPUT.G_VOLTAGE.level_255);
-	pr_info("%s BLUE level_255:%d\n", __func__,
-			 pSmart->RGB_OUTPUT.B_VOLTAGE.level_255);
+	v255_value = (V255_300CD_B_MSB << 8) | (V255_300CD_B_LSB);
+	LSB = char_to_int_v255(pSmart->MTP.B_OFFSET.OFFSET_255_MSB,
+			pSmart->MTP.B_OFFSET.OFFSET_255_LSB);
+	add_mtp = LSB + v255_value;
+	result_2 = (v255_coefficient+add_mtp) << BIT_SHIFT;
+	do_div(result_2, v255_denominator);
+	result_3 = (S6E3FA_VREG0_REF * result_2) >> BIT_SHIFT;
+	pSmart->RGB_OUTPUT.B_VOLTAGE.level_255 = S6E3FA_VREG0_REF - result_3;
+	pSmart->RGB_OUTPUT.B_VOLTAGE.level_0 = S6E3FA_VREG0_REF;
 
 	return 0;
 }
@@ -257,34 +221,28 @@ static void v255_hexa(int *index, struct SMART_DIM *pSmart, char *str)
 	unsigned long long result_1, result_2, result_3;
 
 	result_1 = S6E3FA_VREG0_REF -
-		(pSmart->GRAY.TABLE[index[V255_INDEX]].R_Gray);
+	(pSmart->GRAY.TABLE[index[V255_INDEX]].R_Gray);
 	result_2 = result_1 * v255_denominator;
 	do_div(result_2, S6E3FA_VREG0_REF);
 	result_3 = result_2  - v255_coefficient;
 	str[0] = (result_3 & 0xff00) >> 8;
-	pr_info("%s: V255 R str[0]: %llu\n", __func__, ((result_3 & 0xff00) >> 8));
 	str[1] = result_3 & 0xff;
-	pr_info("%s: V255 R str[1]: %llu\n", __func__, (result_3 & 0xff));
 
 	result_1 = S6E3FA_VREG0_REF -
-		(pSmart->GRAY.TABLE[index[V255_INDEX]].G_Gray);
+	(pSmart->GRAY.TABLE[index[V255_INDEX]].G_Gray);
 	result_2 = result_1 * v255_denominator;
 	do_div(result_2, S6E3FA_VREG0_REF);
 	result_3 = result_2  - v255_coefficient;
 	str[2] = (result_3 & 0xff00) >> 8;
-	pr_info("%s: V255 G str[2]: %llu\n", __func__, ((result_3 & 0xff00) >> 8));
 	str[3] = result_3 & 0xff;
-	pr_info("%s: V255 G str[3]: %llu\n", __func__, (result_3 & 0xff));
 
 	result_1 = S6E3FA_VREG0_REF -
-			(pSmart->GRAY.TABLE[index[V255_INDEX]].B_Gray);
+		(pSmart->GRAY.TABLE[index[V255_INDEX]].B_Gray);
 	result_2 = result_1 * v255_denominator;
 	do_div(result_2, S6E3FA_VREG0_REF);
 	result_3 = result_2  - v255_coefficient;
 	str[4] = (result_3 & 0xff00) >> 8;
-	pr_info("%s: V255 B str[4]: %llu\n", __func__, ((result_3 & 0xff00) >> 8));
 	str[5] = result_3 & 0xff;
-	pr_info("%s: V255 B str[5]: %llu\n", __func__, (result_3 & 0xff));
 }
 /*
 static int vt_coefficient[] = {
@@ -295,10 +253,10 @@ static int vt_coefficient[] = {
 };
 */
 static int vt_coefficient[] = {
-	0, 12, 24, 36, 48,
-	60, 72, 84, 96, 108,
-	138, 148, 158, 168,
-	178, 186,
+	0, 12, 24, 36,
+	48, 60, 72, 84,
+	96, 108, 138, 148,
+	158, 168, 178, 186,
 };
 #define vt_denominator 860
 static int vt_adjustment(struct SMART_DIM *pSmart)
@@ -328,11 +286,6 @@ static int vt_adjustment(struct SMART_DIM *pSmart)
 	result_3 = (S6E3FA_VREG0_REF * result_2) >> BIT_SHIFT;
 	pSmart->GRAY.VT_TABLE.B_Gray = S6E3FA_VREG0_REF - result_3;
 
-	pr_info("%s VT RED:%d GREEN:%d BLUE:%d\n", __func__,
-			pSmart->GRAY.VT_TABLE.R_Gray,
-			pSmart->GRAY.VT_TABLE.G_Gray,
-			pSmart->GRAY.VT_TABLE.B_Gray);
-
 	return 0;
 
 }
@@ -340,11 +293,8 @@ static int vt_adjustment(struct SMART_DIM *pSmart)
 static void vt_hexa(int *index, struct SMART_DIM *pSmart, char *str)
 {
 	str[30] = VT_300CD_R;
-	pr_info("%s: VT R str[30]: %d\n", __func__, VT_300CD_R);
 	str[31] = VT_300CD_G;
-	pr_info("%s: VT G str[31]: %d\n", __func__, VT_300CD_G);
 	str[32] = VT_300CD_B;
-	pr_info("%s: VT B str[32]: %d\n", __func__, VT_300CD_B);
 }
 
 #define v203_coefficient 64
@@ -355,46 +305,29 @@ static int v203_adjustment(struct SMART_DIM *pSmart)
 	int add_mtp;
 	int LSB;
 
-	if (!first_adj_complete || !enabled) {
-		LSB = char_to_int(pSmart->MTP.R_OFFSET.OFFSET_203);
-		add_mtp = LSB + V203_300CD_R;
-		result_1 = (pSmart->GRAY.VT_TABLE.R_Gray) - (pSmart->RGB_OUTPUT.R_VOLTAGE.level_255);
-		result_2 = (v203_coefficient + add_mtp) << BIT_SHIFT;
-		do_div(result_2, v203_denominator);
-		result_3 = (result_1 * result_2) >> BIT_SHIFT;
-		pSmart->RGB_OUTPUT.R_VOLTAGE.level_203 = (pSmart->GRAY.VT_TABLE.R_Gray) - result_3;
+	LSB = char_to_int(pSmart->MTP.R_OFFSET.OFFSET_203);
+	add_mtp = LSB + V203_300CD_R;
+	result_1 = (pSmart->GRAY.VT_TABLE.R_Gray) - (pSmart->RGB_OUTPUT.R_VOLTAGE.level_255);
+	result_2 = (v203_coefficient + add_mtp) << BIT_SHIFT;
+	do_div(result_2, v203_denominator);
+	result_3 = (result_1 * result_2) >> BIT_SHIFT;
+	pSmart->RGB_OUTPUT.R_VOLTAGE.level_203 = (pSmart->GRAY.VT_TABLE.R_Gray) - result_3;
 
-		LSB = char_to_int(pSmart->MTP.G_OFFSET.OFFSET_203);
-		add_mtp = LSB + V203_300CD_G;
-		result_1 = (pSmart->GRAY.VT_TABLE.G_Gray) - (pSmart->RGB_OUTPUT.G_VOLTAGE.level_255);
-		result_2 = (v203_coefficient + add_mtp) << BIT_SHIFT;
-		do_div(result_2, v203_denominator);
-		result_3 = (result_1 * result_2) >> BIT_SHIFT;
-		pSmart->RGB_OUTPUT.G_VOLTAGE.level_203 = (pSmart->GRAY.VT_TABLE.G_Gray) - result_3;
+	LSB = char_to_int(pSmart->MTP.G_OFFSET.OFFSET_203);
+	add_mtp = LSB + V203_300CD_G;
+	result_1 = (pSmart->GRAY.VT_TABLE.G_Gray) - (pSmart->RGB_OUTPUT.G_VOLTAGE.level_255);
+	result_2 = (v203_coefficient + add_mtp) << BIT_SHIFT;
+	do_div(result_2, v203_denominator);
+	result_3 = (result_1 * result_2) >> BIT_SHIFT;
+	pSmart->RGB_OUTPUT.G_VOLTAGE.level_203 = (pSmart->GRAY.VT_TABLE.G_Gray) - result_3;
 
-		LSB = char_to_int(pSmart->MTP.B_OFFSET.OFFSET_203);
-		add_mtp = LSB + V203_300CD_B;
-		result_1 = (pSmart->GRAY.VT_TABLE.B_Gray) - (pSmart->RGB_OUTPUT.B_VOLTAGE.level_255);
-		result_2 = (v203_coefficient+add_mtp) << BIT_SHIFT;
-		do_div(result_2, v203_denominator);
-		result_3 = (result_1 * result_2) >> BIT_SHIFT;
-		pSmart->RGB_OUTPUT.B_VOLTAGE.level_203 = (pSmart->GRAY.VT_TABLE.B_Gray) - result_3;
-
-		v203_val[0] = pSmart->RGB_OUTPUT.R_VOLTAGE.level_203;
-		v203_val[1] = pSmart->RGB_OUTPUT.G_VOLTAGE.level_203;
-		v203_val[2] = pSmart->RGB_OUTPUT.B_VOLTAGE.level_203;
-	} else {
-		pSmart->RGB_OUTPUT.R_VOLTAGE.level_203 = v203_val[0];
-		pSmart->RGB_OUTPUT.G_VOLTAGE.level_203 = v203_val[1];
-		pSmart->RGB_OUTPUT.B_VOLTAGE.level_203 = v203_val[2];
-	}
-
-	pr_info("%s RED level_203:%d\n", __func__,
-			 pSmart->RGB_OUTPUT.R_VOLTAGE.level_203);
-	pr_info("%s GREEN level_203:%d\n", __func__,
-			 pSmart->RGB_OUTPUT.G_VOLTAGE.level_203);
-	pr_info("%s BLUE level_203:%d\n", __func__,
-			pSmart->RGB_OUTPUT.B_VOLTAGE.level_203);
+	LSB = char_to_int(pSmart->MTP.B_OFFSET.OFFSET_203);
+	add_mtp = LSB + V203_300CD_B;
+	result_1 = (pSmart->GRAY.VT_TABLE.B_Gray) - (pSmart->RGB_OUTPUT.B_VOLTAGE.level_255);
+	result_2 = (v203_coefficient+add_mtp) << BIT_SHIFT;
+	do_div(result_2, v203_denominator);
+	result_3 = (result_1 * result_2) >> BIT_SHIFT;
+	pSmart->RGB_OUTPUT.B_VOLTAGE.level_203 = (pSmart->GRAY.VT_TABLE.B_Gray) - result_3;
 
 	return 0;
 
@@ -405,31 +338,28 @@ static void v203_hexa(int *index, struct SMART_DIM *pSmart, char *str)
 	unsigned long long result_1, result_2, result_3;
 
 	result_1 = (pSmart->GRAY.VT_TABLE.R_Gray)
-			- (pSmart->GRAY.TABLE[index[V203_INDEX]].R_Gray);
+		- (pSmart->GRAY.TABLE[index[V203_INDEX]].R_Gray);
 	result_2 = result_1 * v203_denominator;
 	result_3 = (pSmart->GRAY.VT_TABLE.R_Gray)
-			- (pSmart->GRAY.TABLE[index[V255_INDEX]].R_Gray);
+		- (pSmart->GRAY.TABLE[index[V255_INDEX]].R_Gray);
 	do_div(result_2, result_3);
 	str[6] = (result_2  - v203_coefficient) & 0xff;
-	pr_info("%s: V203 R str[6]: %llu\n", __func__, ((result_2  - v203_coefficient) & 0xff));
 
 	result_1 = (pSmart->GRAY.VT_TABLE.G_Gray)
-			- (pSmart->GRAY.TABLE[index[V203_INDEX]].G_Gray);
+		- (pSmart->GRAY.TABLE[index[V203_INDEX]].G_Gray);
 	result_2 = result_1 * v203_denominator;
 	result_3 = (pSmart->GRAY.VT_TABLE.G_Gray)
-			- (pSmart->GRAY.TABLE[index[V255_INDEX]].G_Gray);
+		- (pSmart->GRAY.TABLE[index[V255_INDEX]].G_Gray);
 	do_div(result_2, result_3);
 	str[7] = (result_2  - v203_coefficient) & 0xff;
-	pr_info("%s: V203 G str[7]: %llu\n", __func__, ((result_2  - v203_coefficient) & 0xff));
 
 	result_1 = (pSmart->GRAY.VT_TABLE.B_Gray)
-			- (pSmart->GRAY.TABLE[index[V203_INDEX]].B_Gray);
+		- (pSmart->GRAY.TABLE[index[V203_INDEX]].B_Gray);
 	result_2 = result_1 * v203_denominator;
 	result_3 = (pSmart->GRAY.VT_TABLE.B_Gray)
-			- (pSmart->GRAY.TABLE[index[V255_INDEX]].B_Gray);
+		- (pSmart->GRAY.TABLE[index[V255_INDEX]].B_Gray);
 	do_div(result_2, result_3);
 	str[8] = (result_2  - v203_coefficient) & 0xff;
-	pr_info("%s: V203 B str[7]: %llu\n", __func__, ((result_2  - v203_coefficient) & 0xff));
 }
 
 #define v151_coefficient 64
@@ -440,49 +370,32 @@ static int v151_adjustment(struct SMART_DIM *pSmart)
 	int add_mtp;
 	int LSB;
 
-	if (!first_adj_complete || !enabled) {
-		LSB = char_to_int(pSmart->MTP.R_OFFSET.OFFSET_151);
-		add_mtp = LSB + V151_300CD_R;
-		result_1 = (pSmart->GRAY.VT_TABLE.R_Gray)
-				- (pSmart->RGB_OUTPUT.R_VOLTAGE.level_203);
-		result_2 = (v151_coefficient + add_mtp) << BIT_SHIFT;
-		do_div(result_2, v151_denominator);
-		result_3 = (result_1 * result_2) >> BIT_SHIFT;
-		pSmart->RGB_OUTPUT.R_VOLTAGE.level_151 = (pSmart->GRAY.VT_TABLE.R_Gray) - result_3;
+	LSB = char_to_int(pSmart->MTP.R_OFFSET.OFFSET_151);
+	add_mtp = LSB + V151_300CD_R;
+	result_1 = (pSmart->GRAY.VT_TABLE.R_Gray)
+		- (pSmart->RGB_OUTPUT.R_VOLTAGE.level_203);
+	result_2 = (v151_coefficient + add_mtp) << BIT_SHIFT;
+	do_div(result_2, v151_denominator);
+	result_3 = (result_1 * result_2) >> BIT_SHIFT;
+	pSmart->RGB_OUTPUT.R_VOLTAGE.level_151 = (pSmart->GRAY.VT_TABLE.R_Gray) - result_3;
 
-		LSB = char_to_int(pSmart->MTP.G_OFFSET.OFFSET_151);
-		add_mtp = LSB + V151_300CD_G;
-		result_1 = (pSmart->GRAY.VT_TABLE.G_Gray)
-				- (pSmart->RGB_OUTPUT.G_VOLTAGE.level_203);
-		result_2 = (v151_coefficient + add_mtp) << BIT_SHIFT;
-		do_div(result_2, v151_denominator);
-		result_3 = (result_1 * result_2) >> BIT_SHIFT;
-		pSmart->RGB_OUTPUT.G_VOLTAGE.level_151 = (pSmart->GRAY.VT_TABLE.G_Gray) - result_3;
+	LSB = char_to_int(pSmart->MTP.G_OFFSET.OFFSET_151);
+	add_mtp = LSB + V151_300CD_G;
+	result_1 = (pSmart->GRAY.VT_TABLE.G_Gray)
+		- (pSmart->RGB_OUTPUT.G_VOLTAGE.level_203);
+	result_2 = (v151_coefficient + add_mtp) << BIT_SHIFT;
+	do_div(result_2, v151_denominator);
+	result_3 = (result_1 * result_2) >> BIT_SHIFT;
+	pSmart->RGB_OUTPUT.G_VOLTAGE.level_151 = (pSmart->GRAY.VT_TABLE.G_Gray) - result_3;
 
-		LSB = char_to_int(pSmart->MTP.B_OFFSET.OFFSET_151);
-		add_mtp = LSB + V151_300CD_B;
-		result_1 = (pSmart->GRAY.VT_TABLE.B_Gray)
-				- (pSmart->RGB_OUTPUT.B_VOLTAGE.level_203);
-		result_2 = (v151_coefficient + add_mtp) << BIT_SHIFT;
-		do_div(result_2, v151_denominator);
-		result_3 = (result_1 * result_2) >> BIT_SHIFT;
-		pSmart->RGB_OUTPUT.B_VOLTAGE.level_151 = (pSmart->GRAY.VT_TABLE.B_Gray) - result_3;
-
-		v151_val[0] = pSmart->RGB_OUTPUT.R_VOLTAGE.level_151;
-		v151_val[1] = pSmart->RGB_OUTPUT.G_VOLTAGE.level_151;
-		v151_val[2] = pSmart->RGB_OUTPUT.B_VOLTAGE.level_151;
-	} else {
-		pSmart->RGB_OUTPUT.R_VOLTAGE.level_151 = v151_val[0];
-		pSmart->RGB_OUTPUT.G_VOLTAGE.level_151 = v151_val[1];
-		pSmart->RGB_OUTPUT.B_VOLTAGE.level_151 = v151_val[2];
-	}
-
-	pr_info("%s RED level_151:%d\n", __func__,
-			pSmart->RGB_OUTPUT.R_VOLTAGE.level_151);
-	pr_info("%s GREEN level_151:%d\n", __func__,
-			pSmart->RGB_OUTPUT.G_VOLTAGE.level_151);
-	pr_info("%s BLUE level_151:%d\n", __func__,
-			pSmart->RGB_OUTPUT.B_VOLTAGE.level_151);
+	LSB = char_to_int(pSmart->MTP.B_OFFSET.OFFSET_151);
+	add_mtp = LSB + V151_300CD_B;
+	result_1 = (pSmart->GRAY.VT_TABLE.B_Gray)
+		- (pSmart->RGB_OUTPUT.B_VOLTAGE.level_203);
+	result_2 = (v151_coefficient + add_mtp) << BIT_SHIFT;
+	do_div(result_2, v151_denominator);
+	result_3 = (result_1 * result_2) >> BIT_SHIFT;
+	pSmart->RGB_OUTPUT.B_VOLTAGE.level_151 = (pSmart->GRAY.VT_TABLE.B_Gray) - result_3;
 
 	return 0;
 
@@ -499,7 +412,6 @@ static void v151_hexa(int *index, struct SMART_DIM *pSmart, char *str)
 			- (pSmart->GRAY.TABLE[index[V203_INDEX]].R_Gray);
 	do_div(result_2, result_3);
 	str[9] = (result_2  - v151_coefficient) & 0xff;
-	pr_info("%s: V151 R str[9]: %llu\n", __func__, ((result_2  - v151_coefficient) & 0xff));
 
 	result_1 = (pSmart->GRAY.VT_TABLE.G_Gray)
 			- (pSmart->GRAY.TABLE[index[V151_INDEX]].G_Gray);
@@ -508,7 +420,6 @@ static void v151_hexa(int *index, struct SMART_DIM *pSmart, char *str)
 			- (pSmart->GRAY.TABLE[index[V203_INDEX]].G_Gray);
 	do_div(result_2, result_3);
 	str[10] = (result_2  - v151_coefficient) & 0xff;
-	pr_info("%s: V151 G str[10]: %llu\n", __func__, ((result_2  - v151_coefficient) & 0xff));
 
 	result_1 = (pSmart->GRAY.VT_TABLE.B_Gray)
 			- (pSmart->GRAY.TABLE[index[V151_INDEX]].B_Gray);
@@ -517,7 +428,6 @@ static void v151_hexa(int *index, struct SMART_DIM *pSmart, char *str)
 			- (pSmart->GRAY.TABLE[index[V203_INDEX]].B_Gray);
 	do_div(result_2, result_3);
 	str[11] = (result_2  - v151_coefficient) & 0xff;
-	pr_info("%s: V151 B str[11]: %llu\n", __func__, ((result_2  - v151_coefficient) & 0xff));
 }
 
 #define v87_coefficient 64
@@ -528,47 +438,32 @@ static int v87_adjustment(struct SMART_DIM *pSmart)
 	int add_mtp;
 	int LSB;
 
-	if (!first_adj_complete || !enabled) {
-		LSB = char_to_int(pSmart->MTP.R_OFFSET.OFFSET_87);
-		add_mtp = LSB + V87_300CD_R;
-		result_1 = (pSmart->GRAY.VT_TABLE.R_Gray)
-				- (pSmart->RGB_OUTPUT.R_VOLTAGE.level_151);
-		result_2 = (v87_coefficient + add_mtp) << BIT_SHIFT;
-		do_div(result_2, v87_denominator);
-		result_3 = (result_1 * result_2) >> BIT_SHIFT;
-		pSmart->RGB_OUTPUT.R_VOLTAGE.level_87 = (pSmart->GRAY.VT_TABLE.R_Gray) - result_3;
+	LSB = char_to_int(pSmart->MTP.R_OFFSET.OFFSET_87);
+	add_mtp = LSB + V87_300CD_R;
+	result_1 = (pSmart->GRAY.VT_TABLE.R_Gray)
+		- (pSmart->RGB_OUTPUT.R_VOLTAGE.level_151);
+	result_2 = (v87_coefficient + add_mtp) << BIT_SHIFT;
+	do_div(result_2, v87_denominator);
+	result_3 = (result_1 * result_2) >> BIT_SHIFT;
+	pSmart->RGB_OUTPUT.R_VOLTAGE.level_87 = (pSmart->GRAY.VT_TABLE.R_Gray) - result_3;
 
-		LSB = char_to_int(pSmart->MTP.G_OFFSET.OFFSET_87);
-		add_mtp = LSB + V87_300CD_G;
-		result_1 = (pSmart->GRAY.VT_TABLE.G_Gray)
-				- (pSmart->RGB_OUTPUT.G_VOLTAGE.level_151);
-		result_2 = (v87_coefficient + add_mtp) << BIT_SHIFT;
-		do_div(result_2, v87_denominator);
-		result_3 = (result_1 * result_2) >> BIT_SHIFT;
-		pSmart->RGB_OUTPUT.G_VOLTAGE.level_87 = (pSmart->GRAY.VT_TABLE.G_Gray) - result_3;
+	LSB = char_to_int(pSmart->MTP.G_OFFSET.OFFSET_87);
+	add_mtp = LSB + V87_300CD_G;
+	result_1 = (pSmart->GRAY.VT_TABLE.G_Gray)
+		- (pSmart->RGB_OUTPUT.G_VOLTAGE.level_151);
+	result_2 = (v87_coefficient + add_mtp) << BIT_SHIFT;
+	do_div(result_2, v87_denominator);
+	result_3 = (result_1 * result_2) >> BIT_SHIFT;
+	pSmart->RGB_OUTPUT.G_VOLTAGE.level_87 = (pSmart->GRAY.VT_TABLE.G_Gray) - result_3;
 
-		LSB = char_to_int(pSmart->MTP.B_OFFSET.OFFSET_87);
-		add_mtp = LSB + V87_300CD_B;
-		result_1 = (pSmart->GRAY.VT_TABLE.B_Gray)
-				- (pSmart->RGB_OUTPUT.B_VOLTAGE.level_151);
-		result_2 = (v87_coefficient + add_mtp) << BIT_SHIFT;
-		do_div(result_2, v87_denominator);
-		result_3 = (result_1 * result_2) >> BIT_SHIFT;
-		pSmart->RGB_OUTPUT.B_VOLTAGE.level_87 = (pSmart->GRAY.VT_TABLE.B_Gray) - result_3;
-
-		v87_val[0] = pSmart->RGB_OUTPUT.R_VOLTAGE.level_87;
-		v87_val[1] = pSmart->RGB_OUTPUT.G_VOLTAGE.level_87;
-		v87_val[2] = pSmart->RGB_OUTPUT.B_VOLTAGE.level_87;
-	} else {
-		pSmart->RGB_OUTPUT.R_VOLTAGE.level_87 = v87_val[0];
-		pSmart->RGB_OUTPUT.G_VOLTAGE.level_87 = v87_val[1];
-		pSmart->RGB_OUTPUT.B_VOLTAGE.level_87 = v87_val[2];
-	}
-
-	pr_info("%s RED level_87 :%d\n%s GREEN level_87:%d\n%s BLUE level_87:%d\n", __func__,
-			pSmart->RGB_OUTPUT.R_VOLTAGE.level_87, __func__,
-			pSmart->RGB_OUTPUT.G_VOLTAGE.level_87, __func__,
-			pSmart->RGB_OUTPUT.B_VOLTAGE.level_87);
+	LSB = char_to_int(pSmart->MTP.B_OFFSET.OFFSET_87);
+	add_mtp = LSB + V87_300CD_B;
+	result_1 = (pSmart->GRAY.VT_TABLE.B_Gray)
+		- (pSmart->RGB_OUTPUT.B_VOLTAGE.level_151);
+	result_2 = (v87_coefficient + add_mtp) << BIT_SHIFT;
+	do_div(result_2, v87_denominator);
+	result_3 = (result_1 * result_2) >> BIT_SHIFT;
+	pSmart->RGB_OUTPUT.B_VOLTAGE.level_87 = (pSmart->GRAY.VT_TABLE.B_Gray) - result_3;
 
 	return 0;
 
@@ -611,47 +506,32 @@ static int v51_adjustment(struct SMART_DIM *pSmart)
 	int add_mtp;
 	int LSB;
 
-	if (!first_adj_complete || !enabled) {
-		LSB = char_to_int(pSmart->MTP.R_OFFSET.OFFSET_51);
-		add_mtp = LSB + V51_300CD_R;
-		result_1 = (pSmart->GRAY.VT_TABLE.R_Gray)
-				- (pSmart->RGB_OUTPUT.R_VOLTAGE.level_87);
-		result_2 = (v51_coefficient + add_mtp) << BIT_SHIFT;
-		do_div(result_2, v51_denominator);
-		result_3 = (result_1 * result_2) >> BIT_SHIFT;
-		pSmart->RGB_OUTPUT.R_VOLTAGE.level_51 = (pSmart->GRAY.VT_TABLE.R_Gray) - result_3;
+	LSB = char_to_int(pSmart->MTP.R_OFFSET.OFFSET_51);
+	add_mtp = LSB + V51_300CD_R;
+	result_1 = (pSmart->GRAY.VT_TABLE.R_Gray)
+		- (pSmart->RGB_OUTPUT.R_VOLTAGE.level_87);
+	result_2 = (v51_coefficient + add_mtp) << BIT_SHIFT;
+	do_div(result_2, v51_denominator);
+	result_3 = (result_1 * result_2) >> BIT_SHIFT;
+	pSmart->RGB_OUTPUT.R_VOLTAGE.level_51 = (pSmart->GRAY.VT_TABLE.R_Gray) - result_3;
 
-		LSB = char_to_int(pSmart->MTP.G_OFFSET.OFFSET_51);
-		add_mtp = LSB + V51_300CD_G;
-		result_1 = (pSmart->GRAY.VT_TABLE.G_Gray)
-				- (pSmart->RGB_OUTPUT.G_VOLTAGE.level_87);
-		result_2 = (v51_coefficient + add_mtp) << BIT_SHIFT;
-		do_div(result_2, v51_denominator);
-		result_3 = (result_1 * result_2) >> BIT_SHIFT;
-		pSmart->RGB_OUTPUT.G_VOLTAGE.level_51 = (pSmart->GRAY.VT_TABLE.G_Gray) - result_3;
+	LSB = char_to_int(pSmart->MTP.G_OFFSET.OFFSET_51);
+	add_mtp = LSB + V51_300CD_G;
+	result_1 = (pSmart->GRAY.VT_TABLE.G_Gray)
+		- (pSmart->RGB_OUTPUT.G_VOLTAGE.level_87);
+	result_2 = (v51_coefficient + add_mtp) << BIT_SHIFT;
+	do_div(result_2, v51_denominator);
+	result_3 = (result_1 * result_2) >> BIT_SHIFT;
+	pSmart->RGB_OUTPUT.G_VOLTAGE.level_51 = (pSmart->GRAY.VT_TABLE.G_Gray) - result_3;
 
-		LSB = char_to_int(pSmart->MTP.B_OFFSET.OFFSET_51);
-		add_mtp = LSB + V51_300CD_B;
-		result_1 = (pSmart->GRAY.VT_TABLE.B_Gray)
-				- (pSmart->RGB_OUTPUT.B_VOLTAGE.level_87);
-		result_2 = (v51_coefficient + add_mtp) << BIT_SHIFT;
-		do_div(result_2, v51_denominator);
-		result_3 = (result_1 * result_2) >> BIT_SHIFT;
-		pSmart->RGB_OUTPUT.B_VOLTAGE.level_51 = (pSmart->GRAY.VT_TABLE.B_Gray) - result_3;
-
-		v51_val[0] = pSmart->RGB_OUTPUT.R_VOLTAGE.level_51;
-		v51_val[1] = pSmart->RGB_OUTPUT.G_VOLTAGE.level_51;
-		v51_val[2] = pSmart->RGB_OUTPUT.B_VOLTAGE.level_51;
-	} else {
-		pSmart->RGB_OUTPUT.R_VOLTAGE.level_51 = v51_val[0];
-		pSmart->RGB_OUTPUT.G_VOLTAGE.level_51 = v51_val[1];
-		pSmart->RGB_OUTPUT.B_VOLTAGE.level_51 = v51_val[2];
-	}
-
-	pr_info("%s RED level_51 :%d\n%s GREEN level_51:%d\n%s BLUE level_51:%d\n", __func__,
-			pSmart->RGB_OUTPUT.R_VOLTAGE.level_51, __func__,
-			pSmart->RGB_OUTPUT.G_VOLTAGE.level_51, __func__,
-			pSmart->RGB_OUTPUT.B_VOLTAGE.level_51);
+	LSB = char_to_int(pSmart->MTP.B_OFFSET.OFFSET_51);
+	add_mtp = LSB + V51_300CD_B;
+	result_1 = (pSmart->GRAY.VT_TABLE.B_Gray)
+		- (pSmart->RGB_OUTPUT.B_VOLTAGE.level_87);
+	result_2 = (v51_coefficient + add_mtp) << BIT_SHIFT;
+	do_div(result_2, v51_denominator);
+	result_3 = (result_1 * result_2) >> BIT_SHIFT;
+	pSmart->RGB_OUTPUT.B_VOLTAGE.level_51 = (pSmart->GRAY.VT_TABLE.B_Gray) - result_3;
 
 	return 0;
 
@@ -695,47 +575,32 @@ static int v35_adjustment(struct SMART_DIM *pSmart)
 	int add_mtp;
 	int LSB;
 
-	if (!first_adj_complete || !enabled) {
-		LSB = char_to_int(pSmart->MTP.R_OFFSET.OFFSET_35);
-		add_mtp = LSB + V35_300CD_R;
-		result_1 = (pSmart->GRAY.VT_TABLE.R_Gray)
-				- (pSmart->RGB_OUTPUT.R_VOLTAGE.level_51);
-		result_2 = (v35_coefficient + add_mtp) << BIT_SHIFT;
-		do_div(result_2, v35_denominator);
-		result_3 = (result_1 * result_2) >> BIT_SHIFT;
-		pSmart->RGB_OUTPUT.R_VOLTAGE.level_35 = (pSmart->GRAY.VT_TABLE.R_Gray) - result_3;
+	LSB = char_to_int(pSmart->MTP.R_OFFSET.OFFSET_35);
+	add_mtp = LSB + V35_300CD_R;
+	result_1 = (pSmart->GRAY.VT_TABLE.R_Gray)
+		- (pSmart->RGB_OUTPUT.R_VOLTAGE.level_51);
+	result_2 = (v35_coefficient + add_mtp) << BIT_SHIFT;
+	do_div(result_2, v35_denominator);
+	result_3 = (result_1 * result_2) >> BIT_SHIFT;
+	pSmart->RGB_OUTPUT.R_VOLTAGE.level_35 = (pSmart->GRAY.VT_TABLE.R_Gray) - result_3;
 
-		LSB = char_to_int(pSmart->MTP.G_OFFSET.OFFSET_35);
-		add_mtp = LSB + V35_300CD_G;
-		result_1 = (pSmart->GRAY.VT_TABLE.G_Gray)
-				- (pSmart->RGB_OUTPUT.G_VOLTAGE.level_51);
-		result_2 = (v35_coefficient + add_mtp) << BIT_SHIFT;
-		do_div(result_2, v35_denominator);
-		result_3 = (result_1 * result_2) >> BIT_SHIFT;
-		pSmart->RGB_OUTPUT.G_VOLTAGE.level_35 = (pSmart->GRAY.VT_TABLE.G_Gray) - result_3;
+	LSB = char_to_int(pSmart->MTP.G_OFFSET.OFFSET_35);
+	add_mtp = LSB + V35_300CD_G;
+	result_1 = (pSmart->GRAY.VT_TABLE.G_Gray)
+		- (pSmart->RGB_OUTPUT.G_VOLTAGE.level_51);
+	result_2 = (v35_coefficient + add_mtp) << BIT_SHIFT;
+	do_div(result_2, v35_denominator);
+	result_3 = (result_1 * result_2) >> BIT_SHIFT;
+	pSmart->RGB_OUTPUT.G_VOLTAGE.level_35 = (pSmart->GRAY.VT_TABLE.G_Gray) - result_3;
 
-		LSB = char_to_int(pSmart->MTP.B_OFFSET.OFFSET_35);
-		add_mtp = LSB + V35_300CD_B;
-		result_1 = (pSmart->GRAY.VT_TABLE.B_Gray)
-				- (pSmart->RGB_OUTPUT.B_VOLTAGE.level_51);
-		result_2 = (v35_coefficient + add_mtp) << BIT_SHIFT;
-		do_div(result_2, v35_denominator);
-		result_3 = (result_1 * result_2) >> BIT_SHIFT;
-		pSmart->RGB_OUTPUT.B_VOLTAGE.level_35 = (pSmart->GRAY.VT_TABLE.B_Gray) - result_3;
-
-		v35_val[0] = pSmart->RGB_OUTPUT.R_VOLTAGE.level_35;
-		v35_val[1] = pSmart->RGB_OUTPUT.G_VOLTAGE.level_35;
-		v35_val[2] = pSmart->RGB_OUTPUT.B_VOLTAGE.level_35;
-	} else {
-		pSmart->RGB_OUTPUT.R_VOLTAGE.level_35 = v35_val[0];
-		pSmart->RGB_OUTPUT.G_VOLTAGE.level_35 = v35_val[1];
-		pSmart->RGB_OUTPUT.B_VOLTAGE.level_35 = v35_val[2];
-	}
-
-	pr_info("%s RED level_35 :%d\n%s GREEN level_35:%d\n%s BLUE level_35:%d\n", __func__,
-			pSmart->RGB_OUTPUT.R_VOLTAGE.level_35, __func__,
-			pSmart->RGB_OUTPUT.G_VOLTAGE.level_35, __func__,
-			pSmart->RGB_OUTPUT.B_VOLTAGE.level_35);
+	LSB = char_to_int(pSmart->MTP.B_OFFSET.OFFSET_35);
+	add_mtp = LSB + V35_300CD_B;
+	result_1 = (pSmart->GRAY.VT_TABLE.B_Gray)
+		- (pSmart->RGB_OUTPUT.B_VOLTAGE.level_51);
+	result_2 = (v35_coefficient + add_mtp) << BIT_SHIFT;
+	do_div(result_2, v35_denominator);
+	result_3 = (result_1 * result_2) >> BIT_SHIFT;
+	pSmart->RGB_OUTPUT.B_VOLTAGE.level_35 = (pSmart->GRAY.VT_TABLE.B_Gray) - result_3;
 
 	return 0;
 
@@ -778,47 +643,32 @@ static int v23_adjustment(struct SMART_DIM *pSmart)
 	unsigned long long result_1, result_2, result_3;
 	int add_mtp;
 	int LSB;
-	if (!first_adj_complete || !enabled) {
-		LSB = char_to_int(pSmart->MTP.R_OFFSET.OFFSET_23);
-		add_mtp = LSB + V23_300CD_R;
-		result_1 = (pSmart->GRAY.VT_TABLE.R_Gray)
-				- (pSmart->RGB_OUTPUT.R_VOLTAGE.level_35);
-		result_2 = (v23_coefficient + add_mtp) << BIT_SHIFT;
-		do_div(result_2, v23_denominator);
-		result_3 = (result_1 * result_2) >> BIT_SHIFT;
-		pSmart->RGB_OUTPUT.R_VOLTAGE.level_23 = (pSmart->GRAY.VT_TABLE.R_Gray) - result_3;
+	LSB = char_to_int(pSmart->MTP.R_OFFSET.OFFSET_23);
+	add_mtp = LSB + V23_300CD_R;
+	result_1 = (pSmart->GRAY.VT_TABLE.R_Gray)
+		- (pSmart->RGB_OUTPUT.R_VOLTAGE.level_35);
+	result_2 = (v23_coefficient + add_mtp) << BIT_SHIFT;
+	do_div(result_2, v23_denominator);
+	result_3 = (result_1 * result_2) >> BIT_SHIFT;
+	pSmart->RGB_OUTPUT.R_VOLTAGE.level_23 = (pSmart->GRAY.VT_TABLE.R_Gray) - result_3;
 
-		LSB = char_to_int(pSmart->MTP.G_OFFSET.OFFSET_23);
-		add_mtp = LSB + V23_300CD_G;
-		result_1 = (pSmart->GRAY.VT_TABLE.G_Gray)
-				- (pSmart->RGB_OUTPUT.G_VOLTAGE.level_35);
-		result_2 = (v23_coefficient + add_mtp) << BIT_SHIFT;
-		do_div(result_2, v23_denominator);
-		result_3 = (result_1 * result_2) >> BIT_SHIFT;
-		pSmart->RGB_OUTPUT.G_VOLTAGE.level_23 = (pSmart->GRAY.VT_TABLE.G_Gray) - result_3;
+	LSB = char_to_int(pSmart->MTP.G_OFFSET.OFFSET_23);
+	add_mtp = LSB + V23_300CD_G;
+	result_1 = (pSmart->GRAY.VT_TABLE.G_Gray)
+		- (pSmart->RGB_OUTPUT.G_VOLTAGE.level_35);
+	result_2 = (v23_coefficient + add_mtp) << BIT_SHIFT;
+	do_div(result_2, v23_denominator);
+	result_3 = (result_1 * result_2) >> BIT_SHIFT;
+	pSmart->RGB_OUTPUT.G_VOLTAGE.level_23 = (pSmart->GRAY.VT_TABLE.G_Gray) - result_3;
 
-		LSB = char_to_int(pSmart->MTP.B_OFFSET.OFFSET_23);
-		add_mtp = LSB + V23_300CD_B;
-		result_1 = (pSmart->GRAY.VT_TABLE.B_Gray)
-				- (pSmart->RGB_OUTPUT.B_VOLTAGE.level_35);
-		result_2 = (v23_coefficient + add_mtp) << BIT_SHIFT;
-		do_div(result_2, v23_denominator);
-		result_3 = (result_1 * result_2) >> BIT_SHIFT;
-		pSmart->RGB_OUTPUT.B_VOLTAGE.level_23 = (pSmart->GRAY.VT_TABLE.B_Gray) - result_3;
-
-		v23_val[0] = pSmart->RGB_OUTPUT.R_VOLTAGE.level_23;
-		v23_val[1] = pSmart->RGB_OUTPUT.G_VOLTAGE.level_23;
-		v23_val[2] = pSmart->RGB_OUTPUT.B_VOLTAGE.level_23;
-	} else {
-		pSmart->RGB_OUTPUT.R_VOLTAGE.level_23 = v23_val[0];
-		pSmart->RGB_OUTPUT.G_VOLTAGE.level_23 = v23_val[1];
-		pSmart->RGB_OUTPUT.B_VOLTAGE.level_23 = v23_val[2];
-	}
-
-	pr_info("%s RED level_23 :%d\n%s GREEN level_23:%d\n%s BLUE level_23:%d\n", __func__,
-			pSmart->RGB_OUTPUT.R_VOLTAGE.level_23, __func__,
-			pSmart->RGB_OUTPUT.G_VOLTAGE.level_23, __func__,
-			pSmart->RGB_OUTPUT.B_VOLTAGE.level_23);
+	LSB = char_to_int(pSmart->MTP.B_OFFSET.OFFSET_23);
+	add_mtp = LSB + V23_300CD_B;
+	result_1 = (pSmart->GRAY.VT_TABLE.B_Gray)
+		- (pSmart->RGB_OUTPUT.B_VOLTAGE.level_35);
+	result_2 = (v23_coefficient + add_mtp) << BIT_SHIFT;
+	do_div(result_2, v23_denominator);
+	result_3 = (result_1 * result_2) >> BIT_SHIFT;
+	pSmart->RGB_OUTPUT.B_VOLTAGE.level_23 = (pSmart->GRAY.VT_TABLE.B_Gray) - result_3;
 
 	return 0;
 
@@ -862,47 +712,32 @@ static int v11_adjustment(struct SMART_DIM *pSmart)
 	int add_mtp;
 	int LSB;
 
-	if (!first_adj_complete || !enabled) {
-		LSB = char_to_int(pSmart->MTP.R_OFFSET.OFFSET_11);
-		add_mtp = LSB + V11_300CD_R;
-		result_1 = (pSmart->GRAY.VT_TABLE.R_Gray)
-				- (pSmart->RGB_OUTPUT.R_VOLTAGE.level_23);
-		result_2 = (v11_coefficient + add_mtp) << BIT_SHIFT;
-		do_div(result_2, v11_denominator);
-		result_3 = (result_1 * result_2) >> BIT_SHIFT;
-		pSmart->RGB_OUTPUT.R_VOLTAGE.level_11 = (pSmart->GRAY.VT_TABLE.R_Gray) - result_3;
+	LSB = char_to_int(pSmart->MTP.R_OFFSET.OFFSET_11);
+	add_mtp = LSB + V11_300CD_R;
+	result_1 = (pSmart->GRAY.VT_TABLE.R_Gray)
+		- (pSmart->RGB_OUTPUT.R_VOLTAGE.level_23);
+	result_2 = (v11_coefficient + add_mtp) << BIT_SHIFT;
+	do_div(result_2, v11_denominator);
+	result_3 = (result_1 * result_2) >> BIT_SHIFT;
+	pSmart->RGB_OUTPUT.R_VOLTAGE.level_11 = (pSmart->GRAY.VT_TABLE.R_Gray) - result_3;
 
-		LSB = char_to_int(pSmart->MTP.G_OFFSET.OFFSET_11);
-		add_mtp = LSB + V11_300CD_G;
-		result_1 = (pSmart->GRAY.VT_TABLE.G_Gray)
-				- (pSmart->RGB_OUTPUT.G_VOLTAGE.level_23);
-		result_2 = (v11_coefficient + add_mtp) << BIT_SHIFT;
-		do_div(result_2, v11_denominator);
-		result_3 = (result_1 * result_2) >> BIT_SHIFT;
-		pSmart->RGB_OUTPUT.G_VOLTAGE.level_11 = (pSmart->GRAY.VT_TABLE.G_Gray) - result_3;
+	LSB = char_to_int(pSmart->MTP.G_OFFSET.OFFSET_11);
+	add_mtp = LSB + V11_300CD_G;
+	result_1 = (pSmart->GRAY.VT_TABLE.G_Gray)
+		- (pSmart->RGB_OUTPUT.G_VOLTAGE.level_23);
+	result_2 = (v11_coefficient + add_mtp) << BIT_SHIFT;
+	do_div(result_2, v11_denominator);
+	result_3 = (result_1 * result_2) >> BIT_SHIFT;
+	pSmart->RGB_OUTPUT.G_VOLTAGE.level_11 = (pSmart->GRAY.VT_TABLE.G_Gray) - result_3;
 
-		LSB = char_to_int(pSmart->MTP.B_OFFSET.OFFSET_11);
-		add_mtp = LSB + V11_300CD_B;
-		result_1 = (pSmart->GRAY.VT_TABLE.B_Gray)
-				- (pSmart->RGB_OUTPUT.B_VOLTAGE.level_23);
-		result_2 = (v11_coefficient + add_mtp) << BIT_SHIFT;
-		do_div(result_2, v11_denominator);
-		result_3 = (result_1 * result_2) >> BIT_SHIFT;
-		pSmart->RGB_OUTPUT.B_VOLTAGE.level_11 = (pSmart->GRAY.VT_TABLE.B_Gray) - result_3;
-
-		v11_val[0] = pSmart->RGB_OUTPUT.R_VOLTAGE.level_11;
-		v11_val[1] = pSmart->RGB_OUTPUT.G_VOLTAGE.level_11;
-		v11_val[2] = pSmart->RGB_OUTPUT.B_VOLTAGE.level_11;
-	} else {
-		pSmart->RGB_OUTPUT.R_VOLTAGE.level_11 = v11_val[0];
-		pSmart->RGB_OUTPUT.G_VOLTAGE.level_11 = v11_val[1];
-		pSmart->RGB_OUTPUT.B_VOLTAGE.level_11 = v11_val[2];
-	}
-
-	pr_info("%s RED level_11 :%d\n%s GREEN level_11:%d\n%s BLUE level_11:%d\n", __func__,
-			pSmart->RGB_OUTPUT.R_VOLTAGE.level_11, __func__,
-			pSmart->RGB_OUTPUT.G_VOLTAGE.level_11, __func__,
-			pSmart->RGB_OUTPUT.B_VOLTAGE.level_11);
+	LSB = char_to_int(pSmart->MTP.B_OFFSET.OFFSET_11);
+	add_mtp = LSB + V11_300CD_B;
+	result_1 = (pSmart->GRAY.VT_TABLE.B_Gray)
+		- (pSmart->RGB_OUTPUT.B_VOLTAGE.level_23);
+	result_2 = (v11_coefficient + add_mtp) << BIT_SHIFT;
+	do_div(result_2, v11_denominator);
+	result_3 = (result_1 * result_2) >> BIT_SHIFT;
+	pSmart->RGB_OUTPUT.B_VOLTAGE.level_11 = (pSmart->GRAY.VT_TABLE.B_Gray) - result_3;
 
 	return 0;
 
@@ -946,47 +781,32 @@ static int v3_adjustment(struct SMART_DIM *pSmart)
 	int add_mtp;
 	int LSB;
 
-	if (!first_adj_complete || !enabled) {
-		LSB = char_to_int(pSmart->MTP.R_OFFSET.OFFSET_3);
-		add_mtp = LSB + V3_300CD_R;
-		result_1 = (S6E3FA_VREG0_REF)
-				- (pSmart->RGB_OUTPUT.R_VOLTAGE.level_11);
-		result_2 = (v3_coefficient + add_mtp) << BIT_SHIFT;
-		do_div(result_2, v3_denominator);
-		result_3 = (result_1 * result_2) >> BIT_SHIFT;
-		pSmart->RGB_OUTPUT.R_VOLTAGE.level_3 = (S6E3FA_VREG0_REF) - result_3;
+	LSB = char_to_int(pSmart->MTP.R_OFFSET.OFFSET_3);
+	add_mtp = LSB + V3_300CD_R;
+	result_1 = (S6E3FA_VREG0_REF)
+		- (pSmart->RGB_OUTPUT.R_VOLTAGE.level_11);
+	result_2 = (v3_coefficient + add_mtp) << BIT_SHIFT;
+	do_div(result_2, v3_denominator);
+	result_3 = (result_1 * result_2) >> BIT_SHIFT;
+	pSmart->RGB_OUTPUT.R_VOLTAGE.level_3 = (S6E3FA_VREG0_REF) - result_3;
 
-		LSB = char_to_int(pSmart->MTP.G_OFFSET.OFFSET_3);
-		add_mtp = LSB + V3_300CD_G;
-		result_1 = (S6E3FA_VREG0_REF)
-				- (pSmart->RGB_OUTPUT.G_VOLTAGE.level_11);
-		result_2 = (v3_coefficient + add_mtp) << BIT_SHIFT;
-		do_div(result_2, v3_denominator);
-		result_3 = (result_1 * result_2) >> BIT_SHIFT;
-		pSmart->RGB_OUTPUT.G_VOLTAGE.level_3 = (S6E3FA_VREG0_REF) - result_3;
+	LSB = char_to_int(pSmart->MTP.G_OFFSET.OFFSET_3);
+	add_mtp = LSB + V3_300CD_G;
+	result_1 = (S6E3FA_VREG0_REF)
+		- (pSmart->RGB_OUTPUT.G_VOLTAGE.level_11);
+	result_2 = (v3_coefficient + add_mtp) << BIT_SHIFT;
+	do_div(result_2, v3_denominator);
+	result_3 = (result_1 * result_2) >> BIT_SHIFT;
+	pSmart->RGB_OUTPUT.G_VOLTAGE.level_3 = (S6E3FA_VREG0_REF) - result_3;
 
-		LSB = char_to_int(pSmart->MTP.B_OFFSET.OFFSET_3);
-		add_mtp = LSB + V3_300CD_B;
-		result_1 = (S6E3FA_VREG0_REF)
-				- (pSmart->RGB_OUTPUT.B_VOLTAGE.level_11);
-		result_2 = (v3_coefficient + add_mtp) << BIT_SHIFT;
-		do_div(result_2, v3_denominator);
-		result_3 = (result_1 * result_2) >> BIT_SHIFT;
-		pSmart->RGB_OUTPUT.B_VOLTAGE.level_3 = (S6E3FA_VREG0_REF) - result_3;
-
-		v3_val[0] = pSmart->RGB_OUTPUT.R_VOLTAGE.level_3;
-		v3_val[1] = pSmart->RGB_OUTPUT.G_VOLTAGE.level_3;
-		v3_val[2] = pSmart->RGB_OUTPUT.B_VOLTAGE.level_3;
-	} else {
-		pSmart->RGB_OUTPUT.R_VOLTAGE.level_3 = v3_val[0];
-		pSmart->RGB_OUTPUT.G_VOLTAGE.level_3 = v3_val[1];
-		pSmart->RGB_OUTPUT.B_VOLTAGE.level_3 = v3_val[2];
-	}
-
-	pr_info("%s RED level_3 :%d\n%s GREEN level_3:%d\n%s BLUE level_3:%d\n", __func__,
-			pSmart->RGB_OUTPUT.R_VOLTAGE.level_3, __func__,
-			pSmart->RGB_OUTPUT.G_VOLTAGE.level_3, __func__,
-			pSmart->RGB_OUTPUT.B_VOLTAGE.level_3);
+	LSB = char_to_int(pSmart->MTP.B_OFFSET.OFFSET_3);
+	add_mtp = LSB + V3_300CD_B;
+	result_1 = (S6E3FA_VREG0_REF)
+		- (pSmart->RGB_OUTPUT.B_VOLTAGE.level_11);
+	result_2 = (v3_coefficient + add_mtp) << BIT_SHIFT;
+	do_div(result_2, v3_denominator);
+	result_3 = (result_1 * result_2) >> BIT_SHIFT;
+	pSmart->RGB_OUTPUT.B_VOLTAGE.level_3 = (S6E3FA_VREG0_REF) - result_3;
 
 	return 0;
 
@@ -1505,7 +1325,6 @@ static void(*Make_hexa[S6E3FA_TABLE_MAX])(int*, struct SMART_DIM*, char*) = {
 	vt_hexa,
 };
 
-#if defined(AID_OPERATION)
 /*
 *	Because of AID operation & display quality.
 *
@@ -1596,1105 +1415,6 @@ static int find_cadela_table(int brightness)
 }
 
 #define RGB_COMPENSATION 24
-
-static int gradation_offset_rev0[][9] = {
-/*	V255 V203 V151 V87 V51 V35 V23 V11 V3 */
-	{0, 6, 11, 18, 23, 26, 30, 34, 37},
-	{0, 5, 10, 16, 20, 23, 26, 30, 30},
-	{0, 5, 8, 14, 18, 21, 24, 27, 27},
-	{0, 5, 8, 13, 16, 19, 22, 24, 26},
-	{0, 4, 7, 12, 15, 18, 20, 23, 25},
-	{0, 4, 6, 10, 13, 16, 18, 22, 25},
-	{0, 4, 6, 10, 13, 16, 18, 21, 24},
-	{0, 4, 6, 9, 12, 15, 17, 20, 23},
-	{0, 4, 5, 9, 12, 14, 16, 19, 22},
-	{0, 4, 5, 8, 11, 13, 15, 18, 21},
-	{0, 4, 5, 8, 10, 13, 14, 17, 20},
-	{0, 3, 4, 7, 9, 12, 13, 16, 19},
-	{0, 3, 4, 7, 9, 11, 13, 16, 18},
-	{0, 3, 4, 6, 8, 10, 12, 15, 17},
-	{0, 3, 4, 6, 8, 10, 12, 15, 17},
-	{0, 3, 4, 6, 7, 9, 11, 14, 16},
-	{0, 3, 3, 5, 7, 9, 11, 13, 15},
-	{0, 3, 3, 5, 6, 8, 10, 12, 14},
-	{0, 3, 3, 5, 6, 8, 10, 12, 14},
-	{0, 3, 3, 5, 6, 8, 9, 11, 14},
-	{0, 3, 3, 4, 5, 7, 8, 11, 13},
-	{0, 3, 3, 4, 5, 7, 8, 10, 12},
-	{0, 3, 3, 4, 5, 7, 8, 10, 12},
-	{0, 2, 2, 3, 4, 6, 7, 9, 11},
-	{0, 2, 2, 3, 4, 6, 7, 8, 10},
-	{0, 2, 2, 3, 4, 5, 6, 8, 10},
-	{0, 2, 2, 3, 4, 5, 6, 7, 9},
-	{0, 2, 2, 3, 3, 4, 5, 7, 9},
-	{0, 1, 1, 2, 3, 4, 5, 6, 8},
-	{0, 1, 1, 2, 2, 3, 4, 5, 7},
-	{0, 1, 1, 2, 2, 3, 4, 5, 7},
-	{0, 1, 1, 1, 2, 3, 3, 4, 6},
-	{0, 1, 1, 1, 2, 3, 3, 4, 6},
-	{0, 1, 1, 1, 2, 3, 3, 4, 6},
-	{0, 1, 1, 1, 1, 2, 2, 3, 5},
-	{0, 1, 1, 1, 1, 2, 2, 3, 4},
-	{0, 1, 0, 1, 1, 2, 2, 3, 4},
-	{0, 1, 0, 1, 1, 2, 2, 3, 4},
-	{0, 1, 0, 0, 0, 1, 1, 2, 3},
-	{0, 1, 0, 0, 0, 1, 1, 2, 3},
-	{0, 1, 0, 0, 0, 1, 1, 2, 3},
-	{0, 1, 0, 0, 0, 0, 1, 2, 3},
-	{0, 0, 0, 0, 0, 0, 1, 2, 5},
-	{0, 0, 0, 0, 0, 0, 1, 2, 5},
-	{0, 0, 0, 0, 0, 0, 1, 2, 5},
-	{0, 0, 0, 0, 0, 0, 1, 2, 4},
-	{0, 0, 0, 0, 0, 0, 1, 2, 4},
-	{0, 0, 0, 0, 0, 0, 0, 2, 4},
-	{0, 0, 0, 0, 0, 0, 0, 2, 4},
-	{0, 0, 0, 0, 0, 0, 0, 2, 4},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0},
-};
-
-static int rgb_offset_rev0[][RGB_COMPENSATION] = {
-/*	R255 G255 B255 R203 G203 B203 R151 G151 B151
-	R87 G87 B87 R51 G51 B51 R35 G35 B35
-	R23 G23 B23 R11 G11 B11
-*/
-	{-3, 1, -2, -3, 1, -3, -3, 2, -5, -6, 5, -8, -8, 6, -9, -6, 4, -5, -3, 3, -5, -2, 3, -3},
-	{-2, 1, -1, -2, 1, -2, -3, 2, -4, -6, 5, -8, -7, 6, -8, -5, 4, -6, -3, 4, -5, -2, 4, -3},
-	{-1, 0, -1, -2, 1, -2, -3, 2, -4, -5, 4, -6, -7, 6, -8, -5, 4, -6, -4, 4, -5, -2, 4, -3},
-	{-1, 0, -1, -2, 1, -2, -3, 1, -3, -5, 4, -6, -7, 6, -8, -5, 5, -6, -4, 5, -5, -2, 5, -4},
-	{-1, 0, -1, -2, 0, -2, -2, 1, -2, -5, 4, -6, -7, 5, -7, -5, 5, -6, -4, 5, -5, -2, 5, -4},
-	{-1, 0, -1, -1, 0, -1, -2, 1, -2, -4, 4, -5, -7, 5, -7, -4, 6, -6, -4, 6, -6, -2, 6, -5},
-	{-1, 0, -1, -1, 0, -1, -2, 1, -2, -4, 4, -5, -7, 5, -7, -4, 6, -6, -4, 6, -6, -2, 6, -5},
-	{-1, 0, -1, -1, 0, -1, -2, 1, -2, -4, 4, -5, -7, 5, -7, -4, 5, -6, -4, 6, -6, -2, 6, -5},
-	{-1, 0, -1, -1, 0, -1, -1, 1, -1, -4, 3, -4, -6, 4, -6, -4, 5, -5, -3, 6, -7, -2, 6, -7},
-	{-1, 0, -1, -1, 0, -1, -1, 1, -1, -4, 3, -4, -6, 4, -6, -4, 4, -5, -3, 6, -7, -2, 6, -7},
-	{-1, 0, -1, -1, 0, -1, -1, 1, -1, -4, 3, -4, -6, 4, -6, -4, 4, -5, -3, 6, -8, -2, 6, -8},
-	{-1, 0, -1, -1, 0, -1, -1, 1, -1, -4, 3, -4, -6, 4, -5, -4, 4, -5, -3, 5, -8, -2, 6, -9},
-	{-1, 0, -1, -1, 0, -1, -1, 1, -1, -3, 3, -4, -6, 4, -5, -5, 4, -5, -3, 5, -8, -2, 6, -9},
-	{-1, 0, 0, -1, 0, -1, -1, 1, -1, -3, 2, -4, -5, 3, -5, -5, 3, -5, -3, 4, -9, -2, 5, -10},
-	{-1, 0, 0, -1, 0, -1, -1, 1, -1, -3, 2, -4, -5, 3, -5, -5, 3, -5, -3, 4, -9, -2, 5, -10},
-	{-1, 0, 0, -1, 0, -1, -1, 1, -1, -3, 2, -3, -4, 3, -5, -5, 3, -5, -3, 4, -9, -2, 5, -9},
-	{-1, 0, 0, -1, 0, -1, -1, 1, -1, -3, 2, -2, -4, 3, -5, -5, 3, -5, -3, 4, -9, -2, 5, -9},
-	{-1, 0, 0, -1, 0, -1, -1, 1, -1, -3, 2, -2, -3, 3, -4, -5, 3, -4, -3, 4, -9, -2, 5, -8},
-	{-1, 0, 0, -1, 0, -1, -1, 1, -1, -3, 2, -2, -3, 3, -4, -5, 3, -4, -3, 4, -8, -2, 5, -7},
-	{-1, 0, 0, -1, 0, -1, -1, 1, -1, -3, 2, -1, -3, 3, -4, -5, 3, -4, -3, 4, -8, -2, 5, -7},
-	{-1, 0, 0, -1, 0, -1, -1, 0, -1, -2, 2, -1, -2, 3, -4, -4, 3, -4, -3, 4, -8, -2, 4, -7},
-	{-1, 0, 0, -1, 0, -1, -1, 0, -1, -2, 2, -1, -2, 3, -4, -4, 3, -4, -3, 4, -8, -2, 4, -7},
-	{-1, 0, 0, -1, 0, -1, -1, 0, -1, -2, 2, -1, -2, 3, -4, -4, 2, -4, -3, 3, -8, -2, 4, -7},
-	{-1, 0, 0, -1, 0, -1, -1, 0, -1, -2, 2, -1, -2, 3, -3, -4, 2, -4, -3, 3, -8, -2, 4, -7},
-	{-1, 0, 0, -1, 0, -1, -1, 0, -1, -2, 2, -1, -2, 3, -3, -4, 2, -4, -3, 3, -8, -2, 4, -7},
-	{-1, 0, 0, 0, 0, 0, 0, 0, -1, -2, 1, -1, -2, 2, -3, -3, 2, -3, -3, 3, -7, -3, 4, -7},
-	{-1, 0, 0, 0, 0, 0, 0, 0, -1, -2, 1, -1, -2, 2, -3, -3, 2, -3, -3, 3, -7, -3, 4, -7},
-	{-1, 0, 0, 0, 0, 0, 0, 0, -1, -2, 1, -1, -2, 2, -3, -3, 2, -3, -3, 3, -6, -3, 4, -7},
-	{-1, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, -1, -2, 2, -2, -2, 2, -3, -3, 3, -5, -3, 4, -7},
-	{-1, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, -1, -2, 2, -2, -2, 2, -3, -3, 3, -5, -2, 4, -7},
-	{-1, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, -1, -2, 2, -2, -2, 2, -3, -3, 3, -5, -2, 4, -7},
-	{-1, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, -1, -2, 1, -2, -2, 1, -2, -3, 3, -4, -2, 4, -7},
-	{-1, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, -1, -2, 1, -2, -2, 1, -2, -3, 3, -4, -2, 3, -7},
-	{-1, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, -1, -2, 1, -2, -2, 1, -2, -3, 2, -4, -2, 3, -7},
-	{-1, 0, 0, 0, 0, 0, 1, 0, 1, -1, 0, -1, -1, 1, -1, -1, 1, -1, -2, 1, -4, -2, 2, -7},
-	{-1, 0, 0, 0, 0, 0, 1, 0, 1, -1, 0, -1, -1, 1, -1, -1, 1, -1, -2, 1, -4, -2, 2, -7},
-	{-1, 0, 0, 0, 0, 0, 1, 0, 1, -1, 0, -1, -1, 0, -1, -1, 0, -1, -5, 1, -3, -2, 2, -7},
-	{-1, 0, 0, 0, 0, 0, 1, 0, 1, -1, 0, -1, -1, 0, -1, -1, 0, -1, -2, 1, -3, -2, 2, -6},
-	{-1, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, -1, -1, 0, -1, -1, 0, -1, -2, 0, -3, -1, 2, -5},
-	{-1, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, -1, -1, 0, -1, -1, 0, -1, -2, 0, -2, -1, 2, -4},
-	{-1, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, -1, 0, -1, -1, 0, -1, -1, 0, -1, -1, 1, -4},
-	{-1, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, -1, 0, -1, -1, 0, -1, -1, 0, -1, -1, 1, -4},
-	{0, 0, 2, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 0, 0, 1, 0, -2, 1, -3, -3, 4, -7},
-	{0, 0, 2, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 0, 0, 1, 0, -2, 1, -3, -3, 3, -6},
-	{0, 0, 2, 1, 0, 0, 0, 1, 0, 1, 1, 0, 0, 1, 0, 0, 1, 0, -1, 1, -3, -3, 3, -6},
-	{0, 0, 2, 1, 0, 0, 0, 1, 0, 1, 1, 0, 0, 1, 0, 0, 1, 0, -1, 1, -3, -3, 3, -6},
-	{0, 0, 2, 1, 0, 0, 0, 1, 0, 1, 1, 0, 0, 1, 0, 0, 1, 0, -1, 1, -3, -3, 3, -6},
-	{0, 0, 2, 1, 0, 0, 0, 1, 0, 1, 1, 0, 0, 1, 0, 0, 1, 0, -1, 1, -2, -3, 2, -6},
-	{0, 0, 2, 1, 0, 0, 0, 1, 0, 1, 1, 0, 0, 1, 0, 0, 1, 0, -1, 1, -2, -3, 1, -6},
-	{0, 0, 2, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, -1, 1, -2, -3, 1, -6},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-};
-
-static void gamma_init_rev0(
-				struct SMART_DIM *pSmart, char *str, int size)
-{
-	long long candela_level[S6E3FA_TABLE_MAX] = {-1, };
-	int bl_index[S6E3FA_TABLE_MAX] = {-1, };
-
-	long long temp_cal_data = 0;
-	int bl_level;
-
-	int level_255_temp_MSB = 0;
-	int level_V255 = 0;
-
-	int point_index;
-	int cnt;
-	int table_index;
-
-	/*calculate candela level */
-	if (pSmart->brightness_level > AOR_FIX_CD) {
-		/* 300CD ~ 190CD */
-		bl_level = pSmart->brightness_level;
-	} else if ((pSmart->brightness_level <= AOR_FIX_CD) &&
-				(pSmart->brightness_level >= AOR_ADJUST_CD)) {
-		/* 180CD ~ 110CD */
-		if (pSmart->brightness_level == 111)
-			bl_level = 181;
-		else if (pSmart->brightness_level == 119)
-			bl_level = 193;
-		else if (pSmart->brightness_level == 126)
-			bl_level = 205;
-		else if (pSmart->brightness_level == 134)
-			bl_level = 215;
-		else if (pSmart->brightness_level == 143)
-			bl_level = 225;
-		else if (pSmart->brightness_level == 152)
-			bl_level = 240;
-		else if (pSmart->brightness_level == 162)
-			bl_level = 255;
-		else
-			bl_level = 271;
-	} else {
-		/* 100CD ~ 10CD */
-		bl_level = AOR_ADJUST_CD;
-	}
-
-	if (pSmart->brightness_level < 300) {
-		for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
-			point_index = S6E3FA_ARRAY[cnt+1];
-			temp_cal_data =
-			((long long)(candela_coeff_2p15[point_index])) *
-			((long long)(bl_level));
-			candela_level[cnt] = temp_cal_data;
-		}
-
-	} else {
-		for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
-			point_index = S6E3FA_ARRAY[cnt+1];
-			temp_cal_data =
-			((long long)(candela_coeff_2p2[point_index])) *
-			((long long)(bl_level));
-			candela_level[cnt] = temp_cal_data;
-		}
-
-	}
-
-
-#ifdef SMART_DIMMING_DEBUG
-	pr_info("\n candela_1:%llu  candela_3:%llu  candela_11:%llu ",
-		candela_level[0], candela_level[1], candela_level[2]);
-	pr_info("candela_23:%llu  candela_35:%llu  candela_51:%llu ",
-		candela_level[3], candela_level[4], candela_level[5]);
-	pr_info("candela_87:%llu  candela_151:%llu  candela_203:%llu ",
-		candela_level[6], candela_level[7], candela_level[8]);
-	pr_info("candela_255:%llu brightness_level %d\n", candela_level[9], pSmart->brightness_level);
-#endif
-
-	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
-		if (searching_function(candela_level[cnt],
-			&(bl_index[cnt]), GAMMA_CURVE_2P15)) {
-			pr_info("%s searching functioin error cnt:%d\n",
-			__func__, cnt);
-		}
-	}
-
-	/*
-	*	Candela compensation
-	*/
-	for (cnt = 1; cnt < S6E3FA_TABLE_MAX; cnt++) {
-		table_index = find_cadela_table(pSmart->brightness_level);
-
-		if (table_index == -1)
-			table_index = CCG6_MAX_TABLE;
-
-		bl_index[S6E3FA_TABLE_MAX - cnt] +=
-			gradation_offset_rev0[table_index][cnt - 1];
-
-		/* THERE IS M-GRAY0 target */
-		if (bl_index[S6E3FA_TABLE_MAX - cnt] == 0)
-			bl_index[S6E3FA_TABLE_MAX - cnt] = 1;
-	}
-
-#ifdef SMART_DIMMING_DEBUG
-	pr_info("\n bl_index_1:%d  bl_index_3:%d  bl_index_11:%d",
-		bl_index[0], bl_index[1], bl_index[2]);
-	pr_info("bl_index_23:%d bl_index_35:%d  bl_index_51:%d",
-		bl_index[3], bl_index[4], bl_index[5]);
-	pr_info("bl_index_87:%d  bl_index_151:%d bl_index_203:%d",
-		bl_index[6], bl_index[7], bl_index[8]);
-	pr_info("bl_index_255:%d\n", bl_index[9]);
-#endif
-	/*Generate Gamma table*/
-	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++)
-		(void)Make_hexa[cnt](bl_index , pSmart, str);
-
-	/*
-	*	RGB compensation
-	*/
-	for (cnt = 0; cnt < RGB_COMPENSATION; cnt++) {
-		table_index = find_cadela_table(pSmart->brightness_level);
-
-		if (table_index == -1) {
-			table_index = CCG6_MAX_TABLE;
-			pr_info("%s fail RGB table_index cnt : %d brightness %d",
-				__func__, cnt, pSmart->brightness_level);
-		}
-
-		if (cnt < 3) {
-			level_V255 = str[cnt * 2] << 8 | str[(cnt * 2) + 1];
-			level_V255 +=
-				rgb_offset_rev0[table_index][cnt];
-			level_255_temp_MSB = level_V255 / 256;
-
-			str[cnt * 2] = level_255_temp_MSB & 0xff;
-			str[(cnt * 2) + 1] = level_V255 & 0xff;
-		} else {
-			str[cnt+3] += rgb_offset_rev0[table_index][cnt];
-		}
-	}
-	/*subtration MTP_OFFSET value from generated gamma table*/
-	mtp_offset_substraction(pSmart, str);
-}
-
-static int gradation_offset_rev1[][9] = {
-/*	V255 V203 V151 V87 V51 V35 V23 V11 V3 */
-	{0, 7, 12, 19, 25, 29, 33, 38, 41},
-	{0, 7, 11, 18, 23, 26, 30, 35, 38},
-	{0, 6, 10, 16, 21, 24, 27, 31, 34},
-	{0, 6, 9, 14, 19, 22, 25, 30, 33},
-	{0, 5, 8, 12, 17, 20, 23, 27, 30},
-	{0, 5, 7, 11, 15, 17, 20, 24, 27},
-	{0, 4, 6, 10, 14, 16, 19, 23, 26},
-	{0, 4, 6, 9, 13, 15, 18, 22, 25},
-	{0, 4, 5, 9, 12, 14, 17, 21, 24},
-	{0, 4, 5, 8, 11, 14, 17, 20, 23},
-	{0, 4, 5, 8, 10, 13, 16, 19, 22},
-	{0, 3, 4, 7, 9, 12, 15, 18, 21},
-	{0, 3, 4, 7, 9, 11, 14, 17, 20},
-	{0, 3, 4, 6, 8, 10, 13, 16, 19},
-	{0, 3, 4, 6, 8, 10, 12, 15, 18},
-	{0, 3, 4, 6, 7, 9, 12, 15, 18},
-	{0, 3, 3, 5, 7, 9, 11, 15, 18},
-	{0, 3, 3, 5, 6, 8, 10, 14, 17},
-	{0, 3, 3, 5, 6, 8, 10, 13, 16},
-	{0, 3, 3, 5, 6, 8, 9, 13, 16},
-	{0, 3, 3, 4, 5, 7, 8, 12, 15},
-	{0, 3, 3, 4, 5, 7, 8, 12, 15},
-	{0, 3, 3, 4, 5, 7, 8, 11, 14},
-	{0, 2, 2, 3, 4, 6, 7, 11, 14},
-	{0, 2, 2, 3, 4, 6, 7, 10, 13},
-	{0, 2, 2, 3, 4, 5, 6, 10, 13},
-	{0, 2, 2, 3, 4, 5, 6, 9, 11},
-	{0, 2, 2, 3, 3, 4, 5, 9, 11},
-	{0, 1, 1, 2, 3, 4, 5, 8, 10},
-	{0, 1, 1, 2, 2, 3, 4, 8, 10},
-	{0, 1, 1, 2, 2, 3, 4, 7, 9},
-	{0, 1, 1, 1, 2, 3, 4, 7, 9},
-	{0, 1, 1, 1, 2, 3, 3, 6, 8},
-	{0, 1, 1, 1, 2, 3, 3, 6, 8},
-	{0, 1, 1, 1, 1, 2, 3, 5, 7},
-	{0, 1, 1, 1, 1, 2, 2, 5, 7},
-	{0, 1, 0, 1, 1, 2, 2, 4, 6},
-	{0, 1, 0, 1, 1, 2, 2, 4, 6},
-	{0, 1, 0, 0, 0, 1, 1, 3, 5},
-	{0, 1, 0, 0, 0, 1, 1, 3, 5},
-	{0, 1, 0, 0, 0, 1, 1, 2, 5},
-	{0, 1, 0, 0, 0, 0, 1, 2, 5},
-	{0, 0, 0, 0, 0, 1, 2, 4, 6},
-	{0, 0, 0, 0, 0, 1, 2, 3, 5},
-	{0, 0, 0, 0, 0, 0, 2, 3, 5},
-	{0, 0, 0, 0, 0, 0, 2, 3, 5},
-	{0, 0, 0, 0, 0, 0, 2, 3, 5},
-	{0, 0, 0, 0, 0, 0, 1, 2, 4},
-	{0, 0, 0, 0, 0, 0, 1, 2, 4},
-	{0, 0, 0, 0, 0, 0, 1, 2, 4},
-	{0, 0, 0, 0, 0, 0, 0, 1, 1},
-	{0, 0, 0, 0, 0, 0, 0, 1, 1},
-	{0, 0, 0, 0, 0, 0, 0, 1, 1},
-	{0, 0, 0, 0, 0, 0, 0, 1, 1},
-	{0, 0, 0, 0, 0, 0, 0, 1, 1},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0},
-};
-
-static int rgb_offset_rev1[][RGB_COMPENSATION] = {
-/*	R255 G255 B255 R203 G203 B203 R151 G151 B151
-	R87 G87 B87 R51 G51 B51 R35 G35 B35
-	R23 G23 B23 R11 G11 B11
-*/
-	{-3, 1, -2, -3, 1, -3, -3, 2, -5, -8, 6, -9, -8, 7, -10, -4, 5, -5, -2, 4, -6, -4, 4, -6},
-	{-2, 1, -1, -3, 1, -3, -3, 2, -5, -8, 6, -8, -8, 7, -9, -4, 5, -6, -2, 4, -6, -4, 4, -7},
-	{-1, 0, -1, -2, 1, -3, -3, 2, -4, -7, 6, -7, -8, 7, -9, -4, 6, -6, -3, 4, -6, -4, 5, -8},
-	{-1, 0, -1, -2, 0, -2, -2, 1, -4, -7, 5, -7, -8, 6, -8, -4, 6, -6, -3, 4, -6, -4, 5, -8},
-	{-1, 0, -1, -2, 0, -2, -2, 1, -3, -6, 5, -6, -8, 6, -8, -4, 7, -6, -4, 4, -6, -4, 6, -9},
-	{-1, 0, -1, -2, 0, -2, -2, 1, -3, -6, 5, -6, -8, 6, -7, -4, 7, -6, -4, 4, -6, -4, 6, -9},
-	{-1, 0, -1, -1, 0, -1, -2, 1, -2, -4, 4, -5, -7, 5, -7, -4, 6, -6, -4, 5, -6, -5, 6, -11},
-	{-1, 0, -1, -1, 0, -1, -2, 1, -2, -4, 4, -5, -7, 5, -7, -4, 5, -6, -4, 6, -6, -5, 7, -11},
-	{-1, 0, -1, -1, 0, -1, -1, 1, -1, -4, 4, -5, -6, 5, -7, -4, 5, -6, -4, 6, -7, -6, 7, -11},
-	{-1, 0, -1, -1, 0, -1, -1, 1, -1, -4, 3, -4, -6, 4, -7, -4, 4, -6, -4, 6, -8, -6, 7, -11},
-	{-1, 0, -1, -1, 0, -1, -1, 1, -1, -4, 3, -4, -6, 4, -6, -4, 4, -6, -4, 6, -8, -6, 7, -11},
-	{-1, 0, -1, -1, 0, -1, -1, 1, -1, -4, 3, -4, -6, 4, -6, -4, 4, -6, -5, 6, -8, -6, 8, -11},
-	{-1, 0, -1, -1, 0, -1, -1, 1, -1, -3, 3, -4, -6, 4, -6, -5, 4, -6, -5, 6, -9, -6, 8, -11},
-	{-1, 0, 0, -1, 0, -1, -1, 1, -1, -3, 2, -4, -5, 3, -6, -5, 4, -6, -5, 6, -9, -6, 8, -11},
-	{-1, 0, 0, -1, 0, -1, -1, 1, -1, -3, 2, -4, -5, 3, -6, -5, 4, -6, -5, 6, -10, -6, 8, -11},
-	{-1, 0, 0, -1, 0, -1, -1, 1, -1, -3, 2, -3, -4, 3, -5, -5, 4, -5, -4, 5, -10, -6, 6, -11},
-	{-1, 0, 0, -1, 0, -1, -1, 1, -1, -3, 2, -2, -4, 3, -5, -5, 3, -5, -4, 5, -10, -6, 5, -13},
-	{-1, 0, 0, -1, 0, -1, -1, 1, -1, -3, 2, -2, -3, 3, -4, -5, 3, -5, -4, 5, -10, -6, 5, -13},
-	{-1, 0, 0, -1, 0, -1, -1, 1, -1, -3, 2, -2, -3, 3, -4, -5, 3, -4, -3, 4, -10, -6, 5, -13},
-	{-1, 0, 0, -1, 0, -1, -1, 1, -1, -3, 2, -1, -3, 3, -4, -5, 3, -4, -3, 4, -10, -6, 5, -13},
-	{-1, 0, 0, -1, 0, -1, -1, 0, -1, -2, 2, -1, -2, 3, -4, -4, 3, -4, -3, 4, -10, -6, 5, -13},
-	{-1, 0, 0, -1, 0, -1, -1, 0, -1, -2, 2, -1, -2, 3, -4, -4, 3, -4, -3, 4, -9, -6, 5, -13},
-	{-1, 0, 0, -1, 0, -1, -1, 0, -1, -2, 2, -1, -2, 3, -4, -4, 2, -4, -3, 3, -9, -6, 5, -13},
-	{-1, 0, 0, -1, 0, -1, -1, 0, -1, -2, 2, -1, -2, 3, -3, -4, 2, -4, -3, 3, -9, -6, 5, -12},
-	{-1, 0, 0, -1, 0, -1, -1, 0, -1, -2, 2, -1, -2, 3, -3, -4, 2, -4, -3, 3, -9, -6, 4, -12},
-	{-1, 0, 0, 0, 0, 0, 0, 0, -1, -2, 1, -1, -2, 2, -3, -3, 2, -3, -3, 3, -8, -6, 4, -12},
-	{-1, 0, 0, 0, 0, 0, 0, 0, -1, -2, 1, -1, -2, 2, -3, -3, 2, -3, -3, 3, -7, -6, 4, -12},
-	{-1, 0, 0, 0, 0, 0, 0, 0, -1, -2, 1, -1, -2, 2, -3, -3, 2, -3, -3, 3, -7, -6, 3, -10},
-	{-1, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, -1, -2, 2, -2, -2, 2, -3, -3, 3, -7, -5, 3, -10},
-	{-1, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, -1, -2, 2, -2, -2, 2, -3, -3, 3, -6, -5, 3, -10},
-	{-1, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, -1, -2, 2, -2, -2, 2, -3, -3, 3, -6, -5, 3, -9},
-	{-1, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, -1, -2, 1, -2, -2, 1, -2, -3, 3, -6, -5, 3, -9},
-	{-1, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, -1, -2, 1, -2, -2, 1, -2, -3, 3, -4, -5, 3, -9},
-	{-1, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, -1, -2, 1, -2, -2, 1, -2, -3, 3, -4, -5, 3, -9},
-	{-1, 0, 0, 0, 0, 0, 1, 0, 1, -1, 0, -1, -1, 1, -1, -1, 1, -1, -2, 2, -4, -4, 3, -9},
-	{-1, 0, 0, 0, 0, 0, 1, 0, 1, -1, 0, -1, -1, 1, -1, -1, 1, -1, -2, 2, -4, -4, 3, -9},
-	{-1, 0, 0, 0, 0, 0, 1, 0, 1, -1, 0, -1, -1, 0, -1, -1, 0, -1, -2, 2, -3, -3, 3, -9},
-	{-1, 0, 0, 0, 0, 0, 1, 0, 1, -1, 0, -1, -1, 0, -1, -1, 0, -1, -2, 2, -3, -3, 2, -8},
-	{-1, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, -1, -1, 0, -1, -1, 0, -1, -2, 1, -3, -1, 2, -6},
-	{-1, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, -1, -1, 0, -1, -1, 0, -1, -2, 0, -2, -1, 2, -6},
-	{-1, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, -1, 0, -1, -1, 0, -1, -1, 0, -1, -1, 2, -6},
-	{-1, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, -1, 0, -1, -1, 0, -1, -1, 0, -1, -1, 2, -6},
-	{0, 0, 2, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 0, -1, 1, -1, -2, 1, -4, -4, 4, -9},
-	{0, 0, 2, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 0, -1, 1, -1, -2, 1, -4, -4, 4, -9},
-	{0, 0, 2, 1, 0, 0, 0, 1, 0, 1, 1, 0, 0, 1, 0, -1, 1, -1, -2, 1, -3, -4, 4, -9},
-	{0, 0, 2, 1, 0, 0, 0, 1, 0, 1, 1, 0, 0, 1, 0, -1, 1, -1, -2, 1, -3, -4, 4, -8},
-	{0, 0, 2, 1, 0, 0, 0, 1, 0, 1, 1, 0, 0, 1, 0, -1, 1, -1, -2, 1, -3, -4, 4, -6},
-	{0, 0, 2, 1, 0, 0, 0, 1, 0, 1, 1, 0, 0, 1, 0, -1, 1, -1, -2, 1, -3, -4, 3, -6},
-	{0, 0, 2, 1, 0, 0, 0, 1, 0, 1, 1, 0, 0, 1, 0, -1, 1, -1, -2, 1, -3, -4, 3, -6},
-	{0, 0, 2, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, -1, 1, -1, -2, 1, -3, -4, 3, -6},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, -2},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, -2},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -2},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -2},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-};
-
-static void gamma_init_rev1(
-				struct SMART_DIM *pSmart, char *str, int size)
-{
-	long long candela_level[S6E3FA_TABLE_MAX] = {-1, };
-	int bl_index[S6E3FA_TABLE_MAX] = {-1, };
-
-	long long temp_cal_data = 0;
-	int bl_level;
-
-	int level_255_temp_MSB = 0;
-	int level_V255 = 0;
-
-	int point_index;
-	int cnt;
-	int table_index;
-
-	/*calculate candela level */
-	if (pSmart->brightness_level > AOR_FIX_CD) {
-		/* 300CD ~ 190CD */
-		bl_level = pSmart->brightness_level;
-	} else if ((pSmart->brightness_level <= AOR_FIX_CD) &&
-				(pSmart->brightness_level >= AOR_ADJUST_CD)) {
-		/* 180CD ~ 110CD */
-		if (pSmart->brightness_level == 111)
-			bl_level = 181;
-		else if (pSmart->brightness_level == 119)
-			bl_level = 193;
-		else if (pSmart->brightness_level == 126)
-			bl_level = 205;
-		else if (pSmart->brightness_level == 134)
-			bl_level = 215;
-		else if (pSmart->brightness_level == 143)
-			bl_level = 225;
-		else if (pSmart->brightness_level == 152)
-			bl_level = 240;
-		else if (pSmart->brightness_level == 162)
-			bl_level = 255;
-		else
-			bl_level = 271;
-	} else {
-		/* 100CD ~ 10CD */
-		bl_level = AOR_ADJUST_CD;
-	}
-
-	if (pSmart->brightness_level < 300) {
-		for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
-			point_index = S6E3FA_ARRAY[cnt+1];
-			temp_cal_data =
-			((long long)(candela_coeff_2p15[point_index])) *
-			((long long)(bl_level));
-			candela_level[cnt] = temp_cal_data;
-		}
-
-	} else {
-		for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
-			point_index = S6E3FA_ARRAY[cnt+1];
-			temp_cal_data =
-			((long long)(candela_coeff_2p2[point_index])) *
-			((long long)(bl_level));
-			candela_level[cnt] = temp_cal_data;
-		}
-
-	}
-
-
-#ifdef SMART_DIMMING_DEBUG
-	pr_info("\n candela_1:%llu  candela_3:%llu  candela_11:%llu ",
-		candela_level[0], candela_level[1], candela_level[2]);
-	pr_info("candela_23:%llu  candela_35:%llu  candela_51:%llu ",
-		candela_level[3], candela_level[4], candela_level[5]);
-	pr_info("candela_87:%llu  candela_151:%llu  candela_203:%llu ",
-		candela_level[6], candela_level[7], candela_level[8]);
-	pr_info("candela_255:%llu brightness_level %d\n", candela_level[9], pSmart->brightness_level);
-#endif
-
-	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
-		if (searching_function(candela_level[cnt],
-			&(bl_index[cnt]), GAMMA_CURVE_2P15)) {
-			pr_info("%s searching functioin error cnt:%d\n",
-			__func__, cnt);
-		}
-	}
-
-	/*
-	*	Candela compensation
-	*/
-	for (cnt = 1; cnt < S6E3FA_TABLE_MAX; cnt++) {
-		table_index = find_cadela_table(pSmart->brightness_level);
-
-		if (table_index == -1) {
-			table_index = CCG6_MAX_TABLE;
-			pr_info("%s fail candela table_index cnt : %d brightness %d",
-				__func__, cnt, pSmart->brightness_level);
-		}
-
-		bl_index[S6E3FA_TABLE_MAX - cnt] +=
-			gradation_offset_rev1[table_index][cnt - 1];
-
-		/* THERE IS M-GRAY0 target */
-		if (bl_index[S6E3FA_TABLE_MAX - cnt] == 0)
-			bl_index[S6E3FA_TABLE_MAX - cnt] = 1;
-	}
-
-#ifdef SMART_DIMMING_DEBUG
-	pr_info("\n bl_index_1:%d  bl_index_3:%d  bl_index_11:%d",
-		bl_index[0], bl_index[1], bl_index[2]);
-	pr_info("bl_index_23:%d bl_index_35:%d  bl_index_51:%d",
-		bl_index[3], bl_index[4], bl_index[5]);
-	pr_info("bl_index_87:%d  bl_index_151:%d bl_index_203:%d",
-		bl_index[6], bl_index[7], bl_index[8]);
-	pr_info("bl_index_255:%d\n", bl_index[9]);
-#endif
-	/*Generate Gamma table*/
-	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++)
-		(void)Make_hexa[cnt](bl_index , pSmart, str);
-
-	/*
-	*	RGB compensation
-	*/
-	for (cnt = 0; cnt < RGB_COMPENSATION; cnt++) {
-		table_index = find_cadela_table(pSmart->brightness_level);
-
-		if (table_index == -1) {
-			table_index = CCG6_MAX_TABLE;
-			pr_info("%s fail RGB table_index cnt : %d brightness %d",
-				__func__, cnt, pSmart->brightness_level);
-		}
-
-		if (cnt < 3) {
-			level_V255 = str[cnt * 2] << 8 | str[(cnt * 2) + 1];
-			level_V255 +=
-				rgb_offset_rev1[table_index][cnt];
-			level_255_temp_MSB = level_V255 / 256;
-
-			str[cnt * 2] = level_255_temp_MSB & 0xff;
-			str[(cnt * 2) + 1] = level_V255 & 0xff;
-		} else {
-			str[cnt+3] += rgb_offset_rev1[table_index][cnt];
-		}
-	}
-	/*subtration MTP_OFFSET value from generated gamma table*/
-	mtp_offset_substraction(pSmart, str);
-}
-
-static int gradation_offset_rev2[][9] = {
-/*	V255 V203 V151 V87 V51 V35 V23 V11 V3 */
-	{-11, -1, 6, 17, 23, 27, 31, 36, 38},
-	{0, 8, 12, 18, 23, 27, 31, 35, 37},
-	{0, 7, 11, 17, 22, 26, 30, 33, 35},
-	{0, 6, 9, 16, 21, 25, 29, 32, 33},
-	{0, 5, 8, 15, 18, 22, 26, 29, 31},
-	{0, 5, 8, 15, 17, 21, 24, 27, 29},
-	{0, 5, 8, 13, 17, 19, 22, 25, 27},
-	{0, 5, 7, 13, 16, 19, 22, 24, 26},
-	{0, 4, 7, 12, 16, 18, 21, 23, 25},
-	{0, 4, 7, 11, 15, 17, 20, 22, 24},
-	{0, 4, 6, 10, 14, 16, 19, 21, 23},
-	{0, 4, 6, 10, 13, 15, 18, 20, 22},
-	{0, 3, 6, 9, 12, 14, 17, 19, 20},
-	{0, 3, 5, 8, 11, 13, 16, 18, 19},
-	{0, 3, 5, 8, 10, 12, 15, 17, 18},
-	{0, 3, 5, 8, 10, 12, 14, 16, 18},
-	{0, 3, 5, 7, 10, 11, 13, 15, 17},
-	{0, 3, 5, 7, 8, 10, 12, 14, 16},
-	{0, 3, 5, 7, 8, 10, 12, 14, 16},
-	{0, 3, 4, 6, 8, 10, 12, 14, 15},
-	{0, 3, 4, 6, 8, 9, 11, 13, 14},
-	{0, 3, 4, 6, 7, 9, 10, 12, 13},
-	{0, 3, 4, 6, 7, 9, 10, 12, 13},
-	{0, 3, 3, 5, 6, 8, 9, 11, 13},
-	{0, 2, 3, 5, 6, 7, 8, 10, 12},
-	{0, 2, 2, 4, 5, 6, 7, 9, 11},
-	{0, 2, 2, 4, 5, 6, 7, 9, 11},
-	{0, 2, 2, 4, 5, 6, 6, 8, 10},
-	{0, 2, 2, 3, 4, 5, 6, 8, 10},
-	{0, 2, 2, 3, 4, 5, 6, 8, 10},
-	{0, 2, 2, 3, 4, 5, 6, 8, 10},
-	{0, 2, 2, 2, 3, 4, 5, 7, 9},
-	{0, 2, 2, 2, 3, 4, 5, 7, 9},
-	{0, 2, 2, 2, 3, 4, 5, 6, 8},
-	{0, 2, 2, 2, 2, 3, 4, 5, 7},
-	{0, 2, 2, 2, 2, 3, 4, 5, 7},
-	{0, 2, 2, 1, 2, 2, 3, 4, 6},
-	{0, 2, 2, 1, 2, 2, 3, 4, 6},
-	{0, 1, 1, 1, 1, 1, 2, 4, 5},
-	{0, 1, 1, 1, 1, 1, 2, 3, 4},
-	{0, 1, 0, 0, 0, 1, 2, 3, 4},
-	{0, 1, 0, 0, 0, 1, 2, 3, 4},
-	{0, 0, 3, 3, 3, 3, 4, 5, 6},
-	{0, 0, 3, 3, 3, 3, 4, 4, 5},
-	{0, 0, 2, 2, 3, 3, 4, 4, 5},
-	{0, 2, 3, 2, 3, 3, 3, 4, 5},
-	{0, 2, 3, 2, 2, 3, 3, 4, 5},
-	{0, 1, 2, 2, 2, 2, 2, 3, 4},
-	{0, 1, 2, 2, 2, 2, 2, 3, 4},
-	{0, 0, 1, 1, 2, 2, 2, 3, 4},
-	{1, 0, 1, 1, 1, 1, 1, 2, 3},
-	{0, 0, 0, 0, 1, 1, 1, 1, 3},
-	{0, 0, 0, 0, 0, 0, 1, 1, 3},
-	{0, 0, 0, 0, 0, 0, 0, 1, 3},
-	{0, 0, 0, 0, 0, 0, 0, 0, 2},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0},
-};
-
-static int rgb_offset_rev2[][RGB_COMPENSATION] = {
-/*	R255 G255 B255 R203 G203 B203 R151 G151 B151
-	R87 G87 B87 R51 G51 B51 R35 G35 B35
-	R23 G23 B23 R11 G11 B11
-*/
-	{-4, 1, -3, -2, 1, -3, -3, 2, -5, -7, 4, -7, -8, 5, -9, -7, 4, -6, -7, 3, -5, -4, 1, -4},
-	{-3, 0, -3, -2, 1, -3, -3, 2, -5, -7, 4, -7, -8, 5, -9, -7, 4, -6, -7, 3, -5, -4, 2, -4},
-	{-3, 0, -3, -2, 1, -3, -3, 2, -4, -6, 4, -7, -8, 5, -8, -7, 4, -6, -7, 3, -5, -4, 3, -4},
-	{-2, 0, -2, -1, 1, -2, -3, 1, -4, -6, 3, -7, -7, 4, -8, -6, 4, -7, -6, 3, -5, -4, 4, -4},
-	{-2, 0, -1, -1, 1, -2, -3, 1, -4, -6, 3, -7, -7, 4, -8, -6, 4, -7, -6, 3, -5, -4, 4, -3},
-	{-2, 0, -1, -1, 1, -2, -3, 1, -4, -6, 3, -6, -7, 4, -7, -6, 4, -7, -6, 3, -5, -4, 4, -3},
-	{-1, 0, -1, -1, 1, -2, -3, 1, -4, -6, 3, -6, -7, 4, -7, -6, 4, -7, -6, 3, -5, -4, 4, -4},
-	{-1, 0, -1, -1, 1, -2, -2, 1, -3, -5, 3, -5, -6, 4, -6, -6, 4, -7, -6, 3, -5, -4, 4, -6},
-	{-1, 0, -1, -1, 1, -2, -2, 1, -3, -5, 3, -5, -6, 4, -6, -6, 4, -7, -6, 3, -6, -4, 4, -8},
-	{-1, 0, -1, -1, 1, -2, -2, 1, -2, -4, 2, -5, -6, 4, -6, -6, 4, -7, -6, 3, -6, -4, 4, -10},
-	{-1, 0, -1, -1, 1, -1, -2, 1, -2, -4, 2, -4, -6, 4, -6, -6, 4, -6, -6, 3, -6, -4, 5, -10},
-	{-1, 0, -1, -1, 1, -1, -1, 0, -2, -3, 2, -4, -6, 4, -6, -6, 3, -6, -5, 4, -7, -4, 5, -10},
-	{-1, 0, -1, -1, 1, -1, -1, 0, -1, -3, 2, -4, -6, 4, -6, -6, 3, -6, -5, 4, -7, -4, 5, -10},
-	{-1, 0, -1, -1, 1, -1, -1, 0, -1, -2, 1, -3, -6, 4, -6, -6, 3, -6, -5, 4, -8, -4, 6, -11},
-	{-1, 0, -1, -1, 1, -1, -1, 0, -1, -2, 1, -3, -6, 4, -6, -6, 3, -6, -5, 4, -8, -4, 6, -11},
-	{-1, 0, -1, -1, 1, -1, -1, 0, -1, -2, 1, -3, -6, 4, -6, -6, 3, -6, -5, 4, -8, -4, 6, -11},
-	{-1, 0, -1, -1, 1, -1, -1, 0, -1, -2, 1, -3, -6, 4, -6, -5, 3, -6, -5, 4, -8, -4, 6, -10},
-	{-1, 0, -1, -1, 1, -1, -1, 0, -1, 2, 1, -3, -6, 4, -6, -5, 3, -6, -5, 4, -8, -4, 6, -10},
-	{-1, 0, -1, -1, 1, -1, -1, 0, -1, -2, 1, -3, -6, 3, -6, -5, 3, -6, -5, 4, -8, -3, 6, -10},
-	{-1, 0, -1, -1, 0, -1, 0, 0, -1, -2, 0, -2, -6, 3, -5, -4, 2, -5, -4, 4, -9, -3, 6, -9},
-	{-1, 0, -1, -1, 0, -1, 0, 0, -1, -2, 0, -2, -6, 3, -5, -4, 2, -5, -4, 4, -9, -3, 6, -9},
-	{-1, 0, -1, -1, 0, -1, 0, 0, -1, -2, 0, -2, -6, 3, -5, -4, 2, -5, -4, 4, -9, -3, 6, -9},
-	{-1, 0, -1, -1, 0, -1, 0, 0, -1, -2, 0, -2, -6, 3, -5, -4, 2, -5, -4, 4, -9, -3, 6, -9},
-	{-1, 0, -1, -1, 0, -1, 0, 0, -1, -2, 0, -2, -5, 3, -4, -4, 2, -4, -4, 4, -8, -3, 6, -8},
-	{-1, 0, -1, 0, 0, 0, 0, 1, 0, -1, 0, -1, -5, 2, -4, -4, 2, -4, -4, 4, -8, -2, 6, -8},
-	{-1, 0, -1, 0, 0, 0, 0, 1, 0, -1, 0, -1, -4, 2, -4, -4, 2, -4, -4, 4, -8, -2, 6, -8},
-	{-1, 0, -1, 0, 0, 0, 0, 1, 0, -1, 0, -1, -4, 2, -4, -4, 2, -4, -4, 4, -8, -2, 5, -8},
-	{-1, 0, -1, 0, 0, 0, 0, 1, 0, -1, 0, -1, -4, 2, -4, -4, 2, -3, -4, 4, -7, -2, 5, -8},
-	{-1, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, -4, 1, -4, -4, 1, -3, -4, 3, -7, -2, 4, -8},
-	{-1, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, -4, 1, -4, -4, 1, -3, -4, 3, -7, -2, 3, -8},
-	{-1, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, -4, 1, -4, -4, 1, -3, -4, 3, -7, -2, 3, -8},
-	{-1, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, -4, 1, -3, -3, 1, -3, -3, 2, -6, -2, 3, -7},
-	{-1, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, -4, 1, -3, -3, 1, -3, -3, 2, -6, -2, 3, -7},
-	{-1, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, -4, 1, -3, -3, 1, -3, -3, 2, -6, -2, 3, -7},
-	{-1, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, -4, 0, -3, -2, 0, -2, -3, 1, -5, -2, 3, -7},
-	{-1, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, -4, 0, -3, -2, 0, -2, -3, 1, -4, -2, 3, -7},
-	{-1, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, -3, 0, -2, -1, 0, -2, -2, 1, -4, -2, 3, -7},
-	{-1, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, -3, 0, -2, -1, 0, -2, -2, 1, -4, -2, 3, -7},
-	{-1, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, -2, 0, -1, -1, 0, -1, -1, 1, -3, -2, 2, -6},
-	{-1, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, -2, 0, 0, -1, 0, -1, -1, 1, -3, -2, 3, -5},
-	{0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, -1, 0, 0, 0, 0, 0, -1, 0, -2, -1, 4, -5},
-	{0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, -1, 0, 0, 0, -1, 0, -2, -1, 4, -5},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -2, 1, -2, -2, 1, -1, -3, 2, -5, -3, 3, -7},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, -1, -2, 0, -1, -3, 1, -4, -3, 4, -8},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, -1, -2, 0, -1, -3, 1, -4, -2, 4, -7},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 1, -1, -2, 1, -1, -2, 1, -3, -2, 3, -7},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 1, -1, -3, 0, -2, -2, 2, -3, -2, 3, -6},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, -3, 0, -2, -2, 2, -3, -2, 3, -4},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -2, 0, -2, -2, 1, -3, -3, 4, -5},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 1, -2, -2, 1, -3, -3, 3, -5},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-};
-
-static void gamma_init_rev2(struct SMART_DIM *pSmart, char *str, int size)
-{
-	long long candela_level[S6E3FA_TABLE_MAX] = {-1, };
-	int bl_index[S6E3FA_TABLE_MAX] = {-1, };
-
-	long long temp_cal_data = 0;
-	int bl_level;
-
-	int level_255_temp_MSB = 0;
-	int level_V255 = 0;
-
-	int point_index;
-	int cnt;
-	int table_index;
-
-	/*calculate candela level */
-	if (pSmart->brightness_level > AOR_FIX_CD) {
-		/* 300CD ~ 190CD */
-		bl_level = pSmart->brightness_level;
-	} else if ((pSmart->brightness_level <= AOR_FIX_CD) &&
-				(pSmart->brightness_level >= AOR_ADJUST_CD)) {
-		/* 180CD ~ 110CD */
-		if (pSmart->brightness_level == 111)
-			bl_level = 181;
-		else if (pSmart->brightness_level == 119)
-			bl_level = 193;
-		else if (pSmart->brightness_level == 126)
-			bl_level = 205;
-		else if (pSmart->brightness_level == 134)
-			bl_level = 215;
-		else if (pSmart->brightness_level == 143)
-			bl_level = 225;
-		else if (pSmart->brightness_level == 152)
-			bl_level = 240;
-		else if (pSmart->brightness_level == 162)
-			bl_level = 255;
-		else
-			bl_level = 271;
-	} else {
-		/* 100CD ~ 10CD */
-		bl_level = AOR_ADJUST_CD;
-	}
-
-	if (pSmart->brightness_level < 300) {
-		for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
-			point_index = S6E3FA_ARRAY[cnt+1];
-			temp_cal_data =
-			((long long)(candela_coeff_2p15[point_index])) *
-			((long long)(bl_level));
-			candela_level[cnt] = temp_cal_data;
-		}
-
-	} else {
-		for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
-			point_index = S6E3FA_ARRAY[cnt+1];
-			temp_cal_data =
-			((long long)(candela_coeff_2p2[point_index])) *
-			((long long)(bl_level));
-			candela_level[cnt] = temp_cal_data;
-		}
-
-	}
-
-
-#ifdef SMART_DIMMING_DEBUG
-	pr_info("\n candela_1:%llu  candela_3:%llu  candela_11:%llu ",
-		candela_level[0], candela_level[1], candela_level[2]);
-	pr_info("candela_23:%llu  candela_35:%llu  candela_51:%llu ",
-		candela_level[3], candela_level[4], candela_level[5]);
-	pr_info("candela_87:%llu  candela_151:%llu  candela_203:%llu ",
-		candela_level[6], candela_level[7], candela_level[8]);
-	pr_info("candela_255:%llu brightness_level %d\n", candela_level[9], pSmart->brightness_level);
-#endif
-
-	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
-		if (searching_function(candela_level[cnt],
-			&(bl_index[cnt]), GAMMA_CURVE_2P15)) {
-			pr_info("%s searching functioin error cnt:%d\n",
-			__func__, cnt);
-		}
-	}
-
-	/*
-	*	Candela compensation
-	*/
-	for (cnt = 1; cnt < S6E3FA_TABLE_MAX; cnt++) {
-		table_index = find_cadela_table(pSmart->brightness_level);
-
-		if (table_index == -1) {
-			table_index = CCG6_MAX_TABLE;
-			pr_info("%s fail candela table_index cnt : %d brightness %d",
-				__func__, cnt, pSmart->brightness_level);
-		}
-
-		bl_index[S6E3FA_TABLE_MAX - cnt] +=
-			gradation_offset_rev2[table_index][cnt - 1];
-
-		/* THERE IS M-GRAY0 target */
-		if (bl_index[S6E3FA_TABLE_MAX - cnt] == 0)
-			bl_index[S6E3FA_TABLE_MAX - cnt] = 1;
-	}
-
-#ifdef SMART_DIMMING_DEBUG
-	pr_info("\n bl_index_1:%d  bl_index_3:%d  bl_index_11:%d",
-		bl_index[0], bl_index[1], bl_index[2]);
-	pr_info("bl_index_23:%d bl_index_35:%d  bl_index_51:%d",
-		bl_index[3], bl_index[4], bl_index[5]);
-	pr_info("bl_index_87:%d  bl_index_151:%d bl_index_203:%d",
-		bl_index[6], bl_index[7], bl_index[8]);
-	pr_info("bl_index_255:%d\n", bl_index[9]);
-#endif
-	/*Generate Gamma table*/
-	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++)
-		(void)Make_hexa[cnt](bl_index , pSmart, str);
-
-	/*
-	*	RGB compensation
-	*/
-	for (cnt = 0; cnt < RGB_COMPENSATION; cnt++) {
-		table_index = find_cadela_table(pSmart->brightness_level);
-
-		if (table_index == -1) {
-			table_index = CCG6_MAX_TABLE;
-			pr_info("%s fail RGB table_index cnt : %d brightness %d",
-				__func__, cnt, pSmart->brightness_level);
-		}
-
-		if (cnt < 3) {
-			level_V255 = str[cnt * 2] << 8 | str[(cnt * 2) + 1];
-			level_V255 +=
-				rgb_offset_rev2[table_index][cnt];
-			level_255_temp_MSB = level_V255 / 256;
-
-			str[cnt * 2] = level_255_temp_MSB & 0xff;
-			str[(cnt * 2) + 1] = level_V255 & 0xff;
-		} else {
-			str[cnt+3] += rgb_offset_rev2[table_index][cnt];
-		}
-	}
-	/*subtration MTP_OFFSET value from generated gamma table*/
-	mtp_offset_substraction(pSmart, str);
-}
-
-
-static int gradation_offset_H_revI[][9] = {
-/*	V255 V203 V151 V87 V51 V35 V23 V11 V3 */
-	{0, 6, 13, 21, 25, 27, 31, 35, 37},
-	{0, 6, 11, 18, 23, 25, 29, 32, 34},
-	{0, 5, 10, 17, 21, 23, 27, 30, 32},
-	{0, 5, 9, 15, 19, 21, 25, 28, 30},
-	{0, 5, 8, 15, 18, 19, 23, 26, 28},
-	{0, 5, 8, 14, 17, 18, 22, 25, 27},
-	{0, 5, 8, 14, 16, 18, 20, 23, 26},
-	{0, 4, 7, 12, 15, 17, 19, 22, 25},
-	{0, 4, 7, 12, 14, 16, 18, 21, 24},
-	{0, 3, 7, 11, 14, 15, 18, 20, 22},
-	{0, 3, 6, 11, 14, 15, 17, 20, 22},
-	{0, 3, 6, 11, 14, 15, 17, 19, 21},
-	{0, 3, 6, 11, 13, 14, 16, 18, 20},
-	{0, 3, 5, 10, 12, 13, 15, 17, 19},
-	{0, 3, 5, 9, 11, 12, 14, 16, 18},
-	{0, 3, 5, 8, 10, 12, 14, 15, 18},
-	{0, 3, 5, 7, 9, 11, 13, 14, 17},
-	{0, 3, 5, 7, 8, 10, 12, 14, 16},
-	{0, 3, 5, 7, 8, 10, 12, 14, 16},
-	{0, 3, 4, 6, 8, 10, 12, 13, 15},
-	{0, 3, 4, 6, 8, 9, 11, 12, 14},
-	{0, 3, 4, 6, 7, 8, 10, 12, 13},
-	{0, 3, 4, 6, 7, 8, 10, 12, 13},
-	{0, 3, 3, 5, 6, 8, 9, 11, 13},
-	{0, 2, 3, 5, 6, 7, 8, 10, 12},
-	{0, 2, 2, 4, 5, 6, 7, 9, 11},
-	{0, 2, 2, 4, 5, 6, 7, 9, 11},
-	{0, 2, 2, 4, 5, 6, 6, 8, 10},
-	{0, 2, 2, 3, 4, 5, 6, 8, 10},
-	{0, 2, 2, 3, 4, 5, 6, 7, 10},
-	{0, 2, 2, 3, 4, 4, 6, 7, 9},
-	{0, 2, 2, 2, 3, 3, 5, 6, 9},
-	{0, 2, 2, 2, 3, 3, 5, 6, 9},
-	{0, 2, 2, 2, 3, 3, 5, 5, 8},
-	{0, 1, 2, 2, 3, 3, 4, 5, 7},
-	{0, 1, 2, 2, 3, 3, 4, 5, 7},
-	{0, 1, 2, 2, 2, 2, 3, 4, 6},
-	{0, 1, 2, 2, 2, 2, 3, 3, 6},
-	{0, 1, 1, 1, 2, 2, 3, 3, 5},
-	{0, 1, 1, 1, 1, 1, 2, 3, 4},
-	{0, 1, 1, 1, 1, 1, 2, 3, 4},
-	{2, 2, 0, 1, 1, 1, 2, 3, 4},
-	{0, 0, 2, 3, 3, 3, 3, 4, 5},
-	{0, 1, 2, 3, 3, 3, 3, 4, 5},
-	{0, 1, 2, 3, 3, 3, 3, 4, 5},
-	{0, 1, 2, 2, 2, 3, 3, 4, 5},
-	{0, 0, 2, 2, 2, 3, 3, 3, 4},
-	{0, 1, 2, 2, 2, 2, 2, 3, 4},
-	{0, 2, 2, 2, 2, 2, 3, 4, 5},
-	{0, 0, 1, 1, 2, 2, 2, 3, 4},
-	{3, 1, 1, 1, 1, 1, 1, 1, 1},
-	{3, 1, 1, 1, 0, 0, 1, 1, 1},
-	{3, 1, 1, 1, 0, 0, 1, 1, 0},
-	{3, 1, 1, 1, 0, 0, 0, 0, 0},
-	{2, 0, 0, 0, 0, 0, 0, 0, 0},
-	{2, 0, 0, 0, 0, 0, 0, 0, 0},
-	{1, 0, 0, 0, 0, 0, 0, 0, 0},
-	{1, 0, 0, 0, 0, 0, 0, 0, 0},
-	{1, 0, 0, 0, 0, 0, 0, 0, 0},
-	{1, 0, 0, 0, 0, 0, 0, 0, 0},
-	{1, 0, 0, -1, -1, -1, -1, -1, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0},
-};
-
-static int rgb_offset_H_revI[][RGB_COMPENSATION] = {
-/*	R255 G255 B255 R203 G203 B203 R151 G151 B151
-	R87 G87 B87 R51 G51 B51 R35 G35 B35
-	R23 G23 B23 R11 G11 B11
-*/
-	{-3, 1, -4, -2, 1, -2, -4, 3, -5, -6, 4, -7, -9, 5, -9, -7, 4, -6, -8, 4, -8, -3, 3, -3},
-	{-3, 1, -3, -2, 1, -2, -4, 2, -5, -6, 4, -7, -8, 4, -9, -7, 4, -6, -6, 3, -6, -4, 2, -3},
-	{-2, 1, -2, -2, 1, -2, -4, 2, -4, -5, 3, -6, -8, 4, -9, -7, 4, -7, -6, 3, -6, -4, 3, -4},
-	{-2, 1, -2, -1, 1, -1, -3, 2, -4, -5, 3, -6, -8, 4, -9, -6, 4, -7, -6, 3, -5, -3, 3, -5},
-	{-2, 0, -2, -1, 1, -1, -3, 1, -3, -4, 3, -6, -8, 4, -9, -6, 4, -7, -6, 3, -5, -3, 4, -5},
-	{-2, 0, -2, -1, 1, -1, -3, 1, -3, -4, 3, -6, -8, 4, -9, -6, 4, -7, -6, 3, -5, -3, 4, -5},
-	{-1, 0, -2, -1, 1, -1, -3, 1, -3, -4, 2, -5, -8, 4, -9, -6, 3, -7, -6, 4, -6, -3, 4, -8},
-	{-1, 0, -2, -1, 1, -1, -2, 1, -2, -4, 2, -5, -8, 4, -8, -6, 3, -7, -6, 4, -7, -4, 4, -8},
-	{-1, 0, -1, -1, 1, -1, -2, 1, -2, -4, 2, -5, -7, 4, -8, -6, 3, -7, -6, 4, -7, -4, 4, -8},
-	{-1, 0, -1, -1, 1, -1, -2, 0, -2, -4, 1, -5, -7, 4, -7, -6, 3, -7, -6, 4, -7, -4, 4, -9},
-	{-1, 0, -1, -1, 1, -1, -2, 0, -2, -4, 1, -5, -7, 4, -7, -6, 2, -7, -6, 4, -7, -4, 4, -10},
-	{-1, 0, -1, -1, 1, -1, -2, 0, -2, -4, 1, -5, -7, 4, -6, -6, 2, -7, -6, 4, -8, -4, 4, -10},
-	{-1, 0, -1, -1, 1, -1, -1, 0, -1, -3, 1, -4, -7, 4, -6, -6, 2, -7, -5, 4, -8, -4, 4, -10},
-	{-1, 0, -1, -1, 1, -1, -1, 0, -1, -3, 1, -4, -6, 4, -6, -6, 2, -6, -5, 4, -8, -4, 4, -10},
-	{-1, 0, -1, -1, 1, -1, -1, 0, -1, -3, 1, -4, -6, 4, -6, -6, 2, -6, -5, 4, -8, -4, 4, -10},
-	{-1, 0, -1, -1, 1, -1, -1, 0, -1, -3, 1, -4, -6, 4, -6, -6, 2, -6, -5, 3, -8, -4, 4, -10},
-	{-1, 0, -1, -1, 1, -1, -1, 0, -1, -3, 1, -4, -6, 3, -6, -5, 2, -6, -5, 3, -8, -4, 4, -10},
-	{-1, 0, -1, -1, 1, -1, -1, 0, -1, -2, 1, -3, -6, 3, -5, -5, 2, -5, -5, 3, -8, -4, 4, -10},
-	{-1, 0, -1, -1, 1, -1, -1, 0, -1, -2, 1, -3, -6, 3, -5, -5, 2, -5, -5, 3, -8, -4, 4, -10},
-	{-1, 0, -1, -1, 0, -1, 0, 0, -1, -2, 1, -2, -6, 3, -5, -4, 2, -5, -4, 3, -8, -4, 4, -10},
-	{-1, 0, -1, -1, 0, -1, 0, 0, -1, -2, 1, -2, -6, 3, -5, -4, 2, -5, -4, 3, -8, -3, 4, -10},
-	{-1, 0, 0, -1, 0, -1, 0, 0, -1, -2, 1, -2, -6, 3, -5, -4, 2, -5, -4, 3, -8, -3, 4, -10},
-	{-1, 0, 0, -1, 0, -1, 0, 0, -1, -2, 1, -2, -6, 3, -5, -4, 2, -5, -4, 3, -8, -3, 4, -9},
-	{-1, 0, 0, -1, 0, -1, 0, 0, -1, -2, 1, -2, -5, 3, -4, -4, 2, -4, -4, 3, -8, -3, 4, -9},
-	{-1, 0, 0, 0, 0, 0, 0, 1, 0, -1, 0, -2, -5, 2, -4, -4, 2, -4, -4, 3, -8, -3, 4, -9},
-	{-1, 0, 0, 0, 0, 0, 0, 1, 0, -1, 0, -2, -4, 2, -4, -4, 2, -4, -4, 3, -8, -3, 4, -9},
-	{-1, 0, 0, 0, 0, 0, 0, 1, 0, -1, 0, -1, -4, 2, -4, -4, 2, -4, -4, 3, -7, -2, 3, -8},
-	{-1, 0, 0, 0, 0, 0, 0, 1, 0, -1, 0, -1, -4, 2, -4, -4, 2, -3, -4, 3, -7, -2, 3, -8},
-	{-1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, -1, -4, 1, -3, -4, 1, -3, -4, 3, -6, -1, 3, -7},
-	{-1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, -1, -4, 1, -3, -4, 1, -3, -4, 3, -6, -1, 3, -7},
-	{-1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, -1, -4, 1, -3, -4, 1, -3, -4, 3, -6, -1, 3, -7},
-	{-1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, -1, -4, 1, -3, -3, 1, -3, -3, 2, -5, -1, 3, -7},
-	{-1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, -1, -4, 1, -3, -3, 1, -3, -3, 1, -5, -1, 3, -7},
-	{-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, -4, 1, -3, -3, 1, -3, -3, 1, -5, -1, 3, -7},
-	{-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, -4, 1, -3, -2, 0, -2, -3, 1, -4, -1, 3, -7},
-	{-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -4, 1, -3, -2, 0, -2, -3, 1, -4, -1, 3, -7},
-	{-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -3, 1, -2, -1, 0, -2, -2, 1, -4, -2, 3, -7},
-	{-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -2, 1, -1, -1, 0, -1, -2, 1, -3, -2, 3, -7},
-	{-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -2, 0, -1, -1, 0, -1, -1, 0, -3, -2, 3, -6},
-	{-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -2, 0, 0, -1, 0, -1, -1, 1, -3, -1, 3, -6},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, -1, 0, 0, 0, 0, -1, -1, 0, -2, -1, 3, -6},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, -1, -1, 0, -2, -1, 3, -6},
-	{0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, -2, 0, -2, -2, 1, -1, -3, 2, -3, -1, 4, -7},
-	{0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, -1, -2, 1, -2, -3, 1, -3, -1, 4, -7},
-	{0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, -1, -2, 1, -2, -3, 1, -3, -1, 4, -6},
-	{0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, -2, 0, -2, -2, 1, -2, -2, 1, -3, -3, 4, -5},
-	{0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, -1, -2, 1, -2, -2, 1, -3, -1, 4, -4},
-	{0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 1, 0, -1, 0, -1, -2, 1, -2, -2, 1, -2, -1, 5, -4},
-	{0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, -1, -2, 1, -2, -2, 1, -2, -4, 3, -6},
-	{0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 1, -2, -2, 1, -3, -3, 3, -5},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-};
-
-static void gamma_init_H_revI(struct SMART_DIM *pSmart, char *str, int size)
-{
-	long long candela_level[S6E3FA_TABLE_MAX] = {-1, };
-	int bl_index[S6E3FA_TABLE_MAX] = {-1, };
-
-	long long temp_cal_data = 0;
-	int bl_level;
-
-	int level_255_temp_MSB = 0;
-	int level_V255 = 0;
-
-	int point_index;
-	int cnt;
-	int table_index;
-
-	/*calculate candela level */
-	if (pSmart->brightness_level > AOR_FIX_CD) {
-		/* 300CD ~ 190CD */
-		bl_level = pSmart->brightness_level;
-	} else if ((pSmart->brightness_level <= AOR_FIX_CD) &&
-				(pSmart->brightness_level >= AOR_ADJUST_CD)) {
-		/* 180CD ~ 110CD */
-		if (pSmart->brightness_level == 111)
-			bl_level = 183;
-		else if (pSmart->brightness_level == 119)
-			bl_level = 197;
-		else if (pSmart->brightness_level == 126)
-			bl_level = 205;
-		else if (pSmart->brightness_level == 134)
-			bl_level = 215;
-		else if (pSmart->brightness_level == 143)
-			bl_level = 229;
-		else if (pSmart->brightness_level == 152)
-			bl_level = 242;
-		else if (pSmart->brightness_level == 162)
-			bl_level = 255;
-		else if (pSmart->brightness_level == 172)
-			bl_level = 270;
-		else
-			bl_level = 270;
-	} else {
-		/* 100CD ~ 10CD */
-		bl_level = AOR_ADJUST_CD;
-	}
-
-	if (pSmart->brightness_level < 350) {
-		for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
-			point_index = S6E3FA_ARRAY[cnt+1];
-			temp_cal_data =
-			((long long)(candela_coeff_2p15[point_index])) *
-			((long long)(bl_level));
-			candela_level[cnt] = temp_cal_data;
-		}
-
-	} else {
-		for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
-			point_index = S6E3FA_ARRAY[cnt+1];
-			temp_cal_data =
-			((long long)(candela_coeff_2p2[point_index])) *
-			((long long)(bl_level));
-			candela_level[cnt] = temp_cal_data;
-		}
-
-	}
-
-
-#ifdef SMART_DIMMING_DEBUG
-	pr_info("\n candela_1:%llu  candela_3:%llu  candela_11:%llu ",
-		candela_level[0], candela_level[1], candela_level[2]);
-	pr_info("candela_23:%llu  candela_35:%llu  candela_51:%llu ",
-		candela_level[3], candela_level[4], candela_level[5]);
-	pr_info("candela_87:%llu  candela_151:%llu  candela_203:%llu ",
-		candela_level[6], candela_level[7], candela_level[8]);
-	pr_info("candela_255:%llu brightness_level %d\n", candela_level[9], pSmart->brightness_level);
-#endif
-
-	/* max 350cd */
-	memcpy(curve_1p9, curve_1p9_350, sizeof(curve_1p9_350));
-	memcpy(curve_2p2, curve_2p2_350, sizeof(curve_2p2_350));
-
-	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
-		if (searching_function(candela_level[cnt],
-			&(bl_index[cnt]), GAMMA_CURVE_2P15)) {
-			pr_info("%s searching functioin error cnt:%d\n",
-			__func__, cnt);
-		}
-	}
-
-	/*
-	*	Candela compensation
-	*/
-	for (cnt = 1; cnt < S6E3FA_TABLE_MAX; cnt++) {
-		table_index = find_cadela_table(pSmart->brightness_level);
-
-		if (table_index == -1) {
-			table_index = CCG6_MAX_TABLE;
-			pr_info("%s fail candela table_index cnt : %d brightness %d",
-				__func__, cnt, pSmart->brightness_level);
-		}
-
-		bl_index[S6E3FA_TABLE_MAX - cnt] +=
-			gradation_offset_H_revI[table_index][cnt - 1];
-
-		/* THERE IS M-GRAY0 target */
-		if (bl_index[S6E3FA_TABLE_MAX - cnt] == 0)
-			bl_index[S6E3FA_TABLE_MAX - cnt] = 1;
-	}
-
-#ifdef SMART_DIMMING_DEBUG
-	pr_info("\n bl_index_1:%d  bl_index_3:%d  bl_index_11:%d",
-		bl_index[0], bl_index[1], bl_index[2]);
-	pr_info("bl_index_23:%d bl_index_35:%d  bl_index_51:%d",
-		bl_index[3], bl_index[4], bl_index[5]);
-	pr_info("bl_index_87:%d  bl_index_151:%d bl_index_203:%d",
-		bl_index[6], bl_index[7], bl_index[8]);
-	pr_info("bl_index_255:%d\n", bl_index[9]);
-#endif
-	/*Generate Gamma table*/
-	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++)
-		(void)Make_hexa[cnt](bl_index , pSmart, str);
-
-	/*
-	*	RGB compensation
-	*/
-	for (cnt = 0; cnt < RGB_COMPENSATION; cnt++) {
-		table_index = find_cadela_table(pSmart->brightness_level);
-
-		if (table_index == -1) {
-			table_index = CCG6_MAX_TABLE;
-			pr_info("%s fail RGB table_index cnt : %d brightness %d",
-				__func__, cnt, pSmart->brightness_level);
-		}
-
-		if (cnt < 3) {
-			level_V255 = str[cnt * 2] << 8 | str[(cnt * 2) + 1];
-			level_V255 +=
-				rgb_offset_H_revI[table_index][cnt];
-			level_255_temp_MSB = level_V255 / 256;
-
-			str[cnt * 2] = level_255_temp_MSB & 0xff;
-			str[(cnt * 2) + 1] = level_V255 & 0xff;
-		} else {
-			str[cnt+3] += rgb_offset_H_revI[table_index][cnt];
-		}
-	}
-	/*subtration MTP_OFFSET value from generated gamma table*/
-	mtp_offset_substraction(pSmart, str);
-}
 
 static int gradation_offset_H_revJ[][9] = {
 /*	V255 V203 V151 V87 V51 V35 V23 V11 V3 */
@@ -2899,6 +1619,44 @@ static int ccg6_candela_table[][2] = {
 {350, 61,},
 };
 */
+
+static int gcontrol_offset(int input_color)
+{
+
+	switch (input_color) {
+		case 0:
+		case 3:
+		case 6:
+		case 9:
+		case 12:
+		case 15:
+		case 18:
+		case 21:
+			return gcontrol_red;
+		case 1: //G
+		case 4:
+		case 7:
+		case 10:
+		case 13:
+		case 16:
+		case 19:
+		case 22:
+			return gcontrol_green;
+		case 2: //B
+		case 5:
+		case 8:
+		case 11:
+		case 14:
+		case 17:
+		case 20:
+		case 23:
+			return gcontrol_blue;
+		default:
+			break;
+	}
+	return 0;
+}
+
 static void gamma_init_H_revJ(struct SMART_DIM *pSmart, char *str, int size)
 {
 	long long candela_level[S6E3FA_TABLE_MAX] = {-1, };
@@ -2995,9 +1753,9 @@ static void gamma_init_H_revJ(struct SMART_DIM *pSmart, char *str, int size)
 			bl_index[S6E3FA_TABLE_MAX - cnt] = 1;
 	}
 	/*Generate Gamma table*/
-	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++)
-		(void)Make_hexa[cnt](bl_index , pSmart, str);
-
+	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
+		(void)Make_hexa[cnt](bl_index, pSmart, str);
+	}
 	/*
 	*	RGB compensation
 	*/
@@ -3010,865 +1768,18 @@ static void gamma_init_H_revJ(struct SMART_DIM *pSmart, char *str, int size)
 		if (cnt < 3) {
 			level_V255 = str[cnt * 2] << 8 | str[(cnt * 2) + 1];
 			level_V255 +=
-				rgb_offset_H_revJ[table_index][cnt];
+				rgb_offset_H_revJ[table_index][cnt] + gcontrol_offset(cnt);
 			level_255_temp_MSB = level_V255 / 256;
 
 			str[cnt * 2] = level_255_temp_MSB & 0xff;
 			str[(cnt * 2) + 1] = level_V255 & 0xff;
 		} else {
-			str[cnt+3] += rgb_offset_H_revJ[table_index][cnt];
+			str[cnt+3] += rgb_offset_H_revJ[table_index][cnt] + gcontrol_offset(cnt);
 		}
 	}
 	/*subtration MTP_OFFSET value from generated gamma table*/
 	mtp_offset_substraction(pSmart, str);
 }
-
-static int gradation_offset_F_revA[][9] = {
-/*	V255 V203 V151 V87 V51 V35 V23 V11 V3 */
-	{-11, -3, 3, 12, 17, 21, 25, 30, 30},
-	{-9, -2, 3, 12, 15, 20, 23, 28, 30},
-	{-7, -1, 4, 11, 15, 19, 22, 27, 29},
-	{-5, 1, 5, 10, 14, 18, 20, 25, 27},
-	{-3, 3, 6, 10, 13, 17, 19, 23, 24},
-	{0, 5, 7, 10, 12, 15, 17, 21, 21},
-	{0, 5, 7, 10, 12, 15, 17, 20, 21},
-	{0, 4, 6, 9, 11, 14, 16, 19, 20},
-	{0, 4, 6, 8, 11, 13, 15, 18, 19},
-	{0, 4, 6, 8, 10, 12, 14, 17, 18},
-	{0, 4, 6, 8, 10, 12, 14, 17, 18},
-	{0, 4, 6, 7, 9, 11, 13, 16, 17},
-	{0, 4, 5, 6, 8, 10, 12, 15, 16},
-	{0, 4, 5, 6, 8, 9, 11, 14, 15},
-	{0, 4, 5, 6, 8, 9, 10, 14, 15},
-	{0, 4, 5, 6, 8, 9, 10, 14, 15},
-	{0, 4, 5, 6, 7, 9, 10, 14, 15},
-	{0, 3, 4, 6, 6, 8, 9, 13, 14},
-	{0, 3, 4, 6, 6, 8, 9, 13, 14},
-	{0, 2, 2, 4, 4, 6, 7, 11, 12},
-	{0, 2, 2, 4, 4, 6, 7, 11, 12},
-	{0, 3, 3, 4, 4, 6, 7, 11, 12},
-	{0, 3, 3, 4, 4, 6, 7, 11, 12},
-	{0, 3, 3, 4, 4, 6, 7, 10, 11},
-	{0, 3, 2, 3, 4, 6, 6, 9, 11},
-	{0, 3, 2, 3, 4, 6, 6, 9, 11},
-	{0, 3, 2, 3, 4, 5, 6, 8, 10},
-	{0, 2, 2, 3, 3, 4, 5, 7, 9},
-	{0, 2, 2, 3, 3, 4, 5, 7, 8},
-	{0, 2, 2, 3, 3, 4, 5, 7, 8},
-	{0, 2, 2, 3, 3, 3, 5, 7, 7},
-	{0, 2, 2, 2, 2, 3, 4, 7, 7},
-	{0, 2, 1, 2, 2, 3, 4, 6, 7},
-	{0, 2, 1, 1, 1, 2, 3, 5, 6},
-	{0, 2, 1, 1, 1, 2, 3, 4, 6},
-	{0, 2, 1, 1, 1, 2, 3, 4, 6},
-	{0, 2, 1, 1, 1, 2, 3, 4, 6},
-	{0, 1, 1, 1, 1, 2, 2, 3, 5},
-	{0, 1, 0, 0, 0, 1, 1, 2, 4},
-	{0, 1, 0, 0, 0, 1, 1, 2, 3},
-	{0, 1, 0, 0, 0, 1, 1, 2, 3},
-	{0, 1, 0, 0, 0, 0, 1, 2, 3},
-	{0, 0, 1, 1, 2, 2, 3, 4, 7},
-	{0, 0, 1, 1, 2, 2, 3, 4, 6},
-	{0, 0, 1, 1, 2, 2, 2, 3, 5},
-	{0, 0, 1, 1, 2, 2, 2, 3, 5},
-	{0, 0, 1, 1, 1, 2, 2, 3, 5},
-	{0, 0, 0, 0, 0, 1, 1, 2, 4},
-	{0, 0, 0, 0, 0, 0, 0, 2, 4},
-	{0, 0, 0, 0, 0, 0, 0, 1, 3},
-	{2, 1, 1, 1, 1, 1, 1, 2, 3},
-	{2, 1, 1, 1, 0, 0, 0, 1, 2},
-	{2, 1, 1, 0, 0, 0, 0, 1, 2},
-	{2, 1, 0, 0, 0, 0, 0, 1, 2},
-	{1, 1, 0, 0, 0, 0, 0, 0, 1},
-	{1, 0, 0, 0, 0, 0, 0, 0, 0},
-	{1, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0},
-};
-
-static int rgb_offset_F_revA[][RGB_COMPENSATION] = {
-/*	R255 G255 B255 R203 G203 B203 R151 G151 B151
-	R87 G87 B87 R51 G51 B51 R35 G35 B35
-	R23 G23 B23 R11 G11 B11
-*/
-	{-2, 1, -2, -2, 2, -2, -2, 3, -4, -5, 7, -8, -8, 8, -12, -7, 6, -10, -4, 5, -7, -8, 4, -12},
-	{-2, 1, -2, -1, 2, -1, -2, 3, -4, -5, 6, -7, -8, 8, -13, -7, 5, -9, -5, 6, -9, -7, 4, -11},
-	{-2, 1, -2, -1, 2, -1, -2, 3, -4, -5, 6, -7, -8, 8, -13, -7, 5, -9, -5, 6, -9, -7, 4, -12},
-	{-2, 0, -2, -2, 1, -2, -2, 2, -4, -5, 6, -7, -6, 8, -9, -5, 6, -8, -5, 6, -9, -7, 5, -13},
-	{-2, 0, -1, -1, 1, -2, -1, 2, -3, -5, 6, -7, -6, 7, -9, -5, 6, -8, -5, 6, -9, -7, 6, -14},
-	{-1, 0, 0, -1, 1, -2, -1, 2, -2, -5, 5, -6, -6, 7, -9, -4, 7, -7, -4, 7, -9, -6, 7, -15},
-	{-1, 0, 0, -1, 1, -2, -1, 2, -2, -5, 5, -6, -6, 7, -9, -4, 7, -7, -4, 7, -9, -6, 7, -16},
-	{-1, 0, 0, -1, 1, -2, -1, 2, -2, -4, 5, -5, -5, 6, -8, -4, 7, -7, -4, 7, -9, -6, 7, -18},
-	{-1, 0, 0, -1, 0, -2, -1, 2, -2, -4, 4, -4, -4, 6, -7, -4, 6, -7, -5, 6, -9, -6, 8, -20},
-	{-1, 0, 0, -1, 0, -2, -1, 2, -2, -3, 4, -4, -4, 6, -7, -4, 6, -7, -5, 6, -9, -8, 8, -22},
-	{-1, 0, 0, -1, 0, -2, -1, 2, -2, -3, 4, -4, -4, 6, -7, -4, 6, -7, -5, 6, -9, -8, 8, -22},
-	{-1, 0, 0, -1, 0, -2, -1, 2, -2, -3, 4, -4, -4, 6, -7, -4, 6, -7, -5, 6, -9, -8, 8, -22},
-	{-1, 0, 0, 0, 0, -1, -1, 1, -2, -3, 3, -3, -3, 5, -6, -4, 6, -6, -4, 7, -10, -8, 7, -22},
-	{-1, 0, 0, 0, 0, -1, -1, 1, -2, -3, 3, -3, -3, 5, -6, -4, 6, -6, -4, 8, -11, -8, 6, -22},
-	{-1, 0, 0, 0, 0, -1, -1, 1, -2, -3, 3, -3, -3, 5, -6, -4, 6, -6, -4, 8, -11, -8, 6, -22},
-	{-1, 0, 0, 0, 0, -1, -1, 1, -2, -3, 3, -3, -3, 5, -6, -4, 6, -6, -3, 8, -11, -8, 6, -22},
-	{-1, 0, 0, 0, 0, -1, -1, 1, -2, -3, 3, -3, -3, 5, -6, -4, 6, -6, -3, 8, -9, -8, 6, -22},
-	{0, 0, 1, -1, 0, -2, -1, 1, -1, -1, 3, -2, -2, 5, -5, -3, 5, -5, -3, 7, -7, -8, 5, -22},
-	{0, 0, 1, -1, 0, -2, -1, 1, -1, -1, 3, -2, -2, 5, -5, -3, 5, -5, -3, 7, -7, -8, 5, -22},
-	{0, 0, 1, -1, 0, -2, -1, 1, -1, -1, 3, -2, -2, 5, -5, -3, 5, -5, -3, 7, -7, -8, 5, -22},
-	{0, 0, 1, -1, 0, -1, 0, 1, -1, -2, 2, -3, -2, 4, -4, -4, 4, -6, -2, 7, -8, -7, 6, -21},
-	{0, 0, 1, -1, 0, -1, 0, 1, -1, -2, 2, -3, -2, 4, -4, -4, 4, -6, -2, 7, -8, -7, 6, -21},
-	{0, 0, 1, -1, 0, -1, -1, 1, -1, -2, 2, -3, -2, 3, -4, -4, 2, -6, -2, 7, -7, -7, 6, -21},
-	{0, 0, 1, -1, 0, -1, 0, 1, -1, -1, 1, -2, -2, 3, -4, -4, 2, -6, -2, 6, -7, -8, 6, -22},
-	{0, 0, 1, -1, 0, -1, 0, 1, -1, -1, 1, -2, -3, 3, -4, -4, 2, -6, -3, 6, -7, -9, 7, -23},
-	{0, 0, 1, -1, 0, -1, 0, 1, -1, -1, 1, -2, -3, 3, -4, -4, 2, -6, -3, 6, -7, -8, 7, -23},
-	{0, 0, 1, -1, 0, -1, 0, 1, -1, -1, 1, -2, -3, 3, -4, -4, 2, -6, -3, 6, -7, -9, 7, -23},
-	{0, 0, 1, -1, 0, -1, 0, 1, -1, -1, 1, -1, -3, 3, -4, -4, 2, -5, -2, 6, -7, -9, 7, -22},
-	{0, 0, 1, -1, 0, -1, 0, 1, -1, -1, 1, -1, -2, 2, -3, -3, 2, -4, -1, 5, -5, -8, 6, -21},
-	{0, 0, 1, -1, 0, -1, 0, 1, -1, -1, 1, -1, -2, 2, -3, -3, 2, -4, -1, 5, -5, -8, 6, -21},
-	{0, 0, 1, -1, 0, -1, 0, 1, -1, -1, 1, -1, -2, 2, -3, -3, 2, -4, -1, 5, -5, -7, 6, -19},
-	{-1, 0, 1, -1, 0, -1, 0, 1, -1, -1, 1, -1, -2, 2, -2, -3, 2, -3, -1, 4, -5, -6, 5, -16},
-	{-1, 0, 1, -1, 0, -1, 0, 1, -1, -1, 0, -1, -1, 1, -2, -2, 1, -3, -1, 4, -4, -5, 5, -14},
-	{-1, 0, 1, -1, 0, -1, 0, 1, -1, -1, 0, -1, -1, 1, -2, -2, 1, -2, -1, 3, -4, -4, 5, -12},
-	{-1, 0, 1, -1, 0, -1, 0, 1, -1, -1, 0, -1, -1, 1, -2, -2, 1, -2, -1, 3, -4, -3, 5, -10},
-	{-1, 0, 1, -1, 0, -1, 0, 1, -1, -1, 0, -1, -1, 1, -2, -2, 1, -2, -2, 3, -4, -2, 5, -11},
-	{-1, 0, 1, -1, 0, -1, 0, 1, -1, -1, 0, -1, -1, 1, -2, -2, 1, -2, -2, 3, -4, -2, 5, -11},
-	{-1, 0, 1, -1, 0, -1, 0, 1, -1, -1, 0, -1, -1, 1, -1, -2, 1, -1, -1, 2, -3, -2, 4, -10},
-	{-1, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, -1, 0, -1, -1, 0, -1, -1, 1, -3, -1, 3, -8},
-	{-1, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, -1, 0, -1, -1, 0, -1, -1, 0, -2, -1, 2, -6},
-	{-1, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, -1, 0, -1, -1, 0, -1, -1, 0, -1, -1, 1, -4},
-	{-1, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, -1, 0, -1, -1, 0, -1, -1, 0, -1, -1, 1, -4},
-	{0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, -1, 1, -2, 0, 2, -2, -2, 2, -3, -3, 6, -11},
-	{0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, -1, 1, -2, 0, 2, -2, -2, 2, -3, -3, 6, -11},
-	{0, -1, 1, -1, 0, -1, 0, 0, -1, -1, 0, -1, -1, 1, -2, -1, 1, -2, -2, 2, -1, -3, 6, -10},
-	{0, -1, 1, -1, 0, -1, 0, 0, -1, -1, 0, -1, -1, 1, -2, -1, 1, -2, -2, 2, -1, -3, 6, -10},
-	{0, -1, 1, -1, 0, -1, 0, 0, -1, -1, 0, -1, -1, 1, -2, -1, 1, -2, -2, 2, -1, -3, 6, -10},
-	{0, -1, 1, -1, 0, -1, 0, 0, -1, 0, 0, 0, -1, 1, -1, -1, 1, -2, -2, 2, -2, -3, 5, -9},
-	{0, -1, 1, -1, 0, -1, 0, 0, -1, 0, 0, 0, -1, 1, -1, -1, 1, -2, -2, 2, -2, -3, 4, -8},
-	{0, -1, 1, -1, 0, -1, 0, 0, -1, 0, 0, 0, -1, 1, -1, -1, 1, -2, -3, 1, -2, -4, 4, -8},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-};
-
-static void gamma_init_F_revA(
-				struct SMART_DIM *pSmart, char *str, int size)
-{
-	long long candela_level[S6E3FA_TABLE_MAX] = {-1, };
-	int bl_index[S6E3FA_TABLE_MAX] = {-1, };
-
-	long long temp_cal_data = 0;
-	int bl_level;
-
-	int level_255_temp_MSB = 0;
-	int level_V255 = 0;
-
-	int point_index;
-	int cnt;
-	int table_index;
-
-	/*calculate candela level */
-	if (pSmart->brightness_level > AOR_FIX_CD) {
-		/* 300CD ~ 183CD */
-		bl_level = pSmart->brightness_level;
-	} else if ((pSmart->brightness_level <= AOR_FIX_CD) &&
-				(pSmart->brightness_level >= AOR_ADJUST_CD)) {
-		/* 172CD ~ 111CD */
-		if (pSmart->brightness_level == 111)
-			bl_level = 180;
-		else if (pSmart->brightness_level == 119)
-			bl_level = 192;
-		else if (pSmart->brightness_level == 126)
-			bl_level = 202;
-		else if (pSmart->brightness_level == 134)
-			bl_level = 213;
-		else if (pSmart->brightness_level == 143)
-			bl_level = 226;
-		else if (pSmart->brightness_level == 152)
-			bl_level = 239;
-		else if (pSmart->brightness_level == 162)
-			bl_level = 254;
-		else if (pSmart->brightness_level == 172)
-			bl_level = 268;
-		else
-			bl_level = 268;
-	} else {
-		/* 105CD ~ 5CD */
-		bl_level = AOR_ADJUST_CD;
-	}
-
-	if (pSmart->brightness_level < 300) {
-		for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
-			point_index = S6E3FA_ARRAY[cnt+1];
-			temp_cal_data =
-			((long long)(candela_coeff_2p15[point_index])) *
-			((long long)(bl_level));
-			candela_level[cnt] = temp_cal_data;
-		}
-
-	} else {
-		for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
-			point_index = S6E3FA_ARRAY[cnt+1];
-			temp_cal_data =
-			((long long)(candela_coeff_2p2[point_index])) *
-			((long long)(bl_level));
-			candela_level[cnt] = temp_cal_data;
-		}
-
-	}
-
-
-#ifdef SMART_DIMMING_DEBUG
-	pr_info("\n candela_1:%llu  candela_3:%llu  candela_11:%llu ",
-		candela_level[0], candela_level[1], candela_level[2]);
-	pr_info("candela_23:%llu  candela_35:%llu  candela_51:%llu ",
-		candela_level[3], candela_level[4], candela_level[5]);
-	pr_info("candela_87:%llu  candela_151:%llu  candela_203:%llu ",
-		candela_level[6], candela_level[7], candela_level[8]);
-	pr_info("candela_255:%llu brightness_level %d\n", candela_level[9], pSmart->brightness_level);
-#endif
-
-	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
-		if (searching_function(candela_level[cnt],
-			&(bl_index[cnt]), GAMMA_CURVE_2P15)) {
-			pr_info("%s searching functioin error cnt:%d\n",
-			__func__, cnt);
-		}
-	}
-
-	/*
-	*	Candela compensation
-	*/
-	for (cnt = 1; cnt < S6E3FA_TABLE_MAX; cnt++) {
-		table_index = find_cadela_table(pSmart->brightness_level);
-
-		if (table_index == -1) {
-			table_index = CCG6_MAX_TABLE;
-			pr_info("%s fail candela table_index cnt : %d brightness %d",
-				__func__, cnt, pSmart->brightness_level);
-		}
-
-		bl_index[S6E3FA_TABLE_MAX - cnt] +=
-			gradation_offset_F_revA[table_index][cnt - 1];
-
-		/* THERE IS M-GRAY0 target */
-		if (bl_index[S6E3FA_TABLE_MAX - cnt] == 0)
-			bl_index[S6E3FA_TABLE_MAX - cnt] = 1;
-	}
-
-#ifdef SMART_DIMMING_DEBUG
-	pr_info("\n bl_index_1:%d  bl_index_3:%d  bl_index_11:%d",
-		bl_index[0], bl_index[1], bl_index[2]);
-	pr_info("bl_index_23:%d bl_index_35:%d  bl_index_51:%d",
-		bl_index[3], bl_index[4], bl_index[5]);
-	pr_info("bl_index_87:%d  bl_index_151:%d bl_index_203:%d",
-		bl_index[6], bl_index[7], bl_index[8]);
-	pr_info("bl_index_255:%d\n", bl_index[9]);
-#endif
-	/*Generate Gamma table*/
-	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++)
-		(void)Make_hexa[cnt](bl_index , pSmart, str);
-
-	/*
-	*	RGB compensation
-	*/
-	for (cnt = 0; cnt < RGB_COMPENSATION; cnt++) {
-		table_index = find_cadela_table(pSmart->brightness_level);
-
-		if (table_index == -1) {
-			table_index = CCG6_MAX_TABLE;
-			pr_info("%s fail RGB table_index cnt : %d brightness %d",
-				__func__, cnt, pSmart->brightness_level);
-		}
-
-		if (cnt < 3) {
-			level_V255 = str[cnt * 2] << 8 | str[(cnt * 2) + 1];
-			level_V255 +=
-				rgb_offset_F_revA[table_index][cnt];
-			level_255_temp_MSB = level_V255 / 256;
-
-			str[cnt * 2] = level_255_temp_MSB & 0xff;
-			str[(cnt * 2) + 1] = level_V255 & 0xff;
-		} else {
-			str[cnt+3] += rgb_offset_F_revA[table_index][cnt];
-		}
-	}
-	/*subtration MTP_OFFSET value from generated gamma table*/
-	mtp_offset_substraction(pSmart, str);
-}
-
-static int gradation_offset_F_revE[][9] = {
-/*	V255 V203 V151 V87 V51 V35 V23 V11 V3 */
-	{-11, -3, 3, 12, 17, 21, 25, 30, 30},
-	{-9, -2, 3, 12, 15, 20, 23, 28, 30},
-	{-7, -1, 4, 11, 15, 19, 22, 27, 29},
-	{-5, 1, 5, 10, 14, 18, 20, 25, 27},
-	{-3, 3, 6, 10, 13, 17, 19, 23, 24},
-	{0, 5, 7, 10, 12, 15, 17, 21, 21},
-	{0, 5, 7, 10, 12, 15, 17, 20, 21},
-	{0, 4, 6, 9, 11, 14, 16, 19, 20},
-	{0, 4, 6, 8, 11, 13, 15, 18, 19},
-	{0, 4, 6, 8, 10, 12, 14, 17, 18},
-	{0, 4, 6, 8, 10, 12, 14, 17, 18},
-	{0, 4, 6, 7, 9, 11, 13, 16, 17},
-	{0, 4, 5, 6, 8, 10, 12, 15, 16},
-	{0, 4, 5, 6, 8, 9, 11, 14, 15},
-	{0, 4, 5, 6, 8, 9, 10, 14, 15},
-	{0, 4, 5, 6, 8, 9, 10, 14, 15},
-	{0, 4, 5, 6, 7, 9, 10, 14, 15},
-	{0, 3, 4, 6, 6, 8, 9, 13, 14},
-	{0, 3, 4, 6, 6, 8, 9, 13, 14},
-	{0, 2, 2, 4, 4, 6, 7, 11, 12},
-	{0, 2, 2, 4, 4, 6, 7, 11, 12},
-	{0, 3, 3, 4, 4, 6, 7, 11, 12},
-	{0, 3, 3, 4, 4, 6, 7, 11, 12},
-	{0, 3, 3, 4, 4, 6, 7, 10, 11},
-	{0, 3, 2, 3, 4, 6, 6, 9, 11},
-	{0, 3, 2, 3, 4, 6, 6, 9, 11},
-	{0, 3, 2, 3, 4, 5, 6, 8, 10},
-	{0, 2, 2, 3, 3, 4, 5, 7, 9},
-	{0, 2, 2, 3, 3, 4, 5, 7, 8},
-	{0, 2, 2, 3, 3, 4, 5, 7, 8},
-	{0, 2, 2, 3, 3, 3, 5, 7, 7},
-	{0, 2, 2, 2, 2, 3, 4, 7, 7},
-	{0, 2, 1, 2, 2, 3, 4, 6, 7},
-	{0, 2, 1, 1, 1, 2, 3, 5, 6},
-	{0, 2, 1, 1, 1, 2, 3, 4, 6},
-	{0, 2, 1, 1, 1, 2, 3, 4, 6},
-	{0, 2, 1, 1, 1, 2, 3, 4, 6},
-	{0, 1, 1, 1, 1, 2, 2, 3, 5},
-	{0, 1, 0, 0, 0, 1, 1, 2, 4},
-	{0, 1, 0, 0, 0, 1, 1, 2, 3},
-	{0, 1, 0, 0, 0, 1, 1, 2, 3},
-	{0, 1, 0, 0, 0, 0, 1, 2, 3},
-	{0, 0, 1, 1, 2, 2, 3, 4, 7},
-	{0, 0, 1, 1, 2, 2, 3, 4, 6},
-	{0, 0, 1, 1, 2, 2, 2, 3, 5},
-	{0, 0, 1, 1, 2, 2, 2, 3, 5},
-	{0, 0, 1, 1, 1, 2, 2, 3, 5},
-	{0, 0, 0, 0, 0, 1, 1, 2, 4},
-	{0, 0, 0, 0, 0, 0, 0, 2, 4},
-	{0, 0, 0, 0, 0, 0, 0, 1, 3},
-	{2, 1, 1, 1, 1, 1, 1, 2, 3},
-	{2, 1, 1, 1, 0, 0, 0, 1, 2},
-	{2, 1, 1, 0, 0, 0, 0, 1, 2},
-	{2, 1, 0, 0, 0, 0, 0, 1, 2},
-	{1, 1, 0, 0, 0, 0, 0, 0, 1},
-	{1, 0, 0, 0, 0, 0, 0, 0, 0},
-	{1, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0},
-};
-
-static int rgb_offset_F_revE[][RGB_COMPENSATION] = {
-/*	R255 G255 B255 R203 G203 B203 R151 G151 B151
-	R87 G87 B87 R51 G51 B51 R35 G35 B35
-	R23 G23 B23 R11 G11 B11
-*/
-	{-2, 1, -2, -2, 2, -2, -2, 3, -4, -5, 7, -8, -8, 8, -12, -7, 6, -10, -4, 5, -7, -8, 4, -12},
-	{-2, 1, -2, -1, 2, -1, -2, 3, -4, -5, 6, -7, -8, 8, -13, -7, 5, -9, -5, 6, -9, -7, 4, -11},
-	{-2, 1, -2, -1, 2, -1, -2, 3, -4, -5, 6, -7, -8, 8, -13, -7, 5, -9, -5, 6, -9, -7, 4, -12},
-	{-2, 0, -2, -2, 1, -2, -2, 2, -4, -5, 6, -7, -6, 8, -9, -5, 6, -8, -5, 6, -9, -7, 5, -13},
-	{-2, 0, -1, -1, 1, -2, -1, 2, -3, -5, 6, -7, -6, 7, -9, -5, 6, -8, -5, 6, -9, -7, 6, -14},
-	{-1, 0, 0, -1, 1, -2, -1, 2, -2, -5, 5, -6, -6, 7, -9, -4, 7, -7, -4, 7, -9, -6, 7, -15},
-	{-1, 0, 0, -1, 1, -2, -1, 2, -2, -5, 5, -6, -6, 7, -9, -4, 7, -7, -4, 7, -9, -6, 7, -16},
-	{-1, 0, 0, -1, 1, -2, -1, 2, -2, -4, 5, -5, -5, 6, -8, -4, 7, -7, -4, 7, -9, -6, 7, -18},
-	{-1, 0, 0, -1, 0, -2, -1, 2, -2, -4, 4, -4, -4, 6, -7, -4, 6, -7, -5, 6, -9, -6, 8, -20},
-	{-1, 0, 0, -1, 0, -2, -1, 2, -2, -3, 4, -4, -4, 6, -7, -4, 6, -7, -5, 6, -9, -8, 8, -22},
-	{-1, 0, 0, -1, 0, -2, -1, 2, -2, -3, 4, -4, -4, 6, -7, -4, 6, -7, -5, 6, -9, -8, 8, -22},
-	{-1, 0, 0, -1, 0, -2, -1, 2, -2, -3, 4, -4, -4, 6, -7, -4, 6, -7, -5, 6, -9, -8, 8, -22},
-	{-1, 0, 0, 0, 0, -1, -1, 1, -2, -3, 3, -3, -3, 5, -6, -4, 6, -6, -4, 7, -10, -8, 7, -22},
-	{-1, 0, 0, 0, 0, -1, -1, 1, -2, -3, 3, -3, -3, 5, -6, -4, 6, -6, -4, 8, -11, -8, 6, -22},
-	{-1, 0, 0, 0, 0, -1, -1, 1, -2, -3, 3, -3, -3, 5, -6, -4, 6, -6, -4, 8, -11, -8, 6, -22},
-	{-1, 0, 0, 0, 0, -1, -1, 1, -2, -3, 3, -3, -3, 5, -6, -4, 6, -6, -3, 8, -11, -8, 6, -22},
-	{-1, 0, 0, 0, 0, -1, -1, 1, -2, -3, 3, -3, -3, 5, -6, -4, 6, -6, -3, 8, -9, -8, 6, -22},
-	{0, 0, 1, -1, 0, -2, -1, 1, -1, -1, 3, -2, -2, 5, -5, -3, 5, -5, -3, 7, -7, -8, 5, -22},
-	{0, 0, 1, -1, 0, -2, -1, 1, -1, -1, 3, -2, -2, 5, -5, -3, 5, -5, -3, 7, -7, -8, 5, -22},
-	{0, 0, 1, -1, 0, -2, -1, 1, -1, -1, 3, -2, -2, 5, -5, -3, 5, -5, -3, 7, -7, -8, 5, -22},
-	{0, 0, 1, -1, 0, -1, 0, 1, -1, -2, 2, -3, -2, 4, -4, -4, 4, -6, -2, 7, -8, -7, 6, -21},
-	{0, 0, 1, -1, 0, -1, 0, 1, -1, -2, 2, -3, -2, 4, -4, -4, 4, -6, -2, 7, -8, -7, 6, -21},
-	{0, 0, 1, -1, 0, -1, -1, 1, -1, -2, 2, -3, -2, 3, -4, -4, 2, -6, -2, 7, -7, -7, 6, -21},
-	{0, 0, 1, -1, 0, -1, 0, 1, -1, -1, 1, -2, -2, 3, -4, -4, 2, -6, -2, 6, -7, -8, 6, -22},
-	{0, 0, 1, -1, 0, -1, 0, 1, -1, -1, 1, -2, -3, 3, -4, -4, 2, -6, -3, 6, -7, -9, 7, -23},
-	{0, 0, 1, -1, 0, -1, 0, 1, -1, -1, 1, -2, -3, 3, -4, -4, 2, -6, -3, 6, -7, -8, 7, -23},
-	{0, 0, 1, -1, 0, -1, 0, 1, -1, -1, 1, -2, -3, 3, -4, -4, 2, -6, -3, 6, -7, -9, 7, -23},
-	{0, 0, 1, -1, 0, -1, 0, 1, -1, -1, 1, -1, -3, 3, -4, -4, 2, -5, -2, 6, -7, -9, 7, -22},
-	{0, 0, 1, -1, 0, -1, 0, 1, -1, -1, 1, -1, -2, 2, -3, -3, 2, -4, -1, 5, -5, -8, 6, -21},
-	{0, 0, 1, -1, 0, -1, 0, 1, -1, -1, 1, -1, -2, 2, -3, -3, 2, -4, -1, 5, -5, -8, 6, -21},
-	{0, 0, 1, -1, 0, -1, 0, 1, -1, -1, 1, -1, -2, 2, -3, -3, 2, -4, -1, 5, -5, -7, 6, -19},
-	{-1, 0, 1, -1, 0, -1, 0, 1, -1, -1, 1, -1, -2, 2, -2, -3, 2, -3, -1, 4, -5, -6, 5, -16},
-	{-1, 0, 1, -1, 0, -1, 0, 1, -1, -1, 0, -1, -1, 1, -2, -2, 1, -3, -1, 4, -4, -5, 5, -14},
-	{-1, 0, 1, -1, 0, -1, 0, 1, -1, -1, 0, -1, -1, 1, -2, -2, 1, -2, -1, 3, -4, -4, 5, -12},
-	{-1, 0, 1, -1, 0, -1, 0, 1, -1, -1, 0, -1, -1, 1, -2, -2, 1, -2, -1, 3, -4, -3, 5, -10},
-	{-1, 0, 1, -1, 0, -1, 0, 1, -1, -1, 0, -1, -1, 1, -2, -2, 1, -2, -2, 3, -4, -2, 5, -11},
-	{-1, 0, 1, -1, 0, -1, 0, 1, -1, -1, 0, -1, -1, 1, -2, -2, 1, -2, -2, 3, -4, -2, 5, -11},
-	{-1, 0, 1, -1, 0, -1, 0, 1, -1, -1, 0, -1, -1, 1, -1, -2, 1, -1, -1, 2, -3, -2, 4, -10},
-	{-1, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, -1, 0, -1, -1, 0, -1, -1, 1, -3, -1, 3, -8},
-	{-1, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, -1, 0, -1, -1, 0, -1, -1, 0, -2, -1, 2, -6},
-	{-1, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, -1, 0, -1, -1, 0, -1, -1, 0, -1, -1, 1, -4},
-	{-1, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, -1, 0, -1, -1, 0, -1, -1, 0, -1, -1, 1, -4},
-	{0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, -1, 1, -2, 0, 2, -2, -2, 2, -3, -3, 6, -11},
-	{0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, -1, 1, -2, 0, 2, -2, -2, 2, -3, -3, 6, -11},
-	{0, -1, 1, -1, 0, -1, 0, 0, -1, -1, 0, -1, -1, 1, -2, -1, 1, -2, -2, 2, -1, -3, 6, -10},
-	{0, -1, 1, -1, 0, -1, 0, 0, -1, -1, 0, -1, -1, 1, -2, -1, 1, -2, -2, 2, -1, -3, 6, -10},
-	{0, -1, 1, -1, 0, -1, 0, 0, -1, -1, 0, -1, -1, 1, -2, -1, 1, -2, -2, 2, -1, -3, 6, -10},
-	{0, -1, 1, -1, 0, -1, 0, 0, -1, 0, 0, 0, -1, 1, -1, -1, 1, -2, -2, 2, -2, -3, 5, -9},
-	{0, -1, 1, -1, 0, -1, 0, 0, -1, 0, 0, 0, -1, 1, -1, -1, 1, -2, -2, 2, -2, -3, 4, -8},
-	{0, -1, 1, -1, 0, -1, 0, 0, -1, 0, 0, 0, -1, 1, -1, -1, 1, -2, -3, 1, -2, -4, 4, -8},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-};
-
-static void gamma_init_F_revE(
-				struct SMART_DIM *pSmart, char *str, int size)
-{
-	long long candela_level[S6E3FA_TABLE_MAX] = {-1, };
-	int bl_index[S6E3FA_TABLE_MAX] = {-1, };
-
-	long long temp_cal_data = 0;
-	int bl_level;
-
-	int level_255_temp_MSB = 0;
-	int level_V255 = 0;
-
-	int point_index;
-	int cnt;
-	int table_index;
-
-	/*calculate candela level */
-	if (pSmart->brightness_level > AOR_FIX_CD) {
-		/* 300CD ~ 183CD */
-		bl_level = pSmart->brightness_level;
-	} else if ((pSmart->brightness_level <= AOR_FIX_CD) &&
-				(pSmart->brightness_level >= AOR_ADJUST_CD)) {
-		/* 172CD ~ 111CD */
-		if (pSmart->brightness_level == 111)
-			bl_level = 180;
-		else if (pSmart->brightness_level == 119)
-			bl_level = 192;
-		else if (pSmart->brightness_level == 126)
-			bl_level = 202;
-		else if (pSmart->brightness_level == 134)
-			bl_level = 213;
-		else if (pSmart->brightness_level == 143)
-			bl_level = 226;
-		else if (pSmart->brightness_level == 152)
-			bl_level = 239;
-		else if (pSmart->brightness_level == 162)
-			bl_level = 254;
-		else if (pSmart->brightness_level == 172)
-			bl_level = 268;
-		else
-			bl_level = 268;
-	} else {
-		/* 105CD ~ 5CD */
-		bl_level = AOR_ADJUST_CD;
-	}
-
-	if (pSmart->brightness_level < 350) {
-		for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
-			point_index = S6E3FA_ARRAY[cnt+1];
-			temp_cal_data =
-			((long long)(candela_coeff_2p15[point_index])) *
-			((long long)(bl_level));
-			candela_level[cnt] = temp_cal_data;
-		}
-
-	} else {
-		for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
-			point_index = S6E3FA_ARRAY[cnt+1];
-			temp_cal_data =
-			((long long)(candela_coeff_2p2[point_index])) *
-			((long long)(bl_level));
-			candela_level[cnt] = temp_cal_data;
-		}
-
-	}
-
-
-#ifdef SMART_DIMMING_DEBUG
-	pr_info("\n candela_1:%llu  candela_3:%llu  candela_11:%llu ",
-		candela_level[0], candela_level[1], candela_level[2]);
-	pr_info("candela_23:%llu  candela_35:%llu  candela_51:%llu ",
-		candela_level[3], candela_level[4], candela_level[5]);
-	pr_info("candela_87:%llu  candela_151:%llu  candela_203:%llu ",
-		candela_level[6], candela_level[7], candela_level[8]);
-	pr_info("candela_255:%llu brightness_level %d\n", candela_level[9], pSmart->brightness_level);
-#endif
-
-	/* max 350cd */
-	memcpy(curve_1p9, curve_1p9_350, sizeof(curve_1p9_350));
-	memcpy(curve_2p2, curve_2p2_350, sizeof(curve_2p2_350));
-
-	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
-		if (searching_function(candela_level[cnt],
-			&(bl_index[cnt]), GAMMA_CURVE_2P15)) {
-			pr_info("%s searching functioin error cnt:%d\n",
-			__func__, cnt);
-		}
-	}
-
-	/*
-	*	Candela compensation
-	*/
-	for (cnt = 1; cnt < S6E3FA_TABLE_MAX; cnt++) {
-		table_index = find_cadela_table(pSmart->brightness_level);
-
-		if (table_index == -1) {
-			table_index = CCG6_MAX_TABLE;
-			pr_info("%s fail candela table_index cnt : %d brightness %d",
-				__func__, cnt, pSmart->brightness_level);
-		}
-
-		bl_index[S6E3FA_TABLE_MAX - cnt] +=
-			gradation_offset_F_revE[table_index][cnt - 1];
-
-		/* THERE IS M-GRAY0 target */
-		if (bl_index[S6E3FA_TABLE_MAX - cnt] == 0)
-			bl_index[S6E3FA_TABLE_MAX - cnt] = 1;
-	}
-
-#ifdef SMART_DIMMING_DEBUG
-	pr_info("\n bl_index_1:%d  bl_index_3:%d  bl_index_11:%d",
-		bl_index[0], bl_index[1], bl_index[2]);
-	pr_info("bl_index_23:%d bl_index_35:%d  bl_index_51:%d",
-		bl_index[3], bl_index[4], bl_index[5]);
-	pr_info("bl_index_87:%d  bl_index_151:%d bl_index_203:%d",
-		bl_index[6], bl_index[7], bl_index[8]);
-	pr_info("bl_index_255:%d\n", bl_index[9]);
-#endif
-	/*Generate Gamma table*/
-	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++)
-		(void)Make_hexa[cnt](bl_index , pSmart, str);
-
-	/*
-	*	RGB compensation
-	*/
-	for (cnt = 0; cnt < RGB_COMPENSATION; cnt++) {
-		table_index = find_cadela_table(pSmart->brightness_level);
-
-		if (table_index == -1) {
-			table_index = CCG6_MAX_TABLE;
-			pr_info("%s fail RGB table_index cnt : %d brightness %d",
-				__func__, cnt, pSmart->brightness_level);
-		}
-
-		if (cnt < 3) {
-			level_V255 = str[cnt * 2] << 8 | str[(cnt * 2) + 1];
-			level_V255 +=
-				rgb_offset_F_revE[table_index][cnt];
-			level_255_temp_MSB = level_V255 / 256;
-
-			str[cnt * 2] = level_255_temp_MSB & 0xff;
-			str[(cnt * 2) + 1] = level_V255 & 0xff;
-		} else {
-			str[cnt+3] += rgb_offset_F_revE[table_index][cnt];
-		}
-	}
-	/*subtration MTP_OFFSET value from generated gamma table*/
-	mtp_offset_substraction(pSmart, str);
-}
-
-static int gradation_offset_F_revF_G[][9] = {
-/*	V255 V203 V151 V87 V51 V35 V23 V11 V3 */
-	{0, 6, 10, 17, 22, 25, 29, 29, 33},
-	{0, 5, 8, 15, 19, 22, 25, 28, 32},
-	{0, 5, 8, 13, 17, 21, 24, 27, 31},
-	{0, 5, 8, 12, 16, 18, 21, 24, 28},
-	{0, 5, 7, 11, 15, 16, 19, 22, 25},
-	{0, 5, 7, 10, 13, 15, 17, 20, 22},
-	{0, 5, 7, 10, 13, 15, 17, 20, 21},
-	{0, 4, 6, 9, 12, 14, 16, 19, 20},
-	{0, 4, 6, 8, 11, 13, 15, 18, 20},
-	{0, 4, 6, 8, 11, 13, 15, 18, 20},
-	{0, 4, 6, 8, 10, 11, 13, 16, 19},
-	{0, 4, 5, 7, 10, 10, 12, 16, 18},
-	{0, 4, 5, 7, 10, 10, 12, 15, 17},
-	{0, 4, 5, 7, 9, 9, 11, 14, 17},
-	{0, 4, 5, 7, 8, 9, 11, 14, 16},
-	{0, 3, 5, 6, 8, 9, 10, 14, 15},
-	{0, 3, 4, 6, 8, 9, 10, 14, 15},
-	{0, 3, 4, 6, 7, 8, 9, 13, 14},
-	{0, 3, 4, 6, 7, 8, 9, 12, 13},
-	{0, 3, 3, 5, 6, 7, 8, 11, 12},
-	{0, 3, 3, 5, 6, 7, 8, 11, 12},
-	{0, 3, 3, 4, 6, 6, 7, 10, 12},
-	{0, 3, 3, 4, 5, 6, 7, 10, 12},
-	{0, 3, 3, 4, 5, 6, 7, 9, 10},
-	{0, 3, 2, 3, 4, 5, 6, 8, 10},
-	{0, 3, 2, 3, 4, 5, 6, 8, 9},
-	{0, 2, 2, 3, 4, 4, 5, 7, 9},
-	{0, 2, 2, 3, 4, 4, 5, 7, 8},
-	{0, 2, 2, 3, 4, 4, 5, 7, 8},
-	{0, 2, 2, 3, 3, 4, 5, 7, 8},
-	{0, 2, 2, 3, 3, 3, 5, 7, 8},
-	{0, 2, 2, 2, 3, 3, 4, 6, 7},
-	{0, 2, 1, 2, 3, 3, 4, 6, 7},
-	{0, 2, 1, 2, 3, 3, 4, 5, 6},
-	{0, 2, 1, 2, 3, 3, 3, 4, 6},
-	{0, 2, 1, 2, 2, 2, 3, 4, 6},
-	{0, 2, 1, 1, 2, 2, 3, 4, 6},
-	{0, 1, 1, 1, 2, 2, 2, 4, 5},
-	{0, 1, 0, 0, 1, 1, 1, 4, 4},
-	{0, 1, 0, 0, 1, 1, 1, 4, 3},
-	{0, 1, 0, 0, 1, 1, 1, 4, 3},
-	{0, 1, 0, 0, 1, 1, 1, 4, 3},
-	{0, 1, 2, 2, 2, 3, 3, 4, 6},
-	{0, 1, 2, 2, 2, 3, 3, 4, 5},
-	{0, 1, 2, 2, 2, 3, 3, 4, 5},
-	{0, 1, 2, 2, 2, 2, 3, 3, 5},
-	{0, 1, 2, 2, 2, 2, 3, 3, 5},
-	{0, 1, 1, 1, 2, 2, 3, 3, 5},
-	{0, 1, 1, 1, 1, 2, 3, 3, 4},
-	{0, 1, 1, 1, 1, 2, 2, 3, 3},
-	{3, 2, 2, 2, 1, 1, 1, 2, 3},
-	{2, 1, 1, 1, 1, 1, 1, 2, 3},
-	{2, 1, 1, 1, 1, 1, 1, 2, 2},
-	{2, 1, 1, 1, 1, 1, 1, 1, 2},
-	{2, 1, 1, 1, 1, 1, 1, 1, 1},
-	{2, 1, 1, 1, 1, 1, 1, 1, 1},
-	{2, 1, 1, 1, 0, 1, 1, 1, 1},
-	{2, 1, 0, 0, 0, 0, 0, 0, 0},
-	{1, 1, 0, 0, 0, 0, 0, 0, 0},
-	{1, 1, 0, 0, 0, 0, 0, 0, 0},
-	{1, 1, 0, -1, -1, -1, -1, -1, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0},
-};
-
-static int rgb_offset_F_revF_G[][RGB_COMPENSATION] = {
-/*	R255 G255 B255 R203 G203 B203 R151 G151 B151
-	R87 G87 B87 R51 G51 B51 R35 G35 B35
-	R23 G23 B23 R11 G11 B11
-*/
-	{-4, 1, -2, -3, 2, -2, -3, 2, -4, -4, 7, -8, -8, 7, -12, -8, 4, -10, -5, 6, -7, -7, 0, -10},
-	{-3, 1, -2, -2, 2, -1, -3, 3, -4, -5, 6, -7, -8, 7, -13, -7, 4, -9, -5, 6, -9, -7, 2, -11},
-	{-3, 1, -2, -2, 2, -1, -3, 2, -4, -5, 5, -7, -8, 7, -13, -7, 3, -9, -5, 4, -9, -7, 3, -12},
-	{-3, 0, -2, -3, 1, -2, -3, 2, -4, -5, 5, -7, -6, 7, -9, -5, 6, -8, -5, 6, -9, -7, 5, -13},
-	{-3, 0, -1, -2, 1, -2, -2, 2, -3, -5, 5, -7, -6, 6, -9, -6, 6, -8, -6, 7, -9, -6, 4, -14},
-	{-2, 0, 0, -2, 1, -2, -2, 2, -2, -4, 5, -6, -6, 6, -9, -6, 5, -7, -5, 8, -9, -6, 4, -15},
-	{-2, 0, 0, -2, 1, -2, -2, 2, -2, -4, 5, -6, -6, 5, -9, -6, 4, -7, -5, 6, -9, -8, 4, -15},
-	{-2, 0, 0, -2, 1, -2, -2, 2, -2, -4, 4, -6, -6, 5, -9, -6, 4, -7, -5, 7, -9, -8, 4, -20},
-	{-2, 0, 0, -2, 1, -2, -2, 2, -2, -4, 4, -6, -6, 5, -9, -6, 4, -7, -5, 7, -9, -8, 4, -20},
-	{-2, 0, 0, -2, 1, -2, -2, 1, -2, -4, 3, -6, -6, 4, -9, -6, 4, -7, -5, 7, -9, -10, 4, -21},
-	{-2, 0, 0, -1, 0, -2, -1, 2, -2, -3, 4, -4, -5, 5, -7, -6, 4, -7, -5, 7, -9, -12, 5, -21},
-	{-2, 0, 0, -1, 0, -1, -1, 1, -2, -3, 4, -3, -4, 6, -6, -5, 6, -6, -4, 8, -9, -12, 5, -21},
-	{-2, 0, 0, -1, 0, -1, -1, 1, -2, -3, 4, -3, -4, 6, -6, -5, 6, -6, -4, 8, -9, -12, 5, -21},
-	{-2, 0, 0, -1, 0, -1, -1, 1, -2, -3, 3, -3, -4, 6, -6, -5, 6, -6, -4, 8, -9, -12, 5, -20},
-	{-2, 0, 0, -1, 0, -1, -1, 1, -2, -3, 3, -3, -5, 6, -6, -5, 5, -6, -5, 8, -7, -10, 5, -18},
-	{-1, 0, 1, -1, 0, -1, -1, 1, -1, -2, 3, -3, -4, 5, -6, -5, 5, -6, -2, 8, -7, -11, 5, -19},
-	{-1, 0, 1, -1, 0, -1, -1, 1, -1, -2, 3, -3, -4, 5, -4, -5, 5, -6, -2, 8, -7, -11, 5, -19},
-	{-1, 0, 1, -1, 0, -1, -1, 1, -1, -2, 3, -3, -4, 5, -4, -5, 4, -6, -2, 8, -7, -11, 4, -19},
-	{-1, 0, 1, -1, 0, -1, -1, 1, -1, -2, 2, -3, -4, 4, -4, -5, 3, -6, -2, 8, -7, -11, 6, -21},
-	{-1, 0, 1, -1, 0, -1, -1, 1, -1, -2, 2, -3, -4, 4, -4, -5, 3, -6, -2, 8, -7, -11, 6, -21},
-	{-1, 0, 1, -1, 0, -1, -1, 1, -1, -2, 2, -3, -4, 4, -4, -5, 3, -6, -2, 7, -7, -11, 6, -21},
-	{-1, 0, 1, -1, 0, -1, -1, 1, -1, -2, 2, -3, -4, 4, -4, -4, 3, -6, -2, 7, -7, -11, 5, -21},
-	{-1, 0, 1, -1, 0, -1, 0, 1, -1, -1, 2, -1, -4, 4, -4, -4, 4, -6, -2, 6, -7, -10, 5, -21},
-	{-1, 0, 1, -1, 0, -1, 0, 1, -1, -1, 2, -1, -4, 4, -3, -4, 4, -5, -2, 6, -6, -10, 5, -21},
-	{-1, 0, 1, -1, 0, -1, 0, 1, -1, -1, 1, -1, -4, 3, -3, -4, 3, -5, -2, 6, -6, -10, 6, -18},
-	{-1, 0, 1, -1, 0, -1, 0, 1, -1, -1, 1, -1, -3, 3, -3, -4, 3, -5, -2, 6, -6, -10, 5, -18},
-	{-1, 0, 1, -1, 0, -1, 0, 1, -1, -1, 1, -1, -3, 3, -3, -4, 3, -5, -2, 6, -6, -9, 5, -21},
-	{-1, 0, 1, -1, 0, -1, 0, 1, -1, -1, 1, -1, -3, 2, -3, -4, 3, -4, -2, 6, -6, -9, 4, -21},
-	{-1, 0, 1, -1, 0, -1, 0, 1, -1, -1, 1, -1, -3, 1, -3, -4, 3, -4, -2, 5, -6, -9, 4, -18},
-	{-1, 0, 1, -1, 0, -1, 0, 1, -1, -1, 1, -1, -2, 1, -3, -4, 2, -4, -2, 4, -5, -9, 4, -17},
-	{-1, 0, 1, -1, 0, -1, 0, 1, -1, -1, 1, -1, -2, 1, -2, -4, 1, -4, -1, 4, -5, -8, 4, -15},
-	{-1, 0, 1, -1, 0, -1, 0, 1, -1, -1, 1, -1, -2, 1, -2, -4, 1, -4, -1, 4, -5, -8, 4, -15},
-	{-1, 0, 1, -1, 0, -1, 0, 0, -1, -1, 0, -1, -2, 1, -2, -3, 1, -3, -2, 4, -4, -6, 3, -14},
-	{-1, 0, 1, -1, 0, -1, 0, 0, -1, -1, 0, -1, -2, 0, -2, -2, 1, -2, -2, 3, -4, -5, 5, -13},
-	{-1, 0, 1, -1, 0, -1, 0, 0, -1, -1, 0, -1, -2, 0, -2, -2, 1, -2, -2, 4, -4, -3, 5, -12},
-	{-1, 0, 1, -1, 0, -1, 0, 0, -1, -1, 0, -1, -2, 0, -2, -2, 1, -2, -2, 3, -4, -3, 5, -10},
-	{-1, 0, 1, -1, 0, -1, 0, 0, -1, -1, 0, -1, -1, 0, -1, -2, 1, -1, -2, 3, -3, -2, 4, -9},
-	{-1, 0, 1, -1, 0, -1, 0, 0, 0, -1, 0, 0, -1, 0, -1, -2, 1, -1, -1, 3, -3, -2, 4, -8},
-	{-1, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, -1, 0, -1, -1, 0, -1, -1, 2, -3, -1, 2, -8},
-	{-1, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, -1, 0, -1, -1, 0, -1, -1, 1, -2, -1, 2, -6},
-	{-1, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, -1, 0, 0, -1, -1, 2, -6},
-	{-1, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, -1, 0, 0, -1, -1, 1, -4},
-	{0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, -2, 1, -2, -3, 0, -1, -4, 1, -1, -3, 6, -11},
-	{0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, -2, 0, -2, -3, 0, -1, -4, 1, -1, -3, 6, -11},
-	{0, -1, 1, -1, 0, -1, 0, 0, -1, -1, 0, -1, -1, 1, -2, -2, 1, -1, -4, 2, -1, -4, 6, -10},
-	{0, -1, 1, -1, 0, -1, 0, 0, -1, -1, 0, -1, -1, 1, -2, -2, 1, -1, -4, 1, -1, -4, 6, -10},
-	{0, -1, 1, -1, 0, -1, 0, 0, -1, -1, 0, -1, -1, 1, -2, -1, 1, -1, -4, 1, -1, -4, 6, -10},
-	{0, -1, 1, -1, 0, -1, 0, 0, -1, 0, 0, 0, -1, 1, -1, -3, 1, -2, -4, 1, -2, -4, 6, -9},
-	{0, -1, 1, -1, 0, -1, 0, 0, -1, 0, 0, 0, -1, 1, -1, -2, 1, -2, -3, 1, -2, -3, 5, -8},
-	{0, -1, 1, -1, 0, -1, 0, 0, -1, 0, 0, 0, -1, 1, -1, -1, 1, -2, -3, 1, -2, -3, 4, -8},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-};
-
-static void gamma_init_F_revF_G(
-				struct SMART_DIM *pSmart, char *str, int size)
-{
-	long long candela_level[S6E3FA_TABLE_MAX] = {-1, };
-	int bl_index[S6E3FA_TABLE_MAX] = {-1, };
-
-	long long temp_cal_data = 0;
-	int bl_level;
-
-	int level_255_temp_MSB = 0;
-	int level_V255 = 0;
-
-	int point_index;
-	int cnt;
-	int table_index;
-
-	/*calculate candela level */
-	if (pSmart->brightness_level > AOR_FIX_CD) {
-		/* 300CD ~ 183CD */
-		bl_level = pSmart->brightness_level;
-	} else if ((pSmart->brightness_level <= AOR_FIX_CD) &&
-				(pSmart->brightness_level >= AOR_ADJUST_CD)) {
-		/* 172CD ~ 111CD */
-		if (pSmart->brightness_level == 111)
-			bl_level = 183;
-		else if (pSmart->brightness_level == 119)
-			bl_level = 196;
-		else if (pSmart->brightness_level == 126)
-			bl_level = 209;
-		else if (pSmart->brightness_level == 134)
-			bl_level = 223;
-		else if (pSmart->brightness_level == 143)
-			bl_level = 235;
-		else if (pSmart->brightness_level == 152)
-			bl_level = 250;
-		else if (pSmart->brightness_level == 162)
-			bl_level = 265;
-		else if (pSmart->brightness_level == 172)
-			bl_level = 280;
-		else
-			bl_level = 280;
-	} else {
-		/* 105CD ~ 5CD */
-		bl_level = AOR_ADJUST_CD;
-	}
-
-	if (pSmart->brightness_level < 350) {
-		for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
-			point_index = S6E3FA_ARRAY[cnt+1];
-			temp_cal_data =
-			((long long)(candela_coeff_2p15[point_index])) *
-			((long long)(bl_level));
-			candela_level[cnt] = temp_cal_data;
-		}
-
-	} else {
-		for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
-			point_index = S6E3FA_ARRAY[cnt+1];
-			temp_cal_data =
-			((long long)(candela_coeff_2p2[point_index])) *
-			((long long)(bl_level));
-			candela_level[cnt] = temp_cal_data;
-		}
-
-	}
-
-
-#ifdef SMART_DIMMING_DEBUG
-	pr_info("\n candela_1:%llu  candela_3:%llu  candela_11:%llu ",
-		candela_level[0], candela_level[1], candela_level[2]);
-	pr_info("candela_23:%llu  candela_35:%llu  candela_51:%llu ",
-		candela_level[3], candela_level[4], candela_level[5]);
-	pr_info("candela_87:%llu  candela_151:%llu  candela_203:%llu ",
-		candela_level[6], candela_level[7], candela_level[8]);
-	pr_info("candela_255:%llu brightness_level %d\n", candela_level[9], pSmart->brightness_level);
-#endif
-
-	/* max 350cd */
-	memcpy(curve_1p9, curve_1p9_350, sizeof(curve_1p9_350));
-	memcpy(curve_2p2, curve_2p2_350, sizeof(curve_2p2_350));
-
-	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
-		if (searching_function(candela_level[cnt],
-			&(bl_index[cnt]), GAMMA_CURVE_2P15)) {
-			pr_info("%s searching functioin error cnt:%d\n",
-			__func__, cnt);
-		}
-	}
-
-	/*
-	*	Candela compensation
-	*/
-	for (cnt = 1; cnt < S6E3FA_TABLE_MAX; cnt++) {
-		table_index = find_cadela_table(pSmart->brightness_level);
-
-		if (table_index == -1) {
-			table_index = CCG6_MAX_TABLE;
-			pr_info("%s fail candela table_index cnt : %d brightness %d",
-				__func__, cnt, pSmart->brightness_level);
-		}
-
-		bl_index[S6E3FA_TABLE_MAX - cnt] +=
-			gradation_offset_F_revF_G[table_index][cnt - 1];
-
-		/* THERE IS M-GRAY0 target */
-		if (bl_index[S6E3FA_TABLE_MAX - cnt] == 0)
-			bl_index[S6E3FA_TABLE_MAX - cnt] = 1;
-	}
-
-#ifdef SMART_DIMMING_DEBUG
-	pr_info("\n bl_index_1:%d  bl_index_3:%d  bl_index_11:%d",
-		bl_index[0], bl_index[1], bl_index[2]);
-	pr_info("bl_index_23:%d bl_index_35:%d  bl_index_51:%d",
-		bl_index[3], bl_index[4], bl_index[5]);
-	pr_info("bl_index_87:%d  bl_index_151:%d bl_index_203:%d",
-		bl_index[6], bl_index[7], bl_index[8]);
-	pr_info("bl_index_255:%d\n", bl_index[9]);
-#endif
-	/*Generate Gamma table*/
-	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++)
-		(void)Make_hexa[cnt](bl_index , pSmart, str);
-
-	/*
-	*	RGB compensation
-	*/
-	for (cnt = 0; cnt < RGB_COMPENSATION; cnt++) {
-		table_index = find_cadela_table(pSmart->brightness_level);
-
-		if (table_index == -1) {
-			table_index = CCG6_MAX_TABLE;
-			pr_info("%s fail RGB table_index cnt : %d brightness %d",
-				__func__, cnt, pSmart->brightness_level);
-		}
-
-		if (cnt < 3) {
-			level_V255 = str[cnt * 2] << 8 | str[(cnt * 2) + 1];
-			level_V255 +=
-				rgb_offset_F_revF_G[table_index][cnt];
-			level_255_temp_MSB = level_V255 / 256;
-
-			str[cnt * 2] = level_255_temp_MSB & 0xff;
-			str[(cnt * 2) + 1] = level_V255 & 0xff;
-		} else {
-			str[cnt+3] += rgb_offset_F_revF_G[table_index][cnt];
-		}
-	}
-	/*subtration MTP_OFFSET value from generated gamma table*/
-	mtp_offset_substraction(pSmart, str);
-}
-
-#endif
 
 static void pure_gamma_init(struct SMART_DIM *pSmart, char *str, int size)
 {
@@ -4075,256 +1986,88 @@ static void mtp_sorting(struct SMART_DIM *psmart)
 
 static void wrap_smart_dimming_init(void);
 
-static ssize_t v255_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+static ssize_t gcontrol_red_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%d %d %d\n", v255_val[0], v255_val[1], v255_val[2]);
+	return sprintf(buf, "%d\n", gcontrol_red);
 }
 
-static ssize_t v255_store(struct kobject *kobj,
+static ssize_t gcontrol_red_store(struct kobject *kobj,
 			   struct kobj_attribute *attr, const char *buf, size_t count) {
-	int new_r, new_g, new_b;
-	sscanf(buf, "%d %d %d", &new_r, &new_g, &new_b);
-	v255_val[0] = new_r;
-	v255_val[1] = new_g;
-	v255_val[2] = new_b;
+	int newval;
+	sscanf(buf, "%d", &newval);
+	gcontrol_red = newval;
 	wrap_smart_dimming_init();
 	return count;
 }
 
-static ssize_t v203_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+static ssize_t gcontrol_green_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%d %d %d\n", v203_val[0], v203_val[1], v203_val[2]);
+	return sprintf(buf, "%d\n", gcontrol_green);
 }
 
-static ssize_t v203_store(struct kobject *kobj,
-		 struct kobj_attribute *attr, const char *buf, size_t count)
-{
-	int new_r, new_g, new_b;
-	sscanf(buf, "%d %d %d", &new_r, &new_g, &new_b);
-	v203_val[0] = new_r;
-	v203_val[1] = new_g;
-	v203_val[2] = new_b;
-	wrap_smart_dimming_init();
-	return count;
-}
-
-static ssize_t v151_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
-{
-	return sprintf(buf, "%d %d %d\n", v151_val[0], v151_val[1], v151_val[2]);
-}
-
-static ssize_t v151_store(struct kobject *kobj,
-		 struct kobj_attribute *attr, const char *buf, size_t count)
-{
-	int new_r, new_g, new_b;
-	sscanf(buf, "%d %d %d", &new_r, &new_g, &new_b);
-	v151_val[0] = new_r;
-	v151_val[1] = new_g;
-	v151_val[2] = new_b;
-	wrap_smart_dimming_init();
-	return count;
-}
-
-static ssize_t v87_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
-{
-	return sprintf(buf, "%d %d %d\n", v87_val[0], v87_val[1], v87_val[2]);
-}
-
-static ssize_t v87_store(struct kobject *kobj,
-		 struct kobj_attribute *attr, const char *buf, size_t count)
-{
-	int new_r, new_g, new_b;
-	sscanf(buf, "%d %d %d", &new_r, &new_g, &new_b);
-	v87_val[0] = new_r;
-	v87_val[1] = new_g;
-	v87_val[2] = new_b;
-	wrap_smart_dimming_init();
-	return count;
-}
-
-static ssize_t v51_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
-{
-	return sprintf(buf, "%d %d %d\n", v51_val[0], v51_val[1], v51_val[2]);
-}
-
-static ssize_t v51_store(struct kobject *kobj,
-		 struct kobj_attribute *attr, const char *buf, size_t count)
-{
-	int new_r, new_g, new_b;
-	sscanf(buf, "%d %d %d", &new_r, &new_g, &new_b);
-	v51_val[0] = new_r;
-	v51_val[1] = new_g;
-	v51_val[2] = new_b;
-	wrap_smart_dimming_init();
-	return count;
-}
-
-static ssize_t v35_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
-{
-	return sprintf(buf, "%d %d %d\n", v35_val[0], v35_val[1], v35_val[2]);
-}
-
-static ssize_t v35_store(struct kobject *kobj,
-		 struct kobj_attribute *attr, const char *buf, size_t count)
-{
-	int new_r, new_g, new_b;
-	sscanf(buf, "%d %d %d", &new_r, &new_g, &new_b);
-	v35_val[0] = new_r;
-	v35_val[1] = new_g;
-	v35_val[2] = new_b;
-	wrap_smart_dimming_init();
-	return count;
-}
-
-static ssize_t v23_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
-{
-	return sprintf(buf, "%d %d %d\n", v23_val[0], v23_val[1], v23_val[2]);
-}
-
-static ssize_t v23_store(struct kobject *kobj,
-		 struct kobj_attribute *attr, const char *buf, size_t count)
-{
-	int new_r, new_g, new_b;
-	sscanf(buf, "%d %d %d", &new_r, &new_g, &new_b);
-	v23_val[0] = new_r;
-	v23_val[1] = new_g;
-	v23_val[2] = new_b;
-	wrap_smart_dimming_init();
-	return count;
-}
-
-static ssize_t v11_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
-{
-	return sprintf(buf, "%d %d %d\n", v11_val[0], v11_val[1], v11_val[2]);
-}
-
-static ssize_t v11_store(struct kobject *kobj,
-		 struct kobj_attribute *attr, const char *buf, size_t count)
-{
-	int new_r, new_g, new_b;
-	sscanf(buf, "%d %d %d", &new_r, &new_g, &new_b);
-	v11_val[0] = new_r;
-	v11_val[1] = new_g;
-	v11_val[2] = new_b;
-	wrap_smart_dimming_init();
-	return count;
-}
-
-static ssize_t v3_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
-{
-	return sprintf(buf, "%d %d %d\n", v3_val[0], v3_val[1], v3_val[2]);
-}
-
-static ssize_t v3_store(struct kobject *kobj,
-			   struct kobj_attribute *attr, const char *buf, size_t count)
-{
-	int new_r, new_g, new_b;
-	sscanf(buf, "%d %d %d", &new_r, &new_g, &new_b);
-	v3_val[0] = new_r;
-	v3_val[1] = new_g;
-	v3_val[2] = new_b;
-	wrap_smart_dimming_init();
-	return count;
-}
-
-static ssize_t v0_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
-{
-	return sprintf(buf, "%d %d %d\n", v0_val[0], v0_val[1], v0_val[2]);
-}
-
-static ssize_t v0_store(struct kobject *kobj,
+static ssize_t gcontrol_green_store(struct kobject *kobj,
 			   struct kobj_attribute *attr, const char *buf, size_t count) {
-	int new_r, new_g, new_b;
-	sscanf(buf, "%d %d %d", &new_r, &new_g, &new_b);
-	v0_val[0] = new_r;
-	v0_val[1] = new_g;
-	v0_val[2] = new_b;
+	int newval;
+	sscanf(buf, "%d", &newval);
+	gcontrol_green = newval;
 	wrap_smart_dimming_init();
 	return count;
 }
 
-static ssize_t enabled_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+static ssize_t gcontrol_blue_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%u\n", enabled);
+	return sprintf(buf, "%d\n", gcontrol_blue);
 }
 
-static ssize_t enabled_store(struct kobject *kobj,
+static ssize_t gcontrol_blue_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count) {
+	int newval;
+	sscanf(buf, "%d", &newval);
+	gcontrol_blue = newval;
+	wrap_smart_dimming_init();
+	return count;
+}
+
+static ssize_t gcontrol_enabled_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", gcontrol_enabled);
+}
+
+static ssize_t gcontrol_enabled_store(struct kobject *kobj,
 			   struct kobj_attribute *attr, const char *buf, size_t count) {
 	int newen;
 	sscanf(buf, "%d", &newen);
-	enabled = clamp_val(newen, 0, 1);
+	gcontrol_enabled = clamp_val(newen, 0, 1);
 	wrap_smart_dimming_init();
 	return count;
 }
 
-static struct kobj_attribute v255_attribute =
-	__ATTR(v255, 0644,
-		v255_show,
-		v255_store);
+static struct kobj_attribute gcontrol_red_attribute =
+	__ATTR(gcontrol_red, 0644,
+		gcontrol_red_show,
+		gcontrol_red_store);
 
-static struct kobj_attribute v203_attribute =
-	__ATTR(v203, 0644,
-		v203_show,
-		v203_store);
+static struct kobj_attribute gcontrol_green_attribute =
+	__ATTR(gcontrol_green, 0644,
+		gcontrol_green_show,
+		gcontrol_green_store);
 
-static struct kobj_attribute v151_attribute =
-	__ATTR(v151, 0644,
-		v151_show,
-		v151_store);
+static struct kobj_attribute gcontrol_blue_attribute =
+	__ATTR(gcontrol_blue, 0644,
+		gcontrol_blue_show,
+		gcontrol_blue_store);
 
-static struct kobj_attribute v87_attribute =
-	__ATTR(v87, 0644,
-		v87_show,
-		v87_store);
-
-static struct kobj_attribute v51_attribute =
-	__ATTR(v51, 0644,
-		v51_show,
-		v51_store);
-
-static struct kobj_attribute v35_attribute =
-	__ATTR(v35, 0644,
-		v35_show,
-		v35_store);
-
-static struct kobj_attribute v23_attribute =
-	__ATTR(v23, 0644,
-		v23_show,
-		v23_store);
-
-static struct kobj_attribute v11_attribute =
-	__ATTR(v11, 0644,
-		v11_show,
-		v11_store);
-
-static struct kobj_attribute v3_attribute =
-	__ATTR(v3, 0644,
-		v3_show,
-		v3_store);
-
-static struct kobj_attribute v0_attribute =
-	__ATTR(v0, 0644,
-		v0_show,
-		v0_store);
-
-static struct kobj_attribute enabled_attribute =
-	__ATTR(enabled, 0644,
-		enabled_show,
-		enabled_store);
+static struct kobj_attribute gcontrol_enabled_attribute =
+	__ATTR(gcontrol_enabled, 0644,
+		gcontrol_enabled_show,
+		gcontrol_enabled_store);
 
 static struct attribute *gamma_control_attrs[] =
 {
-	&v255_attribute.attr,
-	&v203_attribute.attr,
-	&v151_attribute.attr,
-	&v87_attribute.attr,
-	&v51_attribute.attr,
-	&v35_attribute.attr,
-	&v23_attribute.attr,
-	&v11_attribute.attr,
-	&v3_attribute.attr,
-	&v0_attribute.attr,
-	&enabled_attribute.attr,
+	&gcontrol_red_attribute.attr,
+	&gcontrol_green_attribute.attr,
+	&gcontrol_blue_attribute.attr,
+	&gcontrol_enabled_attribute.attr,
 	NULL
 };
 
@@ -4375,43 +2118,8 @@ static int smart_dimming_init(struct SMART_DIM *psmart)
 
 #if defined(AID_OPERATION)
 		/* octa */
-		if(id3 == EVT0_ID)
-			gamma_init_rev0(psmart,
-			(char *)(&(psmart->gen_table[lux_loop].gamma_setting)),
-			GAMMA_SET_MAX);
-		else if(id3 == EVT0_SECOND_ID || id3 == EVT1_ID)
-			gamma_init_rev1(psmart,
-			(char *)(&(psmart->gen_table[lux_loop].gamma_setting)),
-			GAMMA_SET_MAX);
-		else if(id3 == EVT1_SECOND_ID)
-			gamma_init_rev2(psmart,
-			(char *)(&(psmart->gen_table[lux_loop].gamma_setting)),
-			GAMMA_SET_MAX);
-		else if(id3 == EVT1_H_REV_I)
-			gamma_init_H_revI(psmart,
-			(char *)(&(psmart->gen_table[lux_loop].gamma_setting)),
-			GAMMA_SET_MAX);
-		else if(id3 == EVT1_H_REV_J)
-			gamma_init_H_revJ(psmart,
-			(char *)(&(psmart->gen_table[lux_loop].gamma_setting)),
-			GAMMA_SET_MAX);
-
-		/* youm */
-		else if(id3 == EVT0_F_REV_A)
-			gamma_init_F_revA(psmart,
-			(char *)(&(psmart->gen_table[lux_loop].gamma_setting)),
-			GAMMA_SET_MAX);
-		else if(id3 == EVT0_F_REV_E)
-			gamma_init_F_revE(psmart,
-			(char *)(&(psmart->gen_table[lux_loop].gamma_setting)),
-			GAMMA_SET_MAX);
-		else if((id3 == EVT0_F_REV_F) || (id3 == EVT2_F_REV_G))
-			gamma_init_F_revF_G(psmart,
-			(char *)(&(psmart->gen_table[lux_loop].gamma_setting)),
-			GAMMA_SET_MAX);
-
-		else /* Other case for all, apply latest aid value */
-			gamma_init_H_revJ(psmart,
+		//if(id3 == EVT1_H_REV_J)
+		gamma_init_H_revJ(psmart,
 			(char *)(&(psmart->gen_table[lux_loop].gamma_setting)),
 			GAMMA_SET_MAX);
 #else
@@ -4422,7 +2130,7 @@ static int smart_dimming_init(struct SMART_DIM *psmart)
 	}
 
 	/* set 350CD max gamma table */
-	memcpy(&(psmart->gen_table[lux_loop-1].gamma_setting),
+	memcpy(&(psmart->gen_table[psmart->lux_table_max].gamma_setting),
 			max_lux_table, GAMMA_SET_MAX);
 
 	set_min_lux_table(psmart);

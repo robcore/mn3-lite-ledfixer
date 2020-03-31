@@ -326,8 +326,14 @@ void sending_tuning_cmd(void)
 	struct msm_fb_data_type *mfd;
 	struct mdss_dsi_ctrl_pdata *ctrl_pdata;
 
+	if (mdnie_msd == NULL)
+		return;
+
 	mfd = mdnie_msd->mfd;
 	ctrl_pdata = mdnie_msd->ctrl_pdata;
+
+	if (ctrl_pdata == NULL)
+		return;
 
 	if (mfd->resume_state == MIPI_SUSPEND_STATE) {
 		DPRINT("[ERROR] not ST_DSI_RESUME. do not send mipi cmd.\n");
@@ -711,6 +717,9 @@ static void update_mdnie_mode(void)
 void mDNIe_Set_Mode(void)
 {
 	struct msm_fb_data_type *mfd;
+	if (mdnie_msd == NULL)
+		return;
+
 	mfd = mdnie_msd->mfd;
 
 /*	DPRINT("mDNIe_Set_Mode start\n");*/
@@ -720,8 +729,7 @@ void mDNIe_Set_Mode(void)
 		return;
 	}
 
-	if (!mdnie_tun_state.mdnie_enable)
-		return;
+
 
 	if ((mfd->blank_mode) || (mfd->resume_state == MIPI_SUSPEND_STATE))
 		return;
