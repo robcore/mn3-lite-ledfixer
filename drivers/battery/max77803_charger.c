@@ -33,10 +33,10 @@
 #if defined(CONFIG_MACH_FLTESKT)
 #define SIOP_INPUT_LIMIT_CURRENT 1001
 #else
-#define SIOP_INPUT_LIMIT_CURRENT 1200
+#define SIOP_INPUT_LIMIT_CURRENT 1800
 #endif
 #define SIOP_CHARGING_LIMIT_CURRENT 1000
-#define SLOW_CHARGING_CURRENT_STANDARD 400
+#define SLOW_CHARGING_CURRENT_STANDARD 450
 
 static bool ignore_siop = true;
 module_param(ignore_siop, bool, 0644);
