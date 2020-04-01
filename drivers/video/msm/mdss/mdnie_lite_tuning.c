@@ -363,38 +363,80 @@ void sending_tuning_cmd(void)
 	mutex_unlock(&mdnie_msd->lock);
 }
 
-#define MAXLCVAL 255U
 static int get_safe_offset(int inset, unsigned int lcvalue)
 {
 	int outset;
 
-	if (inset < -255)
-		outset  = -255;
-	else if (inset > 255)
-		outset  = 255;
-	else
-		outset = inset;
+	clamp_val(inset, -255, 255);
 
-	if (outset == 0) {
+	if (inset == 0) {
+		outset = inset;
 		goto goodstuff;
-	} else if (outset > 0) {
-		if ((outset + lcvalue) <= MAXLCVAL) {
+	} else if (inset > 0) {
+		if (lcvalue == 255) {
+			outset = 0;
 			goto goodstuff;
-		} else if ((outset + lcvalue) > MAXLCVAL) {
-			outset = MAXLCVAL - lcvalue;
+		} else if ((inset + lcvalue) <= 255) {
+			outset = inset;
+			goto goodstuff;
+		} else if ((inset + lcvalue) > 255) {
+			outset = 255 - lcvalue;
 			goto goodstuff;
 		}
 	} else {
-		if ((outset + lcvalue) >= 0) {
+		if (lcvalue == 0) {
+			outset = 0;
 			goto goodstuff;
-		} else if ((outset + lcvalue) < 0) {
-			outset = lcvalue * -1;
+		} else if ((inset + lcvalue) >= 0) {
+			outset = inset;
+			goto goodstuff;
+		} else if ((inset + lcvalue) < 0) {
+			if (lc_value > 0)
+				outset = 0 - lcvalue;
+			else
+				outset = 0;
+
 			goto goodstuff;
 		}
 	}
 
 goodstuff:
 	return outset;
+}
+
+static void cleanup_offsets(void)
+{
+	offset_black[0] = get_safe_offset(offset_black[0], LITE_CONTROL_2[37]);
+	offset_black[1] = get_safe_offset(offset_black[1], LITE_CONTROL_2[39]);
+	offset_black[2] = get_safe_offset(offset_black[2], LITE_CONTROL_2[41]);
+
+	offset_white[0] = get_safe_offset(offset_white[0], LITE_CONTROL_2[36]);
+	offset_white[1] = get_safe_offset(offset_white[1], LITE_CONTROL_2[38]);
+	offset_white[2] = get_safe_offset(offset_white[2], LITE_CONTROL_2[40]);
+
+	offset_red[0] = get_safe_offset(offset_red[0], LITE_CONTROL_2[19]);
+	offset_red[1] = get_safe_offset(offset_red[1], LITE_CONTROL_2[21]);
+	offset_red[2] = get_safe_offset(offset_red[2], LITE_CONTROL_2[23]);
+
+	offset_green[0] = get_safe_offset(offset_green[0], LITE_CONTROL_2[25]);
+	offset_green[1] = get_safe_offset(offset_green[1], LITE_CONTROL_2[27]);
+	offset_green[2] = get_safe_offset(offset_green[2], LITE_CONTROL_2[29]);
+
+	offset_blue[0] = get_safe_offset(offset_blue[0], LITE_CONTROL_2[31]);
+	offset_blue[1] = get_safe_offset(offset_blue[1], LITE_CONTROL_2[33]);
+	offset_blue[2] = get_safe_offset(offset_blue[2], LITE_CONTROL_2[35]);
+
+	offset_yellow[0] = get_safe_offset(offset_yellow[0], LITE_CONTROL_2[30]);
+	offset_yellow[1] = get_safe_offset(offset_yellow[1], LITE_CONTROL_2[32]);
+	offset_yellow[2] = get_safe_offset(offset_yellow[2], LITE_CONTROL_2[34]);
+
+	offset_magenta[0] = get_safe_offset(offset_magenta[0], LITE_CONTROL_2[24]);
+	offset_magenta[1] = get_safe_offset(offset_magenta[1], LITE_CONTROL_2[26]);
+	offset_magenta[2] = get_safe_offset(offset_magenta[2], LITE_CONTROL_2[28]);
+
+	offset_cyan[0] = get_safe_offset(offset_cyan[0], LITE_CONTROL_2[18]);
+	offset_cyan[1] = get_safe_offset(offset_cyan[1], LITE_CONTROL_2[20]);
+	offset_cyan[2] = get_safe_offset(offset_cyan[2], LITE_CONTROL_2[22]);
 }
 
 static void update_mdnie_mode(void)
@@ -691,38 +733,7 @@ static void update_mdnie_mode(void)
 		}
 
 		if (offset_mode) {
-			offset_black[0] = get_safe_offset(offset_black[0], LITE_CONTROL_2[37]);
-			offset_black[1] = get_safe_offset(offset_black[1], LITE_CONTROL_2[39]);
-			offset_black[2] = get_safe_offset(offset_black[2], LITE_CONTROL_2[41]);
-
-			offset_white[0] = get_safe_offset(offset_white[0], LITE_CONTROL_2[36]);
-			offset_white[1] = get_safe_offset(offset_white[1], LITE_CONTROL_2[38]);
-			offset_white[2] = get_safe_offset(offset_white[2], LITE_CONTROL_2[40]);
-
-			offset_red[0] = get_safe_offset(offset_red[0], LITE_CONTROL_2[19]);
-			offset_red[1] = get_safe_offset(offset_red[1], LITE_CONTROL_2[21]);
-			offset_red[2] = get_safe_offset(offset_red[2], LITE_CONTROL_2[23]);
-
-			offset_green[0] = get_safe_offset(offset_green[0], LITE_CONTROL_2[25]);
-			offset_green[1] = get_safe_offset(offset_green[1], LITE_CONTROL_2[27]);
-			offset_green[2] = get_safe_offset(offset_green[2], LITE_CONTROL_2[29]);
-
-			offset_blue[0] = get_safe_offset(offset_blue[0], LITE_CONTROL_2[31]);
-			offset_blue[1] = get_safe_offset(offset_blue[1], LITE_CONTROL_2[33]);
-			offset_blue[2] = get_safe_offset(offset_blue[2], LITE_CONTROL_2[35]);
-
-			offset_yellow[0] = get_safe_offset(offset_yellow[0], LITE_CONTROL_2[30]);
-			offset_yellow[1] = get_safe_offset(offset_yellow[1], LITE_CONTROL_2[32]);
-			offset_yellow[2] = get_safe_offset(offset_yellow[2], LITE_CONTROL_2[34]);
-
-			offset_magenta[0] = get_safe_offset(offset_magenta[0], LITE_CONTROL_2[24]);
-			offset_magenta[1] = get_safe_offset(offset_magenta[1], LITE_CONTROL_2[26]);
-			offset_magenta[2] = get_safe_offset(offset_magenta[2], LITE_CONTROL_2[28]);
-
-			offset_cyan[0] = get_safe_offset(offset_cyan[0], LITE_CONTROL_2[18]);
-			offset_cyan[1] = get_safe_offset(offset_cyan[1], LITE_CONTROL_2[20]);
-			offset_cyan[2] = get_safe_offset(offset_cyan[2], LITE_CONTROL_2[22]);
-
+			cleanup_offsets();
 			LITE_CONTROL_2[18] += offset_cyan[0];
 			LITE_CONTROL_2[19] += offset_red[0];
 			LITE_CONTROL_2[20] += offset_cyan[1];
@@ -1364,6 +1375,7 @@ static ssize_t offset_black_store(struct device * dev, struct device_attribute *
 		return size;
 	}
 
+	cleanup_offsets();
 	mDNIe_Set_Mode();
 
 	return size;
@@ -1392,6 +1404,7 @@ static ssize_t offset_white_store(struct device * dev, struct device_attribute *
 		return size;
 	}
 
+	cleanup_offsets();
 	mDNIe_Set_Mode();
 
 	return size;
@@ -1420,6 +1433,7 @@ static ssize_t offset_red_store(struct device * dev, struct device_attribute * a
 		return size;
 	}
 
+	cleanup_offsets();
 	mDNIe_Set_Mode();
 
 	return size;
@@ -1448,6 +1462,7 @@ static ssize_t offset_green_store(struct device * dev, struct device_attribute *
 		return size;
 	}
 
+	cleanup_offsets();
 	mDNIe_Set_Mode();
 
 	return size;
@@ -1476,6 +1491,7 @@ static ssize_t offset_blue_store(struct device * dev, struct device_attribute * 
 		return size;
 	}
 
+	cleanup_offsets();
 	mDNIe_Set_Mode();
 
 	return size;
@@ -1503,6 +1519,7 @@ static ssize_t offset_yellow_store(struct device * dev, struct device_attribute 
 		return size;
 	}
 
+	cleanup_offsets();
 	mDNIe_Set_Mode();
 
 	return size;
@@ -1530,6 +1547,7 @@ static ssize_t offset_magenta_store(struct device * dev, struct device_attribute
 		return size;
 	}
 
+	cleanup_offsets();
 	mDNIe_Set_Mode();
 
 	return size;
@@ -1557,6 +1575,7 @@ static ssize_t offset_cyan_store(struct device * dev, struct device_attribute * 
 		return size;
 	}
 
+	cleanup_offsets();
 	mDNIe_Set_Mode();
 
 	return size;
