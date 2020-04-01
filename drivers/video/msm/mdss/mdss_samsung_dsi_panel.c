@@ -45,9 +45,9 @@
 #endif
 #if defined(CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_CMD_FULL_HD_PT_PANEL) \
 	|| defined(CONFIG_FB_MSM_MIPI_SAMSUNG_YOUM_CMD_FULL_HD_PT_PANEL)
-#define SMART_ACL
+//#define SMART_ACL
 #define HBM_RE
-#define TEMPERATURE_ELVSS_S6E3FA0
+//#define TEMPERATURE_ELVSS_S6E3FA0
 #define PARTIAL_UPDATE
 #endif
 #if defined(CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_CMD_FULL_HD_PT_PANEL)
@@ -938,11 +938,6 @@ static struct dsi_cmd get_aid_aor_control_set(int cd_idx)
 	aid_control.num_of_cmds = 1;
 	msd.dstat.curr_aid_idx = cmd_idx;
 
-	switch (msd.panel) {
-	case PANEL_720P_AMOLED_S6E8AA3X01:
-		/* Do any panel specfific customization here */
-		break;
-	}
 end:
 	return aid_control;
 }
@@ -1003,12 +998,6 @@ static struct dsi_cmd get_acl_control_set(int cd_idx)
 	acl_control.cmd_desc = &(acl_cmds_list.cmd_desc[cmd_idx]);
 	acl_control.num_of_cmds = 1;
 	msd.dstat.curr_acl_idx = cmd_idx;
-
-	switch (msd.panel) {
-	case PANEL_720P_AMOLED_S6E8AA3X01:
-		/* Do any panel specfific customization here */
-		break;
-	}
 end:
 	return acl_control;
 }
