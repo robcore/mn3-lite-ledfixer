@@ -1132,14 +1132,9 @@ static struct dsi_cmd get_elvss_control_set(int cd_idx)
 
 #if defined(TEMPERATURE_ELVSS)
 	// ELVSS lOW TEMPERATURE
-	if (msd.dstat.auto_brightness != 6) // if HBM is not set
-	{
+	if (msd.dstat.auto_brightness != 6) {// if HBM is not set
 		if (msd.dstat.temperature <= -20)
-		{
 			elvss_control.cmd_desc = &(elvss_lowtemp_cmds_list.cmd_desc[cmd_idx]);
-		}else {
-
-		}
 	}
 #endif
 	elvss_control.num_of_cmds = 1;

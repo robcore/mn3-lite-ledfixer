@@ -121,6 +121,7 @@ static int char_to_int_v255(char data1, char data2)
 
 static bool first_adj_complete = false;
 static unsigned int gcontrol_enabled = 0;
+static unsigned int gcontrol_offset_mode = 0;
 static int gcontrol_red_offset = 0;
 static int gcontrol_green_offset = 0;
 static int gcontrol_blue_offset = 0;
@@ -1417,7 +1418,7 @@ static int find_cadela_table(int brightness)
 }
 
 #define RGB_COMPENSATION 24
-
+#if 0
 static int gradation_offset_H_revJ[][9] = {
 /*	V255 V203 V151 V87 V51 V35 V23 V11 V3 */
 	{0, 6, 13, 20, 25, 27, 31, 34, 35},
@@ -1483,7 +1484,75 @@ static int gradation_offset_H_revJ[][9] = {
 	{1, 0, 0, 0, -1, -1, -1, -1, 0},
 	{0, 0, 0, 0, 0, 0, 0, 0, 0},
 };
+#else
+static int gradation_offset_H_revJ[][9] = {
+/*	V255 V203 V151 V87 V51 V35 V23 V11 V3 */
+	{0, 2, 3, 9, 10, 13, 15, 19, 21,},
+	{0, 2, 3, 9, 10, 12, 14, 18, 20,},
+	{0, 2, 3, 8, 10, 11, 13, 17, 19,},
+	{0, 2, 3, 8, 10, 11, 13, 16, 18,},
+	{0, 2, 3, 7, 9, 10, 12, 15, 17,},
+	{0, 2, 3, 7, 9, 10, 12, 15, 17,},
+	{0, 2, 3, 7, 9, 9, 12, 14, 16,},
+	{0, 2, 3, 7, 9, 9, 12, 14, 16,},
+	{0, 1, 3, 6, 8, 8, 11, 13, 15,},
+	{0, 1, 3, 6, 8, 8, 11, 13, 14,},
+	{0, 1, 3, 6, 7, 8, 10, 12, 13,},
+	{0, 1, 3, 5, 7, 7, 10, 12, 13,},
+	{0, 1, 3, 5, 6, 7, 9, 11, 12,},
+	{0, 1, 3, 5, 6, 7, 9, 11, 12,},
+	{0, 1, 2, 4, 5, 6, 8, 10, 11,},
+	{0, 1, 2, 4, 5, 6, 8, 10, 11,},
+	{0, 1, 2, 4, 5, 6, 8, 10, 11,},
+	{0, 1, 2, 4, 4, 6, 7, 9, 10,},
+	{0, 1, 2, 3, 4, 5, 6, 8, 10,},
+	{0, 1, 1, 3, 3, 5, 6, 8, 9,},
+	{0, 1, 1, 2, 3, 4, 5, 7, 8,},
+	{0, 1, 1, 2, 3, 4, 5, 6, 7,},
+	{0, 1, 1, 2, 3, 3, 5, 5, 6,},
+	{0, 1, 1, 1, 2, 3, 4, 5, 6,},
+	{0, 1, 1, 1, 2, 2, 4, 5, 6,},
+	{0, 1, 1, 1, 2, 2, 4, 4, 5,},
+	{0, 0, 1, 1, 2, 2, 3, 3, 4,},
+	{0, 0, 1, 1, 2, 2, 3, 3, 4,},
+	{0, 0, 1, 1, 2, 2, 2, 3, 4,},
+	{0, 0, 0, 1, 1, 1, 1, 2, 3,},
+	{0, 0, 0, 1, 1, 1, 1, 2, 3,},
+	{0, 0, 0, 1, 1, 1, 1, 2, 3,},
+	{0, 0, 0, 1, 1, 1, 1, 2, 3,},
+	{0, 0, 0, 1, 1, 1, 1, 1, 2,},
+	{0, 0, 0, 1, 1, 1, 1, 1, 2,},
+	{0, 0, 0, 0, 0, 0, 1, 1, 2,},
+	{0, 0, 0, 0, 0, 0, 0, 1, 2,},
+	{0, 1, 1, 1, 1, 1, 1, 1, 1,},
+	{0, 1, 1, 1, 1, 1, 1, 1, 0,},
+	{0, 1, 1, 1, 1, 1, 1, 0, 0,},
+	{0, 1, 1, 1, 1, 0, 0, 0, 0,},
+	{0, 1, 1, 1, 1, 0, 0, 0, 0,},
+	{0, 1, 1, 0, 0, 0, 0, 0, 0,},
+	{0, 0, 0, 0, 0, 0, 0, -1, 0,},
+	{0, 0, 0, 0, 0, 0, 0, -1, 0,},
+	{0, 1, 1, 1, 1, 1, 1, 0, 0,},
+	{0, 0, 0, 0, 0, 0, 0, -1, 0,},
+	{0, 0, 0, 0, 0, 0, -1, -1, 0,},
+	{0, 0, 0, 0, 0, 0, 0, -1, 0,},
+	{0, 0, 0, 0, 0, 0, 0, -2, 0,},
+	{0, 0, 0, 0, 0, 0, 0, -2, 0,},
+	{0, 0, 0, 0, 0, 0, 0, -2, 0,},
+	{0, 0, 0, 0, 0, 0, 0, -1, 0,},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0,},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0},
+};
+#endif
 
+#if 0
 static int rgb_offset_H_revJ[][RGB_COMPENSATION] = {
 /*	R255 G255 B255 R203 G203 B203 R151 G151 B151
 	R87 G87 B87 R51 G51 B51 R35 G35 B35
@@ -1552,20 +1621,82 @@ static int rgb_offset_H_revJ[][RGB_COMPENSATION] = {
 	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 };
-
-static bool gc_override(void)
-{
-	if (!gcontrol_red_override && !gcontrol_green_override && !gcontrol_blue_override)
-		return false;
-
-	return true;
-}
+#else
+static int rgb_offset_H_revJ[][RGB_COMPENSATION] = {
+/*	R255 G255 B255 R203 G203 B203 R151 G151 B151
+	R87 G87 B87 R51 G51 B51 R35 G35 B35
+	R23 G23 B23 R11 G11 B11
+*/
+	{-1, 0, -1, -1, 0, -2, 0, 0, 0, -2, 2, -4, -4, 2, -6, -3, 3, -6, -2, 3, -8, 0, 4, -9,},
+	{0, 0, 0, -1, 0, -1, -1, 0, -1, -1, 1, -4, -3, 2, -6, -3, 3, -6, -4, 3, -8, 0, 4, -10,},
+	{0, 0, 0, -1, 0, -1, -1, 0, -1, -3, 1, -4, -3, 2, -6, -3, 2, -6, -5, 2, -8, 0, 4, -10,},
+	{0, 0, 0, -1, 0, -1, -2, 0, -3, -1, 1, -2, -3, 2, -5, -3, 2, -6, -2, 2, -6, 0, 5, -12,},
+	{0, 0, 0, -1, 0, -1, -1, 0, -2, -2, 1, -3, -2, 2, -4, -3, 2, -5, -3, 2, -6, 0, 5, -12,},
+	{0, 0, 0, -1, 0, -1, -1, 0, -2, -2, 1, -2, -3, 2, -5, -2, 2, -4, -3, 2, -7, 0, 4, -10,},
+	{0, 0, 0, -1, 0, -1, -1, 0, -2, -2, 1, -2, -2, 2, -4, -4, 2, -5, -2, 2, -6, 0, 5, -10,},
+	{0, 0, 0, -1, 0, -1, -1, 0, -2, -1, 0, -2, -3, 1, -4, -3, 2, -5, -2, 2, -6, 0, 5, -11,},
+	{0, 0, 0, -1, 0, -1, -1, 0, -2, -2, 0, -2, -3, 1, -4, -3, 1, -4, -3, 1, -8, 0, 5, -10,},
+	{0, 0, 0, -1, 0, -1, -1, 0, -2, -1, 0, -2, -3, 1, -4, -3, 1, -4, -2, 1, -6, 0, 5, -12,},
+	{0, 0, 0, 0, 0, 0, 0, 0, -1, -1, 1, -2, -3, 1, -4, -3, 1, -4, -3, 1, -7, 0, 6, -13,},
+	{0, 0, 0, 0, 0, 0, 0, 0, -1, -1, 1, -2, -3, 1, -3, -3, 1, -4, -3, 1, -7, 0, 4, -9,},
+	{0, 0, 0, 0, 0, 0, 0, 0, -1, -2, 0, -2, -2, 1, -3, -3, 2, -4, -2, 2, -6, 0, 4, -10,},
+	{0, 0, 0, 0, 0, 0, 0, 0, -1, -2, 0, -2, -2, 1, -2, -2, 1, -4, -3, 1, -6, 0, 5, -12,},
+	{0, 0, 0, 0, 0, 0, 0, 0, -1, -2, 0, -2, -3, 1, -3, -1, 1, -3, -3, 1, -6, 1, 5, -12,},
+	{0, 0, 0, 0, 0, 0, 0, 0, -1, -1, 0, -2, -1, 1, -2, -3, 1, -3, -3, 1, -6, 1, 6, -12,},
+	{0, 0, 0, 0, 0, 0, 0, 0, -1, -2, 0, -2, -2, 1, -2, -2, 1, -2, -3, 1, -6, 1, 5, -12,},
+	{0, 0, 0, 0, 0, 0, 0, 0, -1, -2, 0, -2, -2, 0, -2, -2, 1, -2, -4, 1, -7, 2, 6, -12,},
+	{0, 0, 0, 0, 0, 0, 0, 0, -1, -1, 0, -2, -2, 0, -2, -2, 1, -2, -4, 1, -6, 1, 5, -12,},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, -2, 0, -1, -2, 0, -2, -1, 1, -2, -3, 1, -6, 1, 5, -11,},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, -2, 0, -1, -2, 0, -2, -2, 0, -2, -2, 0, -5, 1, 6, -14,},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, -2, -2, 0, 0, -2, 1, -2, -2, 1, -5, 2, 6, -14,},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, -2, -2, 0, 0, -2, 0, -2, -2, 0, -4, 2, 6, -12,},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, -2, 0, 0, -1, 0, -2, -3, 0, -6, 1, 5, -12,},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, -2, 0, 0, 0, 0, -1, -3, 0, -5, 2, 6, -13,},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, -2, 0, 0, 0, 0, -1, -1, 0, -4, 2, 6, -13,},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, -2, 0, 0, -1, 1, -2, 0, 1, -4, 1, 6, -12,},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, -1, 0, 0, -1, 0, -1, 0, 0, -4, 2, 5, -12,},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, -2, 0, 0, 0, 0, 0, 0, 0, -4, 3, 5, -10,},
+	{0, 0, 0, -2, 0, -1, 0, 0, 0, 0, 0, -1, -1, 0, 1, 0, 0, -1, 0, 0, -5, 3, 5, -11,},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, -1, 0, 0, -4, 3, 4, -9,},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, -3, 3, 4, -9,},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -3, 3, 4, -8,},
+	{0, 0, 0, -2, 0, -1, 0, 0, 0, -1, 0, -1, 0, 0, 0, 0, 0, 0, -2, 0, -4, 2, 5, -11,},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, -2, 2, 4, -10,},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, -3, 2, 4, -10,},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, -1, 0, -2, 3, 4, -10,},
+	{0, 0, 0, -1, 0, -1, -1, 0, -1, -1, 0, 0, 0, 0, -1, 0, 0, 0, -1, 0, -2, 1, 4, -10,},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, -2, 1, 4, -9,},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, -1, 0, 1, 0, 0, -1, 2, 3, -8,},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, -1, 0, 1, -1, 0, -1, 2, 3, -8,},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, -1, 0, -1, 2, 3, -8,},
+	{0, 0, 0, 0, 0, 0, -1, 0, -1, -2, 0, -1, 0, 0, -1, 0, 0, 2, -1, 0, -1, 3, 3, -9,},
+	{0, 0, 0, -2, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 1, -2, 0, 2, 0, 0, 0, 2, 3, -8,},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -2, 0, 2, 0, 0, 0, 2, 3, -8,},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -2, 0, 2, 0, 0, 0, 2, 3, -7,},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -2, 0, 2, 0, 0, 0, 3, 3, -6,},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 4, 2, -5,},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 3, 0, -1, -1, 4, 2, -5,},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 3, 0, -1, 0, 4, 1, -4,},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+};
+#endif
 
 static int gcontrol_rgb_override(int input_color)
 {
 	int ret = 0;
 
-	if (!gcontrol_enabled)
+	if (!gcontrol_enabled || gcontrol_offset_mode)
 		return ret;
 
 	switch (input_color) {
@@ -1609,7 +1740,7 @@ static int gcontrol_rgb_offset(int input_color)
 {
 	int ret = 0;
 
-	if (!gcontrol_enabled)
+	if (!gcontrol_enabled || !gcontrol_offset_mode)
 		return ret;
 
 	switch (input_color) {
@@ -1711,7 +1842,7 @@ static void gamma_init_H_revJ(struct SMART_DIM *pSmart, char *str, int size)
 	} else {
 		for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 			point_index = S6E3FA_ARRAY[cnt+1];
-			candela_level[cnt] = ((long long)(candela_coeff_2p2[point_index])) * ((long long)(bl_level));
+			candela_level[cnt] = ((long long)(candela_coeff_1p9[point_index])) * ((long long)(bl_level));
 		}
 	}
 
@@ -1752,21 +1883,29 @@ static void gamma_init_H_revJ(struct SMART_DIM *pSmart, char *str, int size)
 
 		if (cnt < 3) {
 			level_V255 = str[cnt * 2] << 8 | str[(cnt * 2) + 1];
-			if (gcontrol_enabled && gc_override())
-				level_V255 += gcontrol_rgb_override(cnt);				
-			else
+			if (gcontrol_enabled) {
+				if (!gcontrol_offset_mode)
+					level_V255 += gcontrol_rgb_override(cnt);				
+				else
+					level_V255 +=
+						rgb_offset_H_revJ[table_index][cnt] + gcontrol_rgb_offset(cnt);
+			} else {
 				level_V255 +=
-					rgb_offset_H_revJ[table_index][cnt] + gcontrol_rgb_offset(cnt);
-
+					rgb_offset_H_revJ[table_index][cnt];
+			}
 			level_255_temp_MSB = level_V255 / 256;
 
 			str[cnt * 2] = level_255_temp_MSB & 0xff;
 			str[(cnt * 2) + 1] = level_V255 & 0xff;
 		} else {
-			if (gcontrol_enabled && gc_override())
-				str[cnt+3] += gcontrol_rgb_override(cnt);
-			else
-				str[cnt+3] += rgb_offset_H_revJ[table_index][cnt] + gcontrol_rgb_offset(cnt);
+			if (gcontrol_enabled) {
+				if (!gcontrol_offset_mode)
+					str[cnt+3] += gcontrol_rgb_override(cnt);
+				else
+					str[cnt+3] += rgb_offset_H_revJ[table_index][cnt] + gcontrol_rgb_offset(cnt);
+			} else {
+				str[cnt+3] += rgb_offset_H_revJ[table_index][cnt];
+			}
 		}
 	}
 	/*subtration MTP_OFFSET value from generated gamma table*/
@@ -2029,6 +2168,20 @@ static ssize_t gcontrol_enabled_store(struct kobject *kobj,
 	return count;
 }
 
+static ssize_t gcontrol_offset_mode_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", gcontrol_offset_mode);
+}
+
+static ssize_t gcontrol_offset_mode_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count) {
+	int newen;
+	sscanf(buf, "%d", &newen);
+	gcontrol_offset_mode = clamp_val(newen, 0, 1);
+	wrap_smart_dimming_init();
+	return count;
+}
+
 static struct kobj_attribute gcontrol_red_offset_attribute =
 	__ATTR(gcontrol_red_offset, 0644,
 		gcontrol_red_offset_show,
@@ -2064,6 +2217,11 @@ static struct kobj_attribute gcontrol_enabled_attribute =
 		gcontrol_enabled_show,
 		gcontrol_enabled_store);
 
+static struct kobj_attribute gcontrol_offset_mode_attribute =
+	__ATTR(gcontrol_offset_mode, 0644,
+		gcontrol_offset_mode_show,
+		gcontrol_offset_mode_store);
+
 static struct attribute *gamma_control_attrs[] =
 {
 	&gcontrol_red_offset_attribute.attr,
@@ -2073,6 +2231,7 @@ static struct attribute *gamma_control_attrs[] =
 	&gcontrol_green_override_attribute.attr,
 	&gcontrol_blue_override_attribute.attr,
 	&gcontrol_enabled_attribute.attr,
+	&gcontrol_offset_mode_attribute.attr,
 	NULL
 };
 

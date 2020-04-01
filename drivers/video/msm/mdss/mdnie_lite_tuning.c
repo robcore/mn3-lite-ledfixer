@@ -149,13 +149,12 @@ static unsigned int offset_yellow[3] = {0, 0, 0};
 static unsigned int offset_magenta[3] = {0, 0, 0};
 static unsigned int offset_cyan[3] = {0, 0, 0};
 
-
-static unsigned int effects = 0;
+static unsigned int sharpen_boost = 0;
 static unsigned int sharpen = 0;
 static unsigned int chroma = 0;
 static unsigned int gamma = 0;
 static int sharpen_bit = 3;
-static int effects_bit = 2; //not actually sure what, if anything, this bit handles but the others work
+static int sharpen_boost_bit = 2; //not actually sure what, if anything, this bit handles but the others work
 static int chroma_bit = 1;
 static int gamma_bit = 0;
 /* Hijack Extra End  */
@@ -700,13 +699,13 @@ static void update_mdnie_mode(void)
 		LITE_CONTROL_2[i] = source_2[i];
 
 	if (hijack) {
-		result = (LITE_CONTROL_1[4] >> (effects_bit));
-		if (effects) {
+		result = (LITE_CONTROL_1[4] >> (sharpen_boost_bit));
+		if (sharpen_boost) {
 			if (!(result & 1))
-				LITE_CONTROL_1[4] |= 1 << effects_bit;
+				LITE_CONTROL_1[4] |= 1 << sharpen_boost_bit;
 		} else {
 			if (result & 1)
-				LITE_CONTROL_1[4] &= ~(1 << effects_bit);
+				LITE_CONTROL_1[4] &= ~(1 << sharpen_boost_bit);
 		}
 
 		result = (LITE_CONTROL_1[4] >> (sharpen_bit));
@@ -816,8 +815,8 @@ static void update_mdnie_mode(void)
 	} else {
 		LITE_CONTROL_1[4] = source_1[4];
 
-		result = (LITE_CONTROL_1[4] >> (effects_bit));
-		effects = result & 1;
+		result = (LITE_CONTROL_1[4] >> (sharpen_boost_bit));
+		sharpen_boost = result & 1;
 
 		result = (LITE_CONTROL_1[4] >> (sharpen_bit));
 		sharpen = result & 1;
@@ -1034,14 +1033,14 @@ static ssize_t offset_mode_store(struct device * dev, struct device_attribute * 
 	return size;
 }
 
-/* effects */
+/* sharpen_boost */
 
-static ssize_t effects_show(struct device *dev, struct device_attribute *attr, char *buf)
+static ssize_t sharpen_boost_show(struct device *dev, struct device_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%u\n", effects);
+	return sprintf(buf, "%u\n", sharpen_boost);
 }
 
-static ssize_t effects_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
+static ssize_t sharpen_boost_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
 {
 	int new_val;
 	sscanf(buf, "%d", &new_val);
@@ -1049,7 +1048,7 @@ static ssize_t effects_store(struct device * dev, struct device_attribute * attr
 		new_val = 0;
 	if (new_val > 1)
 		new_val = 1;
-	effects = new_val;
+	sharpen_boost = new_val;
 	mDNIe_Set_Mode();
 	return size;
 }
@@ -1821,7 +1820,7 @@ static ssize_t accessibility_store(struct device *dev,
 static DEVICE_ATTR(effect_mask, 0440, effect_mask_show, NULL);
 static DEVICE_ATTR(hijack, 0664, hijack_show, hijack_store);
 static DEVICE_ATTR(offset_mode, 0664, offset_mode_show, offset_mode_store);
-static DEVICE_ATTR(effects, 0664, effects_show, effects_store);
+static DEVICE_ATTR(sharpen_boost, 0664, sharpen_boost_show, sharpen_boost_store);
 static DEVICE_ATTR(sharpen, 0664, sharpen_show, sharpen_store);
 static DEVICE_ATTR(chroma, 0664, chroma_show, chroma_store);
 static DEVICE_ATTR(gamma, 0664, gamma_show, gamma_store);
@@ -1921,7 +1920,7 @@ void init_mdnie_class(void)
 
 	device_create_file(tune_mdnie_dev, &dev_attr_hijack);
 	device_create_file(tune_mdnie_dev, &dev_attr_offset_mode);
-	device_create_file(tune_mdnie_dev, &dev_attr_effects);
+	device_create_file(tune_mdnie_dev, &dev_attr_sharpen_boost);
 	device_create_file(tune_mdnie_dev, &dev_attr_sharpen);
 	device_create_file(tune_mdnie_dev, &dev_attr_black);
 	device_create_file(tune_mdnie_dev, &dev_attr_white);
