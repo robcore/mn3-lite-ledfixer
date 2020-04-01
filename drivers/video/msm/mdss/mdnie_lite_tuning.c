@@ -380,7 +380,11 @@ static int get_safe_offset(int inset, unsigned int lcvalue)
 			outset = inset;
 			goto goodstuff;
 		} else if ((inset + lcvalue) > 255) {
-			outset = 255 - lcvalue;
+			if (lcvalue < 255)
+				outset = 255 - lcvalue;
+			else
+				outset = 0;
+
 			goto goodstuff;
 		}
 	} else {
@@ -391,7 +395,7 @@ static int get_safe_offset(int inset, unsigned int lcvalue)
 			outset = inset;
 			goto goodstuff;
 		} else if ((inset + lcvalue) < 0) {
-			if (lc_value > 0)
+			if (lcvalue > 0)
 				outset = 0 - lcvalue;
 			else
 				outset = 0;
