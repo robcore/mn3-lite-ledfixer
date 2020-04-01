@@ -1208,7 +1208,7 @@ static void sec_bat_chg_temperature_check(
 			((battery->cable_type == POWER_SUPPLY_TYPE_HV_MAINS) ||
 			 (battery->cable_type == POWER_SUPPLY_TYPE_HV_ERR))) {
 		union power_supply_propval value;
-		if ((!battery->chg_limit) &&
+/*		if ((!battery->chg_limit) &&
 			(battery->chg_temp > battery->pdata->chg_high_temp)) {
 			battery->chg_limit = true;
 			value.intval = battery->pdata->chg_charging_limit_current;
@@ -1218,7 +1218,7 @@ static void sec_bat_chg_temperature_check(
 			dev_info(battery->dev,"%s: Chg current is reduced by Temp: %d\n",
 				__func__, battery->chg_temp);
 		} else if ((battery->chg_limit) &&
-			(battery->chg_temp < battery->pdata->chg_high_temp_recovery)) {
+			(battery->chg_temp < battery->pdata->chg_high_temp_recovery)) {*/
 			battery->chg_limit = false;
 			value.intval = battery->pdata->charging_current
 			[battery->cable_type].input_current_limit;
@@ -1227,7 +1227,7 @@ static void sec_bat_chg_temperature_check(
 
 			dev_info(battery->dev,"%s: Chg current is recovered by Temp: %d\n",
 				__func__, battery->chg_temp);
-		}
+		//}
 	} else if (battery->chg_limit) {
 		battery->chg_limit = false;
 	}
@@ -2985,14 +2985,15 @@ ssize_t sec_bat_store_attrs(
 
 		if (sscanf(buf, "%d\n", &x) == 1) {
 			union power_supply_propval value;
-			dev_info(battery->dev,
+/*			dev_info(battery->dev,
 				"%s: siop level: %d\n", __func__, x);
 			if (battery->capacity <= 5)
 				battery->siop_level = 100;
 			else if (x >= 0 && x <= 100)
 				battery->siop_level = x;
-			else
+			else*/
 				battery->siop_level = 100;
+
 			value.intval = battery->siop_level;
 			psy_do_property(battery->pdata->charger_name, set,
 				POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN, value);

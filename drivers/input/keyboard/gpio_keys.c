@@ -107,11 +107,7 @@ struct gpio_keys_drvdata {
 		if (drv_data->irq_state == false) { \
 			drv_data->irq_state = true; \
 			enable_irq(drv_data->irq_flip_cover); \
-			pr_debug("%s():irq is enabled\n", __func__);\
-		} else { \
-			pr_debug("%s():irq is already enabled\n",\
-					__func__);\
-		}\
+		} \
 	} while (0)
 
 #define disable_hall_irq() \
@@ -119,11 +115,7 @@ struct gpio_keys_drvdata {
 		if (drv_data->irq_state == true) { \
 			drv_data->irq_state = false; \
 			disable_irq(drv_data->irq_flip_cover); \
-			pr_debug("%s():irq is disabled\n", __func__);\
-		} else { \
-			pr_debug("%s():irq is already disabled\n",\
-					__func__);\
-		}\
+		} \
 	} while (0)
 
 struct gpio_keys_drvdata *drv_data;
@@ -141,9 +133,6 @@ static void sec_gpiocheck_work(struct work_struct *work)
     u32 i = PERIODIC_CHECK_GPIONUM;
 
     __msm_gpiomux_read(i, &val);
-
-    printk(KERN_DEBUG "[gpio=%d] func=%d, drv=%d, full=%d, dir=%d dat=%d\n",
-            i, val.func, val.drv, val.pull, val.dir, __msm_gpio_get_inout_lh(i) );
 
     schedule_delayed_work(&g_gpio_check_work, msecs_to_jiffies(PERIODIC_CHECK_GAP));
 }
@@ -432,9 +421,7 @@ static void gpio_key_change_dvfs_lock(struct work_struct *work)
 	retval = set_freq_limit(DVFS_TOUCH_ID,
 			MIN_TOUCH_LIMIT_SECOND);
 	if (retval < 0)
-		printk(KERN_ERR
-			"%s: booster change failed(%d).\n",
-			__func__, retval);
+		pr_debug("I am a fake print\n");
 	mutex_unlock(&bdata->dvfs_lock);
 }
 
@@ -447,9 +434,7 @@ static void gpio_key_set_dvfs_off(struct work_struct *work)
 	mutex_lock(&bdata->dvfs_lock);
 	retval = set_freq_limit(DVFS_TOUCH_ID, -1);
 	if (retval < 0)
-		printk(KERN_ERR
-			"%s: booster stop failed(%d).\n",
-			__func__, retval);
+		pr_debug("I am a fake print\n");
 	bdata->dvfs_lock_status = false;
 	mutex_unlock(&bdata->dvfs_lock);
 }
@@ -470,9 +455,7 @@ static void gpio_key_set_dvfs_lock(struct gpio_button_data *bdata,
 			ret = set_freq_limit(DVFS_TOUCH_ID,
 					MIN_TOUCH_LIMIT);
 			if (ret < 0)
-				printk(KERN_ERR
-					"%s: cpu first lock failed(%d)\n",
-					__func__, ret);
+				pr_debug("I am a fake print\n");
 
 			schedule_delayed_work(&bdata->work_dvfs_chg,
 				msecs_to_jiffies(KEY_BOOSTER_CHG_TIME));
@@ -619,16 +602,13 @@ static int __devinit gpio_keys_setup_key(struct platform_device *pdev,
 
 		error = gpio_request(button->gpio, desc);
 		if (error < 0) {
-			dev_err(dev, "Failed to request GPIO %d, error %d\n",
-				button->gpio, error);
+			pr_debug("I am a fake print\n");
 			return error;
 		}
 
 		error = gpio_direction_input(button->gpio);
 		if (error < 0) {
-			dev_err(dev,
-				"Failed to configure direction for GPIO %d, error %d\n",
-				button->gpio, error);
+			pr_debug("I am a fake print\n");
 			goto fail;
 		}
 
@@ -644,9 +624,7 @@ static int __devinit gpio_keys_setup_key(struct platform_device *pdev,
 		irq = gpio_to_irq(button->gpio);
 		if (irq < 0) {
 			error = irq;
-			dev_err(dev,
-				"Unable to get irq number for GPIO %d, error %d\n",
-				button->gpio, error);
+			pr_debug("I am a fake print\n");
 			goto fail;
 		}
 		bdata->irq = irq;
@@ -660,13 +638,11 @@ static int __devinit gpio_keys_setup_key(struct platform_device *pdev,
 
 	} else {
 		if (!button->irq) {
-			dev_err(dev, "No IRQ specified\n");
 			return -EINVAL;
 		}
 		bdata->irq = button->irq;
 
 		if (button->type && button->type != EV_KEY) {
-			dev_err(dev, "Only EV_KEY allowed for IRQ buttons.\n");
 			return -EINVAL;
 		}
 
@@ -689,8 +665,6 @@ static int __devinit gpio_keys_setup_key(struct platform_device *pdev,
 
 	error = request_any_context_irq(bdata->irq, isr, irqflags, desc, bdata);
 	if (error < 0) {
-		dev_err(dev, "Unable to claim irq %d; error %d\n",
-			bdata->irq, error);
 		goto fail;
 	}
 
@@ -748,9 +722,6 @@ static void flip_cover_work(struct work_struct *work)
 		else
 			ddata->flip_cover = gpio_get_value(ddata->gpio_flip_cover);
 
-		printk(KERN_DEBUG "[keys] %s : %d code 0x%x\n",
-			__func__, ddata->flip_cover, ddata->flip_code);
-
 		input_report_switch(ddata->input,
 			ddata->flip_code, ddata->flip_cover);
 		input_sync(ddata->input);
@@ -765,8 +736,6 @@ static void flip_cover_work(struct work_struct *work)
 		}
 
 		flip_status_before = ddata->flip_cover;
-	} else {
-		printk(KERN_DEBUG "%s : Value is not same!\n", __func__);
 	}
 }
 #else // CONFIG_SEC_FACTORY
@@ -780,9 +749,6 @@ static void flip_cover_work(struct work_struct *work)
 		ddata->flip_cover = !gpio_get_value(ddata->gpio_flip_cover);
 	else
 		ddata->flip_cover = gpio_get_value(ddata->gpio_flip_cover);
-
-	printk(KERN_DEBUG "[keys] %s : %d code 0x%x\n",
-		__func__, ddata->flip_cover, ddata->flip_code);
 
 	input_report_switch(ddata->input,
 			ddata->flip_code, ddata->flip_cover);
@@ -817,22 +783,15 @@ static irqreturn_t flip_cover_detect(int irq, void *dev_id)
 		wake_unlock(&ddata->flip_wake_lock);
 	}
 
-	pr_debug("[keys] %s flip_status : %d (%s)\n",
-		__func__, comp_val[0], comp_val[0]?"on":"off");
-
 	for(i=1;i<HALL_COMPARISONS;i++){
 		mdelay(6);
 		comp_val[i] = gpio_get_value(ddata->gpio_flip_cover);
 		if(comp_val[i]!=comp_val[0]){
-			pr_err("%s : Value is not same!\n", __func__);
 			goto out;
 		}
 	}
 
 	ddata->flip_cover = comp_val[0];
-	pr_debug("[keys] hall ic reported value: %d (%s)\n",
-		ddata->flip_cover, ddata->flip_cover?"on":"off");
-
 	input_report_switch(ddata->input,
 		SW_FLIP, ddata->flip_cover);
 	input_sync(ddata->input);
@@ -865,9 +824,6 @@ static irqreturn_t flip_cover_detect(int irq, void *dev_id)
 
 	cancel_delayed_work_sync(&ddata->flip_cover_dwork);
 #ifdef CONFIG_SENSORS_HALL_DEBOUNCE
-	printk(KERN_DEBUG "[keys] %s flip_satatus : %d, IRQt : %d, WAKEt : %d\n",
-		__func__, flip_status, DTIME_IRQ, DTIME_WAKE);
-
 	if(flip_status) {
 		wake_lock_timeout(&ddata->flip_wake_lock, HZ * DTIME_WAKE);
 		schedule_delayed_work(&ddata->flip_cover_dwork, DTIME_IRQ);
@@ -877,9 +833,6 @@ static irqreturn_t flip_cover_detect(int irq, void *dev_id)
 		schedule_delayed_work(&ddata->flip_cover_dwork, DTIME_IRQ);
 	}
 #else /* CONFIG_SENSORS_HALL_DEBOUNCE */
-	printk(KERN_DEBUG "[keys] %s flip_satatus : %d\n",
-		__func__, flip_status);
-
 	if(flip_status) {
 		wake_lock_timeout(&ddata->flip_wake_lock, HZ * 5 / 100); /* 50ms */
 		schedule_delayed_work(&ddata->flip_cover_dwork, HZ * 1 / 100); /* 10ms */
@@ -889,8 +842,6 @@ static irqreturn_t flip_cover_detect(int irq, void *dev_id)
 		mdelay(7);
 		debounce_status = gpio_get_value(ddata->gpio_flip_cover);
 		if (debounce_status != flip_status) {
-			printk(KERN_DEBUG "[keys] %s filp ignore IRQ\n",
-				__func__);
 			return IRQ_HANDLED;
 		}
 	}
@@ -912,8 +863,6 @@ void gpio_hall_irq_set(int state, bool auth_changed)
 		drv_data->cover_state = state;
 
 	if (drv_data->gsm_area) {
-		pr_debug("%s: cover state = %d\n",
-				__func__, drv_data->cover_state);
 		mutex_lock(&drv_data->irq_lock);
 		if (state)
 			enable_hall_irq();
@@ -933,10 +882,8 @@ static int gpio_keys_open(struct input_dev *input)
 	int irq = gpio_to_irq(ddata->gpio_flip_cover);
 
 	if(ddata->gpio_flip_cover == 0) {
-		printk(KERN_DEBUG"[HALL_IC] : %s skip flip\n", __func__);
 		goto skip_flip;
 	}
-	printk(KERN_DEBUG"[HALL_IC] : %s\n", __func__);
 
 	INIT_DELAYED_WORK(&ddata->flip_cover_dwork, flip_cover_work);
 
@@ -946,10 +893,7 @@ static int gpio_keys_open(struct input_dev *input)
 			IRQF_DISABLED | IRQF_TRIGGER_RISING |
 			IRQF_TRIGGER_FALLING | IRQF_ONESHOT,
 			"flip_cover", ddata);
-	if (ret < 0) {
-		printk(KERN_ERR "keys: failed to request flip cover irq %d gpio %d\n",
-				irq, ddata->gpio_flip_cover);
-	} else {
+	if (ret >= 0) {
 		/* update the current status */
 		schedule_delayed_work(&ddata->flip_cover_dwork, HZ / 2);
 #ifdef CONFIG_SENSORS_HALL_IRQ_CTRL
@@ -988,10 +932,6 @@ static ssize_t sysfs_reject_keyboard_spec_key_store(struct device *dev,
 		reject_keyboard_specific_key = true;
 	else if (!strncasecmp(buf, "DISABLE", 7))
 		reject_keyboard_specific_key = false;
-	else
-		pr_err("%s: Wrong command, current state %s\n",
-				__func__,
-				reject_keyboard_specific_key ? "ENABLE" : "DISALBE");
 
 	return count;
 }
@@ -1024,8 +964,6 @@ static ssize_t sysfs_hall_debounce_store(struct device *dev,
 		ddata->debounce_set = true;
 	else if (!strncasecmp(buf, "OFF", 3))
 		ddata->debounce_set = false;
-	else
-		pr_debug("%s:Wrong command, current state %s\n", __func__, buf);
 
 	return count;
 }
@@ -1066,9 +1004,6 @@ static ssize_t sysfs_hall_irq_ctrl_store(struct device *dev,
 		} else if (!strncasecmp(buf, "OFF", 3)) {
 			gpio_hall_irq_set(enable, false);
 			ddata->gsm_area = false;
-		} else {
-			pr_debug("%s: Wrong command, current state %s\n",
-					__func__, ddata->gsm_area?"ON":"OFF");
 		}
 	}
 	return count;
@@ -1130,14 +1065,12 @@ static int gpio_keys_get_devtree_pdata(struct device *dev,
 
 		if (!of_find_property(pp, "gpios", NULL)) {
 			pdata->nbuttons--;
-			dev_warn(dev, "Found button without gpios\n");
 			continue;
 		}
 		buttons[i].gpio = of_get_gpio_flags(pp, 0, &flags);
 		buttons[i].active_low = flags & OF_GPIO_ACTIVE_LOW;
 
 		if (of_property_read_u32(pp, "linux,code", &reg)) {
-			dev_err(dev, "Button without keycode: 0x%x\n", buttons[i].gpio);
 			goto out_fail;
 		}
 		buttons[i].code = reg;
@@ -1151,7 +1084,6 @@ static int gpio_keys_get_devtree_pdata(struct device *dev,
 #ifdef CONFIG_SENSORS_HALL_IRQ_CTRL
 			pdata->workaround_set = (of_property_read_bool(pp, "hall_wa_disable") ? false : true);
 #endif
-			dev_dbg(dev, "[Hall_IC] device tree was founded\n");
 			continue;
 		}
 #endif
@@ -1167,10 +1099,6 @@ static int gpio_keys_get_devtree_pdata(struct device *dev,
 		else
 			buttons[i].debounce_interval = 5;
 
-		dev_dbg(dev, "%s: label:%s, gpio:%d, code:%d, type:%d, debounce:%d\n",
-				__func__, buttons[i].desc, buttons[i].gpio,
-				buttons[i].code, buttons[i].type,
-				buttons[i].debounce_interval);
 		i++;
 	}
 
@@ -1236,7 +1164,6 @@ static ssize_t  sysfs_key_onoff_show(struct device *dev,
 	if(state || check_short_key() || check_short_pkey())
 		state = 1;
 #endif
-	pr_debug("key state:%d\n",  state);
 	return snprintf(buf, 5, "%d\n", state);
 }
 static DEVICE_ATTR(sec_key_pressed, 0664 , sysfs_key_onoff_show, NULL);
@@ -1316,23 +1243,17 @@ static int keypadled_powerset(struct device *dev)
 {
 	int ret;
 
-	printk(KERN_ERR "[Key_LED] %s : %d\n",__func__,__LINE__);
 	if(!keyled_3p3)
 		keyled_3p3 = regulator_get(NULL, "8084_l22");
 
 	if (IS_ERR(keyled_3p3)) {
-		pr_err("%s: could not get vdda vreg, rc=%ld\n",
-		__func__, PTR_ERR(keyled_3p3));
 		return PTR_ERR(keyled_3p3);
 	}
 
 	ret = regulator_set_voltage(keyled_3p3,
 		3300000, 3300000);
 	if (ret)
-		pr_err("%s: error vreg_l22 set voltage ret=%d\n",
-		       __func__, ret);
-
-	printk(KERN_ERR "[Key_LED] %s : %d\n",__func__,__LINE__);
+		pr_debug("I am a fake print\n");
 
 	return 0;
 }
@@ -1344,25 +1265,20 @@ static int keypadled_poweron(struct device *dev, struct device_attribute *attr, 
 
 	sscanf(buf, "%d", &data);
 
-	printk(KERN_ERR "[Key_LED] %s : %d data=%d\n",__func__,__LINE__,data);
-
 	if(!keyled_3p3){
-		pr_err("%s: keyled_3p3 is null\n",__func__);
 		return size;
 	}
 
 	if(data){
 		ret = regulator_enable(keyled_3p3);
 		if (ret)
-			pr_err("%s: error l22 enabling regulator\n", __func__);
+			pr_debug("I am a fake print\n");
 	}
 	else{
 		ret = regulator_disable(keyled_3p3);
 		if (ret)
-			pr_err("%s: error l22 disabling regulator\n", __func__);
+			pr_debug("I am a fake print\n");
 	}
-
-	printk(KERN_ERR "[Key_LED] %s : %d\n",__func__,__LINE__);
 
 	return size;
 }
@@ -1416,7 +1332,6 @@ static int __devinit gpio_keys_probe(struct platform_device *pdev)
 			GFP_KERNEL);
 	input = input_allocate_device();
 	if (!ddata || !input) {
-		dev_err(dev, "failed to allocate state\n");
 		error = -ENOMEM;
 		goto fail1;
 	}
@@ -1434,11 +1349,8 @@ static int __devinit gpio_keys_probe(struct platform_device *pdev)
 	|| defined (CONFIG_SEC_MATISSE_PROJECT)	|| defined (CONFIG_SEC_ATLANTIC_PROJECT)\
     || defined (CONFIG_SEC_MEGA2_PROJECT) || defined (CONFIG_SEC_T8_PROJECT) || defined (CONFIG_SEC_T10_PROJECT) || defined(CONFIG_SEC_HESTIA_PROJECT)
 	ret = gpio_request(pdata->gpio_flip_cover,"HALL");
-	if(ret)
-		printk(KERN_CRIT "[HALL IC] gpio Request FAIL\n");
-	else {
+	if (!ret)
 		gpio_tlmm_config(GPIO_CFG(pdata->gpio_flip_cover,0, GPIO_CFG_INPUT, GPIO_CFG_NO_PULL,GPIO_CFG_2MA),GPIO_CFG_DISABLE);
-	}
 #endif
 	ddata->gpio_flip_cover = pdata->gpio_flip_cover;
 	ddata->flip_code = pdata->flip_code;
@@ -1495,7 +1407,6 @@ static int __devinit gpio_keys_probe(struct platform_device *pdev)
 #if defined (CONFIG_SEC_DVFS) || defined (CONFIG_CPU_FREQ_LIMIT)
 		error = gpio_key_init_dvfs(bdata);
 		if (error < 0) {
-			dev_err(dev, "Fail get dvfs level for touch booster\n");
 			goto fail2;
 		}
 #endif
@@ -1505,15 +1416,11 @@ static int __devinit gpio_keys_probe(struct platform_device *pdev)
 
 	error = sysfs_create_group(&pdev->dev.kobj, &gpio_keys_attr_group);
 	if (error) {
-		dev_err(dev, "Unable to export keys/switches, error: %d\n",
-			error);
 		goto fail2;
 	}
 
 	error = input_register_device(input);
 	if (error) {
-		dev_err(dev, "Unable to register input device, error: %d\n",
-			error);
 		goto fail3;
 	}
 
@@ -1527,28 +1434,26 @@ static int __devinit gpio_keys_probe(struct platform_device *pdev)
 
 	sec_key = device_create(sec_class, NULL, 0, NULL, "sec_key");
 	if (IS_ERR(sec_key))
-		pr_err("Failed to create device(sec_key)!\n");
+		pr_debug("I am a fake print\n");
 
 #ifdef CONFIG_SEC_PATEK_PROJECT
 	sec_keypad=device_create(sec_class, NULL, 0, NULL, "sec_keypad");
 	if (device_create_file(sec_keypad, &dev_attr_brightness) < 0)
-		pr_err("Failed to create device file(%s)!\n", dev_attr_brightness.attr.name);
+		pr_debug("I am a fake print\n");
 
 	sec_flip = device_create(sec_class, NULL, 0, NULL, "sec_flip");
 	if (device_create_file(sec_flip, &dev_attr_flipStatus) < 0)
-		pr_err("Failed to create device file(%s)!\n", dev_attr_flipStatus.attr.name);
+		pr_debug("I am a fake print\n");
 #endif
 
 	ret = device_create_file(sec_key, &dev_attr_sec_key_pressed);
 	if (ret) {
-		pr_err("Failed to create device file in sysfs entries(%s)!\n",
-				dev_attr_sec_key_pressed.attr.name);
+		pr_debug("I am a fake print\n");
 	}
 #if defined(CONFIG_SEC_S_PROJECT)
 	ret = device_create_file(sec_key, &dev_attr_sec_key_pressed_code);
 	if (ret) {
-		pr_err("Failed to create device file in sysfs entries(%s)!\n",
-				dev_attr_sec_key_pressed_code.attr.name);
+		pr_debug("I am a fake print\n");
 	}
 #endif
 
@@ -1556,8 +1461,7 @@ static int __devinit gpio_keys_probe(struct platform_device *pdev)
 	if(ddata->gpio_flip_cover != 0) {
 		ret = device_create_file(sec_key, &dev_attr_hall_irq_ctrl);
 		if (ret < 0) {
-			pr_err("Failed to create device file(%s)!, error: %d\n",
-				dev_attr_hall_irq_ctrl.attr.name, ret);
+			pr_debug("I am a fake print\n");
 		}
 	}
 #endif
@@ -1565,29 +1469,24 @@ static int __devinit gpio_keys_probe(struct platform_device *pdev)
 	if(ddata->gpio_flip_cover != 0) {
 		ret = device_create_file(sec_key, &dev_attr_hall_detect);
 		if (ret < 0) {
-			pr_err("Failed to create device file(%s)!, error: %d\n",
-				dev_attr_hall_detect.attr.name, ret);
+			pr_debug("I am a fake print\n");
 		}
 	}
 #if defined(CONFIG_SENSORS_HALL_DEBOUNCE)
 	if(ddata->gpio_flip_cover != 0) {
 		ret = device_create_file(sec_key, &dev_attr_hall_irq_ctrl);
 		if (ret < 0) {
-			pr_err("Failed to create device file(%s)!, error: %d\n",
-				dev_attr_hall_irq_ctrl.attr.name, ret);
+			pr_debug("I am a fake print\n");
 		}
 	}
 #endif
 #if defined (CONFIG_SEC_MILLET_PROJECT) || defined (CONFIG_SEC_BERLUTI_PROJECT) ||  defined (CONFIG_SEC_T8_PROJECT)
 	if (!lvs1_1p8) {
 		lvs1_1p8 = regulator_get(dev, "8226_lvs1");
-		if(!lvs1_1p8)
-			printk(KERN_CRIT "%s: regulator_get for 8226_lvs1 failed\n", __func__);
-		else {
+		if (lvs1_1p8) {
 			ret = regulator_enable(lvs1_1p8);
 			if (ret){
 				regulator_put(lvs1_1p8);
-				printk(KERN_CRIT "%s: Failed to enable regulator lvs1_1p8.\n",__func__);
 			}
 		}
 	}
@@ -1599,14 +1498,12 @@ static int __devinit gpio_keys_probe(struct platform_device *pdev)
 	reject_keyboard_specific_key = false;
 	ret = device_create_file(sec_key, &dev_attr_reject_key_comb);
 	if (ret < 0) {
-		pr_err("Failed to create device file(%s), error: %d\n",
-				dev_attr_reject_key_comb.attr.name, ret);
+		pr_debug("I am a fake print\n");
 	}
 #endif
 	ret = device_create_file(sec_key, &dev_attr_wakeup_keys);
 	if (ret < 0) {
-		pr_err("Failed to create device file(%s), error: %d\n",
-				dev_attr_wakeup_keys.attr.name, ret);
+		pr_debug("I am a fake print\n");
 	}
 	dev_set_drvdata(sec_key, ddata);
 
