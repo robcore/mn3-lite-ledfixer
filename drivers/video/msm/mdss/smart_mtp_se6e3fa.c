@@ -121,13 +121,11 @@ static int char_to_int_v255(char data1, char data2)
 
 static bool first_adj_complete = false;
 static unsigned int gcontrol_enabled = 0;
-static unsigned int gcontrol_offset_mode = 0;
+static unsigned int gcontrol_offset_mode = 1;
 static int gcontrol_red_offset = 0;
 static int gcontrol_green_offset = 0;
 static int gcontrol_blue_offset = 0;
-static int gcontrol_red_override = 0;
-static int gcontrol_green_override = 0;
-static int gcontrol_blue_override = 0;
+static int gcontrol_gradient_offset = 0;
 
 #ifdef SMART_DIMMING_DEBUG
 static void print_RGB_offset(struct SMART_DIM *pSmart)
@@ -1692,55 +1690,11 @@ static int rgb_offset_H_revJ[][RGB_COMPENSATION] = {
 };
 #endif
 
-static int gcontrol_rgb_override(int input_color)
-{
-	int ret = 0;
-
-	if (!gcontrol_enabled || gcontrol_offset_mode)
-		return ret;
-
-	switch (input_color) {
-		case 0:
-		case 3:
-		case 6:
-		case 9:
-		case 12:
-		case 15:
-		case 18:
-		case 21:
-			ret = gcontrol_red_override;
-			break;
-		case 1: //G
-		case 4:
-		case 7:
-		case 10:
-		case 13:
-		case 16:
-		case 19:
-		case 22:
-			ret = gcontrol_green_override;
-			break;
-		case 2: //B
-		case 5:
-		case 8:
-		case 11:
-		case 14:
-		case 17:
-		case 20:
-		case 23:
-			ret = gcontrol_blue_override;
-			break;
-		default:
-			break;
-	}
-	return ret;
-}
-
 static int gcontrol_rgb_offset(int input_color)
 {
 	int ret = 0;
 
-	if (!gcontrol_enabled || !gcontrol_offset_mode)
+	if (!gcontrol_enabled)
 		return ret;
 
 	switch (input_color) {
@@ -1752,7 +1706,7 @@ static int gcontrol_rgb_offset(int input_color)
 		case 15:
 		case 18:
 		case 21:
-			ret = gcontrol_red_offset;
+			ret = gcontrol_red;
 			break;
 		case 1: //G
 		case 4:
@@ -1762,7 +1716,7 @@ static int gcontrol_rgb_offset(int input_color)
 		case 16:
 		case 19:
 		case 22:
-			ret = gcontrol_green_offset;
+			ret = gcontrol_green;
 			break;
 		case 2: //B
 		case 5:
@@ -1772,7 +1726,7 @@ static int gcontrol_rgb_offset(int input_color)
 		case 17:
 		case 20:
 		case 23:
-			ret = gcontrol_blue_offset;
+			ret = gcontrol_blue;
 			break;
 		default:
 			break;
@@ -1864,12 +1818,28 @@ static void gamma_init_H_revJ(struct SMART_DIM *pSmart, char *str, int size)
 	for (cnt = 1; cnt < S6E3FA_TABLE_MAX; cnt++) {
 		table_index = find_cadela_table(pSmart->brightness_level);
 
-		bl_index[S6E3FA_TABLE_MAX - cnt] +=
-			gradation_offset_H_revJ[table_index][cnt - 1];
-
+		if (gcontrol_enabled) {
+			if (gcontrol_offset_mode)
+				bl_index[S6E3FA_TABLE_MAX - cnt] +=
+					gradation_offset_H_revJ[table_index][cnt - 1] + gcontrol_gradient_offset;
+			else
+				bl_index[S6E3FA_TABLE_MAX - cnt] += gcontrol_gradient_offset;
+		} else {
+			bl_index[S6E3FA_TABLE_MAX - cnt] +=
+				gradation_offset_H_revJ[table_index][cnt - 1];
+		}
 		/* THERE IS M-GRAY0 target */
-		if (bl_index[S6E3FA_TABLE_MAX - cnt] == 0)
-			bl_index[S6E3FA_TABLE_MAX - cnt] = 1;
+		if (gcontrol_enabled) {
+			if (bl_index[S6E3FA_TABLE_MAX - cnt] == 0) {
+				if (gcontrol_offset_mode)
+					bl_index[S6E3FA_TABLE_MAX - cnt] = 1 + gcontrol_gradient_offset;
+				else
+					bl_index[S6E3FA_TABLE_MAX - cnt] = gcontrol_gradient_offset;
+			}
+		} else {
+			if (bl_index[S6E3FA_TABLE_MAX - cnt] == 0)
+				bl_index[S6E3FA_TABLE_MAX - cnt] = 1;
+		}
 	}
 	/*Generate Gamma table*/
 	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
@@ -1885,7 +1855,7 @@ static void gamma_init_H_revJ(struct SMART_DIM *pSmart, char *str, int size)
 			level_V255 = str[cnt * 2] << 8 | str[(cnt * 2) + 1];
 			if (gcontrol_enabled) {
 				if (!gcontrol_offset_mode)
-					level_V255 += gcontrol_rgb_override(cnt);				
+					level_V255 += gcontrol_rgb_offset(cnt);				
 				else
 					level_V255 +=
 						rgb_offset_H_revJ[table_index][cnt] + gcontrol_rgb_offset(cnt);
@@ -1900,7 +1870,7 @@ static void gamma_init_H_revJ(struct SMART_DIM *pSmart, char *str, int size)
 		} else {
 			if (gcontrol_enabled) {
 				if (!gcontrol_offset_mode)
-					str[cnt+3] += gcontrol_rgb_override(cnt);
+					str[cnt+3] += gcontrol_rgb_offset(cnt);
 				else
 					str[cnt+3] += rgb_offset_H_revJ[table_index][cnt] + gcontrol_rgb_offset(cnt);
 			} else {
@@ -2112,44 +2082,16 @@ static ssize_t gcontrol_blue_offset_store(struct kobject *kobj,
 	return count;
 }
 
-static ssize_t gcontrol_red_override_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+static ssize_t gcontrol_gradient_offset_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%d\n", gcontrol_red_override);
+	return sprintf(buf, "%d\n", gcontrol_gradient_offset);
 }
 
-static ssize_t gcontrol_red_override_store(struct kobject *kobj,
+static ssize_t gcontrol_gradient_offset_store(struct kobject *kobj,
 			   struct kobj_attribute *attr, const char *buf, size_t count) {
 	int newval;
 	sscanf(buf, "%d", &newval);
-	gcontrol_red_override = newval;
-	wrap_smart_dimming_init();
-	return count;
-}
-
-static ssize_t gcontrol_green_override_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
-{
-	return sprintf(buf, "%d\n", gcontrol_green_override);
-}
-
-static ssize_t gcontrol_green_override_store(struct kobject *kobj,
-			   struct kobj_attribute *attr, const char *buf, size_t count) {
-	int newval;
-	sscanf(buf, "%d", &newval);
-	gcontrol_green_override = newval;
-	wrap_smart_dimming_init();
-	return count;
-}
-
-static ssize_t gcontrol_blue_override_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
-{
-	return sprintf(buf, "%d\n", gcontrol_blue_override);
-}
-
-static ssize_t gcontrol_blue_override_store(struct kobject *kobj,
-			   struct kobj_attribute *attr, const char *buf, size_t count) {
-	int newval;
-	sscanf(buf, "%d", &newval);
-	gcontrol_blue_override = newval;
+	gcontrol_gradient_offset = newval;
 	wrap_smart_dimming_init();
 	return count;
 }
@@ -2197,20 +2139,10 @@ static struct kobj_attribute gcontrol_blue_offset_attribute =
 		gcontrol_blue_offset_show,
 		gcontrol_blue_offset_store);
 
-static struct kobj_attribute gcontrol_red_override_attribute =
-	__ATTR(gcontrol_red_override, 0644,
-		gcontrol_red_override_show,
-		gcontrol_red_override_store);
-
-static struct kobj_attribute gcontrol_green_override_attribute =
-	__ATTR(gcontrol_green_override, 0644,
-		gcontrol_green_override_show,
-		gcontrol_green_override_store);
-
-static struct kobj_attribute gcontrol_blue_override_attribute =
-	__ATTR(gcontrol_blue_override, 0644,
-		gcontrol_blue_override_show,
-		gcontrol_blue_override_store);
+static struct kobj_attribute gcontrol_gradient_offset_attribute =
+	__ATTR(gcontrol_gradient_offset, 0644,
+		gcontrol_gradient_offset_show,
+		gcontrol_gradient_offset_store);
 
 static struct kobj_attribute gcontrol_enabled_attribute =
 	__ATTR(gcontrol_enabled, 0644,
@@ -2227,9 +2159,7 @@ static struct attribute *gamma_control_attrs[] =
 	&gcontrol_red_offset_attribute.attr,
 	&gcontrol_green_offset_attribute.attr,
 	&gcontrol_blue_offset_attribute.attr,
-	&gcontrol_red_override_attribute.attr,
-	&gcontrol_green_override_attribute.attr,
-	&gcontrol_blue_override_attribute.attr,
+	&gcontrol_gradient_offset_attribute.attr,
 	&gcontrol_enabled_attribute.attr,
 	&gcontrol_offset_mode_attribute.attr,
 	NULL

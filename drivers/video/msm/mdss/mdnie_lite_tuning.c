@@ -174,11 +174,7 @@ int get_lcd_panel_res(void);
 struct mdnie_lite_tun_type mdnie_tun_state = {
 	.mdnie_enable = false,
 	.scenario = mDNIe_UI_MODE,
-#ifdef MDNIE_LITE_MODE
-	.background = 0,
-#else
 	.background = AUTO_MODE,
-#endif /* MDNIE_LITE_MODE */
 	.outdoor = OUTDOOR_OFF_MODE,
 	.accessibility = ACCESSIBILITY_OFF,
 #if defined(CONFIG_TDMB)
@@ -215,9 +211,7 @@ const char background_name[MAX_BACKGROUND_MODE][10] = {
 
 const char outdoor_name[MAX_OUTDOOR_MODE][20] = {
 	"OUTDOOR_OFF_MODE",
-#ifndef MDNIE_LITE_MODE
 	"OUTDOOR_ON_MODE",
-#endif /* MDNIE_LITE_MODE */
 };
 
 const char accessibility_name[ACCESSIBILITY_MAX][20] = {
@@ -225,7 +219,6 @@ const char accessibility_name[ACCESSIBILITY_MAX][20] = {
 	"NEGATIVE_MODE",
 	"COLOR_BLIND_MODE",
 	"SCREEN_CURTAIN_MODE",
-
 };
 
 #if defined(CONFIG_FB_MSM_MIPI_VIDEO_WVGA_NT35502_PT_PANEL)
