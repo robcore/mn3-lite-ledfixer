@@ -144,11 +144,9 @@ static int detect_count = 0;
 static void mpp_control(bool onoff)
 {
 	if(onoff) {
-		pr_info("%s : mpp enable =======\n",__func__);
 		pm8941_mpp4_endis.master_en = QPNP_PIN_MASTER_ENABLE;
 		qpnp_pin_config(pm8941_mpp4, &pm8941_mpp4_endis);
 	} else {
-		pr_info("%s : mpp diable =======\n",__func__);
 		pm8941_mpp4_endis.master_en = QPNP_PIN_MASTER_DISABLE;
 		qpnp_pin_config(pm8941_mpp4, &pm8941_mpp4_endis);
 	}
@@ -162,8 +160,6 @@ static void sec_jack_gpio_init(struct sec_jack_platform_data *pdata)
 	if(pdata->ear_micbias_gpio > 0) {
 		ret = gpio_request(pdata->ear_micbias_gpio, "ear_micbias_en");
 		if (ret) {
-			pr_err("%s : gpio_request failed for %d\n", __func__,
-				pdata->ear_micbias_gpio);
 			return;
 		}
 		gpio_direction_output(pdata->ear_micbias_gpio, 0);
@@ -171,14 +167,10 @@ static void sec_jack_gpio_init(struct sec_jack_platform_data *pdata)
 #else
 #ifdef CONFIG_MACH_HEAT_AIO
 	gpio_free(pdata->ear_micbias_gpio);
-	pr_err("%s HEAT_AIO: gpio_free for %d\n", __func__,
-			pdata->ear_micbias_gpio);
 #endif
 	if (pdata->ear_micbias_gpio > 0) {
 		ret = gpio_request(pdata->ear_micbias_gpio, "ear_micbias_en");
 		if (ret) {
-			pr_err("%s : gpio_request failed for %d\n", __func__,
-				pdata->ear_micbias_gpio);
 			return;
 		}
 		gpio_direction_output(pdata->ear_micbias_gpio, 0);
@@ -188,8 +180,6 @@ static void sec_jack_gpio_init(struct sec_jack_platform_data *pdata)
 	if (pdata->fsa_en_gpio > 0) {
 		ret = gpio_request(pdata->fsa_en_gpio, "fsa_en");
 		if (ret) {
-			pr_err("%s : gpio_request failed for %d\n", __func__,
-				pdata->fsa_en_gpio);
 			return;
 		}
 		gpio_direction_output(pdata->fsa_en_gpio, 1);
@@ -218,8 +208,6 @@ static int sec_jack_get_adc_value(struct sec_jack_info *hi)
 		mpp_ch = pdata->mpp_ch_scale[0] + P_MUX1_1_1 - 1;
 	else if (pdata->mpp_ch_scale[2] == 3)
 		mpp_ch = pdata->mpp_ch_scale[0] + P_MUX1_1_3 - 1;
-	else
-		pr_err("%s - invalid channel scale=%d\n", __func__, pdata->mpp_ch_scale[2]);
 
 	qpnp_get_vadc(&hi->client->dev, "earjack-read");
 
@@ -230,7 +218,7 @@ static int sec_jack_get_adc_value(struct sec_jack_info *hi)
 	rc = qpnp_vadc_read(NULL,  mpp_ch, &result);
 #endif
 	if(rc)
-		pr_err("%s: qpnp_vadc_read failed: %d\n", __func__, rc);
+		pr_debug("%s: qpnp_vadc_read failed: %d\n", __func__, rc);
 	// Get voltage in microvolts
 	retVal = ((int)result.physical)/1000;
 
@@ -256,7 +244,7 @@ static void set_sec_micbias_state(struct sec_jack_info *hi, bool state)
 			ear_micbias_regulator = regulator_get(NULL, pdata->ear_micbias_ldo);
 			if (IS_ERR(ear_micbias_regulator)) {
 				ear_micbias_regulator = NULL;
-				pr_err("%s: regulator_get failed for %s\n", __func__, pdata->ear_micbias_ldo);
+				pr_debug("%s: regulator_get failed for %s\n", __func__, pdata->ear_micbias_ldo);
 				return;
 			}
 			regulator_set_voltage(ear_micbias_regulator, 2800000, 2800000);
@@ -322,14 +310,14 @@ static int sec_jack_buttons_connect(struct input_handler *handler,
 
 	err = input_register_handle(&hi->handle);
 	if (err) {
-		pr_err("%s: Failed to register handle, error %d\n",
+		pr_debug("%s: Failed to register handle, error %d\n",
 			__func__, err);
 		goto err_register_handle;
 	}
 
 	err = input_open_device(&hi->handle);
 	if (err) {
-		pr_err("%s: Failed to open input device, error %d\n",
+		pr_debug("%s: Failed to open input device, error %d\n",
 			__func__, err);
 		goto err_open_device;
 	}
@@ -398,7 +386,7 @@ static void sec_jack_set_type(struct sec_jack_info *hi, int jack_type)
 	}
 
 	hi->cur_jack_type = jack_type;
-	pr_info("%s : jack_type = %d\n", __func__, jack_type);
+	pr_debug("%s : jack_type = %d\n", __func__, jack_type);
 
 #if defined(CONFIG_MACH_KLTE_JPN)
 	if (jack_type == SEC_EXTERNAL_ANTENNA) {
@@ -451,7 +439,7 @@ static void determine_jack_type(struct sec_jack_info *hi)
 
 	while (gpio_get_value(pdata->det_gpio) ^ npolarity) {
 		adc = sec_jack_get_adc_value(hi);
-		pr_info("%s: adc = %d\n", __func__, adc);
+		pr_debug("%s: adc = %d\n", __func__, adc);
 
 		/* determine the type of headset based on the
 		 * adc value.  An adc value can fall in various
@@ -703,7 +691,7 @@ static irqreturn_t sec_jack_detect_irq(int irq, void *dev_id)
 		queue_work(hi->queue, &hi->detect_work);
 		mdelay(100);
 		enable_irq_wake(hi->det_irq);
-		pr_info("%s: Debug code for removing flooding of jack irq\n", __func__);
+		pr_debug("%s: Debug code for removing flooding of jack irq\n", __func__);
 		return IRQ_HANDLED;
 #else
 	struct sec_jack_info *hi = dev_id;
@@ -730,7 +718,7 @@ void sec_jack_detect_work(struct work_struct *work)
 	/* prevent suspend to allow user space to respond to switch */
 	wake_lock_timeout(&hi->det_wake_lock, WAKE_LOCK_TIME);
 
-	pr_info("%s: detect_irq(%d)\n", __func__,
+	pr_debug("%s: detect_irq(%d)\n", __func__,
 		gpio_get_value(pdata->det_gpio) ^ npolarity);
 
 	/* debounce headset jack.  don't try to determine the type of
@@ -762,7 +750,7 @@ void sec_jack_buttons_work(struct work_struct *work)
 	int i;
 
 	if (!hi->buttons_enable) {
-		pr_info("%s: BTN %d is skipped\n", __func__,
+		pr_debug("%s: BTN %d is skipped\n", __func__,
 			hi->pressed_code);
 		return;
 	}
@@ -774,7 +762,7 @@ void sec_jack_buttons_work(struct work_struct *work)
 		input_report_key(hi->input_dev, hi->pressed_code, 0);
 		input_sync(hi->input_dev);
 		switch_set_state(&switch_sendend, 0);
-		pr_info("%s: BTN %d is released\n", __func__,
+		pr_debug("%s: BTN %d is released\n", __func__,
 			hi->pressed_code);
 		return;
 	}
@@ -814,7 +802,7 @@ void sec_jack_buttons_work(struct work_struct *work)
 			input_report_key(hi->input_dev, btn_zones[i].code, 1);
 			input_sync(hi->input_dev);
 			switch_set_state(&switch_sendend, 1);
-			pr_info("%s: adc = %d, BTN %d is pressed\n", __func__,
+			pr_debug("%s: adc = %d, BTN %d is pressed\n", __func__,
 				adc, btn_zones[i].code);
 			return;
 		}
@@ -830,41 +818,41 @@ static struct sec_jack_platform_data *sec_jack_populate_dt_pdata(struct device *
 	int ret = 0;
 	pdata =  devm_kzalloc(dev, sizeof(*pdata), GFP_KERNEL);
 	if (!pdata) {
-		pr_err("%s : could not allocate memory for platform data\n", __func__);
+		pr_debug("%s : could not allocate memory for platform data\n", __func__);
 		goto alloc_err;
 	}
 
 	pdata->det_gpio = of_get_named_gpio(dev->of_node, "qcom,earjack-detect-gpio", 0);
 	if (pdata->det_gpio < 0) {
-		pr_err("%s : can not find the earjack-detect-gpio in the dt\n", __func__);
+		pr_debug("%s : can not find the earjack-detect-gpio in the dt\n", __func__);
 	} else
-		pr_info("%s : earjack-detect-gpio =%d\n", __func__, pdata->det_gpio);
+		pr_debug("%s : earjack-detect-gpio =%d\n", __func__, pdata->det_gpio);
 
 	pdata->send_end_gpio = of_get_named_gpio(dev->of_node, "qcom,earjack-sendend-gpio", 0);
 	if (pdata->send_end_gpio < 0) {
-		pr_err("%s : can not find the earjack-detect-gpio in the dt\n", __func__);
+		pr_debug("%s : can not find the earjack-detect-gpio in the dt\n", __func__);
 	} else
-		pr_info("%s : earjack-sendend-gpio =%d\n", __func__, pdata->send_end_gpio);
+		pr_debug("%s : earjack-sendend-gpio =%d\n", __func__, pdata->send_end_gpio);
 
 	pdata->ear_micbias_gpio = of_get_named_gpio(dev->of_node, "qcom,earjack-micbias-gpio", 0);
 	if (pdata->ear_micbias_gpio < 0)
 		of_property_read_u32(dev->of_node, "qcom,earjack-micbias-expander-gpio", &pdata->ear_micbias_gpio);
 	if (pdata->ear_micbias_gpio < 0) {
-		pr_err("%s : can not find the earjack-micbias-gpio in the dt\n", __func__);
+		pr_debug("%s : can not find the earjack-micbias-gpio in the dt\n", __func__);
 		if (of_property_read_string(dev->of_node, "qcom,earjack-micbias-ldo", &pdata->ear_micbias_ldo) < 0)
-			pr_err("%s: can not find  earjack-micbias-ldo in the dt\n", __func__);
+			pr_debug("%s: can not find  earjack-micbias-ldo in the dt\n", __func__);
 		else
-			pr_info("%s : earjack-micbias-ldo=%s\n", __func__, pdata->ear_micbias_ldo);
+			pr_debug("%s : earjack-micbias-ldo=%s\n", __func__, pdata->ear_micbias_ldo);
 	} else
-		pr_info("%s : earjack-micbias-gpio =%d\n", __func__, pdata->ear_micbias_gpio);	
+		pr_debug("%s : earjack-micbias-gpio =%d\n", __func__, pdata->ear_micbias_gpio);	
 
 	pdata->fsa_en_gpio = of_get_named_gpio(dev->of_node, "qcom,earjack-fsa_en-gpio", 0);
 	if (pdata->fsa_en_gpio < 0) 
 		of_property_read_u32(dev->of_node, "qcom,earjack-fsa_en-expander-gpio", &pdata->fsa_en_gpio);
 	if (pdata->fsa_en_gpio < 0)
-		pr_info("%s : No support FSA8038 chip\n", __func__);
+		pr_debug("%s : No support FSA8038 chip\n", __func__);
 	else
-		pr_info("%s : earjack-fsa_en-gpio =%d\n", __func__, pdata->fsa_en_gpio);
+		pr_debug("%s : earjack-fsa_en-gpio =%d\n", __func__, pdata->fsa_en_gpio);
 	
 	for( i=0; i<4; i++)
 	{
@@ -877,7 +865,7 @@ static struct sec_jack_platform_data *sec_jack_populate_dt_pdata(struct device *
 #else
 		pdata->jack_zones[i].jack_type = args.args[3]==0?SEC_HEADSET_3POLE:SEC_HEADSET_4POLE;
 #endif
-		pr_info("%s : %d, %d, %d, %d, %d \n",
+		pr_debug("%s : %d, %d, %d, %d, %d \n",
 				__func__, args.args_count, args.args[0],
 				args.args[1], args.args[2],args.args[3]);		
 	}
@@ -887,7 +875,7 @@ static struct sec_jack_platform_data *sec_jack_populate_dt_pdata(struct device *
 		pdata->jack_buttons_zones[i].code = args.args[0]==0?KEY_MEDIA:args.args[0]==1?KEY_VOLUMEUP:KEY_VOLUMEDOWN;
 		pdata->jack_buttons_zones[i].adc_low = args.args[1];
 		pdata->jack_buttons_zones[i].adc_high = args.args[2];
-		pr_info("%s : %d, %d, %d, %d\n",
+		pr_debug("%s : %d, %d, %d, %d\n",
 				__func__, args.args_count, args.args[0],
 				args.args[1], args.args[2]);
 	}
@@ -897,13 +885,13 @@ static struct sec_jack_platform_data *sec_jack_populate_dt_pdata(struct device *
 		
 	ret = of_property_read_u32_array(dev->of_node, "mpp-channel-scaling", pdata->mpp_ch_scale, 3);
 	if (ret < 0) {
-		pr_err("%s : cannot find mpp-channel-scaling in the dt - using default MPP6_1_3\n",
+		pr_debug("%s : cannot find mpp-channel-scaling in the dt - using default MPP6_1_3\n",
 		__func__);
 		pdata->mpp_ch_scale[0] = 6;
 		pdata->mpp_ch_scale[1] = 1;
 		pdata->mpp_ch_scale[2] = 3;
 	}
-	pr_info("%s - mpp-channel-scaling - %d %d %d\n", __func__, pdata->mpp_ch_scale[0], pdata->mpp_ch_scale[1], pdata->mpp_ch_scale[2]);
+	pr_debug("%s - mpp-channel-scaling - %d %d %d\n", __func__, pdata->mpp_ch_scale[0], pdata->mpp_ch_scale[1], pdata->mpp_ch_scale[2]);
 
 #if defined(CONFIG_MACH_VIENNA) || defined(CONFIG_MACH_PICASSO) || defined(CONFIG_MACH_MONDRIAN) || defined(CONFIG_MACH_LT03) || defined(CONFIG_SEC_H_PROJECT) || defined(CONFIG_SEC_FRESCO_PROJECT)
 	pm8941_mpp4 = of_get_named_gpio(dev->of_node, "pm8941-mpp4", 0);
@@ -917,7 +905,7 @@ static struct sec_jack_platform_data *sec_jack_populate_dt_pdata(struct device *
 		int rc;
 		rc = PTR_ERR(pdata->vadc_dev);
 		if (rc != -EPROBE_DEFER)
-			pr_err("vadc property missing, rc=%d\n", rc);
+			pr_debug("vadc property missing, rc=%d\n", rc);
 		goto alloc_err;
 	}
 #endif
@@ -943,22 +931,22 @@ static int sec_jack_probe(struct platform_device *pdev)
 
 #ifdef CONFIG_ARCH_MSM8226
 	if(!is_codec_probe_done()) {
-		pr_err("%s - defer as codec_probe_done is false\n", __func__);
+		pr_debug("%s - defer as codec_probe_done is false\n", __func__);
 		return -EPROBE_DEFER;
 	}
 #endif
 
-	pr_info("%s : Registering jack driver\n", __func__);
+	pr_debug("%s : Registering jack driver\n", __func__);
 
 	pdata = sec_jack_populate_dt_pdata(&pdev->dev);
 	if (!pdata) {
-		pr_err("%s : pdata is NULL.\n", __func__);
+		pr_debug("%s : pdata is NULL.\n", __func__);
 		return -ENODEV;
 	} else
 		sec_jack_gpio_init(pdata);
 
 	if (atomic_xchg(&instantiated, 1)) {
-		pr_err("%s : already instantiated, can only have one\n",
+		pr_debug("%s : already instantiated, can only have one\n",
 			__func__);
 		return -ENODEV;
 	}
@@ -967,7 +955,7 @@ static int sec_jack_probe(struct platform_device *pdev)
 
 	hi = kzalloc(sizeof(struct sec_jack_info), GFP_KERNEL);
 	if (hi == NULL) {
-		pr_err("%s : Failed to allocate memory.\n", __func__);
+		pr_debug("%s : Failed to allocate memory.\n", __func__);
 		ret = -ENOMEM;
 		goto err_kzalloc;
 	}
@@ -986,7 +974,7 @@ static int sec_jack_probe(struct platform_device *pdev)
 	if(pdata->det_gpio > 0) {
 		ret = gpio_request(pdata->det_gpio, "ear_jack_detect");
 		if (ret) {
-			pr_err("%s : gpio_request failed for %d\n",
+			pr_debug("%s : gpio_request failed for %d\n",
 				__func__, pdata->det_gpio);
 			goto err_gpio_request;
 		}
@@ -994,7 +982,7 @@ static int sec_jack_probe(struct platform_device *pdev)
 #else
 	ret = gpio_request(pdata->det_gpio, "ear_jack_detect");
 	if (ret) {
-		pr_err("%s : gpio_request failed for %d\n",
+		pr_debug("%s : gpio_request failed for %d\n",
 			__func__, pdata->det_gpio);
 		goto err_gpio_request;
 	}
@@ -1002,13 +990,13 @@ static int sec_jack_probe(struct platform_device *pdev)
 
 	ret = switch_dev_register(&switch_jack_detection);
 	if (ret < 0) {
-		pr_err("%s : Failed to register switch device\n", __func__);
+		pr_debug("%s : Failed to register switch device\n", __func__);
 		goto err_switch_dev_register;
 	}
 
 	ret = switch_dev_register(&switch_sendend);
 	if (ret < 0) {
-		pr_err("%s : Failed to register switch device\n", __func__);
+		pr_debug("%s : Failed to register switch device\n", __func__);
 		goto err_switch_dev_register;
 	}
 
@@ -1016,40 +1004,40 @@ static int sec_jack_probe(struct platform_device *pdev)
 
 	audio = class_create(THIS_MODULE, "audio");
 	if (IS_ERR(audio))
-		pr_err("Failed to create class(audio)!\n");
+		pr_debug("Failed to create class(audio)!\n");
 
 	earjack = device_create(audio, NULL, 0, NULL, "earjack");
 	if (IS_ERR(earjack))
-		pr_err("Failed to create device(earjack)!\n");
+		pr_debug("Failed to create device(earjack)!\n");
 
 	ret = device_create_file(earjack, &dev_attr_key_state);
 	if (ret)
-		pr_err("Failed to create device file in sysfs entries(%s)!\n",
+		pr_debug("Failed to create device file in sysfs entries(%s)!\n",
 			dev_attr_key_state.attr.name);
 
 	ret = device_create_file(earjack, &dev_attr_state);
 	if (ret)
-		pr_err("Failed to create device file in sysfs entries(%s)!\n",
+		pr_debug("Failed to create device file in sysfs entries(%s)!\n",
 			dev_attr_state.attr.name);
 #if defined (CONFIG_EARJACK_ADC_SYSFS)
 	ret = device_create_file(earjack, &dev_attr_jack_adc);
 	if (ret)
-		pr_err("Failed to create device file in sysfs entries(%s)!\n",
+		pr_debug("Failed to create device file in sysfs entries(%s)!\n",
 			dev_attr_jack_adc.attr.name);
 
 	ret = device_create_file(earjack, &dev_attr_send_end_btn_adc);
 	if (ret)
-		pr_err("Failed to create device file in sysfs entries(%s)!\n",
+		pr_debug("Failed to create device file in sysfs entries(%s)!\n",
 			dev_attr_send_end_btn_adc.attr.name);
 
 	ret = device_create_file(earjack, &dev_attr_vol_up_btn_adc);
 	if (ret)
-		pr_err("Failed to create device file in sysfs entries(%s)!\n",
+		pr_debug("Failed to create device file in sysfs entries(%s)!\n",
 			dev_attr_vol_up_btn_adc.attr.name);
 
 	ret = device_create_file(earjack, &dev_attr_vol_down_btn_adc);
 	if (ret)
-		pr_err("Failed to create device file in sysfs entries(%s)!\n",
+		pr_debug("Failed to create device file in sysfs entries(%s)!\n",
 			dev_attr_vol_down_btn_adc.attr.name);
 #endif
 	setup_timer(&hi->timer, sec_jack_timer_handler, (unsigned long)hi);
@@ -1059,13 +1047,13 @@ static int sec_jack_probe(struct platform_device *pdev)
 	hi->queue = create_singlethread_workqueue("sec_jack_wq");
 	if (hi->queue == NULL) {
 		ret = -ENOMEM;
-		pr_err("%s: Failed to create workqueue\n", __func__);
+		pr_debug("%s: Failed to create workqueue\n", __func__);
 		goto err_create_wq_failed;
 	}
 	hi->buttons_queue = create_singlethread_workqueue("sec_jack_buttons_wq");
 	if (hi->buttons_queue == NULL) {
 		ret = -ENOMEM;
-		pr_err("%s: Failed to create buttons workqueue\n", __func__);
+		pr_debug("%s: Failed to create buttons workqueue\n", __func__);
 		goto err_create_buttons_wq_failed;
 	}
 	queue_work(hi->queue, &hi->detect_work);
@@ -1083,7 +1071,7 @@ static int sec_jack_probe(struct platform_device *pdev)
 
 	ret = input_register_handler(&hi->handler);
 	if (ret) {
-		pr_err("%s : Failed to register_handler\n", __func__);
+		pr_debug("%s : Failed to register_handler\n", __func__);
 		goto err_register_input_handler;
 	}
 	/* We are going to remove this code later */
@@ -1094,14 +1082,14 @@ static int sec_jack_probe(struct platform_device *pdev)
 		IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING |
 		IRQF_ONESHOT, "sec_headset_detect", hi);
 	if (ret) {
-		pr_err("%s : Failed to request_irq.\n", __func__);
+		pr_debug("%s : Failed to request_irq.\n", __func__);
 		goto err_request_detect_irq;
 	}
 
 	/* to handle insert/removal when we're sleeping in a call */
 	ret = enable_irq_wake(hi->det_irq);
 	if (ret) {
-		pr_err("%s : Failed to enable_irq_wake.\n", __func__);
+		pr_debug("%s : Failed to enable_irq_wake.\n", __func__);
 		goto err_enable_irq_wake;
 	}
 
@@ -1150,7 +1138,7 @@ static int sec_jack_remove(struct platform_device *pdev)
 {
 
 	struct sec_jack_info *hi = dev_get_drvdata(&pdev->dev);
-	pr_info("%s :\n", __func__);
+	pr_debug("%s :\n", __func__);
 	disable_irq_wake(hi->det_irq);
 	free_irq(hi->det_irq, hi);
 	destroy_workqueue(hi->queue);
@@ -1194,7 +1182,7 @@ static int __init sec_jack_init(void)
 {
 #if defined(CONFIG_MACH_KLTE_KOR)
 	if (system_rev >= 13) {
-		pr_info("%s: Do not use sec jack in system_rev %d",
+		pr_debug("%s: Do not use sec jack in system_rev %d",
 			__func__, system_rev);
 		return 0;
 	} else {
@@ -1202,7 +1190,7 @@ static int __init sec_jack_init(void)
 	}
 #elif defined(CONFIG_MACH_KLTE_JPN)
 	if (system_rev >= 11) {
-		pr_info("%s: Do not use sec jack in system_rev %d",
+		pr_debug("%s: Do not use sec jack in system_rev %d",
 			__func__, system_rev);
 		return 0;
 	} else {
