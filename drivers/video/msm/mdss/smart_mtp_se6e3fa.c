@@ -122,10 +122,10 @@ static int char_to_int_v255(char data1, char data2)
 static bool first_adj_complete = false;
 static unsigned int gcontrol_enabled = 0;
 static unsigned int gcontrol_offset_mode = 1;
-static int gcontrol_red_offset = 0;
-static int gcontrol_green_offset = 0;
-static int gcontrol_blue_offset = 0;
-static int gcontrol_gradient_offset = 0;
+static int gcontrol_red = 0;
+static int gcontrol_green = 0;
+static int gcontrol_blue = 0;
+static int gcontrol_gradient = 0;
 
 #ifdef SMART_DIMMING_DEBUG
 static void print_RGB_offset(struct SMART_DIM *pSmart)
@@ -1821,9 +1821,9 @@ static void gamma_init_H_revJ(struct SMART_DIM *pSmart, char *str, int size)
 		if (gcontrol_enabled) {
 			if (gcontrol_offset_mode)
 				bl_index[S6E3FA_TABLE_MAX - cnt] +=
-					gradation_offset_H_revJ[table_index][cnt - 1] + gcontrol_gradient_offset;
+					gradation_offset_H_revJ[table_index][cnt - 1] + gcontrol_gradient;
 			else
-				bl_index[S6E3FA_TABLE_MAX - cnt] += gcontrol_gradient_offset;
+				bl_index[S6E3FA_TABLE_MAX - cnt] += gcontrol_gradient;
 		} else {
 			bl_index[S6E3FA_TABLE_MAX - cnt] +=
 				gradation_offset_H_revJ[table_index][cnt - 1];
@@ -1832,9 +1832,9 @@ static void gamma_init_H_revJ(struct SMART_DIM *pSmart, char *str, int size)
 		if (gcontrol_enabled) {
 			if (bl_index[S6E3FA_TABLE_MAX - cnt] == 0) {
 				if (gcontrol_offset_mode)
-					bl_index[S6E3FA_TABLE_MAX - cnt] = 1 + gcontrol_gradient_offset;
+					bl_index[S6E3FA_TABLE_MAX - cnt] = 1 + gcontrol_gradient;
 				else
-					bl_index[S6E3FA_TABLE_MAX - cnt] = gcontrol_gradient_offset;
+					bl_index[S6E3FA_TABLE_MAX - cnt] = gcontrol_gradient;
 			}
 		} else {
 			if (bl_index[S6E3FA_TABLE_MAX - cnt] == 0)
@@ -2040,58 +2040,58 @@ static void mtp_sorting(struct SMART_DIM *psmart)
 
 static void wrap_smart_dimming_init(void);
 
-static ssize_t gcontrol_red_offset_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+static ssize_t gcontrol_red_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%d\n", gcontrol_red_offset);
+	return sprintf(buf, "%d\n", gcontrol_red);
 }
 
-static ssize_t gcontrol_red_offset_store(struct kobject *kobj,
+static ssize_t gcontrol_red_store(struct kobject *kobj,
 			   struct kobj_attribute *attr, const char *buf, size_t count) {
 	int newval;
 	sscanf(buf, "%d", &newval);
-	gcontrol_red_offset = newval;
+	gcontrol_red = newval;
 	wrap_smart_dimming_init();
 	return count;
 }
 
-static ssize_t gcontrol_green_offset_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+static ssize_t gcontrol_green_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%d\n", gcontrol_green_offset);
+	return sprintf(buf, "%d\n", gcontrol_green);
 }
 
-static ssize_t gcontrol_green_offset_store(struct kobject *kobj,
+static ssize_t gcontrol_green_store(struct kobject *kobj,
 			   struct kobj_attribute *attr, const char *buf, size_t count) {
 	int newval;
 	sscanf(buf, "%d", &newval);
-	gcontrol_green_offset = newval;
+	gcontrol_green = newval;
 	wrap_smart_dimming_init();
 	return count;
 }
 
-static ssize_t gcontrol_blue_offset_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+static ssize_t gcontrol_blue_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%d\n", gcontrol_blue_offset);
+	return sprintf(buf, "%d\n", gcontrol_blue);
 }
 
-static ssize_t gcontrol_blue_offset_store(struct kobject *kobj,
+static ssize_t gcontrol_blue_store(struct kobject *kobj,
 			   struct kobj_attribute *attr, const char *buf, size_t count) {
 	int newval;
 	sscanf(buf, "%d", &newval);
-	gcontrol_blue_offset = newval;
+	gcontrol_blue = newval;
 	wrap_smart_dimming_init();
 	return count;
 }
 
-static ssize_t gcontrol_gradient_offset_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+static ssize_t gcontrol_gradient_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%d\n", gcontrol_gradient_offset);
+	return sprintf(buf, "%d\n", gcontrol_gradient);
 }
 
-static ssize_t gcontrol_gradient_offset_store(struct kobject *kobj,
+static ssize_t gcontrol_gradient_store(struct kobject *kobj,
 			   struct kobj_attribute *attr, const char *buf, size_t count) {
 	int newval;
 	sscanf(buf, "%d", &newval);
-	gcontrol_gradient_offset = newval;
+	gcontrol_gradient = newval;
 	wrap_smart_dimming_init();
 	return count;
 }
@@ -2124,25 +2124,25 @@ static ssize_t gcontrol_offset_mode_store(struct kobject *kobj,
 	return count;
 }
 
-static struct kobj_attribute gcontrol_red_offset_attribute =
-	__ATTR(gcontrol_red_offset, 0644,
-		gcontrol_red_offset_show,
-		gcontrol_red_offset_store);
+static struct kobj_attribute gcontrol_red_attribute =
+	__ATTR(gcontrol_red, 0644,
+		gcontrol_red_show,
+		gcontrol_red_store);
 
-static struct kobj_attribute gcontrol_green_offset_attribute =
-	__ATTR(gcontrol_green_offset, 0644,
-		gcontrol_green_offset_show,
-		gcontrol_green_offset_store);
+static struct kobj_attribute gcontrol_green_attribute =
+	__ATTR(gcontrol_green, 0644,
+		gcontrol_green_show,
+		gcontrol_green_store);
 
-static struct kobj_attribute gcontrol_blue_offset_attribute =
-	__ATTR(gcontrol_blue_offset, 0644,
-		gcontrol_blue_offset_show,
-		gcontrol_blue_offset_store);
+static struct kobj_attribute gcontrol_blue_attribute =
+	__ATTR(gcontrol_blue, 0644,
+		gcontrol_blue_show,
+		gcontrol_blue_store);
 
-static struct kobj_attribute gcontrol_gradient_offset_attribute =
-	__ATTR(gcontrol_gradient_offset, 0644,
-		gcontrol_gradient_offset_show,
-		gcontrol_gradient_offset_store);
+static struct kobj_attribute gcontrol_gradient_attribute =
+	__ATTR(gcontrol_gradient, 0644,
+		gcontrol_gradient_show,
+		gcontrol_gradient_store);
 
 static struct kobj_attribute gcontrol_enabled_attribute =
 	__ATTR(gcontrol_enabled, 0644,
@@ -2156,10 +2156,10 @@ static struct kobj_attribute gcontrol_offset_mode_attribute =
 
 static struct attribute *gamma_control_attrs[] =
 {
-	&gcontrol_red_offset_attribute.attr,
-	&gcontrol_green_offset_attribute.attr,
-	&gcontrol_blue_offset_attribute.attr,
-	&gcontrol_gradient_offset_attribute.attr,
+	&gcontrol_red_attribute.attr,
+	&gcontrol_green_attribute.attr,
+	&gcontrol_blue_attribute.attr,
+	&gcontrol_gradient_attribute.attr,
 	&gcontrol_enabled_attribute.attr,
 	&gcontrol_offset_mode_attribute.attr,
 	NULL
