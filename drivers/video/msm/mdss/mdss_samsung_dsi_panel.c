@@ -2394,7 +2394,7 @@ static int mipi_samsung_disp_send_cmd(
 	struct dsi_cmd_desc *cmd_desc;
 	int cmd_size = 0;
 	int flag = 0;
-#ifdef CMD_DEBUG
+#if 1
 	int i,j;
 #endif
 
@@ -2548,15 +2548,12 @@ static int mipi_samsung_disp_send_cmd(
 		goto unknown_command;
 	}
 
-#ifdef CMD_DEBUG
 	for (i = 0; i < cmd_size; i++)
 	{
 		for (j = 0; j < cmd_desc[i].dchdr.dlen; j++)
 			printk("%x ",cmd_desc[i].payload[j]);
 		printk("\n");
 	}
-#endif
-
 
 #ifdef MDP_RECOVERY
 	if (!mdss_recovery_start)
@@ -2825,12 +2822,10 @@ static int mdss_dsi_panel_dimming_init(struct mdss_panel_data *pdata)
 		/* Read mtp (B5h 19th) for HBM ELVSS OFFSET */
 		mipi_samsung_read_nv_mem(pdata, &nv_hbm_elvss_offset_cmds, hbm_buffer);
 		memcpy(&hbm_etc_cmds_list.cmd_desc[2].payload[1], hbm_buffer, 1);
-#if defined(CMD_DEBUG)
-{
+
 		int i,j;
 
-		for (i = 0; i < hbm_gamma_cmds_list.num_of_cmds; i++)
-		{
+		for (i = 0; i < hbm_gamma_cmds_list.num_of_cmds; i++) {
 			printk("[HBM] hbm_gamma_cmds_list : ");
 
 			for (j = 0; j < hbm_gamma_cmds_list.cmd_desc[i].dchdr.dlen; j++)
@@ -2838,16 +2833,13 @@ static int mdss_dsi_panel_dimming_init(struct mdss_panel_data *pdata)
 			printk("\n");
 		}
 
-		for (i = 0; i < hbm_etc_cmds_list.num_of_cmds; i++)
-		{
+		for (i = 0; i < hbm_etc_cmds_list.num_of_cmds; i++) {
 			printk("[HBM] hbm_etc_cmds_list : ");
 
 			for (j = 0; j < hbm_etc_cmds_list.cmd_desc[i].dchdr.dlen; j++)
 				printk("%02x ",hbm_etc_cmds_list.cmd_desc[i].payload[j]);
 			printk("\n");
 		}
-}
-#endif
 		/* Read mtp (B5h 24th ~ 25th) for Panel Production Day */
 		mipi_samsung_read_nv_mem(pdata, &nv_production_day_cmds, hbm_buffer);
 #endif
