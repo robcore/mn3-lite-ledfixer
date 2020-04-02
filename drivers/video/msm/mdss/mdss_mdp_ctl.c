@@ -518,6 +518,9 @@ static void mdss_mdp_perf_calc_mixer(struct mdss_mdp_mixer *mixer,
 
 	for (i = 0; i < num_pipes; i++) {
 		struct mdss_mdp_perf_params tmp;
+
+		memset(&tmp, 0, sizeof(tmp));
+
 		pipe = pipe_list[i];
 		if (pipe == NULL)
 			continue;
@@ -1906,8 +1909,8 @@ int mdss_mdp_ctl_start(struct mdss_mdp_ctl *ctl, bool handoff)
 	}
 	mdss_mdp_hist_intr_setup(&mdata->hist_intr, MDSS_IRQ_RESUME);
 
-	mdss_mdp_clk_ctrl(MDP_BLOCK_POWER_OFF, false);
 error:
+	mdss_mdp_clk_ctrl(MDP_BLOCK_POWER_OFF, false);
 	mutex_unlock(&ctl->lock);
 
 	return ret;
