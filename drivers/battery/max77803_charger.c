@@ -33,10 +33,10 @@
 #if defined(CONFIG_MACH_FLTESKT)
 #define SIOP_INPUT_LIMIT_CURRENT 1001
 #else
-#define SIOP_INPUT_LIMIT_CURRENT 1800
+#define SIOP_INPUT_LIMIT_CURRENT 2100
 #endif
-#define SIOP_CHARGING_LIMIT_CURRENT 1000
-#define SLOW_CHARGING_CURRENT_STANDARD 450
+#define SIOP_CHARGING_LIMIT_CURRENT 1200
+#define SLOW_CHARGING_CURRENT_STANDARD 400
 
 static bool ignore_siop = true;
 module_param(ignore_siop, bool, 0644);
@@ -455,14 +455,14 @@ static int max77803_get_input_current(struct max77803_charger_data *charger)
 				MAX77803_CHG_REG_CHG_CNFG_10, &reg_data);
 		pr_info("%s: CHG_CNFG_10(0x%02x)\n", __func__, reg_data);
 		/* AND operation for removing the formal 2bit  */
-		reg_data = reg_data & 0x3F;
+		reg_data &= 0x3F;
 		charger->input_curr_limit_step = 20;
 	} else {
 		max77803_read_reg(charger->max77803->i2c,
 				MAX77803_CHG_REG_CHG_CNFG_09, &reg_data);
 		pr_info("%s: CHG_CNFG_09(0x%02x)\n", __func__, reg_data);
 		/* AND operation for removing the formal 1bit  */
-		reg_data = reg_data & 0x7F;
+		reg_data &= 0x7F;
 		if (charger->pmic_ver == 0x04)
 			charger->input_curr_limit_step = 25;
 		else
