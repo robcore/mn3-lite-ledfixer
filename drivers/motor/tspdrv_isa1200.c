@@ -563,8 +563,6 @@ static long unlocked_ioctl(struct file *file, unsigned int cmd,
     int i;
 #endif
 
-	DbgOut((KERN_INFO "tspdrv: ioctl cmd[0x%x].\n", cmd));
-
 	switch (cmd) {
         case TSPDRV_STOP_KERNEL_TIMER:
             /*
@@ -583,7 +581,6 @@ static long unlocked_ioctl(struct file *file, unsigned int cmd,
 #ifdef QA_TEST
 		if (g_nForceLogIndex) {
 			for (i = 0; i < g_nForceLogIndex; i++) {
-				printk(KERN_DEBUG "<6>%d\t%d\n",g_nTime, g_nForceLog[i]);
                     g_nTime += TIME_INCREMENT;
                 }
             }
@@ -602,7 +599,6 @@ static long unlocked_ioctl(struct file *file, unsigned int cmd,
 	    vibe_pwm_onoff(1);
             ImmVibeSPI_ForceOut_AmpEnable(arg);
             DbgRecorderReset((arg));
-            DbgRecord((arg,";------- TSPDRV_ENABLE_AMP ---------\n"));
             break;
 
         case TSPDRV_DISABLE_AMP:

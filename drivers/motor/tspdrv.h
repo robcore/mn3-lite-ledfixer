@@ -114,7 +114,7 @@ int32_t g_nforce_32;
 #elif defined(CONFIG_SEC_S_PROJECT)
 #define MOTOR_STRENGTH			87/*MOTOR_STRENGTH 87 %*/
 #else
-#define MOTOR_STRENGTH			98/*MOTOR_STRENGTH 98 %*/
+#define MOTOR_STRENGTH			99/*MOTOR_STRENGTH 98 %*/
 #endif
 
 
@@ -179,7 +179,7 @@ int32_t g_nforce_32;
 #endif
 
 
-#define MOTOR_MIN_STRENGTH			54/*IMMERSION VALUE*/
+#define MOTOR_MIN_STRENGTH			64/*IMMERSION VALUE*/
 /*
  * ** Global variables for LRA PWM M,N and D values.
  * */
@@ -299,7 +299,7 @@ int32_t vibe_set_pwm_freq(int nForce);
 /* Kernel Debug Macros */
 #ifdef __KERNEL__
 	#ifdef VIBE_DEBUG
-		#define DbgOut(_x_, ...) printk(_x_, ##__VA_ARGS__)
+		#define DbgOut(_x_)
 	#else   /* VIBE_DEBUG */
 		#define DbgOut(_x_)
 	#endif  /* VIBE_DEBUG */

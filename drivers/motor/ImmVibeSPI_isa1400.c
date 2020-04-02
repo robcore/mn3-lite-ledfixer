@@ -105,7 +105,6 @@ IMMVIBESPIAPI VibeStatus ImmVibeSPI_ForceOut_AmpDisable(VibeUInt8 nActuatorIndex
 	vib_ioctl_lock = 0;
     if (g_bAmpEnabled[nActuatorIndex])
     {
-        DbgOut((KERN_DEBUG "ImmVibeSPI_ForceOut_AmpDisable.\n"));
 
         g_bAmpEnabled[nActuatorIndex] = false;
 
@@ -125,7 +124,6 @@ IMMVIBESPIAPI VibeStatus ImmVibeSPI_ForceOut_AmpEnable(VibeUInt8 nActuatorIndex)
 	vib_ioctl_lock = 1;
     if (!g_bAmpEnabled[nActuatorIndex])
     {
-        DbgOut((KERN_DEBUG "ImmVibeSPI_ForceOut_AmpEnable.\n"));
         g_bAmpEnabled[nActuatorIndex] = true;
 
 	/* mz_ops.bstat |= HN_BATTERY_MOTOR; */

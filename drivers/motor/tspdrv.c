@@ -621,8 +621,6 @@ static __devinit int tspdrv_probe(struct platform_device *pdev)
 
 static int __devexit tspdrv_remove(struct platform_device *pdev)
 {
-	DbgOut((KERN_INFO "tspdrv: tspdrv_remove.\n"));
-
 	iounmap(virt_mmss_gp1_base);
 	
 	DbgRecorderTerminate(());
@@ -637,8 +635,6 @@ static int __devexit tspdrv_remove(struct platform_device *pdev)
 
 static int open(struct inode *inode, struct file *file)
 {
-	DbgOut((KERN_INFO "tspdrv: open.\n"));
-
 	if (!try_module_get(THIS_MODULE))
 		return -ENODEV;
 
@@ -647,7 +643,6 @@ static int open(struct inode *inode, struct file *file)
 
 static int release(struct inode *inode, struct file *file)
 {
-	DbgOut((KERN_INFO "tspdrv: release.\n"));
 
 	/*
 	** Reset force and stop timer when the driver is closed, to make sure
@@ -680,7 +675,6 @@ static ssize_t read(struct file *file, char *buf, size_t count, loff_t *ppos)
 
 	if (0 != copy_to_user(buf, g_szdevice_name + (*ppos), nbufsize)) {
 		/* Failed to copy all the data, exit */
-		DbgOut((KERN_ERR "tspdrv: copy_to_user failed.\n"));
 		return 0;
 	}
 
@@ -695,20 +689,17 @@ static ssize_t write(struct file *file, const char *buf, size_t count,
 	int i = 0;
 
 	*ppos = 0;  /* file position not used, always set to 0 */
-	/* DbgOut((KERN_ERR "tspdrv: write....\n")); */
 
 	/*
 	** Prevent unauthorized caller to write data.
 	** TouchSense service is the only valid caller.
 	*/
 	if (file->private_data != (void *)TSPDRV_MAGIC_NUMBER) {
-		DbgOut((KERN_ERR "tspdrv: unauthorized write.\n"));
 		return 0;
 	}
 #ifdef CONFIG_TACTILE_ASSIST
 	/* Check buffer size */
 	if ((count < SPI_HEADER_SIZE) || (count > SPI_BUFFER_SIZE)) {
-		DbgOut((KERN_ERR "tspdrv: invalid write buffer size.\n"));
 		return 0;
 	}
 	if (count == SPI_HEADER_SIZE)
@@ -718,7 +709,6 @@ static ssize_t write(struct file *file, const char *buf, size_t count,
 
 #else
 	if ((count <= SPI_HEADER_SIZE) || (count > SPI_BUFFER_SIZE)) {
-		DbgOut((KERN_ERR "tspdrv: invalid write buffer size.\n"));
 		return 0;
 	}
 #endif
@@ -726,7 +716,6 @@ static ssize_t write(struct file *file, const char *buf, size_t count,
 	/* Copy immediately the input buffer */
 	if (0 != copy_from_user(g_cwrite_buffer, buf, count)) {
 		/* Failed to copy all the data, exit */
-		DbgOut((KERN_ERR "tspdrv: copy_from_user failed.\n"));
 		return 0;
 	}
 
@@ -745,14 +734,12 @@ static ssize_t write(struct file *file, const char *buf, size_t count,
 			** Index is about to go beyond the buffer size.
 			** (Should never happen).
 			*/
-			DbgOut((KERN_EMERG "tspdrv: invalid buffer index.\n"));
 			return 0;
 		}
 
 		/* Check bit depth */
 		if (8 != pinput_buffer->nbit_depth)
-			DbgOut((KERN_WARNING
-			"tspdrv: invalid bit depth.Use default value(8).\n"));
+			pr_debug("tspdrv: invalid bit depth.Use default value(8).\n");
 
 		/* The above code not valid if SPI header size is not 3 */
 #if (SPI_HEADER_SIZE != 3)
@@ -766,13 +753,12 @@ static ssize_t write(struct file *file, const char *buf, size_t count,
 			** Index is about to go beyond the buffer size.
 			** (Should never happen).
 			*/
-			DbgOut((KERN_EMERG "tspdrv: invalid data size.\n"));
 			return 0;
 		}
 
 		/* Check actuator index */
 		if (NUM_ACTUATORS <= pinput_buffer->nactuator_index) {
-			DbgOut((KERN_ERR "tspdrv: invalid actuator index.\n"));
+
 			i += (SPI_HEADER_SIZE + pinput_buffer->nbuffer_size);
 			continue;
 		}
@@ -785,8 +771,8 @@ static ssize_t write(struct file *file, const char *buf, size_t count,
 			nindex_free_buffer = 1;
 		} else {
 			/* No room to store new samples  */
-			DbgOut((KERN_ERR
-			 "tspdrv: no room to store new samples.\n"));
+
+
 			return 0;
 		}
 
@@ -836,7 +822,6 @@ static long ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 #ifdef QA_TEST
 	int i;
 #endif
-	printk(KERN_DEBUG "tspdrv: %s %d\n", __func__, cmd);
 	/* DbgOut(KERN_INFO "tspdrv: ioctl cmd[0x%x].\n", cmd); */
 	switch (cmd) {
 	case TSPDRV_STOP_KERNEL_TIMER:
@@ -856,8 +841,6 @@ static long ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 #ifdef QA_TEST
 		if (g_nforcelog_index) {
 			for (i = 0; i < g_nforcelog_index; i++) {
-				printk(KERN_INFO "%d\t%d\n"
-					   , g_ntime, g_nforcelog[i]);
 				g_ntime += TIME_INCREMENT;
 			}
 		}
@@ -879,7 +862,6 @@ static long ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 		vibe_pwm_onoff(1);
 		ImmVibeSPI_ForceOut_AmpEnable(arg);
 		DbgRecorderReset((arg));
-		DbgRecord((arg, ";------- TSPDRV_ENABLE_AMP ---------\n"));
 		break;
 
 	case TSPDRV_DISABLE_AMP:
@@ -920,14 +902,12 @@ static int suspend(struct platform_device *pdev, pm_message_t state)
 
 		ret = 0;
 	}
-	DbgOut(KERN_DEBUG "tspdrv: %s (%d).\n", __func__, ret);
 	return ret;
 }
 
 static int resume(struct platform_device *pdev)
 {
 	/* Restart system timers */
-	DbgOut(KERN_DEBUG "tspdrv: %s.\n", __func__);
 	return 0;
 }
 

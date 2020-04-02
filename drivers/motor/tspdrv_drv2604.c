@@ -494,11 +494,9 @@ static int ioctl(struct inode *inode, struct file *file, unsigned int cmd, unsig
             ImmVibeSPI_ForceOut_AmpEnable(arg);
 #ifdef VIBE_RUNTIME_RECORD
             if (atomic_read(&g_bRuntimeRecord)) {
-                DbgRecord((arg,";------- TSPDRV_ENABLE_AMP ---------\n"));
             }
 #else
             DbgRecorderReset((arg));
-            DbgRecord((arg,";------- TSPDRV_ENABLE_AMP ---------\n"));
 #endif
             break;
 

@@ -523,8 +523,6 @@ static long ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 #ifdef QA_TEST
 		if (g_nforcelog_index) {
 			for (i = 0; i < g_nforcelog_index; i++) {
-				printk(KERN_INFO "%d\t%d\n"
-					   , g_ntime, g_nforcelog[i]);
 				g_ntime += TIME_INCREMENT;
 			}
 		}
@@ -541,7 +539,6 @@ static long ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 		wake_lock(&vib_wake_lock);
 		ImmVibeSPI_ForceOut_AmpEnable(arg);
 		DbgRecorderReset((arg));
-		DbgRecord((arg, ";------- TSPDRV_ENABLE_AMP ---------\n"));
 		break;
 
 	case TSPDRV_DISABLE_AMP:
@@ -647,7 +644,6 @@ err_free_mem:
 static int isa1400_vibrator_suspend(struct i2c_client *client, pm_message_t mesg)
 {
 	struct isa1400_vibrator_drvdata *ddata  = i2c_get_clientdata(client);
-	printk(KERN_INFO "[VIB] isa1400_vibrator_suspend called ");
 
 	if(vib_ioctl_lock){
 		vib_ioctl_lock = 0;
