@@ -14,6 +14,7 @@
 #include <linux/err.h>
 #include <linux/io.h>
 #include <linux/delay.h>
+#include <linux/module.h>
 #include "mdss_io_util.h"
 
 #define MAX_I2C_CMDS  16
