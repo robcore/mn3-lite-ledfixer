@@ -2450,7 +2450,7 @@ static int mipi_samsung_disp_send_cmd(
 			if (force_500cd_enabled)
 				msd.dstat.force500_need_update = 1;
 
-			if(msd.dstat.auto_brightness == 6) { //TODO make hbm depend on our own toggle instead of autobrightness!!!
+			if (msd.dstat.auto_brightness == 6) { //TODO make hbm depend on our own toggle instead of autobrightness!!!
 				cmd_size = make_brightcontrol_hbm_set(msd.dstat.bright_level);
 				msd.dstat.hbm_mode = 1;
 			} else if (msd.dstat.force500_need_update) {
@@ -2538,13 +2538,10 @@ static int mipi_samsung_disp_send_cmd(
 			cmd_size = lcd_crack_rec_cmd_list.num_of_cmds;
 #endif
 		default:
-			pr_err("%s : unknown_command.. \n", __func__);
 			goto unknown_command;
-			;
 	}
 
 	if (!cmd_size) {
-		pr_err("%s : cmd_size is zero!.. \n", __func__);
 		goto unknown_command;
 	}
 
@@ -2562,7 +2559,6 @@ static int mipi_samsung_disp_send_cmd(
 	if (!mdss_recovery_start)
 		mdss_dsi_cmds_send(msd.ctrl_pdata, cmd_desc, cmd_size, flag);
 	else
-		pr_err ("%s : Can't send command during mdss_recovery_start\n", __func__);
 #else
 	mdss_dsi_cmds_send(msd.ctrl_pdata, cmd_desc, cmd_size, flag);
 #endif
@@ -4536,6 +4532,7 @@ int mdss_dsi_panel_init(struct device_node *node, struct mdss_dsi_ctrl_pdata *ct
 	mutex_init(&msd.lock);
 
 	msd.dstat.on = 0;
+	msd.dstat.temperature_value = 148;
 	msd.dstat.recent_bright_level = 255;
 
 #if !defined(CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_VIDEO_FULL_HD_PT_PANEL)\
