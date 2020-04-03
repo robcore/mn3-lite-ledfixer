@@ -1022,605 +1022,6 @@ static ssize_t scenario_store(struct device *dev,
 	return size;
 }
 
-/* LITE_CONTROL_1[4] */
-static ssize_t effect_mask_show(struct device *dev, struct device_attribute *attr, char *buf)
-{
-	return sprintf(buf, "Decimal:%u\nHex:0x%x\n", LITE_CONTROL_1[4], LITE_CONTROL_1[4]);
-}
-
-/* hijack */
-static ssize_t hijack_show(struct device *dev, struct device_attribute *attr, char *buf)
-{
-	return sprintf(buf, "%u\n", hijack);
-}
-
-static ssize_t hijack_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
-{
-	int new_val;
-	sscanf(buf, "%d", &new_val);
-	if (new_val < 0)
-		new_val = 0;
-	if (new_val > 1)
-		new_val = 1;
-	hijack = new_val;
-	mDNIe_Set_Mode();
-	return size;
-}
-
-/* Custom Curve */
-//unsigned char custom_curve[CURVESIZE]
-
-/* offset_mode */
-
-static ssize_t offset_mode_show(struct device *dev, struct device_attribute *attr, char *buf)
-{
-	return sprintf(buf, "%u\n", offset_mode);
-}
-
-static ssize_t offset_mode_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
-{
-	int new_val;
-	sscanf(buf, "%d", &new_val);
-	if (new_val < 0)
-		new_val = 0;
-	if (new_val > 1)
-		new_val = 1;
-	offset_mode = new_val;
-	mDNIe_Set_Mode();
-	return size;
-}
-
-/* sharpen_boost */
-
-static ssize_t sharpen_boost_show(struct device *dev, struct device_attribute *attr, char *buf)
-{
-	return sprintf(buf, "%u\n", sharpen_boost);
-}
-
-static ssize_t sharpen_boost_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
-{
-	int new_val;
-	sscanf(buf, "%d", &new_val);
-	if (new_val < 0)
-		new_val = 0;
-	if (new_val > 1)
-		new_val = 1;
-	sharpen_boost = new_val;
-	mDNIe_Set_Mode();
-	return size;
-}
-
-
-/* sharpen */
-
-static ssize_t sharpen_show(struct device *dev, struct device_attribute *attr, char *buf)
-{
-	return sprintf(buf, "%u\n", sharpen);
-}
-
-static ssize_t sharpen_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
-{
-	int new_val;
-	sscanf(buf, "%d", &new_val);
-	if (new_val < 0)
-		new_val = 0;
-	if (new_val > 1)
-		new_val = 1;
-	sharpen = new_val;
-	mDNIe_Set_Mode();
-	return size;
-}
-
-static ssize_t chroma_show(struct device *dev, struct device_attribute *attr, char *buf)
-{
-	return sprintf(buf, "%u\n", chroma);
-}
-
-static ssize_t chroma_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
-{
-	int new_val;
-	sscanf(buf, "%d", &new_val);
-	if (new_val < 0)
-		new_val = 0;
-	if (new_val > 1)
-		new_val = 1;
-	chroma = new_val;
-	mDNIe_Set_Mode();
-	return size;
-}
-
-static ssize_t gamma_show(struct device *dev, struct device_attribute *attr, char *buf)
-{
-	return sprintf(buf, "%u\n", gamma);
-}
-
-static ssize_t gamma_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
-{
-	int new_val;
-	sscanf(buf, "%d", &new_val);
-	if (new_val < 0)
-		new_val = 0;
-	if (new_val > 1)
-		new_val = 1;
-	gamma = new_val;
-	mDNIe_Set_Mode();
-	return size;
-}
-
-/* black */
-
-static ssize_t black_show(struct device *dev, struct device_attribute *attr, char *buf)
-{
-	return sprintf(buf, "%u %u %u\n", black[0], black[1], black[2]);
-}
-
-static ssize_t black_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
-{
-	int i, new_val, NEWRED, NEWGREEN, NEWBLUE;
-
-	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
-		black[0] = NEWRED;
-		black[1] = NEWGREEN;
-		black[2] = NEWBLUE;
-	} else if (sscanf(buf, "%d", &new_val) == 1) {
-		black[0] = new_val;
-		black[1] = new_val;
-		black[2] = new_val;
-	} else {
-		return size;
-	}
-
-	for (i = 0; i < 2; i++)
-		clamp_val(black[i], 0, 255);
-
-	mDNIe_Set_Mode();
-
-	return size;
-}
-
-/* white */
-
-static ssize_t white_show(struct device *dev, struct device_attribute *attr, char *buf)
-{
-	return sprintf(buf, "%u %u %u\n", white[0], white[1], white[2]);
-}
-
-static ssize_t white_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
-{
-	int i, new_val, NEWRED, NEWGREEN, NEWBLUE;
-
-	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
-		white[0] = NEWRED;
-		white[1] = NEWGREEN;
-		white[2] = NEWBLUE;
-	} else if (sscanf(buf, "%d", &new_val) == 1) {
-		white[0] = new_val;
-		white[1] = new_val;
-		white[2] = new_val;
-	} else {
-		return size;
-	}
-
-	for (i = 0; i < 2; i++)
-		clamp_val(white[i], 0, 255);
-
-	mDNIe_Set_Mode();
-
-	return size;
-}
-
-/* red */
-
-static ssize_t red_show(struct device *dev, struct device_attribute *attr, char *buf)
-{
-	return sprintf(buf, "%u %u %u\n", red[0], red[1], red[2]);
-}
-
-static ssize_t red_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
-{
-	int i, new_val, NEWRED, NEWGREEN, NEWBLUE;
-
-	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
-		red[0] = NEWRED;
-		red[1] = NEWGREEN;
-		red[2] = NEWBLUE;
-	} else if (sscanf(buf, "%d", &new_val) == 1) {
-		red[0] = new_val;
-		red[1] = 0;
-		red[2] = 0;
-	} else {
-		return size;
-	}
-
-	for (i = 0; i < 2; i++)
-		clamp_val(red[i], 0, 255);
-
-	mDNIe_Set_Mode();
-
-	return size;
-}
-
-/* green */
-
-static ssize_t green_show(struct device *dev, struct device_attribute *attr, char *buf)
-{
-	return sprintf(buf, "%u %u %u\n", green[0], green[1], green[2]);
-}
-
-static ssize_t green_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
-{
-	int i, new_val, NEWRED, NEWGREEN, NEWBLUE;
-
-	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
-		green[0] = NEWRED;
-		green[1] = NEWGREEN;
-		green[2] = NEWBLUE;
-	} else if (sscanf(buf, "%d", &new_val) == 1) {
-		green[0] = 0;
-		green[1] = new_val;
-		green[2] = 0;
-	} else {
-		return size;
-	}
-
-	for (i = 0; i < 2; i++)
-		clamp_val(green[i], 0, 255);
-
-	mDNIe_Set_Mode();
-
-	return size;
-}
-
-/* blue */
-
-static ssize_t blue_show(struct device *dev, struct device_attribute *attr, char *buf)
-{
-	return sprintf(buf, "%u %u %u\n", blue[0], blue[1], blue[2]);
-}
-
-static ssize_t blue_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
-{
-	int i, new_val, NEWRED, NEWGREEN, NEWBLUE;
-
-	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
-		blue[0] = NEWRED;
-		blue[1] = NEWGREEN;
-		blue[2] = NEWBLUE;
-	} else if (sscanf(buf, "%d", &new_val) == 1) {
-		blue[0] = 0;
-		blue[1] = 0;
-		blue[2] = new_val;
-	} else {
-		return size;
-	}
-
-	for (i = 0; i < 2; i++)
-		clamp_val(blue[i], 0, 255);
-
-	mDNIe_Set_Mode();
-
-	return size;
-}
-
-/* yellow */
-static ssize_t yellow_show(struct device *dev, struct device_attribute *attr, char *buf)
-{
-	return sprintf(buf, "%u %u %u\n", yellow[0], yellow[1], yellow[2]);
-}
-
-static ssize_t yellow_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
-{
-	int i, new_val, NEWRED, NEWGREEN, NEWBLUE;
-
-	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
-		yellow[0] = NEWRED;
-		yellow[1] = NEWGREEN;
-		yellow[2] = NEWBLUE;
-	} else if (sscanf(buf, "%d", &new_val) == 1) {
-		yellow[0] = new_val;
-		yellow[1] = new_val;
-		yellow[2] = 0;
-	} else {
-		return size;
-	}
-
-	for (i = 0; i < 2; i++)
-		clamp_val(yellow[i], 0, 255);
-
-	mDNIe_Set_Mode();
-
-	return size;
-}
-
-/* magenta */
-static ssize_t magenta_show(struct device *dev, struct device_attribute *attr, char *buf)
-{
-	return sprintf(buf, "%u %u %u\n", magenta[0], magenta[1], magenta[2]);
-}
-
-static ssize_t magenta_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
-{
-	int i, new_val, NEWRED, NEWGREEN, NEWBLUE;
-
-	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
-		magenta[0] = NEWRED;
-		magenta[1] = NEWGREEN;
-		magenta[2] = NEWBLUE;
-	} else if (sscanf(buf, "%d", &new_val) == 1) {
-		magenta[0] = new_val;
-		magenta[1] = 0;
-		magenta[2] = new_val;
-	} else {
-		return size;
-	}
-
-	for (i = 0; i < 2; i++)
-		clamp_val(magenta[i], 0, 255);
-
-	mDNIe_Set_Mode();
-
-	return size;
-}
-
-/* cyan */
-static ssize_t cyan_show(struct device *dev, struct device_attribute *attr, char *buf)
-{
-	return sprintf(buf, "%u %u %u\n", cyan[0], cyan[1], cyan[2]);
-}
-
-static ssize_t cyan_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
-{
-	int i, new_val, NEWRED, NEWGREEN, NEWBLUE;
-
-	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
-		cyan[0] = NEWRED;
-		cyan[1] = NEWGREEN;
-		cyan[2] = NEWBLUE;
-	} else if (sscanf(buf, "%d", &new_val) == 1) {
-		cyan[0] = 0;
-		cyan[1] = new_val;
-		cyan[2] = new_val;
-	} else {
-		return size;
-	}
-
-	for (i = 0; i < 2; i++)
-		clamp_val(cyan[i], 0, 255);
-
-	mDNIe_Set_Mode();
-
-	return size;
-}
-
-/* offset_black */
-
-static ssize_t offset_black_show(struct device *dev, struct device_attribute *attr, char *buf)
-{
-	return sprintf(buf, "%u %u %u\n", offset_black[0], offset_black[1], offset_black[2]);
-}
-
-static ssize_t offset_black_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
-{
-	int new_val, NEWRED, NEWGREEN, NEWBLUE;
-
-	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
-		offset_black[0] = NEWRED;
-		offset_black[1] = NEWGREEN;
-		offset_black[2] = NEWBLUE;
-	} else if (sscanf(buf, "%d", &new_val) == 1) {
-		offset_black[0] = new_val;
-		offset_black[1] = new_val;
-		offset_black[2] = new_val;
-	} else {
-		return size;
-	}
-
-	cleanup_offsets();
-	mDNIe_Set_Mode();
-
-	return size;
-}
-
-/* offset_white */
-
-static ssize_t offset_white_show(struct device *dev, struct device_attribute *attr, char *buf)
-{
-	return sprintf(buf, "%u %u %u\n", offset_white[0], offset_white[1], offset_white[2]);
-}
-
-static ssize_t offset_white_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
-{
-	int new_val, NEWRED, NEWGREEN, NEWBLUE;
-
-	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
-		offset_white[0] = NEWRED;
-		offset_white[1] = NEWGREEN;
-		offset_white[2] = NEWBLUE;
-	} else if (sscanf(buf, "%d", &new_val) == 1) {
-		offset_white[0] = new_val;
-		offset_white[1] = new_val;
-		offset_white[2] = new_val;
-	} else {
-		return size;
-	}
-
-	cleanup_offsets();
-	mDNIe_Set_Mode();
-
-	return size;
-}
-
-/* offset_red */
-
-static ssize_t offset_red_show(struct device *dev, struct device_attribute *attr, char *buf)
-{
-	return sprintf(buf, "%u %u %u\n", offset_red[0], offset_red[1], offset_red[2]);
-}
-
-static ssize_t offset_red_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
-{
-	int new_val, NEWRED, NEWGREEN, NEWBLUE;
-
-	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
-		offset_red[0] = NEWRED;
-		offset_red[1] = NEWGREEN;
-		offset_red[2] = NEWBLUE;
-	} else if (sscanf(buf, "%d", &new_val) == 1) {
-		offset_red[0] = new_val;
-		offset_red[1] = 0;
-		offset_red[2] = 0;
-	} else {
-		return size;
-	}
-
-	cleanup_offsets();
-	mDNIe_Set_Mode();
-
-	return size;
-}
-
-/* offset_green */
-
-static ssize_t offset_green_show(struct device *dev, struct device_attribute *attr, char *buf)
-{
-	return sprintf(buf, "%u %u %u\n", offset_green[0], offset_green[1], offset_green[2]);
-}
-
-static ssize_t offset_green_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
-{
-	int new_val, NEWRED, NEWGREEN, NEWBLUE;
-
-	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
-		offset_green[0] = NEWRED;
-		offset_green[1] = NEWGREEN;
-		offset_green[2] = NEWBLUE;
-	} else if (sscanf(buf, "%d", &new_val) == 1) {
-		offset_green[0] = 0;
-		offset_green[1] = new_val;
-		offset_green[2] = 0;
-	} else {
-		return size;
-	}
-
-	cleanup_offsets();
-	mDNIe_Set_Mode();
-
-	return size;
-}
-
-/* offset_blue */
-
-static ssize_t offset_blue_show(struct device *dev, struct device_attribute *attr, char *buf)
-{
-	return sprintf(buf, "%u %u %u\n", offset_blue[0], offset_blue[1], offset_blue[2]);
-}
-
-static ssize_t offset_blue_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
-{
-	int new_val, NEWRED, NEWGREEN, NEWBLUE;
-
-	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
-		offset_blue[0] = NEWRED;
-		offset_blue[1] = NEWGREEN;
-		offset_blue[2] = NEWBLUE;
-	} else if (sscanf(buf, "%d", &new_val) == 1) {
-		offset_blue[0] = 0;
-		offset_blue[1] = 0;
-		offset_blue[2] = new_val;
-	} else {
-		return size;
-	}
-
-	cleanup_offsets();
-	mDNIe_Set_Mode();
-
-	return size;
-}
-
-/* offset_yellow */
-static ssize_t offset_yellow_show(struct device *dev, struct device_attribute *attr, char *buf)
-{
-	return sprintf(buf, "%u %u %u\n", offset_yellow[0], offset_yellow[1], offset_yellow[2]);
-}
-
-static ssize_t offset_yellow_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
-{
-	int new_val, NEWRED, NEWGREEN, NEWBLUE;
-
-	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
-		offset_yellow[0] = NEWRED;
-		offset_yellow[1] = NEWGREEN;
-		offset_yellow[2] = NEWBLUE;
-	} else if (sscanf(buf, "%d", &new_val) == 1) {
-		offset_yellow[0] = new_val;
-		offset_yellow[1] = new_val;
-		offset_yellow[2] = 0;
-	} else {
-		return size;
-	}
-
-	cleanup_offsets();
-	mDNIe_Set_Mode();
-
-	return size;
-}
-
-/* offset_magenta */
-static ssize_t offset_magenta_show(struct device *dev, struct device_attribute *attr, char *buf)
-{
-	return sprintf(buf, "%u %u %u\n", offset_magenta[0], offset_magenta[1], offset_magenta[2]);
-}
-
-static ssize_t offset_magenta_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
-{
-	int new_val, NEWRED, NEWGREEN, NEWBLUE;
-
-	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
-		offset_magenta[0] = NEWRED;
-		offset_magenta[1] = NEWGREEN;
-		offset_magenta[2] = NEWBLUE;
-	} else if (sscanf(buf, "%d", &new_val) == 1) {
-		offset_magenta[0] = new_val;
-		offset_magenta[1] = 0;
-		offset_magenta[2] = new_val;
-	} else {
-		return size;
-	}
-
-	cleanup_offsets();
-	mDNIe_Set_Mode();
-
-	return size;
-}
-
-/* offset_cyan */
-static ssize_t offset_cyan_show(struct device *dev, struct device_attribute *attr, char *buf)
-{
-	return sprintf(buf, "%u %u %u\n", offset_cyan[0], offset_cyan[1], offset_cyan[2]);
-}
-
-static ssize_t offset_cyan_store(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
-{
-	int new_val, NEWRED, NEWGREEN, NEWBLUE;
-
-	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
-		offset_cyan[0] = NEWRED;
-		offset_cyan[1] = NEWGREEN;
-		offset_cyan[2] = NEWBLUE;
-	} else if (sscanf(buf, "%d", &new_val) == 1) {
-		offset_cyan[0] = 0;
-		offset_cyan[1] = new_val;
-		offset_cyan[2] = new_val;
-	} else {
-		return size;
-	}
-
-	cleanup_offsets();
-	mDNIe_Set_Mode();
-
-	return size;
-}
-
 static ssize_t mdnieset_user_select_file_cmd_show(struct device *dev,
 						  struct device_attribute *attr,
 						  char *buf)
@@ -1854,29 +1255,6 @@ static ssize_t accessibility_store(struct device *dev,
 	return size;
 }
 
-static DEVICE_ATTR(effect_mask, 0440, effect_mask_show, NULL);
-static DEVICE_ATTR(hijack, 0664, hijack_show, hijack_store);
-static DEVICE_ATTR(offset_mode, 0664, offset_mode_show, offset_mode_store);
-static DEVICE_ATTR(sharpen_boost, 0664, sharpen_boost_show, sharpen_boost_store);
-static DEVICE_ATTR(sharpen, 0664, sharpen_show, sharpen_store);
-static DEVICE_ATTR(chroma, 0664, chroma_show, chroma_store);
-static DEVICE_ATTR(gamma, 0664, gamma_show, gamma_store);
-static DEVICE_ATTR(black, 0664, black_show, black_store);
-static DEVICE_ATTR(white, 0664, white_show, white_store);
-static DEVICE_ATTR(red, 0664, red_show, red_store);
-static DEVICE_ATTR(green, 0664, green_show, green_store);
-static DEVICE_ATTR(blue, 0664, blue_show, blue_store);
-static DEVICE_ATTR(cyan, 0664, cyan_show, cyan_store);
-static DEVICE_ATTR(magenta, 0664, magenta_show, magenta_store);
-static DEVICE_ATTR(yellow, 0664, yellow_show, yellow_store);
-static DEVICE_ATTR(offset_black, 0664, offset_black_show, offset_black_store);
-static DEVICE_ATTR(offset_white, 0664, offset_white_show, offset_white_store);
-static DEVICE_ATTR(offset_red, 0664, offset_red_show, offset_red_store);
-static DEVICE_ATTR(offset_green, 0664, offset_green_show, offset_green_store);
-static DEVICE_ATTR(offset_blue, 0664, offset_blue_show, offset_blue_store);
-static DEVICE_ATTR(offset_cyan, 0664, offset_cyan_show, offset_cyan_store);
-static DEVICE_ATTR(offset_magenta, 0664, offset_magenta_show, offset_magenta_store);
-static DEVICE_ATTR(offset_yellow, 0664, offset_yellow_show, offset_yellow_store);
 static DEVICE_ATTR(scenario, 0664, scenario_show, scenario_store);
 static DEVICE_ATTR(mode, 0664, mode_show, mode_store);
 static DEVICE_ATTR(mdnieset_user_select_file_cmd, 0664,
@@ -1894,6 +1272,651 @@ static DEVICE_ATTR(accessibility, 0664,
 
 static struct class *mdnie_class;
 struct device *tune_mdnie_dev;
+
+/* hijack */
+static ssize_t hijack_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", hijack);
+}
+
+static ssize_t hijack_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
+	int new_val;
+	sscanf(buf, "%d", &new_val);
+	if (new_val < 0)
+		new_val = 0;
+	if (new_val > 1)
+		new_val = 1;
+	hijack = new_val;
+	mDNIe_Set_Mode();
+	return count;
+}
+
+/* LITE_CONTROL_1[4] */
+static ssize_t effect_mask_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "Decimal:%u\nHex:0x%x\n", LITE_CONTROL_1[4], LITE_CONTROL_1[4]);
+}
+
+/* Custom Curve */
+//unsigned char custom_curve[CURVESIZE]
+
+/* offset_mode */
+
+static ssize_t offset_mode_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", offset_mode);
+}
+
+static ssize_t offset_mode_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
+	int new_val;
+	sscanf(buf, "%d", &new_val);
+	if (new_val < 0)
+		new_val = 0;
+	if (new_val > 1)
+		new_val = 1;
+	offset_mode = new_val;
+	mDNIe_Set_Mode();
+	return count;
+}
+
+/* sharpen_boost */
+
+static ssize_t sharpen_boost_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", sharpen_boost);
+}
+
+static ssize_t sharpen_boost_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
+	int new_val;
+	sscanf(buf, "%d", &new_val);
+	if (new_val < 0)
+		new_val = 0;
+	if (new_val > 1)
+		new_val = 1;
+	sharpen_boost = new_val;
+	mDNIe_Set_Mode();
+	return count;
+}
+
+
+/* sharpen */
+
+static ssize_t sharpen_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", sharpen);
+}
+
+static ssize_t sharpen_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
+	int new_val;
+	sscanf(buf, "%d", &new_val);
+	if (new_val < 0)
+		new_val = 0;
+	if (new_val > 1)
+		new_val = 1;
+	sharpen = new_val;
+	mDNIe_Set_Mode();
+	return count;
+}
+
+static ssize_t chroma_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", chroma);
+}
+
+static ssize_t chroma_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
+	int new_val;
+	sscanf(buf, "%d", &new_val);
+	if (new_val < 0)
+		new_val = 0;
+	if (new_val > 1)
+		new_val = 1;
+	chroma = new_val;
+	mDNIe_Set_Mode();
+	return count;
+}
+
+static ssize_t gamma_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", gamma);
+}
+
+static ssize_t gamma_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
+	int new_val;
+	sscanf(buf, "%d", &new_val);
+	if (new_val < 0)
+		new_val = 0;
+	if (new_val > 1)
+		new_val = 1;
+	gamma = new_val;
+	mDNIe_Set_Mode();
+	return count;
+}
+
+/* black */
+
+static ssize_t black_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u %u %u\n", black[0], black[1], black[2]);
+}
+
+static ssize_t black_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
+	int i, new_val, NEWRED, NEWGREEN, NEWBLUE;
+
+	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
+		black[0] = NEWRED;
+		black[1] = NEWGREEN;
+		black[2] = NEWBLUE;
+	} else if (sscanf(buf, "%d", &new_val) == 1) {
+		black[0] = new_val;
+		black[1] = new_val;
+		black[2] = new_val;
+	} else {
+		return count;
+	}
+
+	for (i = 0; i < 2; i++)
+		clamp_val(black[i], 0, 255);
+
+	mDNIe_Set_Mode();
+
+	return count;
+}
+
+/* white */
+
+static ssize_t white_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u %u %u\n", white[0], white[1], white[2]);
+}
+
+static ssize_t white_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
+	int i, new_val, NEWRED, NEWGREEN, NEWBLUE;
+
+	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
+		white[0] = NEWRED;
+		white[1] = NEWGREEN;
+		white[2] = NEWBLUE;
+	} else if (sscanf(buf, "%d", &new_val) == 1) {
+		white[0] = new_val;
+		white[1] = new_val;
+		white[2] = new_val;
+	} else {
+		return count;
+	}
+
+	for (i = 0; i < 2; i++)
+		clamp_val(white[i], 0, 255);
+
+	mDNIe_Set_Mode();
+
+	return count;
+}
+
+/* red */
+
+static ssize_t red_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u %u %u\n", red[0], red[1], red[2]);
+}
+
+static ssize_t red_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
+	int i, new_val, NEWRED, NEWGREEN, NEWBLUE;
+
+	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
+		red[0] = NEWRED;
+		red[1] = NEWGREEN;
+		red[2] = NEWBLUE;
+	} else if (sscanf(buf, "%d", &new_val) == 1) {
+		red[0] = new_val;
+		red[1] = 0;
+		red[2] = 0;
+	} else {
+		return count;
+	}
+
+	for (i = 0; i < 2; i++)
+		clamp_val(red[i], 0, 255);
+
+	mDNIe_Set_Mode();
+
+	return count;
+}
+
+/* green */
+
+static ssize_t green_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u %u %u\n", green[0], green[1], green[2]);
+}
+
+static ssize_t green_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
+	int i, new_val, NEWRED, NEWGREEN, NEWBLUE;
+
+	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
+		green[0] = NEWRED;
+		green[1] = NEWGREEN;
+		green[2] = NEWBLUE;
+	} else if (sscanf(buf, "%d", &new_val) == 1) {
+		green[0] = 0;
+		green[1] = new_val;
+		green[2] = 0;
+	} else {
+		return count;
+	}
+
+	for (i = 0; i < 2; i++)
+		clamp_val(green[i], 0, 255);
+
+	mDNIe_Set_Mode();
+
+	return count;
+}
+
+/* blue */
+
+static ssize_t blue_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u %u %u\n", blue[0], blue[1], blue[2]);
+}
+
+static ssize_t blue_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
+	int i, new_val, NEWRED, NEWGREEN, NEWBLUE;
+
+	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
+		blue[0] = NEWRED;
+		blue[1] = NEWGREEN;
+		blue[2] = NEWBLUE;
+	} else if (sscanf(buf, "%d", &new_val) == 1) {
+		blue[0] = 0;
+		blue[1] = 0;
+		blue[2] = new_val;
+	} else {
+		return count;
+	}
+
+	for (i = 0; i < 2; i++)
+		clamp_val(blue[i], 0, 255);
+
+	mDNIe_Set_Mode();
+
+	return count;
+}
+
+/* yellow */
+static ssize_t yellow_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u %u %u\n", yellow[0], yellow[1], yellow[2]);
+}
+
+static ssize_t yellow_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
+	int i, new_val, NEWRED, NEWGREEN, NEWBLUE;
+
+	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
+		yellow[0] = NEWRED;
+		yellow[1] = NEWGREEN;
+		yellow[2] = NEWBLUE;
+	} else if (sscanf(buf, "%d", &new_val) == 1) {
+		yellow[0] = new_val;
+		yellow[1] = new_val;
+		yellow[2] = 0;
+	} else {
+		return count;
+	}
+
+	for (i = 0; i < 2; i++)
+		clamp_val(yellow[i], 0, 255);
+
+	mDNIe_Set_Mode();
+
+	return count;
+}
+
+/* magenta */
+static ssize_t magenta_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u %u %u\n", magenta[0], magenta[1], magenta[2]);
+}
+
+static ssize_t magenta_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
+	int i, new_val, NEWRED, NEWGREEN, NEWBLUE;
+
+	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
+		magenta[0] = NEWRED;
+		magenta[1] = NEWGREEN;
+		magenta[2] = NEWBLUE;
+	} else if (sscanf(buf, "%d", &new_val) == 1) {
+		magenta[0] = new_val;
+		magenta[1] = 0;
+		magenta[2] = new_val;
+	} else {
+		return count;
+	}
+
+	for (i = 0; i < 2; i++)
+		clamp_val(magenta[i], 0, 255);
+
+	mDNIe_Set_Mode();
+
+	return count;
+}
+
+/* cyan */
+static ssize_t cyan_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u %u %u\n", cyan[0], cyan[1], cyan[2]);
+}
+
+static ssize_t cyan_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
+	int i, new_val, NEWRED, NEWGREEN, NEWBLUE;
+
+	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
+		cyan[0] = NEWRED;
+		cyan[1] = NEWGREEN;
+		cyan[2] = NEWBLUE;
+	} else if (sscanf(buf, "%d", &new_val) == 1) {
+		cyan[0] = 0;
+		cyan[1] = new_val;
+		cyan[2] = new_val;
+	} else {
+		return count;
+	}
+
+	for (i = 0; i < 2; i++)
+		clamp_val(cyan[i], 0, 255);
+
+	mDNIe_Set_Mode();
+
+	return count;
+}
+
+/* offset_black */
+
+static ssize_t offset_black_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u %u %u\n", offset_black[0], offset_black[1], offset_black[2]);
+}
+
+static ssize_t offset_black_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
+	int new_val, NEWRED, NEWGREEN, NEWBLUE;
+
+	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
+		offset_black[0] = NEWRED;
+		offset_black[1] = NEWGREEN;
+		offset_black[2] = NEWBLUE;
+	} else if (sscanf(buf, "%d", &new_val) == 1) {
+		offset_black[0] = new_val;
+		offset_black[1] = new_val;
+		offset_black[2] = new_val;
+	} else {
+		return count;
+	}
+
+	cleanup_offsets();
+	mDNIe_Set_Mode();
+
+	return count;
+}
+
+/* offset_white */
+
+static ssize_t offset_white_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u %u %u\n", offset_white[0], offset_white[1], offset_white[2]);
+}
+
+static ssize_t offset_white_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
+	int new_val, NEWRED, NEWGREEN, NEWBLUE;
+
+	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
+		offset_white[0] = NEWRED;
+		offset_white[1] = NEWGREEN;
+		offset_white[2] = NEWBLUE;
+	} else if (sscanf(buf, "%d", &new_val) == 1) {
+		offset_white[0] = new_val;
+		offset_white[1] = new_val;
+		offset_white[2] = new_val;
+	} else {
+		return count;
+	}
+
+	cleanup_offsets();
+	mDNIe_Set_Mode();
+
+	return count;
+}
+
+/* offset_red */
+
+static ssize_t offset_red_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u %u %u\n", offset_red[0], offset_red[1], offset_red[2]);
+}
+
+static ssize_t offset_red_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
+	int new_val, NEWRED, NEWGREEN, NEWBLUE;
+
+	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
+		offset_red[0] = NEWRED;
+		offset_red[1] = NEWGREEN;
+		offset_red[2] = NEWBLUE;
+	} else if (sscanf(buf, "%d", &new_val) == 1) {
+		offset_red[0] = new_val;
+		offset_red[1] = 0;
+		offset_red[2] = 0;
+	} else {
+		return count;
+	}
+
+	cleanup_offsets();
+	mDNIe_Set_Mode();
+
+	return count;
+}
+
+/* offset_green */
+
+static ssize_t offset_green_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u %u %u\n", offset_green[0], offset_green[1], offset_green[2]);
+}
+
+static ssize_t offset_green_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
+	int new_val, NEWRED, NEWGREEN, NEWBLUE;
+
+	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
+		offset_green[0] = NEWRED;
+		offset_green[1] = NEWGREEN;
+		offset_green[2] = NEWBLUE;
+	} else if (sscanf(buf, "%d", &new_val) == 1) {
+		offset_green[0] = 0;
+		offset_green[1] = new_val;
+		offset_green[2] = 0;
+	} else {
+		return count;
+	}
+
+	cleanup_offsets();
+	mDNIe_Set_Mode();
+
+	return count;
+}
+
+/* offset_blue */
+
+static ssize_t offset_blue_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u %u %u\n", offset_blue[0], offset_blue[1], offset_blue[2]);
+}
+
+static ssize_t offset_blue_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
+	int new_val, NEWRED, NEWGREEN, NEWBLUE;
+
+	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
+		offset_blue[0] = NEWRED;
+		offset_blue[1] = NEWGREEN;
+		offset_blue[2] = NEWBLUE;
+	} else if (sscanf(buf, "%d", &new_val) == 1) {
+		offset_blue[0] = 0;
+		offset_blue[1] = 0;
+		offset_blue[2] = new_val;
+	} else {
+		return count;
+	}
+
+	cleanup_offsets();
+	mDNIe_Set_Mode();
+
+	return count;
+}
+
+/* offset_yellow */
+static ssize_t offset_yellow_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u %u %u\n", offset_yellow[0], offset_yellow[1], offset_yellow[2]);
+}
+
+static ssize_t offset_yellow_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
+	int new_val, NEWRED, NEWGREEN, NEWBLUE;
+
+	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
+		offset_yellow[0] = NEWRED;
+		offset_yellow[1] = NEWGREEN;
+		offset_yellow[2] = NEWBLUE;
+	} else if (sscanf(buf, "%d", &new_val) == 1) {
+		offset_yellow[0] = new_val;
+		offset_yellow[1] = new_val;
+		offset_yellow[2] = 0;
+	} else {
+		return count;
+	}
+
+	cleanup_offsets();
+	mDNIe_Set_Mode();
+
+	return count;
+}
+
+/* offset_magenta */
+static ssize_t offset_magenta_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u %u %u\n", offset_magenta[0], offset_magenta[1], offset_magenta[2]);
+}
+
+static ssize_t offset_magenta_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
+	int new_val, NEWRED, NEWGREEN, NEWBLUE;
+
+	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
+		offset_magenta[0] = NEWRED;
+		offset_magenta[1] = NEWGREEN;
+		offset_magenta[2] = NEWBLUE;
+	} else if (sscanf(buf, "%d", &new_val) == 1) {
+		offset_magenta[0] = new_val;
+		offset_magenta[1] = 0;
+		offset_magenta[2] = new_val;
+	} else {
+		return count;
+	}
+
+	cleanup_offsets();
+	mDNIe_Set_Mode();
+
+	return count;
+}
+
+/* offset_cyan */
+static ssize_t offset_cyan_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u %u %u\n", offset_cyan[0], offset_cyan[1], offset_cyan[2]);
+}
+
+static ssize_t offset_cyan_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
+	int new_val, NEWRED, NEWGREEN, NEWBLUE;
+
+	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
+		offset_cyan[0] = NEWRED;
+		offset_cyan[1] = NEWGREEN;
+		offset_cyan[2] = NEWBLUE;
+	} else if (sscanf(buf, "%d", &new_val) == 1) {
+		offset_cyan[0] = 0;
+		offset_cyan[1] = new_val;
+		offset_cyan[2] = new_val;
+	} else {
+		return count;
+	}
+
+	cleanup_offsets();
+	mDNIe_Set_Mode();
+
+	return count;
+}
+
+MX_ATTR_RW(hijack, 0664, hijack_show, hijack_store);
+MX_ATTR_RW(effect_mask, 0440, effect_mask_show, NULL);
+MX_ATTR_RW(offset_mode, 0664, offset_mode_show, offset_mode_store);
+MX_ATTR_RW(sharpen_boost, 0664, sharpen_boost_show, sharpen_boost_store);
+MX_ATTR_RW(sharpen, 0664, sharpen_show, sharpen_store);
+MX_ATTR_RW(chroma, 0664, chroma_show, chroma_store);
+MX_ATTR_RW(gamma, 0664, gamma_show, gamma_store);
+MX_ATTR_RW(black, 0664, black_show, black_store);
+MX_ATTR_RW(white, 0664, white_show, white_store);
+MX_ATTR_RW(red, 0664, red_show, red_store);
+MX_ATTR_RW(green, 0664, green_show, green_store);
+MX_ATTR_RW(blue, 0664, blue_show, blue_store);
+MX_ATTR_RW(cyan, 0664, cyan_show, cyan_store);
+MX_ATTR_RW(magenta, 0664, magenta_show, magenta_store);
+MX_ATTR_RW(yellow, 0664, yellow_show, yellow_store);
+MX_ATTR_RW(offset_black, 0664, offset_black_show, offset_black_store);
+MX_ATTR_RW(offset_white, 0664, offset_white_show, offset_white_store);
+MX_ATTR_RW(offset_red, 0664, offset_red_show, offset_red_store);
+MX_ATTR_RW(offset_green, 0664, offset_green_show, offset_green_store);
+MX_ATTR_RW(offset_blue, 0664, offset_blue_show, offset_blue_store);
+MX_ATTR_RW(offset_cyan, 0664, offset_cyan_show, offset_cyan_store);
+MX_ATTR_RW(offset_magenta, 0664, offset_magenta_show, offset_magenta_store);
+MX_ATTR_RW(offset_yellow, 0664, offset_yellow_show, offset_yellow_store);
 
 void init_mdnie_class(void)
 {

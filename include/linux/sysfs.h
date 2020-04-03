@@ -82,6 +82,10 @@ struct attribute_group {
 
 #define attr_name(_attr) (_attr).attr.name
 
+#define MX_ATTR_RW(_name) \
+static struct kobj_attribute _name##_attr = \
+	__ATTR(_name, 0644, show_##_name, store_##_name)
+
 struct file;
 struct vm_area_struct;
 
