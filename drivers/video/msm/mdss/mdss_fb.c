@@ -2041,8 +2041,8 @@ static int mdss_fb_release_all(struct fb_info *info, bool release_all)
 
 	if (!wait_event_timeout(mfd->ioctl_q,
 		!atomic_read(&mfd->ioctl_ref_cnt) || !release_all,
-		msecs_to_jiffies(1000)))
-		pr_warn("fb%d ioctl could not finish. waited 1 sec.\n",
+		msecs_to_jiffies(500)))
+		pr_warn("fb%d ioctl could not finish. waited 500 msecs.\n",
 			mfd->index);
 
 	mdss_fb_pan_idle(mfd);
@@ -2367,7 +2367,10 @@ static int mdss_fb_pan_display_ex(struct fb_info *info,
 	u32 wait_for_finish = disp_commit->wait_for_finish;
 	int ret = 0;
 
-	if (!mfd || (!mfd->op_enable))
+	if (!mfd)
+		return -ENOMEM;
+
+	if (!mfd->op_enable))
 		return -EPERM;
 
 	if ((!mfd->panel_power_on) && !((mfd->dcm_state == DCM_ENTER) &&
@@ -2422,6 +2425,9 @@ static int mdss_fb_pan_display_sub(struct fb_var_screeninfo *var,
 			       struct fb_info *info)
 {
 	struct msm_fb_data_type *mfd = (struct msm_fb_data_type *)info->par;
+
+	if (!mfd)
+		return -ENOMEM;
 
 	if (!mfd->op_enable)
 		return -EPERM;

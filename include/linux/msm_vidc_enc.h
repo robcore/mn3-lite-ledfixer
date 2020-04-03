@@ -48,6 +48,7 @@
 #define VEN_MSG_HW_OVERLOAD	12
 #define VEN_MSG_MAX_CLIENTS	13
 
+
 /*Buffer flags bits masks*/
 #define VEN_BUFFLAG_EOS	0x00000001
 #define VEN_BUFFLAG_ENDOFFRAME	0x00000010
@@ -605,7 +606,7 @@ struct venc_capability{
 };
 
 struct venc_entropycfg{
-	unsigned longentropysel;
+	unsigned long	entropysel;
 	unsigned long	cabacmodel;
 };
 

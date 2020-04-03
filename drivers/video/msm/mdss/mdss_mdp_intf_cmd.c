@@ -28,7 +28,7 @@
 /* wait for at most 2 vsync for lowest refresh rate (24hz) */
 #define KOFF_TIMEOUT msecs_to_jiffies(84)
 
-#define STOP_TIMEOUT(hz) msecs_to_jiffies((1000 / hz) * (VSYNC_EXPIRE_TICK + 2))
+#define STOP_TIMEOUT(hz) msecs_to_jiffies(16 * (VSYNC_EXPIRE_TICK))
 #define ULPS_ENTER_TIME msecs_to_jiffies(100)
 
 /*
@@ -84,6 +84,9 @@ static inline u32 mdss_mdp_cmd_line_count(struct mdss_mdp_ctl *ctl)
 	u32 cnt = 0xffff;	/* init it to an invalid value */
 	u32 init;
 	u32 height;
+
+	if (!ctl)
+		goto exit;
 
 	mdss_mdp_clk_ctrl(MDP_BLOCK_POWER_ON, false);
 
@@ -441,7 +444,7 @@ static void mdss_mdp_cmd_readptr_done(void *arg)
 
 static void mdss_mdp_cmd_underflow_recovery(void *data)
 {
-	struct mdss_mdp_cmd_ctx *ctx = data;
+	struct mdss_mdp_cmd_ctx *ctx;
 	unsigned long flags;
 
 	if (!data) {
@@ -449,8 +452,13 @@ static void mdss_mdp_cmd_underflow_recovery(void *data)
 		return;
 	}
 
+	ctx = data;
+	if (!ctx)
+		return;
+
 	if (!ctx->ctl)
 		return;
+
 	spin_lock_irqsave(&ctx->clk_lock, flags);
 	if (ctx->koff_cnt) {
 		mdss_mdp_ctl_reset(ctx->ctl);
