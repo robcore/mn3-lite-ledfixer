@@ -2370,7 +2370,7 @@ static int mdss_fb_pan_display_ex(struct fb_info *info,
 	if (!mfd)
 		return -ENOMEM;
 
-	if (!mfd->op_enable))
+	if (!mfd->op_enable)
 		return -EPERM;
 
 	if ((!mfd->panel_power_on) && !((mfd->dcm_state == DCM_ENTER) &&
