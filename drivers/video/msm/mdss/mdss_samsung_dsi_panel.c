@@ -1817,11 +1817,10 @@ static ssize_t mipi_samsung_temperature_show(struct device *dev,
 	int rc;
 	int tmpview;
 
-	if (msd.dstat.temperature_value < 128)
-		tmpview = msd.dstat.temperature_value;
-	else
+	if (msd.dstat.temperature_value > 128)
 		tmpview = ((msd.dstat.temperature_value - 128) * (-1));
-
+	else
+		tmpview = msd.dstat.temperature_value;
 //	rc = snprintf((char *)buf, 40,"-20, -19, 0, 1, 30, 40\n");
 	rc = snprintf((char *)buf, PAGE_SIZE, "%d\n",
 					tmpview);
