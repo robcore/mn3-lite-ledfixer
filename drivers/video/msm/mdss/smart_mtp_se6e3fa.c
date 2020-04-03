@@ -1416,7 +1416,7 @@ static int find_cadela_table(int brightness)
 }
 
 #define RGB_COMPENSATION 24
-#if 0
+#if 1
 static int gradation_offset_H_revJ[][9] = {
 /*	V255 V203 V151 V87 V51 V35 V23 V11 V3 */
 	{0, 6, 13, 20, 25, 27, 31, 34, 35},
@@ -1550,7 +1550,7 @@ static int gradation_offset_H_revJ[][9] = {
 };
 #endif
 
-#if 0
+#if 1
 static int rgb_offset_H_revJ[][RGB_COMPENSATION] = {
 /*	R255 G255 B255 R203 G203 B203 R151 G151 B151
 	R87 G87 B87 R51 G51 B51 R35 G35 B35
@@ -2046,7 +2046,8 @@ static ssize_t gcontrol_red_show(struct kobject *kobj, struct kobj_attribute *at
 }
 
 static ssize_t gcontrol_red_store(struct kobject *kobj,
-			   struct kobj_attribute *attr, const char *buf, size_t count) {
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
 	int newval;
 	sscanf(buf, "%d", &newval);
 	gcontrol_red = newval;
@@ -2060,7 +2061,8 @@ static ssize_t gcontrol_green_show(struct kobject *kobj, struct kobj_attribute *
 }
 
 static ssize_t gcontrol_green_store(struct kobject *kobj,
-			   struct kobj_attribute *attr, const char *buf, size_t count) {
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
 	int newval;
 	sscanf(buf, "%d", &newval);
 	gcontrol_green = newval;
@@ -2074,7 +2076,8 @@ static ssize_t gcontrol_blue_show(struct kobject *kobj, struct kobj_attribute *a
 }
 
 static ssize_t gcontrol_blue_store(struct kobject *kobj,
-			   struct kobj_attribute *attr, const char *buf, size_t count) {
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
 	int newval;
 	sscanf(buf, "%d", &newval);
 	gcontrol_blue = newval;
@@ -2088,7 +2091,8 @@ static ssize_t gcontrol_gradient_show(struct kobject *kobj, struct kobj_attribut
 }
 
 static ssize_t gcontrol_gradient_store(struct kobject *kobj,
-			   struct kobj_attribute *attr, const char *buf, size_t count) {
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
 	int newval;
 	sscanf(buf, "%d", &newval);
 	gcontrol_gradient = newval;
@@ -2102,7 +2106,8 @@ static ssize_t gcontrol_enabled_show(struct kobject *kobj, struct kobj_attribute
 }
 
 static ssize_t gcontrol_enabled_store(struct kobject *kobj,
-			   struct kobj_attribute *attr, const char *buf, size_t count) {
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
 	int newen;
 	sscanf(buf, "%d", &newen);
 	gcontrol_enabled = clamp_val(newen, 0, 1);
@@ -2116,7 +2121,8 @@ static ssize_t gcontrol_offset_mode_show(struct kobject *kobj, struct kobj_attri
 }
 
 static ssize_t gcontrol_offset_mode_store(struct kobject *kobj,
-			   struct kobj_attribute *attr, const char *buf, size_t count) {
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
 	int newen;
 	sscanf(buf, "%d", &newen);
 	gcontrol_offset_mode = clamp_val(newen, 0, 1);
@@ -2230,6 +2236,7 @@ static int smart_dimming_init(struct SMART_DIM *psmart)
 		} else {
 	        if (sysfs_create_group(gamma_control_kobj, &gamma_control_attr_group)) {
 				kobject_put(gamma_control_kobj);
+				gamma_control_kobj = NULL;
 				pr_warn("%s sysfs file create failed!\n", __func__);
 			}
 		}

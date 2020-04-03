@@ -2472,7 +2472,7 @@ static int mipi_samsung_disp_send_cmd(
 			if (msd.mfd->resume_state != MIPI_RESUME_STATE) {
 				goto unknown_command;
 			}
-			udelay(100);
+			udelay(300);
 			break;
 		case PANEL_MTP_ENABLE:
 			cmd_desc = nv_enable_cmds.cmd_desc;

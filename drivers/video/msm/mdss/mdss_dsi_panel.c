@@ -631,8 +631,8 @@ static int mdss_dsi_panel_off(struct mdss_panel_data *pdata)
 		mdss_dsi_panel_cmds_send(ctrl, &ctrl->off_cmds);
 
 #if defined(CONFIG_MDSS_DSI_EVENT_HANDLER_PANEL)
-	msd.mfd->resume_state = MIPI_SUSPEND_STATE;
 #if defined(CONFIG_FB_MSM_MDSS_MDP3)
+	msd.mfd->resume_state = MIPI_SUSPEND_STATE;
 	mutex_unlock(&msd.lock);
 #endif
 #endif

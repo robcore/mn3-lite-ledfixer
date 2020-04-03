@@ -157,6 +157,13 @@ static int sharpen_bit = 3;
 static int sharpen_boost_bit = 2; //not actually sure what, if anything, this bit handles but the others work
 static int chroma_bit = 1;
 static int gamma_bit = 0;
+
+#define CURVESIZE 48
+#define SRC_CURVE_MIN 42
+#define SRC_CURVE_MAX 89
+#define NEW_CURVE_MIN 0
+#define NEW_CURVE_MAX 47
+static unsigned char custom_curve[CURVESIZE];
 /* Hijack Extra End  */
 
 //static unsigned int previous_mode;
@@ -469,29 +476,34 @@ static void update_mdnie_mode(void)
 		}
 		break;
 	case mDNIe_VIDEO_MODE:
-		switch (mdnie_tun_state.background) {
-		case DYNAMIC_MODE:
-			source_1 = DYNAMIC_VIDEO_1;
-			source_2 = DYNAMIC_VIDEO_2;
-			break;
-		case STANDARD_MODE:
-			source_1 = STANDARD_VIDEO_1;
-			source_2 = STANDARD_VIDEO_2;
-			break;
-		case NATURAL_MODE:
-			source_1 = NATURAL_VIDEO_1;
-			source_2 = NATURAL_VIDEO_2;
-			break;
-		case MOVIE_MODE:
-			source_1 = MOVIE_VIDEO_1;
-			source_2 = MOVIE_VIDEO_2;
-			break;
-		case AUTO_MODE:
-			source_1 = AUTO_VIDEO_1;
-			source_2 = AUTO_VIDEO_2;
-			break;
-		default:
-			return;
+		if (mdnie_tun_state.outdoor == OUTDOOR_ON_MODE) {
+			source_1 = OUTDOOR_VIDEO_1;
+			source_2 = OUTDOOR_VIDEO_2;
+		} else {
+			switch (mdnie_tun_state.background) {
+			case DYNAMIC_MODE:
+				source_1 = DYNAMIC_VIDEO_1;
+				source_2 = DYNAMIC_VIDEO_2;
+				break;
+			case STANDARD_MODE:
+				source_1 = STANDARD_VIDEO_1;
+				source_2 = STANDARD_VIDEO_2;
+				break;
+			case NATURAL_MODE:
+				source_1 = NATURAL_VIDEO_1;
+				source_2 = NATURAL_VIDEO_2;
+				break;
+			case MOVIE_MODE:
+				source_1 = MOVIE_VIDEO_1;
+				source_2 = MOVIE_VIDEO_2;
+				break;
+			case AUTO_MODE:
+				source_1 = AUTO_VIDEO_1;
+				source_2 = AUTO_VIDEO_2;
+				break;
+			default:
+				return;
+			}
 		}
 		break;
 	case mDNIe_VIDEO_WARM_MODE:
@@ -501,8 +513,13 @@ static void update_mdnie_mode(void)
 		case NATURAL_MODE:
 		case MOVIE_MODE:
 		case AUTO_MODE:
-			source_1 = WARM_1;
-			source_2 = WARM_2;
+			if (mdnie_tun_state.outdoor == OUTDOOR_ON_MODE) {
+				source_1 = WARM_OUTDOOR_1;
+				source_2 = WARM_OUTDOOR_2;
+			} else {
+				source_1 = WARM_1;
+				source_2 = WARM_2;
+			}
 			break;
 		default:
 			return;
@@ -515,24 +532,40 @@ static void update_mdnie_mode(void)
 		case NATURAL_MODE:
 		case MOVIE_MODE:
 		case AUTO_MODE:
-			source_1 = COLD_1;
-			source_2 = COLD_2;
+			if (mdnie_tun_state.outdoor == OUTDOOR_ON_MODE) {
+				source_1 = COLD_OUTDOOR_1;
+				source_2 = COLD_OUTDOOR_2;
+			} else {
+				source_1 = COLD_1;
+				source_2 = COLD_2;
+			}
 			break;
 		default:
 			return;
 		}
+		break;
 	case mDNIe_CAMERA_MODE:
 		switch (mdnie_tun_state.background) {
 		case DYNAMIC_MODE:
 		case STANDARD_MODE:
 		case NATURAL_MODE:
 		case MOVIE_MODE:
-			source_1 = CAMERA_1;
-			source_2 = CAMERA_2;
+			if (mdnie_tun_state.outdoor == OUTDOOR_ON_MODE) {
+				source_1 = CAMERA_OUTDOOR_1;
+				source_2 = CAMERA_OUTDOOR_2;
+			} else {
+				source_1 = CAMERA_1;
+				source_2 = CAMERA_2;
+			}
 			break;
 		case AUTO_MODE:
-			source_1 = AUTO_CAMERA_1;
-			source_2 = AUTO_CAMERA_2;
+			if (mdnie_tun_state.outdoor == OUTDOOR_ON_MODE) {
+				source_1 = CAMERA_OUTDOOR_1;
+				source_2 = CAMERA_OUTDOOR_2;
+			} else {
+				source_1 = AUTO_CAMERA_1;
+				source_2 = AUTO_CAMERA_2;
+			}
 			break;
 		default:
 			return;
@@ -692,6 +725,10 @@ static void update_mdnie_mode(void)
 		LITE_CONTROL_2[i] = source_2[i];
 
 	if (hijack) {
+
+		for (i = NEW_CURVE_MIN; i < NEW_CURVE_MAX; i++)
+			LITE_CONTROL_1[i + 42] = custom_curve[i];
+
 		result = (LITE_CONTROL_1[4] >> (sharpen_boost_bit));
 		if (sharpen_boost) {
 			if (!(result & 1))
@@ -806,6 +843,10 @@ static void update_mdnie_mode(void)
 			LITE_CONTROL_2[41] = black[2];
 		}
 	} else {
+
+		for (i = NEW_CURVE_MIN; i < NEW_CURVE_MAX; i++)
+			custom_curve[i] = LITE_CONTROL_1[i + 42];
+
 		LITE_CONTROL_1[4] = source_1[4];
 
 		result = (LITE_CONTROL_1[4] >> (sharpen_boost_bit));
@@ -1005,6 +1046,9 @@ static ssize_t hijack_store(struct device * dev, struct device_attribute * attr,
 	mDNIe_Set_Mode();
 	return size;
 }
+
+/* Custom Curve */
+//unsigned char custom_curve[CURVESIZE]
 
 /* offset_mode */
 

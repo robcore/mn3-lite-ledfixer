@@ -4168,8 +4168,6 @@ int mdss_mdp_ad_input(struct msm_fb_data_type *mfd,
 
 	ret = mdss_mdp_get_ad(mfd, &ad);
 	if (ret || !ad) {
-		pr_debug("Failed to get ad info: ret = %d, ad = 0x%pK\n",
-			ret, ad);
 		return ret;
 	}
 

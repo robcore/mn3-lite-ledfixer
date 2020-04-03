@@ -2041,8 +2041,8 @@ static int mdss_fb_release_all(struct fb_info *info, bool release_all)
 
 	if (!wait_event_timeout(mfd->ioctl_q,
 		!atomic_read(&mfd->ioctl_ref_cnt) || !release_all,
-		msecs_to_jiffies(500)))
-		pr_warn("fb%d ioctl could not finish. waited 500 msecs.\n",
+		msecs_to_jiffies(1000)))
+		pr_warn("fb%d ioctl could not finish. waited 1 sec.\n",
 			mfd->index);
 
 	mdss_fb_pan_idle(mfd);

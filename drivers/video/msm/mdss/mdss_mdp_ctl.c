@@ -1909,8 +1909,8 @@ int mdss_mdp_ctl_start(struct mdss_mdp_ctl *ctl, bool handoff)
 	}
 	mdss_mdp_hist_intr_setup(&mdata->hist_intr, MDSS_IRQ_RESUME);
 
-error:
 	mdss_mdp_clk_ctrl(MDP_BLOCK_POWER_OFF, false);
+error:
 	mutex_unlock(&ctl->lock);
 
 	return ret;

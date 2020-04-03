@@ -90,7 +90,7 @@ void mdss_xlog(const char *name, ...)
 	struct tlog *log;
 	ktime_t time;
 
-	if (!mdd->logd.xlog_enable)
+//	if (!mdd->logd.xlog_enable)
 		return;
 
 	spin_lock_irqsave(&mdss_dbg_xlog.xlock, flags);
@@ -131,7 +131,7 @@ void mdss_xlog_dump(void)
 	struct tlog *log;
 	char xlog_buf[MDSS_XLOG_BUF_MAX];
 
-	if (!mdd->logd.xlog_enable)
+//	if (!mdd->logd.xlog_enable)
 		return;
 
 	spin_lock_irqsave(&mdss_dbg_xlog.xlock, flags);
@@ -162,7 +162,7 @@ void mdss_xlog_tout_handler(const char *name, ...)
 	va_list args;
 	char *blk_name = NULL;
 
-	if (!mdd->logd.xlog_enable)
+//	if (!mdd->logd.xlog_enable)
 		return;
 
 	va_start(args, name);
