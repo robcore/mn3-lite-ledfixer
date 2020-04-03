@@ -926,7 +926,6 @@ static int sec_chg_set_property(struct power_supply *psy,
 	case POWER_SUPPLY_PROP_ONLINE:
 		/* check and unlock */
 		check_charger_unlock_state(charger);
-
 		if (val->intval == POWER_SUPPLY_TYPE_POWER_SHARING) {
 			psy_do_property("ps", get,
 					POWER_SUPPLY_PROP_STATUS, value);
@@ -962,6 +961,23 @@ static int sec_chg_set_property(struct power_supply *psy,
 			charger->charging_current =
 					charger->pdata->charging_current
 					[charger->cable_type].fast_charging_current;
+			switch(charger->cable_type) {
+				case POWER_SUPPLY_TYPE_USB:
+				case POWER_SUPPLY_TYPE_USB_DCP:
+				case POWER_SUPPLY_TYPE_USB_CDP:
+				case POWER_SUPPLY_TYPE_USB_ACA:
+				case POWER_SUPPLY_TYPE_CARDOCK:
+				case POWER_SUPPLY_TYPE_OTG:	/* These are USB connections, apply custom USB current for all of them */
+					charger->charging_current_max = 1200;
+					charger->charging_current = 1000;
+					break;
+				case POWER_SUPPLY_TYPE_MAINS:	/* These are AC connections, apply custom AC current for all of them */
+					charger->charging_current_max = 2100;
+					charger->charging_current = 2100;
+					break;
+				default:			/* Don't do anything for any other kind of connections and don't touch when type is unknown */
+					break;
+			}
 			/* decrease the charging current according to siop level */
 			if (!ignore_siop)
 				set_charging_current = charger->charging_current * charger->siop_level / 100;
@@ -1025,11 +1041,7 @@ static int sec_chg_set_property(struct power_supply *psy,
 				val->intval);
 		break;
 	case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
-		if (!ignore_siop)
-			charger->siop_level = val->intval;
-		else
-			charger->siop_level = 100;
-
+		charger->siop_level = val->intval;
 		if (charger->is_charging) {
 			/* decrease the charging current according to siop level */
 			int current_now;
@@ -1051,10 +1063,11 @@ static int sec_chg_set_property(struct power_supply *psy,
 				}
 
 				if (charger->siop_level < 100 &&
-						current_now > SIOP_CHARGING_LIMIT_CURRENT && !ignore_siop)
+						current_now > SIOP_CHARGING_LIMIT_CURRENT && !ignore_siop) {
 					current_now = SIOP_CHARGING_LIMIT_CURRENT;
-				max77803_set_input_current(charger,
-					set_charging_current_max);
+					max77803_set_input_current(charger,
+						set_charging_current_max);
+				}
 			}
 
 			max77803_set_charge_current(charger, current_now);

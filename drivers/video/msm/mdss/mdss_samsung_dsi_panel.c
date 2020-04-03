@@ -1815,10 +1815,16 @@ static ssize_t mipi_samsung_temperature_show(struct device *dev,
 		struct device_attribute *attr, char *buf)
 {
 	int rc;
+	int tmpview;
+
+	if (msd.dstat.temperature_value < 128)
+		tmpview = msd.dstat.temperature_value;
+	else
+		tmpview = ((msd.dstat.temperature_value - 128) * (-1))
 
 //	rc = snprintf((char *)buf, 40,"-20, -19, 0, 1, 30, 40\n");
 	rc = snprintf((char *)buf, PAGE_SIZE, "%d\n",
-					msd.dstat.temperature_value);
+					tmpview);
 
 	return rc;
 }
@@ -1832,7 +1838,7 @@ static ssize_t mipi_samsung_temperature_store(struct device *dev,
 
 	temp = msd.dstat.temperature;
 
-	if (temp > 0)
+	if (temp >= 0)
 		msd.dstat.temperature_value = (char)temp;
 	else {
 		temp *= -1;

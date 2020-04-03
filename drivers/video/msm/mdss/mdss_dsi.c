@@ -634,12 +634,14 @@ static int mdss_dsi_off(struct mdss_panel_data *pdata)
 	int ret = 0;
 	struct mdss_dsi_ctrl_pdata *ctrl_pdata = NULL;
 	struct mdss_panel_info *panel_info = NULL;
-	struct mdss_panel_info *pinfo = &pdata->panel_info;
+	struct mdss_panel_info *pinfo;
 
-	if (pdata == NULL) {
+	if (pdata == NULL || pdata->panel_info == NULL) {
 		pr_err("%s: Invalid input data\n", __func__);
 		return -EINVAL;
 	}
+
+	pinfo = &pdata->panel_info;
 
 	if (!pdata->panel_info.panel_power_on) {
 		pr_warn("%s:%d Panel already off.\n", __func__, __LINE__);
