@@ -2210,17 +2210,11 @@ static int smart_dimming_init(struct SMART_DIM *psmart)
 		/* To make lux table index*/
 		psmart->gen_table[lux_loop].lux = psmart->plux_table[lux_loop];
 
-#if defined(AID_OPERATION)
 		/* octa */
 		//if(id3 == EVT1_H_REV_J)
 		gamma_init_H_revJ(psmart,
 			(char *)(&(psmart->gen_table[lux_loop].gamma_setting)),
 			GAMMA_SET_MAX);
-#else
-		pure_gamma_init(psmart,
-			(char *)(&(psmart->gen_table[lux_loop].gamma_setting)),
-			GAMMA_SET_MAX);
-#endif
 	}
 
 	/* set 350CD max gamma table */

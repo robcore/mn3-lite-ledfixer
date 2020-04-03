@@ -636,7 +636,7 @@ static int mdss_dsi_off(struct mdss_panel_data *pdata)
 	struct mdss_panel_info *panel_info = NULL;
 	struct mdss_panel_info *pinfo;
 
-	if (pdata == NULL || pdata->panel_info == NULL) {
+	if (pdata == NULL) {
 		pr_err("%s: Invalid input data\n", __func__);
 		return -EINVAL;
 	}
