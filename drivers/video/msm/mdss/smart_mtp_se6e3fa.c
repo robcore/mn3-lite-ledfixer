@@ -125,7 +125,6 @@ static unsigned int gcontrol_offset_mode = 1;
 static int gcontrol_red = 0;
 static int gcontrol_green = 0;
 static int gcontrol_blue = 0;
-static int gcontrol_gradient = 0;
 
 #ifdef SMART_DIMMING_DEBUG
 static void print_RGB_offset(struct SMART_DIM *pSmart)
@@ -1416,7 +1415,7 @@ static int find_cadela_table(int brightness)
 }
 
 #define RGB_COMPENSATION 24
-#if 1
+#if 0
 static int gradation_offset_H_revJ[][9] = {
 /*	V255 V203 V151 V87 V51 V35 V23 V11 V3 */
 	{0, 6, 13, 20, 25, 27, 31, 34, 35},
@@ -1550,7 +1549,7 @@ static int gradation_offset_H_revJ[][9] = {
 };
 #endif
 
-#if 1
+#if 0
 static int rgb_offset_H_revJ[][RGB_COMPENSATION] = {
 /*	R255 G255 B255 R203 G203 B203 R151 G151 B151
 	R87 G87 B87 R51 G51 B51 R35 G35 B35
@@ -1818,28 +1817,11 @@ static void gamma_init_H_revJ(struct SMART_DIM *pSmart, char *str, int size)
 	for (cnt = 1; cnt < S6E3FA_TABLE_MAX; cnt++) {
 		table_index = find_cadela_table(pSmart->brightness_level);
 
-		if (gcontrol_enabled) {
-			if (gcontrol_offset_mode)
-				bl_index[S6E3FA_TABLE_MAX - cnt] +=
-					gradation_offset_H_revJ[table_index][cnt - 1] + gcontrol_gradient;
-			else
-				bl_index[S6E3FA_TABLE_MAX - cnt] += gcontrol_gradient;
-		} else {
-			bl_index[S6E3FA_TABLE_MAX - cnt] +=
-				gradation_offset_H_revJ[table_index][cnt - 1];
-		}
+		bl_index[S6E3FA_TABLE_MAX - cnt] +=
+			gradation_offset_H_revJ[table_index][cnt - 1];
 		/* THERE IS M-GRAY0 target */
-		if (gcontrol_enabled) {
-			if (bl_index[S6E3FA_TABLE_MAX - cnt] == 0) {
-				if (gcontrol_offset_mode)
-					bl_index[S6E3FA_TABLE_MAX - cnt] = 1 + gcontrol_gradient;
-				else
-					bl_index[S6E3FA_TABLE_MAX - cnt] = gcontrol_gradient;
-			}
-		} else {
-			if (bl_index[S6E3FA_TABLE_MAX - cnt] == 0)
-				bl_index[S6E3FA_TABLE_MAX - cnt] = 1;
-		}
+		if (bl_index[S6E3FA_TABLE_MAX - cnt] == 0)
+			bl_index[S6E3FA_TABLE_MAX - cnt] = 1;
 	}
 	/*Generate Gamma table*/
 	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
@@ -2085,21 +2067,6 @@ static ssize_t gcontrol_blue_store(struct kobject *kobj,
 	return count;
 }
 
-static ssize_t gcontrol_gradient_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
-{
-	return sprintf(buf, "%d\n", gcontrol_gradient);
-}
-
-static ssize_t gcontrol_gradient_store(struct kobject *kobj,
-			   struct kobj_attribute *attr, const char *buf, size_t count)
-{
-	int newval;
-	sscanf(buf, "%d", &newval);
-	gcontrol_gradient = newval;
-	wrap_smart_dimming_init();
-	return count;
-}
-
 static ssize_t gcontrol_enabled_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
 	return sprintf(buf, "%u\n", gcontrol_enabled);
@@ -2145,11 +2112,6 @@ static struct kobj_attribute gcontrol_blue_attribute =
 		gcontrol_blue_show,
 		gcontrol_blue_store);
 
-static struct kobj_attribute gcontrol_gradient_attribute =
-	__ATTR(gcontrol_gradient, 0644,
-		gcontrol_gradient_show,
-		gcontrol_gradient_store);
-
 static struct kobj_attribute gcontrol_enabled_attribute =
 	__ATTR(gcontrol_enabled, 0644,
 		gcontrol_enabled_show,
@@ -2165,7 +2127,6 @@ static struct attribute *gamma_control_attrs[] =
 	&gcontrol_red_attribute.attr,
 	&gcontrol_green_attribute.attr,
 	&gcontrol_blue_attribute.attr,
-	&gcontrol_gradient_attribute.attr,
 	&gcontrol_enabled_attribute.attr,
 	&gcontrol_offset_mode_attribute.attr,
 	NULL

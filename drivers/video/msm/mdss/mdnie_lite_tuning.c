@@ -1751,9 +1751,9 @@ static ssize_t offset_white_store(struct kobject *kobj,
 		offset_white[2] = sanitize_offset(NEWBLUE, LITE_CONTROL_2[40]);
 	} else if (sscanf(buf, "%d", &new_val) == 1) {
 		clamp_val(new_val, -255, 255);
-		offset_white[0] = sanitize_offset(newval, LITE_CONTROL_2[36]);
-		offset_white[1] = sanitize_offset(newval, LITE_CONTROL_2[38]);
-		offset_white[2] = sanitize_offset(newval, LITE_CONTROL_2[40]);
+		offset_white[0] = sanitize_offset(new_val, LITE_CONTROL_2[36]);
+		offset_white[1] = sanitize_offset(new_val, LITE_CONTROL_2[38]);
+		offset_white[2] = sanitize_offset(new_val, LITE_CONTROL_2[40]);
 	} else {
 		return count;
 	}
@@ -1784,7 +1784,7 @@ static ssize_t offset_red_store(struct kobject *kobj,
 		offset_red[2] = sanitize_offset(NEWBLUE, LITE_CONTROL_2[23]);
 	} else if (sscanf(buf, "%d", &new_val) == 1) {
 		clamp_val(new_val, -255, 255);
-		offset_red[0] = sanitize_offset(newval, LITE_CONTROL_2[19]);
+		offset_red[0] = sanitize_offset(new_val, LITE_CONTROL_2[19]);
 		offset_red[1] = 0;
 		offset_red[2] = 0;
 	} else {
@@ -1818,7 +1818,7 @@ static ssize_t offset_green_store(struct kobject *kobj,
 	} else if (sscanf(buf, "%d", &new_val) == 1) {
 		clamp_val(new_val, -255, 255);
 		offset_green[0] = 0;
-		offset_green[1] = sanitize_offset(newval, LITE_CONTROL_2[27]);
+		offset_green[1] = sanitize_offset(new_val, LITE_CONTROL_2[27]);
 		offset_green[2] = 0;
 	} else {
 		return count;
@@ -1852,7 +1852,7 @@ static ssize_t offset_blue_store(struct kobject *kobj,
 		clamp_val(new_val, -255, 255);
 		offset_blue[0] = 0;
 		offset_blue[1] = 0;
-		offset_blue[2] = sanitize_offset(newval, LITE_CONTROL_2[35]);
+		offset_blue[2] = sanitize_offset(new_val, LITE_CONTROL_2[35]);
 	} else {
 		return count;
 	}
@@ -1882,8 +1882,8 @@ static ssize_t offset_yellow_store(struct kobject *kobj,
 		offset_yellow[2] = sanitize_offset(NEWBLUE, LITE_CONTROL_2[34]);
 	} else if (sscanf(buf, "%d", &new_val) == 1) {
 		clamp_val(new_val, -255, 255);
-		offset_yellow[0] = sanitize_offset(newval, LITE_CONTROL_2[30]);
-		offset_yellow[1] = sanitize_offset(newval, LITE_CONTROL_2[32]);
+		offset_yellow[0] = sanitize_offset(new_val, LITE_CONTROL_2[30]);
+		offset_yellow[1] = sanitize_offset(new_val, LITE_CONTROL_2[32]);
 		offset_yellow[2] = 0;
 	} else {
 		return count;
@@ -1914,9 +1914,9 @@ static ssize_t offset_magenta_store(struct kobject *kobj,
 		offset_magenta[2] = sanitize_offset(NEWBLUE, LITE_CONTROL_2[28]);
 	} else if (sscanf(buf, "%d", &new_val) == 1) {
 		clamp_val(new_val, -255, 255);
-		offset_magenta[0] = sanitize_offset(newval, LITE_CONTROL_2[24]);
+		offset_magenta[0] = sanitize_offset(new_val, LITE_CONTROL_2[24]);
 		offset_magenta[1] = 0;
-		offset_magenta[2] = sanitize_offset(newval, LITE_CONTROL_2[28]);
+		offset_magenta[2] = sanitize_offset(new_val, LITE_CONTROL_2[28]);
 	} else {
 		return count;
 	}
@@ -1947,8 +1947,8 @@ static ssize_t offset_cyan_store(struct kobject *kobj,
 	} else if (sscanf(buf, "%d", &new_val) == 1) {
 		clamp_val(new_val, -255, 255);
 		offset_cyan[0] = 0;
-		offset_cyan[1] = sanitize_offset(newval, LITE_CONTROL_2[20]);
-		offset_cyan[2] = sanitize_offset(newval, LITE_CONTROL_2[22]);
+		offset_cyan[1] = sanitize_offset(new_val, LITE_CONTROL_2[20]);
+		offset_cyan[2] = sanitize_offset(new_val, LITE_CONTROL_2[22]);
 	} else {
 		return count;
 	}
