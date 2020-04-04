@@ -1300,7 +1300,82 @@ static ssize_t effect_mask_show(struct kobject *kobj, struct kobj_attribute *att
 }
 
 /* Custom Curve */
-//unsigned char custom_curve[CURVESIZE]
+
+#define show_one_curve(_name, bval, aval)			\
+static ssize_t _name##_show					\
+(struct kobject *kobj, struct kobj_attribute *attr, char *buf)	\
+{								\
+	return sprintf(buf, "%u %u\n", custom_curve[bval], custom_curve[aval]);			\
+}
+
+#define store_one_curve(_name, bval, aval)		\
+static ssize_t _name##_store		\
+(struct kobject *kobj,				\
+ struct kobj_attribute *attr,			\
+ const char *buf, size_t count)			\
+{						\
+	int i, curve_b, curve_a;			\
+	if (sscanf(buf, "%d %d", &curve_b, &curve_a) == 2) {				\
+		clamp_val(custom_curve[bval], 0, 255);		\
+		clamp_val(custom_curve[aval], 0, 255);		\
+		custom_curve[bval] = curve_b;		\
+		custom_curve[aval] = curve_a;		\
+	} else {		\
+		return count;		\
+	}						\
+	mDNIe_Set_Mode();		\
+	return count;			\
+}
+
+show_one_curve(gcurve1, 0, 1);
+show_one_curve(gcurve2, 2, 3);
+show_one_curve(gcurve3, 4, 5);
+show_one_curve(gcurve4, 6, 7);
+show_one_curve(gcurve5, 8, 9);
+show_one_curve(gcurve6, 10, 11);
+show_one_curve(gcurve7, 12, 13);
+show_one_curve(gcurve8, 14, 15);
+show_one_curve(gcurve9, 16, 17);
+show_one_curve(gcurve10, 18, 19);
+show_one_curve(gcurve11, 20, 21);
+show_one_curve(gcurve12, 22, 23);
+show_one_curve(gcurve13, 24, 25);
+show_one_curve(gcurve14, 26, 27);
+show_one_curve(gcurve15, 28, 29);
+show_one_curve(gcurve16, 30, 31);
+show_one_curve(gcurve17, 32, 33);
+show_one_curve(gcurve18, 34, 35);
+show_one_curve(gcurve19, 36, 37);
+show_one_curve(gcurve20, 38, 39);
+show_one_curve(gcurve21, 40, 41);
+show_one_curve(gcurve22, 42, 43);
+show_one_curve(gcurve23, 44, 45);
+show_one_curve(gcurve24, 46, 47);
+
+store_one_curve(gcurve1, 0, 1);
+store_one_curve(gcurve2, 2, 3);
+store_one_curve(gcurve3, 4, 5);
+store_one_curve(gcurve4, 6, 7);
+store_one_curve(gcurve5, 8, 9);
+store_one_curve(gcurve6, 10, 11);
+store_one_curve(gcurve7, 12, 13);
+store_one_curve(gcurve8, 14, 15);
+store_one_curve(gcurve9, 16, 17);
+store_one_curve(gcurve10, 18, 19);
+store_one_curve(gcurve11, 20, 21);
+store_one_curve(gcurve12, 22, 23);
+store_one_curve(gcurve13, 24, 25);
+store_one_curve(gcurve14, 26, 27);
+store_one_curve(gcurve15, 28, 29);
+store_one_curve(gcurve16, 30, 31);
+store_one_curve(gcurve17, 32, 33);
+store_one_curve(gcurve18, 34, 35);
+store_one_curve(gcurve19, 36, 37);
+store_one_curve(gcurve20, 38, 39);
+store_one_curve(gcurve21, 40, 41);
+store_one_curve(gcurve22, 42, 43);
+store_one_curve(gcurve23, 44, 45);
+store_one_curve(gcurve24, 46, 47);
 
 /* offset_mode */
 
@@ -1893,30 +1968,140 @@ static ssize_t offset_cyan_store(struct kobject *kobj,
 
 	return count;
 }
+MX_ATTR_RW(hijack);
+MX_ATTR_RO(effect_mask);
+MX_ATTR_RW(sharpen_boost);
+MX_ATTR_RW(sharpen);
+MX_ATTR_RW(chroma);
+MX_ATTR_RW(gamma);
 
-MX_ATTR_RW(hijack, 0664, hijack_show, hijack_store);
-MX_ATTR_RW(effect_mask, 0440, effect_mask_show, NULL);
-MX_ATTR_RW(offset_mode, 0664, offset_mode_show, offset_mode_store);
-MX_ATTR_RW(sharpen_boost, 0664, sharpen_boost_show, sharpen_boost_store);
-MX_ATTR_RW(sharpen, 0664, sharpen_show, sharpen_store);
-MX_ATTR_RW(chroma, 0664, chroma_show, chroma_store);
-MX_ATTR_RW(gamma, 0664, gamma_show, gamma_store);
-MX_ATTR_RW(black, 0664, black_show, black_store);
-MX_ATTR_RW(white, 0664, white_show, white_store);
-MX_ATTR_RW(red, 0664, red_show, red_store);
-MX_ATTR_RW(green, 0664, green_show, green_store);
-MX_ATTR_RW(blue, 0664, blue_show, blue_store);
-MX_ATTR_RW(cyan, 0664, cyan_show, cyan_store);
-MX_ATTR_RW(magenta, 0664, magenta_show, magenta_store);
-MX_ATTR_RW(yellow, 0664, yellow_show, yellow_store);
-MX_ATTR_RW(offset_black, 0664, offset_black_show, offset_black_store);
-MX_ATTR_RW(offset_white, 0664, offset_white_show, offset_white_store);
-MX_ATTR_RW(offset_red, 0664, offset_red_show, offset_red_store);
-MX_ATTR_RW(offset_green, 0664, offset_green_show, offset_green_store);
-MX_ATTR_RW(offset_blue, 0664, offset_blue_show, offset_blue_store);
-MX_ATTR_RW(offset_cyan, 0664, offset_cyan_show, offset_cyan_store);
-MX_ATTR_RW(offset_magenta, 0664, offset_magenta_show, offset_magenta_store);
-MX_ATTR_RW(offset_yellow, 0664, offset_yellow_show, offset_yellow_store);
+static struct attribute *mdnie_control_attrs[] = {
+	&hijack_attr.attr,
+	&effect_mask_attr.attr,
+	&sharpen_boost_attr.attr,
+	&sharpen_attr.attr,
+	&chroma_attr.attr,
+	&gamma_attr.attr,
+	NULL,
+};
+
+static struct attribute_group mdnie_control_attr_group = {
+	.attrs = mdnie_control_attrs,
+};
+
+MX_ATTR_RW(black);
+MX_ATTR_RW(white);
+MX_ATTR_RW(red);
+MX_ATTR_RW(green);
+MX_ATTR_RW(blue);
+MX_ATTR_RW(cyan);
+MX_ATTR_RW(magenta);
+MX_ATTR_RW(yellow);
+
+static struct attribute *override_attrs[] = {
+	&black_attr.attr,
+	&white_attr.attr,
+	&red_attr.attr,
+	&green_attr.attr,
+	&blue_attr.attr,
+	&cyan_attr.attr,
+	&magenta_attr.attr,
+	&yellow_attr.attr,
+	NULL,
+};
+
+static struct attribute_group override_attr_group = {
+	.attrs = override_attrs,
+};
+
+MX_ATTR_RW(offset_mode);
+MX_ATTR_RW(offset_black);
+MX_ATTR_RW(offset_white);
+MX_ATTR_RW(offset_red);
+MX_ATTR_RW(offset_green);
+MX_ATTR_RW(offset_blue);
+MX_ATTR_RW(offset_cyan);
+MX_ATTR_RW(offset_magenta);
+MX_ATTR_RW(offset_yellow);
+
+static struct attribute *offset_attrs[] = {
+	&offset_black_attr.attr,
+	&offset_white_attr.attr,
+	&offset_red_attr.attr,
+	&offset_green_attr.attr,
+	&offset_blue_attr.attr,
+	&offset_cyan_attr.attr,
+	&offset_magenta_attr.attr,
+	&offset_yellow_attr.attr,
+	NULL,
+};
+
+static struct attribute_group offset_attr_group = {
+	.attrs = offset_attrs,
+};
+
+MX_ATTR_RW(gcurve1);
+MX_ATTR_RW(gcurve2);
+MX_ATTR_RW(gcurve3);
+MX_ATTR_RW(gcurve4);
+MX_ATTR_RW(gcurve5);
+MX_ATTR_RW(gcurve6);
+MX_ATTR_RW(gcurve7);
+MX_ATTR_RW(gcurve8);
+MX_ATTR_RW(gcurve9);
+MX_ATTR_RW(gcurve10);
+MX_ATTR_RW(gcurve11);
+MX_ATTR_RW(gcurve12);
+MX_ATTR_RW(gcurve13);
+MX_ATTR_RW(gcurve14);
+MX_ATTR_RW(gcurve15);
+MX_ATTR_RW(gcurve16);
+MX_ATTR_RW(gcurve17);
+MX_ATTR_RW(gcurve18);
+MX_ATTR_RW(gcurve19);
+MX_ATTR_RW(gcurve20);
+MX_ATTR_RW(gcurve21);
+MX_ATTR_RW(gcurve22);
+MX_ATTR_RW(gcurve23);
+MX_ATTR_RW(gcurve24);
+
+static struct attribute *gcurve_attrs[] = {
+	&gcurve1_attr.attr,
+	&gcurve2_attr.attr,
+	&gcurve3_attr.attr,
+	&gcurve4_attr.attr,
+	&gcurve5_attr.attr,
+	&gcurve6_attr.attr,
+	&gcurve7_attr.attr,
+	&gcurve8_attr.attr,
+	&gcurve9_attr.attr,
+	&gcurve10_attr.attr,
+	&gcurve11_attr.attr,
+	&gcurve12_attr.attr,
+	&gcurve13_attr.attr,
+	&gcurve14_attr.attr,
+	&gcurve15_attr.attr,
+	&gcurve16_attr.attr,
+	&gcurve17_attr.attr,
+	&gcurve18_attr.attr,
+	&gcurve19_attr.attr,
+	&gcurve20_attr.attr,
+	&gcurve21_attr.attr,
+	&gcurve22_attr.attr,
+	&gcurve23_attr.attr,
+	&gcurve24_attr.attr,
+	NULL,
+};
+
+static struct attribute_group gcurve_attr_group = {
+	.attrs = gcurve_attrs,
+};
+
+static struct kobject *mdnie_control_kobj;
+static struct kobject *override_kobj;
+static struct kobject *offset_kobj;
+static struct kobject *gcurve_kobj;
+
 
 void init_mdnie_class(void)
 {
@@ -1978,30 +2163,55 @@ void init_mdnie_class(void)
 		pr_err("Failed to create device file(%s)!=n",
 			dev_attr_accessibility.attr.name);
 
-	device_create_file(tune_mdnie_dev, &dev_attr_hijack);
-	device_create_file(tune_mdnie_dev, &dev_attr_offset_mode);
-	device_create_file(tune_mdnie_dev, &dev_attr_sharpen_boost);
-	device_create_file(tune_mdnie_dev, &dev_attr_sharpen);
-	device_create_file(tune_mdnie_dev, &dev_attr_black);
-	device_create_file(tune_mdnie_dev, &dev_attr_white);
-	device_create_file(tune_mdnie_dev, &dev_attr_red);
-	device_create_file(tune_mdnie_dev, &dev_attr_green);
-	device_create_file(tune_mdnie_dev, &dev_attr_blue);
-	device_create_file(tune_mdnie_dev, &dev_attr_yellow);
-	device_create_file(tune_mdnie_dev, &dev_attr_magenta);
-	device_create_file(tune_mdnie_dev, &dev_attr_cyan);
-	device_create_file(tune_mdnie_dev, &dev_attr_offset_black);
-	device_create_file(tune_mdnie_dev, &dev_attr_offset_white);
-	device_create_file(tune_mdnie_dev, &dev_attr_offset_red);
-	device_create_file(tune_mdnie_dev, &dev_attr_offset_green);
-	device_create_file(tune_mdnie_dev, &dev_attr_offset_blue);
-	device_create_file(tune_mdnie_dev, &dev_attr_offset_yellow);
-	device_create_file(tune_mdnie_dev, &dev_attr_offset_magenta);
-	device_create_file(tune_mdnie_dev, &dev_attr_offset_cyan);
-	device_create_file(tune_mdnie_dev, &dev_attr_gamma);
-	device_create_file(tune_mdnie_dev, &dev_attr_chroma);
-	device_create_file(tune_mdnie_dev, &dev_attr_effect_mask);
+	mdnie_control_kobj = kobject_create_and_add("mdnie_control", kernel_kobj);
+	if (sysfs_create_group(mdnie_control_kobj, &mdnie_control_attr_group)) {
+		pr_err("Failed to create mdnie_control kobject!\n");
+		goto mdniefail;
+	}
+
+	override_kobj = kobject_create_and_add("override", mdnie_control_kobj);
+	if (sysfs_create_group(override_kobj, &override_attr_group)) {
+		pr_err("Failed to create override kobject!\n");
+		goto overridefail;
+	}
+
+	offset_kobj = kobject_create_and_add("offset", mdnie_control_kobj);
+	if (sysfs_create_group(offset_kobj, &offset_attr_group)) {
+		pr_err("Failed to create offset kobject!\n");
+		goto offsetfail;
+	}
+
+	gcurve_kobj = kobject_create_and_add("gcurve", mdnie_control_kobj);
+	if (sysfs_create_group(gcurve_kobj, &gcurve_attr_group)) {
+		pr_err("Failed to create gcurve kobject!\n");
+		goto gcurvefail;
+	}
+
 	mdnie_tun_state.mdnie_enable = true;
+	return;
+
+
+gcurvefail:
+	kobject_put(gcurve_kobj);
+	gcurve_kobj = NULL;
+	sysfs_remove_group(offset_kobj, &offset_attr_group);
+
+offsetfail:
+	kobject_put(offset_kobj);
+	offset_kobj = NULL;
+	sysfs_remove_group(override_kobj, &override_attr_group);
+
+overridefail:
+	kobject_put(override_kobj);
+	override_kobj = NULL;
+	sysfs_remove_group(mdnie_control_kobj, &mdnie_control_attr_group);
+
+mdniefail:
+	kobject_put(mdnie_control_kobj);
+	mdnie_control_kobj = NULL;
+
+	mdnie_tun_state.mdnie_enable = true;
+	return;
 }
 
 void mdnie_lite_tuning_init(struct mipi_samsung_driver_data *msd)
