@@ -362,84 +362,42 @@ void sending_tuning_cmd(void)
 	mutex_unlock(&mdnie_msd->lock);
 }
 
-static int get_safe_offset(int inset, unsigned int lcvalue)
+static int sanitize_offset(int inset, unsigned int lcvalue)
 {
-	int outset;
+	int midset, outset;
+	midset = inset;
 
-	clamp_val(inset, -255, 255);
+	clamp_val(midset, -255, 255);
 
-	if (inset == 0) {
-		outset = inset;
+	if (midset == 0) {
+		outset = midset;
 		goto goodstuff;
-	} else if (inset > 0) {
-		if (lcvalue == 255) {
-			outset = 0;
+	} else if (midset > 0) {
+		if ((midset + lcvalue) <= 255) {
+			outset = midset;
 			goto goodstuff;
-		} else if ((inset + lcvalue) <= 255) {
-			outset = inset;
-			goto goodstuff;
-		} else if ((inset + lcvalue) > 255) {
+		} else if ((midset + lcvalue) > 255) {
 			if (lcvalue < 255)
-				outset = 255 - lcvalue;
+				outset = (255 - lcvalue);
 			else
 				outset = 0;
-
 			goto goodstuff;
 		}
 	} else {
-		if (lcvalue == 0) {
-			outset = 0;
+		if ((midset + lcvalue) >= 0) {
+			outset = midset;
 			goto goodstuff;
-		} else if ((inset + lcvalue) >= 0) {
-			outset = inset;
-			goto goodstuff;
-		} else if ((inset + lcvalue) < 0) {
+		} else if ((midset + lcvalue) < 0) {
 			if (lcvalue > 0)
-				outset = 0 - lcvalue;
+				outset = lcvalue * -1;
 			else
 				outset = 0;
-
 			goto goodstuff;
 		}
 	}
 
 goodstuff:
 	return outset;
-}
-
-static void cleanup_offsets(void)
-{
-	offset_black[0] = get_safe_offset(offset_black[0], LITE_CONTROL_2[37]);
-	offset_black[1] = get_safe_offset(offset_black[1], LITE_CONTROL_2[39]);
-	offset_black[2] = get_safe_offset(offset_black[2], LITE_CONTROL_2[41]);
-
-	offset_white[0] = get_safe_offset(offset_white[0], LITE_CONTROL_2[36]);
-	offset_white[1] = get_safe_offset(offset_white[1], LITE_CONTROL_2[38]);
-	offset_white[2] = get_safe_offset(offset_white[2], LITE_CONTROL_2[40]);
-
-	offset_red[0] = get_safe_offset(offset_red[0], LITE_CONTROL_2[19]);
-	offset_red[1] = get_safe_offset(offset_red[1], LITE_CONTROL_2[21]);
-	offset_red[2] = get_safe_offset(offset_red[2], LITE_CONTROL_2[23]);
-
-	offset_green[0] = get_safe_offset(offset_green[0], LITE_CONTROL_2[25]);
-	offset_green[1] = get_safe_offset(offset_green[1], LITE_CONTROL_2[27]);
-	offset_green[2] = get_safe_offset(offset_green[2], LITE_CONTROL_2[29]);
-
-	offset_blue[0] = get_safe_offset(offset_blue[0], LITE_CONTROL_2[31]);
-	offset_blue[1] = get_safe_offset(offset_blue[1], LITE_CONTROL_2[33]);
-	offset_blue[2] = get_safe_offset(offset_blue[2], LITE_CONTROL_2[35]);
-
-	offset_yellow[0] = get_safe_offset(offset_yellow[0], LITE_CONTROL_2[30]);
-	offset_yellow[1] = get_safe_offset(offset_yellow[1], LITE_CONTROL_2[32]);
-	offset_yellow[2] = get_safe_offset(offset_yellow[2], LITE_CONTROL_2[34]);
-
-	offset_magenta[0] = get_safe_offset(offset_magenta[0], LITE_CONTROL_2[24]);
-	offset_magenta[1] = get_safe_offset(offset_magenta[1], LITE_CONTROL_2[26]);
-	offset_magenta[2] = get_safe_offset(offset_magenta[2], LITE_CONTROL_2[28]);
-
-	offset_cyan[0] = get_safe_offset(offset_cyan[0], LITE_CONTROL_2[18]);
-	offset_cyan[1] = get_safe_offset(offset_cyan[1], LITE_CONTROL_2[20]);
-	offset_cyan[2] = get_safe_offset(offset_cyan[2], LITE_CONTROL_2[22]);
 }
 
 static void update_mdnie_mode(void)
@@ -766,7 +724,6 @@ static void update_mdnie_mode(void)
 		}
 
 		if (offset_mode) {
-			cleanup_offsets();
 			LITE_CONTROL_2[18] += offset_cyan[0];
 			LITE_CONTROL_2[19] += offset_red[0];
 			LITE_CONTROL_2[20] += offset_cyan[1];
@@ -1492,19 +1449,20 @@ static ssize_t black_store(struct kobject *kobj,
 	int i, new_val, NEWRED, NEWGREEN, NEWBLUE;
 
 	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
+		clamp_val(NEWRED, 0, 255);
+		clamp_val(NEWGREEN, 0, 255);
+		clamp_val(NEWBLUE, 0, 255);
 		black[0] = NEWRED;
 		black[1] = NEWGREEN;
 		black[2] = NEWBLUE;
 	} else if (sscanf(buf, "%d", &new_val) == 1) {
+		clamp_val(new_val, 0, 255);
 		black[0] = new_val;
 		black[1] = new_val;
 		black[2] = new_val;
 	} else {
 		return count;
 	}
-
-	for (i = 0; i < 2; i++)
-		clamp_val(black[i], 0, 255);
 
 	mDNIe_Set_Mode();
 
@@ -1524,19 +1482,20 @@ static ssize_t white_store(struct kobject *kobj,
 	int i, new_val, NEWRED, NEWGREEN, NEWBLUE;
 
 	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
+		clamp_val(NEWRED, 0, 255);
+		clamp_val(NEWGREEN, 0, 255);
+		clamp_val(NEWBLUE, 0, 255);
 		white[0] = NEWRED;
 		white[1] = NEWGREEN;
 		white[2] = NEWBLUE;
 	} else if (sscanf(buf, "%d", &new_val) == 1) {
+		clamp_val(new_val, 0, 255);
 		white[0] = new_val;
 		white[1] = new_val;
 		white[2] = new_val;
 	} else {
 		return count;
 	}
-
-	for (i = 0; i < 2; i++)
-		clamp_val(white[i], 0, 255);
 
 	mDNIe_Set_Mode();
 
@@ -1556,19 +1515,20 @@ static ssize_t red_store(struct kobject *kobj,
 	int i, new_val, NEWRED, NEWGREEN, NEWBLUE;
 
 	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
+		clamp_val(NEWRED, 0, 255);
+		clamp_val(NEWGREEN, 0, 255);
+		clamp_val(NEWBLUE, 0, 255);
 		red[0] = NEWRED;
 		red[1] = NEWGREEN;
 		red[2] = NEWBLUE;
 	} else if (sscanf(buf, "%d", &new_val) == 1) {
+		clamp_val(new_val, 0, 255);
 		red[0] = new_val;
 		red[1] = 0;
 		red[2] = 0;
 	} else {
 		return count;
 	}
-
-	for (i = 0; i < 2; i++)
-		clamp_val(red[i], 0, 255);
 
 	mDNIe_Set_Mode();
 
@@ -1588,19 +1548,20 @@ static ssize_t green_store(struct kobject *kobj,
 	int i, new_val, NEWRED, NEWGREEN, NEWBLUE;
 
 	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
+		clamp_val(NEWRED, 0, 255);
+		clamp_val(NEWGREEN, 0, 255);
+		clamp_val(NEWBLUE, 0, 255);
 		green[0] = NEWRED;
 		green[1] = NEWGREEN;
 		green[2] = NEWBLUE;
 	} else if (sscanf(buf, "%d", &new_val) == 1) {
+		clamp_val(new_val, 0, 255);
 		green[0] = 0;
 		green[1] = new_val;
 		green[2] = 0;
 	} else {
 		return count;
 	}
-
-	for (i = 0; i < 2; i++)
-		clamp_val(green[i], 0, 255);
 
 	mDNIe_Set_Mode();
 
@@ -1620,19 +1581,20 @@ static ssize_t blue_store(struct kobject *kobj,
 	int i, new_val, NEWRED, NEWGREEN, NEWBLUE;
 
 	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
+		clamp_val(NEWRED, 0, 255);
+		clamp_val(NEWGREEN, 0, 255);
+		clamp_val(NEWBLUE, 0, 255);
 		blue[0] = NEWRED;
 		blue[1] = NEWGREEN;
 		blue[2] = NEWBLUE;
 	} else if (sscanf(buf, "%d", &new_val) == 1) {
+		clamp_val(new_val, 0, 255);
 		blue[0] = 0;
 		blue[1] = 0;
 		blue[2] = new_val;
 	} else {
 		return count;
 	}
-
-	for (i = 0; i < 2; i++)
-		clamp_val(blue[i], 0, 255);
 
 	mDNIe_Set_Mode();
 
@@ -1651,19 +1613,20 @@ static ssize_t yellow_store(struct kobject *kobj,
 	int i, new_val, NEWRED, NEWGREEN, NEWBLUE;
 
 	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
+		clamp_val(NEWRED, 0, 255);
+		clamp_val(NEWGREEN, 0, 255);
+		clamp_val(NEWBLUE, 0, 255);
 		yellow[0] = NEWRED;
 		yellow[1] = NEWGREEN;
 		yellow[2] = NEWBLUE;
 	} else if (sscanf(buf, "%d", &new_val) == 1) {
+		clamp_val(new_val, 0, 255);
 		yellow[0] = new_val;
 		yellow[1] = new_val;
 		yellow[2] = 0;
 	} else {
 		return count;
 	}
-
-	for (i = 0; i < 2; i++)
-		clamp_val(yellow[i], 0, 255);
 
 	mDNIe_Set_Mode();
 
@@ -1682,19 +1645,20 @@ static ssize_t magenta_store(struct kobject *kobj,
 	int i, new_val, NEWRED, NEWGREEN, NEWBLUE;
 
 	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
+		clamp_val(NEWRED, 0, 255);
+		clamp_val(NEWGREEN, 0, 255);
+		clamp_val(NEWBLUE, 0, 255);
 		magenta[0] = NEWRED;
 		magenta[1] = NEWGREEN;
 		magenta[2] = NEWBLUE;
 	} else if (sscanf(buf, "%d", &new_val) == 1) {
+		clamp_val(new_val, 0, 255);
 		magenta[0] = new_val;
 		magenta[1] = 0;
 		magenta[2] = new_val;
 	} else {
 		return count;
 	}
-
-	for (i = 0; i < 2; i++)
-		clamp_val(magenta[i], 0, 255);
 
 	mDNIe_Set_Mode();
 
@@ -1713,19 +1677,20 @@ static ssize_t cyan_store(struct kobject *kobj,
 	int i, new_val, NEWRED, NEWGREEN, NEWBLUE;
 
 	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
+		clamp_val(NEWRED, 0, 255);
+		clamp_val(NEWGREEN, 0, 255);
+		clamp_val(NEWBLUE, 0, 255);
 		cyan[0] = NEWRED;
 		cyan[1] = NEWGREEN;
 		cyan[2] = NEWBLUE;
 	} else if (sscanf(buf, "%d", &new_val) == 1) {
+		clamp_val(new_val, 0, 255);
 		cyan[0] = 0;
 		cyan[1] = new_val;
 		cyan[2] = new_val;
 	} else {
 		return count;
 	}
-
-	for (i = 0; i < 2; i++)
-		clamp_val(cyan[i], 0, 255);
 
 	mDNIe_Set_Mode();
 
@@ -1745,18 +1710,21 @@ static ssize_t offset_black_store(struct kobject *kobj,
 	int new_val, NEWRED, NEWGREEN, NEWBLUE;
 
 	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
-		offset_black[0] = NEWRED;
-		offset_black[1] = NEWGREEN;
-		offset_black[2] = NEWBLUE;
+		clamp_val(NEWRED, -255, 255);
+		clamp_val(NEWGREEN, -255, 255);
+		clamp_val(NEWBLUE, -255, 255);
+		offset_black[0] = sanitize_offset(NEWRED, LITE_CONTROL_2[37]);
+		offset_black[1] = sanitize_offset(NEWGREEN, LITE_CONTROL_2[39]);
+		offset_black[2] = sanitize_offset(NEWBLUE, LITE_CONTROL_2[41]);
 	} else if (sscanf(buf, "%d", &new_val) == 1) {
-		offset_black[0] = new_val;
-		offset_black[1] = new_val;
-		offset_black[2] = new_val;
+		clamp_val(new_val, -255, 255);
+		offset_black[0] = sanitize_offset(new_val, LITE_CONTROL_2[37]);
+		offset_black[1] = sanitize_offset(new_val, LITE_CONTROL_2[39]);
+		offset_black[2] = sanitize_offset(new_val, LITE_CONTROL_2[41]);
 	} else {
 		return count;
 	}
 
-	cleanup_offsets();
 	mDNIe_Set_Mode();
 
 	return count;
@@ -1775,18 +1743,21 @@ static ssize_t offset_white_store(struct kobject *kobj,
 	int new_val, NEWRED, NEWGREEN, NEWBLUE;
 
 	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
-		offset_white[0] = NEWRED;
-		offset_white[1] = NEWGREEN;
-		offset_white[2] = NEWBLUE;
+		clamp_val(NEWRED, -255, 255);
+		clamp_val(NEWGREEN, -255, 255);
+		clamp_val(NEWBLUE, -255, 255);
+		offset_white[0] = sanitize_offset(NEWRED, LITE_CONTROL_2[36]);
+		offset_white[1] = sanitize_offset(NEWGREEN, LITE_CONTROL_2[38]);
+		offset_white[2] = sanitize_offset(NEWBLUE, LITE_CONTROL_2[40]);
 	} else if (sscanf(buf, "%d", &new_val) == 1) {
-		offset_white[0] = new_val;
-		offset_white[1] = new_val;
-		offset_white[2] = new_val;
+		clamp_val(new_val, -255, 255);
+		offset_white[0] = sanitize_offset(newval, LITE_CONTROL_2[36]);
+		offset_white[1] = sanitize_offset(newval, LITE_CONTROL_2[38]);
+		offset_white[2] = sanitize_offset(newval, LITE_CONTROL_2[40]);
 	} else {
 		return count;
 	}
 
-	cleanup_offsets();
 	mDNIe_Set_Mode();
 
 	return count;
@@ -1805,18 +1776,21 @@ static ssize_t offset_red_store(struct kobject *kobj,
 	int new_val, NEWRED, NEWGREEN, NEWBLUE;
 
 	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
-		offset_red[0] = NEWRED;
-		offset_red[1] = NEWGREEN;
-		offset_red[2] = NEWBLUE;
+		clamp_val(NEWRED, -255, 255);
+		clamp_val(NEWGREEN, -255, 255);
+		clamp_val(NEWBLUE, -255, 255);
+		offset_red[0] = sanitize_offset(NEWRED, LITE_CONTROL_2[19]);
+		offset_red[1] = sanitize_offset(NEWGREEN, LITE_CONTROL_2[21]);
+		offset_red[2] = sanitize_offset(NEWBLUE, LITE_CONTROL_2[23]);
 	} else if (sscanf(buf, "%d", &new_val) == 1) {
-		offset_red[0] = new_val;
+		clamp_val(new_val, -255, 255);
+		offset_red[0] = sanitize_offset(newval, LITE_CONTROL_2[19]);
 		offset_red[1] = 0;
 		offset_red[2] = 0;
 	} else {
 		return count;
 	}
 
-	cleanup_offsets();
 	mDNIe_Set_Mode();
 
 	return count;
@@ -1835,18 +1809,21 @@ static ssize_t offset_green_store(struct kobject *kobj,
 	int new_val, NEWRED, NEWGREEN, NEWBLUE;
 
 	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
-		offset_green[0] = NEWRED;
-		offset_green[1] = NEWGREEN;
-		offset_green[2] = NEWBLUE;
+		clamp_val(NEWRED, -255, 255);
+		clamp_val(NEWGREEN, -255, 255);
+		clamp_val(NEWBLUE, -255, 255);
+		offset_green[0] = sanitize_offset(NEWRED, LITE_CONTROL_2[25]);
+		offset_green[1] = sanitize_offset(NEWGREEN, LITE_CONTROL_2[27]);
+		offset_green[2] = sanitize_offset(NEWBLUE, LITE_CONTROL_2[29]);
 	} else if (sscanf(buf, "%d", &new_val) == 1) {
+		clamp_val(new_val, -255, 255);
 		offset_green[0] = 0;
-		offset_green[1] = new_val;
+		offset_green[1] = sanitize_offset(newval, LITE_CONTROL_2[27]);
 		offset_green[2] = 0;
 	} else {
 		return count;
 	}
 
-	cleanup_offsets();
 	mDNIe_Set_Mode();
 
 	return count;
@@ -1865,18 +1842,21 @@ static ssize_t offset_blue_store(struct kobject *kobj,
 	int new_val, NEWRED, NEWGREEN, NEWBLUE;
 
 	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
-		offset_blue[0] = NEWRED;
-		offset_blue[1] = NEWGREEN;
-		offset_blue[2] = NEWBLUE;
+		clamp_val(NEWRED, -255, 255);
+		clamp_val(NEWGREEN, -255, 255);
+		clamp_val(NEWBLUE, -255, 255);
+		offset_blue[0] = sanitize_offset(NEWRED, LITE_CONTROL_2[31]);
+		offset_blue[1] = sanitize_offset(NEWGREEN, LITE_CONTROL_2[33]);
+		offset_blue[2] = sanitize_offset(NEWBLUE, LITE_CONTROL_2[35]);
 	} else if (sscanf(buf, "%d", &new_val) == 1) {
+		clamp_val(new_val, -255, 255);
 		offset_blue[0] = 0;
 		offset_blue[1] = 0;
-		offset_blue[2] = new_val;
+		offset_blue[2] = sanitize_offset(newval, LITE_CONTROL_2[35]);
 	} else {
 		return count;
 	}
 
-	cleanup_offsets();
 	mDNIe_Set_Mode();
 
 	return count;
@@ -1894,18 +1874,21 @@ static ssize_t offset_yellow_store(struct kobject *kobj,
 	int new_val, NEWRED, NEWGREEN, NEWBLUE;
 
 	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
-		offset_yellow[0] = NEWRED;
-		offset_yellow[1] = NEWGREEN;
-		offset_yellow[2] = NEWBLUE;
+		clamp_val(NEWRED, -255, 255);
+		clamp_val(NEWGREEN, -255, 255);
+		clamp_val(NEWBLUE, -255, 255);
+		offset_yellow[0] = sanitize_offset(NEWRED, LITE_CONTROL_2[30]);
+		offset_yellow[1] = sanitize_offset(NEWGREEN, LITE_CONTROL_2[32]);
+		offset_yellow[2] = sanitize_offset(NEWBLUE, LITE_CONTROL_2[34]);
 	} else if (sscanf(buf, "%d", &new_val) == 1) {
-		offset_yellow[0] = new_val;
-		offset_yellow[1] = new_val;
+		clamp_val(new_val, -255, 255);
+		offset_yellow[0] = sanitize_offset(newval, LITE_CONTROL_2[30]);
+		offset_yellow[1] = sanitize_offset(newval, LITE_CONTROL_2[32]);
 		offset_yellow[2] = 0;
 	} else {
 		return count;
 	}
 
-	cleanup_offsets();
 	mDNIe_Set_Mode();
 
 	return count;
@@ -1923,18 +1906,21 @@ static ssize_t offset_magenta_store(struct kobject *kobj,
 	int new_val, NEWRED, NEWGREEN, NEWBLUE;
 
 	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
-		offset_magenta[0] = NEWRED;
-		offset_magenta[1] = NEWGREEN;
-		offset_magenta[2] = NEWBLUE;
+		clamp_val(NEWRED, -255, 255);
+		clamp_val(NEWGREEN, -255, 255);
+		clamp_val(NEWBLUE, -255, 255);
+		offset_magenta[0] = sanitize_offset(NEWRED, LITE_CONTROL_2[24]);
+		offset_magenta[1] = sanitize_offset(NEWGREEN, LITE_CONTROL_2[26]);
+		offset_magenta[2] = sanitize_offset(NEWBLUE, LITE_CONTROL_2[28]);
 	} else if (sscanf(buf, "%d", &new_val) == 1) {
-		offset_magenta[0] = new_val;
+		clamp_val(new_val, -255, 255);
+		offset_magenta[0] = sanitize_offset(newval, LITE_CONTROL_2[24]);
 		offset_magenta[1] = 0;
-		offset_magenta[2] = new_val;
+		offset_magenta[2] = sanitize_offset(newval, LITE_CONTROL_2[28]);
 	} else {
 		return count;
 	}
 
-	cleanup_offsets();
 	mDNIe_Set_Mode();
 
 	return count;
@@ -1952,23 +1938,27 @@ static ssize_t offset_cyan_store(struct kobject *kobj,
 	int new_val, NEWRED, NEWGREEN, NEWBLUE;
 
 	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
-		offset_cyan[0] = NEWRED;
-		offset_cyan[1] = NEWGREEN;
-		offset_cyan[2] = NEWBLUE;
+		clamp_val(NEWRED, -255, 255);
+		clamp_val(NEWGREEN, -255, 255);
+		clamp_val(NEWBLUE, -255, 255);
+		offset_cyan[0] = sanitize_offset(NEWRED, LITE_CONTROL_2[18]);
+		offset_cyan[1] = sanitize_offset(NEWGREEN, LITE_CONTROL_2[20]);
+		offset_cyan[2] = sanitize_offset(NEWBLUE, LITE_CONTROL_2[22]);
 	} else if (sscanf(buf, "%d", &new_val) == 1) {
+		clamp_val(new_val, -255, 255);
 		offset_cyan[0] = 0;
-		offset_cyan[1] = new_val;
-		offset_cyan[2] = new_val;
+		offset_cyan[1] = sanitize_offset(newval, LITE_CONTROL_2[20]);
+		offset_cyan[2] = sanitize_offset(newval, LITE_CONTROL_2[22]);
 	} else {
 		return count;
 	}
 
-	cleanup_offsets();
 	mDNIe_Set_Mode();
 
 	return count;
 }
 MX_ATTR_RW(hijack);
+MX_ATTR_RW(offset_mode);
 MX_ATTR_RO(effect_mask);
 MX_ATTR_RW(sharpen_boost);
 MX_ATTR_RW(sharpen);
@@ -1977,6 +1967,7 @@ MX_ATTR_RW(gamma);
 
 static struct attribute *mdnie_control_attrs[] = {
 	&hijack_attr.attr,
+	&offset_mode_attr.attr,
 	&effect_mask_attr.attr,
 	&sharpen_boost_attr.attr,
 	&sharpen_attr.attr,
@@ -2014,7 +2005,6 @@ static struct attribute_group override_attr_group = {
 	.attrs = override_attrs,
 };
 
-MX_ATTR_RW(offset_mode);
 MX_ATTR_RW(offset_black);
 MX_ATTR_RW(offset_white);
 MX_ATTR_RW(offset_red);
