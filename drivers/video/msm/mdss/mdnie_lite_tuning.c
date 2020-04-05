@@ -358,14 +358,17 @@ void sending_tuning_cmd(void)
 	mutex_unlock(&mdnie_msd->lock);
 }
 
-static int sanitize_offset(int inset, int lcvalue)
+static inline int sanitize_offset(int inset, char lcvalue)
 {
 	int midset, outset, thelc;
-	midset = inset;
-	thelc = lcvalue;
 
-	clamp_val(midset, -255, 255);
-	clamp_val(thelc, 0, 255);
+	midset = inset;
+	thelc = (int)lcvalue;
+
+	if (thelc > 255)
+		thelc = 255;
+	if (thelc < 0)
+		thelc = 0;
 
 	if (midset == 0) {
 		outset = midset;
@@ -375,23 +378,22 @@ static int sanitize_offset(int inset, int lcvalue)
 			outset = midset;
 			goto goodstuff;
 		} else if ((midset + thelc) > 255) {
-			if (thelc < 255)
+			if (thelc <= 255)
 				outset = (255 - thelc);
-			else
-				outset = 0;
 			goto goodstuff;
 		}
-	} else {
+	} else if (midset < 0) {
 		if ((midset + thelc) >= 0) {
 			outset = midset;
 			goto goodstuff;
 		} else if ((midset + thelc) < 0) {
-			if (thelc > 0)
-				outset = thelc * -1;
-			else
-				outset = 0;
-			goto goodstuff;
+			if (thelc => 0) {
+				outset = (thelc - (thelc * 2));
+				goto goodstuff;
+			}
 		}
+	} else {
+		outset = midset;
 	}
 
 goodstuff:
