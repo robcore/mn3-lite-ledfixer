@@ -266,7 +266,7 @@ static unsigned char NATURAL_UI_1[] = {
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
 	0x33, //scr_roi 1 scr algo_roi 1 algo 00 1 0 00 1 0
-	0x01, //sharpen cc gamma 00 0 0
+	0x09, //sharpen cc gamma 00 0 0
 };
 
 static unsigned char NATURAL_UI_2[] = {
@@ -307,11 +307,11 @@ static unsigned char NATURAL_UI_2[] = {
 	0x24, //scr Yb Cr YELLOW B
 	0xf2, //scr Bb Rr BLUE B
 	0xff, //scr Wr Wb WHITE R
-	0x00, //scr Kr Kb BLACK R
+	0x19, //scr Kr Kb BLACK R
 	0xf7, //scr Wg Wg WHITE G
-	0x00, //scr Kg Kg BLACK G
+	0x19, //scr Kg Kg BLACK G
 	0xee, //scr Wb Wr WHITE B
-	0x00, //scr Kb Kr BLACK B
+	0x19, //scr Kb Kr BLACK B
 	0x00, //curve 1 b
 	0x20, //curve 1 a
 	0x00, //curve 2 b
