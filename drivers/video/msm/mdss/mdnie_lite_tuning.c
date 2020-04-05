@@ -164,6 +164,7 @@ static int gamma_bit = 0;
 #define NEW_CURVE_MIN 0
 #define NEW_CURVE_MAX 47
 static unsigned char custom_curve[CURVESIZE];
+static unsigned char chroma_correction[18];
 /* Hijack Extra End  */
 
 //static unsigned int previous_mode;
@@ -689,6 +690,9 @@ static void update_mdnie_mode(void)
 		for (i = NEW_CURVE_MIN; i < NEW_CURVE_MAX; i++)
 			LITE_CONTROL_2[i + 42] = custom_curve[i];
 
+		for (i = 0; i < 17; i++)
+			LITE_CONTROL_2[i + 91] = chroma_correction[i];
+
 		result = (LITE_CONTROL_1[4] >> (sharpen_boost_bit));
 		if (sharpen_boost) {
 			if (!(result & 1))
@@ -805,6 +809,8 @@ static void update_mdnie_mode(void)
 
 		for (i = NEW_CURVE_MIN; i < NEW_CURVE_MAX; i++)
 			custom_curve[i] = LITE_CONTROL_2[i + 42];
+		for (i = 0; i < 17; i++)
+			chroma_correction[i] = LITE_CONTROL_2[i + 91];
 
 		LITE_CONTROL_1[4] = source_1[4];
 
@@ -1335,7 +1341,36 @@ store_one_curve(gcurve21, 40, 41);
 store_one_curve(gcurve22, 42, 43);
 store_one_curve(gcurve23, 44, 45);
 store_one_curve(gcurve24, 46, 47);
+/*
+#define show_one_cc(_name, firstval, secondval)			\
+static ssize_t _name##_show					\
+(struct kobject *kobj, struct kobj_attribute *attr, char *buf)	\
+{								\
+	return sprintf(buf, "%u %u\n", chroma_correction[firstval], chroma_correction[secondval]);			\
+}
 
+#define store_one_cc(_name, firstval, secondval)		\
+static ssize_t _name##_store		\
+(struct kobject *kobj,				\
+ struct kobj_attribute *attr,			\
+ const char *buf, size_t count)			\
+{						\
+	int i, cc_highlow, cc_strength;			\
+	if (sscanf(buf, "%d %d", &cc_highlow, &cc_strength) == 2) {				\
+		clamp_val(chroma_correction[firstval], 0, 255);		\
+		clamp_val(chroma_correction[secondval], 0, 255);		\
+		chroma_correction[firstval] = cc_highlow;		\
+		chroma_correction[secondval] = cc_strength;		\
+	} else {		\
+		return count;		\
+	}						\
+	mDNIe_Set_Mode();		\
+	return count;			\
+}
+
+90	0x04, //cc r1 0.08x
+91	0x39,
+*/
 /* offset_mode */
 
 static ssize_t offset_mode_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
