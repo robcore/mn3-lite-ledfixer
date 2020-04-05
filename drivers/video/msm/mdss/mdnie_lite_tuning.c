@@ -158,12 +158,7 @@ static int sharpen_boost_bit = 2; //not actually sure what, if anything, this bi
 static int chroma_bit = 1;
 static int gamma_bit = 0;
 
-#define CURVESIZE 48
-#define SRC_CURVE_MIN 42
-#define SRC_CURVE_MAX 89
-#define NEW_CURVE_MIN 0
-#define NEW_CURVE_MAX 47
-static unsigned char custom_curve[CURVESIZE];
+static unsigned char custom_curve[48];
 static unsigned char chroma_correction[18];
 /* Hijack Extra End  */
 
@@ -687,7 +682,7 @@ static void update_mdnie_mode(void)
 
 	if (hijack) {
 
-		for (i = NEW_CURVE_MIN; i < NEW_CURVE_MAX; i++)
+		for (i = 0; i < 47; i++)
 			LITE_CONTROL_2[i + 42] = custom_curve[i];
 
 		for (i = 0; i < 17; i++)
@@ -807,7 +802,7 @@ static void update_mdnie_mode(void)
 		}
 	} else {
 
-		for (i = NEW_CURVE_MIN; i < NEW_CURVE_MAX; i++)
+		for (i = 0; i < 47; i++)
 			custom_curve[i] = LITE_CONTROL_2[i + 42];
 		for (i = 0; i < 17; i++)
 			chroma_correction[i] = LITE_CONTROL_2[i + 91];
@@ -1341,7 +1336,7 @@ store_one_curve(gcurve21, 40, 41);
 store_one_curve(gcurve22, 42, 43);
 store_one_curve(gcurve23, 44, 45);
 store_one_curve(gcurve24, 46, 47);
-/*
+
 #define show_one_cc(_name, firstval, secondval)			\
 static ssize_t _name##_show					\
 (struct kobject *kobj, struct kobj_attribute *attr, char *buf)	\
@@ -1357,9 +1352,11 @@ static ssize_t _name##_store		\
 {						\
 	int i, cc_highlow, cc_strength;			\
 	if (sscanf(buf, "%d %d", &cc_highlow, &cc_strength) == 2) {				\
-		clamp_val(chroma_correction[firstval], 0, 255);		\
+		if ((cc_highlow != 4) && (cc_highlow != 31))	\
+			chroma_correction[firstval] = LITE_CONTROL_2[firstval + 91];		\
+		else	\
+			chroma_correction[firstval] = cc_highlow;		\
 		clamp_val(chroma_correction[secondval], 0, 255);		\
-		chroma_correction[firstval] = cc_highlow;		\
 		chroma_correction[secondval] = cc_strength;		\
 	} else {		\
 		return count;		\
@@ -1368,9 +1365,26 @@ static ssize_t _name##_store		\
 	return count;			\
 }
 
-90	0x04, //cc r1 0.08x
-91	0x39,
-*/
+show_one_cc(cc_r1, 0, 1);
+show_one_cc(cc_r2, 2, 3);
+show_one_cc(cc_r3, 4, 5);
+show_one_cc(cc_g1, 6, 7);
+show_one_cc(cc_g2, 8, 9);
+show_one_cc(cc_g3, 10, 11);
+show_one_cc(cc_b1, 12, 13);
+show_one_cc(cc_b2, 14, 15);
+show_one_cc(cc_b3, 16, 17);
+
+store_one_cc(cc_r1, 0, 1);
+store_one_cc(cc_r2, 2, 3);
+store_one_cc(cc_r3, 4, 5);
+store_one_cc(cc_g1, 6, 7);
+store_one_cc(cc_g2, 8, 9);
+store_one_cc(cc_g3, 10, 11);
+store_one_cc(cc_b1, 12, 13);
+store_one_cc(cc_b2, 14, 15);
+store_one_cc(cc_b3, 16, 17);
+
 /* offset_mode */
 
 static ssize_t offset_mode_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
@@ -2124,11 +2138,38 @@ static struct attribute_group gcurve_attr_group = {
 	.attrs = gcurve_attrs,
 };
 
+MX_ATTR_RW(cc_r1);
+MX_ATTR_RW(cc_r2);
+MX_ATTR_RW(cc_r3);
+MX_ATTR_RW(cc_g1);
+MX_ATTR_RW(cc_g2);
+MX_ATTR_RW(cc_g3);
+MX_ATTR_RW(cc_b1);
+MX_ATTR_RW(cc_b2);
+MX_ATTR_RW(cc_b3);
+
+static struct attribute *cc_attrs[] = {
+	&cc_r1_attr.attr,
+	&cc_r2_attr.attr,
+	&cc_r3_attr.attr,
+	&cc_g1_attr.attr,
+	&cc_g2_attr.attr,
+	&cc_g3_attr.attr,
+	&cc_b1_attr.attr,
+	&cc_b2_attr.attr,
+	&cc_b3_attr.attr,
+	NULL,
+};
+
+static struct attribute_group cc_attr_group = {
+	.attrs = cc_attrs,
+};
+
 static struct kobject *mdnie_control_kobj;
 static struct kobject *override_kobj;
 static struct kobject *offset_kobj;
 static struct kobject *gcurve_kobj;
-
+static struct kobject *cc_kobj;
 
 void init_mdnie_class(void)
 {
@@ -2214,9 +2255,19 @@ void init_mdnie_class(void)
 		goto gcurvefail;
 	}
 
+	cc_kobj = kobject_create_and_add("cc", mdnie_control_kobj);
+	if (sysfs_create_group(cc_kobj, &cc_attr_group)) {
+		pr_err("Failed to create cc kobject!\n");
+		goto ccfail;
+	}
+
 	mdnie_tun_state.mdnie_enable = true;
 	return;
 
+ccfail:
+	kobject_put(cc_kobj);
+	cc_kobj = NULL;
+	sysfs_remove_group(gcurve_kobj, &offset_attr_group);
 
 gcurvefail:
 	kobject_put(gcurve_kobj);
