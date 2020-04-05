@@ -140,14 +140,14 @@ static unsigned int magenta[3] = {0, 0, 0};
 static unsigned int cyan[3] = {0, 0, 0};
 
 static unsigned int offset_mode = 1;
-static unsigned int offset_black[3] = {0, 0, 0};
-static unsigned int offset_white[3] = {0, 0, 0};
-static unsigned int offset_red[3] = {0, 0, 0};
-static unsigned int offset_green[3] = {0, 0, 0};
-static unsigned int offset_blue[3] = {0, 0, 0};
-static unsigned int offset_yellow[3] = {0, 0, 0};
-static unsigned int offset_magenta[3] = {0, 0, 0};
-static unsigned int offset_cyan[3] = {0, 0, 0};
+static int offset_black[3] = {0, 0, 0};
+static int offset_white[3] = {0, 0, 0};
+static int offset_red[3] = {0, 0, 0};
+static int offset_green[3] = {0, 0, 0};
+static int offset_blue[3] = {0, 0, 0};
+static int offset_yellow[3] = {0, 0, 0};
+static int offset_magenta[3] = {0, 0, 0};
+static int offset_cyan[3] = {0, 0, 0};
 
 static unsigned int sharpen_boost = 0;
 static unsigned int sharpen = 0;
@@ -362,34 +362,36 @@ void sending_tuning_cmd(void)
 	mutex_unlock(&mdnie_msd->lock);
 }
 
-static int sanitize_offset(int inset, unsigned int lcvalue)
+static int sanitize_offset(int inset, int lcvalue)
 {
-	int midset, outset;
+	int midset, outset, thelc;
 	midset = inset;
+	thelc = lcvalue;
 
 	clamp_val(midset, -255, 255);
+	clamp_val(thelc, 0, 255);
 
 	if (midset == 0) {
 		outset = midset;
 		goto goodstuff;
 	} else if (midset > 0) {
-		if ((midset + lcvalue) <= 255) {
+		if ((midset + thelc) <= 255) {
 			outset = midset;
 			goto goodstuff;
-		} else if ((midset + lcvalue) > 255) {
-			if (lcvalue < 255)
-				outset = (255 - lcvalue);
+		} else if ((midset + thelc) > 255) {
+			if (thelc < 255)
+				outset = (255 - thelc);
 			else
 				outset = 0;
 			goto goodstuff;
 		}
 	} else {
-		if ((midset + lcvalue) >= 0) {
+		if ((midset + thelc) >= 0) {
 			outset = midset;
 			goto goodstuff;
-		} else if ((midset + lcvalue) < 0) {
-			if (lcvalue > 0)
-				outset = lcvalue * -1;
+		} else if ((midset + thelc) < 0) {
+			if (thelc > 0)
+				outset = thelc * -1;
 			else
 				outset = 0;
 			goto goodstuff;
@@ -685,7 +687,7 @@ static void update_mdnie_mode(void)
 	if (hijack) {
 
 		for (i = NEW_CURVE_MIN; i < NEW_CURVE_MAX; i++)
-			LITE_CONTROL_1[i + 42] = custom_curve[i];
+			LITE_CONTROL_2[i + 42] = custom_curve[i];
 
 		result = (LITE_CONTROL_1[4] >> (sharpen_boost_bit));
 		if (sharpen_boost) {
@@ -724,30 +726,30 @@ static void update_mdnie_mode(void)
 		}
 
 		if (offset_mode) {
-			LITE_CONTROL_2[18] += offset_cyan[0];
-			LITE_CONTROL_2[19] += offset_red[0];
-			LITE_CONTROL_2[20] += offset_cyan[1];
-			LITE_CONTROL_2[21] += offset_red[1];
-			LITE_CONTROL_2[22] += offset_cyan[2];
-			LITE_CONTROL_2[23] += offset_red[2];
-			LITE_CONTROL_2[24] += offset_magenta[0];
-			LITE_CONTROL_2[25] += offset_green[0];
-			LITE_CONTROL_2[26] += offset_magenta[1];
-			LITE_CONTROL_2[27] += offset_green[1];
-			LITE_CONTROL_2[28] += offset_magenta[2];
-			LITE_CONTROL_2[29] += offset_green[2];
-			LITE_CONTROL_2[30] += offset_yellow[0];
-			LITE_CONTROL_2[31] += offset_blue[0];
-			LITE_CONTROL_2[32] += offset_yellow[1];
-			LITE_CONTROL_2[33] += offset_blue[1];
-			LITE_CONTROL_2[34] += offset_yellow[2];
-			LITE_CONTROL_2[35] += offset_blue[2];
-			LITE_CONTROL_2[36] += offset_white[0];
-			LITE_CONTROL_2[37] += offset_black[0];
-			LITE_CONTROL_2[38] += offset_white[1];
-			LITE_CONTROL_2[39] += offset_black[1];
-			LITE_CONTROL_2[40] += offset_white[2];
-			LITE_CONTROL_2[41] += offset_black[2];
+			LITE_CONTROL_2[18] += sanitize_offset(offset_cyan[0], LITE_CONTROL_2[18]);
+			LITE_CONTROL_2[19] += sanitize_offset(offset_red[0], LITE_CONTROL_2[19]);
+			LITE_CONTROL_2[20] += sanitize_offset(offset_cyan[1], LITE_CONTROL_2[20]);
+			LITE_CONTROL_2[21] += sanitize_offset(offset_red[1], LITE_CONTROL_2[21]);
+			LITE_CONTROL_2[22] += sanitize_offset(offset_cyan[2], LITE_CONTROL_2[22]);
+			LITE_CONTROL_2[23] += sanitize_offset(offset_red[2], LITE_CONTROL_2[23]);
+			LITE_CONTROL_2[24] += sanitize_offset(offset_magenta[0], LITE_CONTROL_2[24]);
+			LITE_CONTROL_2[25] += sanitize_offset(offset_green[0], LITE_CONTROL_2[25]);
+			LITE_CONTROL_2[26] += sanitize_offset(offset_magenta[1], LITE_CONTROL_2[26]);
+			LITE_CONTROL_2[27] += sanitize_offset(offset_green[1], LITE_CONTROL_2[27]);
+			LITE_CONTROL_2[28] += sanitize_offset(offset_magenta[2], LITE_CONTROL_2[28]);
+			LITE_CONTROL_2[29] += sanitize_offset(offset_green[2], LITE_CONTROL_2[29]);
+			LITE_CONTROL_2[30] += sanitize_offset(offset_yellow[0], LITE_CONTROL_2[30]);
+			LITE_CONTROL_2[31] += sanitize_offset(offset_blue[0], LITE_CONTROL_2[31]);
+			LITE_CONTROL_2[32] += sanitize_offset(offset_yellow[1], LITE_CONTROL_2[32]);
+			LITE_CONTROL_2[33] += sanitize_offset(offset_blue[1], LITE_CONTROL_2[33]);
+			LITE_CONTROL_2[34] += sanitize_offset(offset_yellow[2], LITE_CONTROL_2[34]);
+			LITE_CONTROL_2[35] += sanitize_offset(offset_blue[2], LITE_CONTROL_2[35]);
+			LITE_CONTROL_2[36] += sanitize_offset(offset_white[0], LITE_CONTROL_2[36]);
+			LITE_CONTROL_2[37] += sanitize_offset(offset_black[0], LITE_CONTROL_2[37]);
+			LITE_CONTROL_2[38] += sanitize_offset(offset_white[1], LITE_CONTROL_2[38]);
+			LITE_CONTROL_2[39] += sanitize_offset(offset_black[1], LITE_CONTROL_2[39]);
+			LITE_CONTROL_2[40] += sanitize_offset(offset_white[2], LITE_CONTROL_2[40]);
+			LITE_CONTROL_2[41] += sanitize_offset(offset_black[2], LITE_CONTROL_2[41]);
 
 			cyan[0] = LITE_CONTROL_2[18];
 			red[0] = LITE_CONTROL_2[19];
@@ -802,7 +804,7 @@ static void update_mdnie_mode(void)
 	} else {
 
 		for (i = NEW_CURVE_MIN; i < NEW_CURVE_MAX; i++)
-			custom_curve[i] = LITE_CONTROL_1[i + 42];
+			custom_curve[i] = LITE_CONTROL_2[i + 42];
 
 		LITE_CONTROL_1[4] = source_1[4];
 
@@ -1701,7 +1703,7 @@ static ssize_t cyan_store(struct kobject *kobj,
 
 static ssize_t offset_black_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%u %u %u\n", offset_black[0], offset_black[1], offset_black[2]);
+	return sprintf(buf, "%d %d %d\n", offset_black[0], offset_black[1], offset_black[2]);
 }
 
 static ssize_t offset_black_store(struct kobject *kobj,
@@ -1734,7 +1736,7 @@ static ssize_t offset_black_store(struct kobject *kobj,
 
 static ssize_t offset_white_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%u %u %u\n", offset_white[0], offset_white[1], offset_white[2]);
+	return sprintf(buf, "%d %d %d\n", offset_white[0], offset_white[1], offset_white[2]);
 }
 
 static ssize_t offset_white_store(struct kobject *kobj,
@@ -1767,7 +1769,7 @@ static ssize_t offset_white_store(struct kobject *kobj,
 
 static ssize_t offset_red_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%u %u %u\n", offset_red[0], offset_red[1], offset_red[2]);
+	return sprintf(buf, "%d %d %d\n", offset_red[0], offset_red[1], offset_red[2]);
 }
 
 static ssize_t offset_red_store(struct kobject *kobj,
@@ -1800,7 +1802,7 @@ static ssize_t offset_red_store(struct kobject *kobj,
 
 static ssize_t offset_green_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%u %u %u\n", offset_green[0], offset_green[1], offset_green[2]);
+	return sprintf(buf, "%d %d %d\n", offset_green[0], offset_green[1], offset_green[2]);
 }
 
 static ssize_t offset_green_store(struct kobject *kobj,
@@ -1833,7 +1835,7 @@ static ssize_t offset_green_store(struct kobject *kobj,
 
 static ssize_t offset_blue_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%u %u %u\n", offset_blue[0], offset_blue[1], offset_blue[2]);
+	return sprintf(buf, "%d %d %d\n", offset_blue[0], offset_blue[1], offset_blue[2]);
 }
 
 static ssize_t offset_blue_store(struct kobject *kobj,
@@ -1865,7 +1867,7 @@ static ssize_t offset_blue_store(struct kobject *kobj,
 /* offset_yellow */
 static ssize_t offset_yellow_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%u %u %u\n", offset_yellow[0], offset_yellow[1], offset_yellow[2]);
+	return sprintf(buf, "%d %d %d\n", offset_yellow[0], offset_yellow[1], offset_yellow[2]);
 }
 
 static ssize_t offset_yellow_store(struct kobject *kobj,
@@ -1897,7 +1899,7 @@ static ssize_t offset_yellow_store(struct kobject *kobj,
 /* offset_magenta */
 static ssize_t offset_magenta_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%u %u %u\n", offset_magenta[0], offset_magenta[1], offset_magenta[2]);
+	return sprintf(buf, "%d %d %d\n", offset_magenta[0], offset_magenta[1], offset_magenta[2]);
 }
 
 static ssize_t offset_magenta_store(struct kobject *kobj,
@@ -1929,7 +1931,7 @@ static ssize_t offset_magenta_store(struct kobject *kobj,
 /* offset_cyan */
 static ssize_t offset_cyan_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%u %u %u\n", offset_cyan[0], offset_cyan[1], offset_cyan[2]);
+	return sprintf(buf, "%d %d %d\n", offset_cyan[0], offset_cyan[1], offset_cyan[2]);
 }
 
 static ssize_t offset_cyan_store(struct kobject *kobj,
