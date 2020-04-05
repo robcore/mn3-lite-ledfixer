@@ -397,6 +397,9 @@ static inline int sanitize_offset(int inset, char lcvalue)
 	}
 
 goodstuff:
+	if (((outset + thelc) > 255) || ((outset + thelc) < 0)) {
+		return 0;
+	}
 	return outset;
 }
 
