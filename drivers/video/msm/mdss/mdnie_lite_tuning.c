@@ -150,10 +150,10 @@ static int offset_magenta[3] = {0, 0, 0};
 static int offset_cyan[3] = {0, 0, 0};
 
 static unsigned int sharpen_dark = 0;
-static unsigned int sharpen_white = 0;
+static unsigned int sharpen_light = 0;
 static unsigned int chroma = 0;
 static unsigned int gamma = 0;
-static int sharpen_white_bit = 3;
+static int sharpen_light_bit = 3;
 static int sharpen_dark_bit = 2;
 static int chroma_bit = 1;
 static int gamma_bit = 0;
@@ -697,13 +697,13 @@ static void update_mdnie_mode(void)
 				LITE_CONTROL_1[4] &= ~(1 << sharpen_dark_bit);
 		}
 
-		result = (LITE_CONTROL_1[4] >> (sharpen_white_bit));
-		if (sharpen_white) {
+		result = (LITE_CONTROL_1[4] >> (sharpen_light_bit));
+		if (sharpen_light) {
 			if (!(result & 1))
-				LITE_CONTROL_1[4] |= 1 << sharpen_white_bit;
+				LITE_CONTROL_1[4] |= 1 << sharpen_light_bit;
 		} else {
 			if (result & 1)
-				LITE_CONTROL_1[4] &= ~(1 << sharpen_white_bit);
+				LITE_CONTROL_1[4] &= ~(1 << sharpen_light_bit);
 		}
 
 		result = (LITE_CONTROL_1[4] >> (chroma_bit));
@@ -837,8 +837,8 @@ static void update_mdnie_mode(void)
 		result = (LITE_CONTROL_1[4] >> (sharpen_dark_bit));
 		sharpen_dark = result & 1;
 
-		result = (LITE_CONTROL_1[4] >> (sharpen_white_bit));
-		sharpen_white = result & 1;
+		result = (LITE_CONTROL_1[4] >> (sharpen_light_bit));
+		sharpen_light = result & 1;
 
 		result = (LITE_CONTROL_1[4] >> (chroma_bit));
 		chroma = result & 1;
@@ -1327,14 +1327,14 @@ static ssize_t sharpen_dark_store(struct kobject *kobj,
 }
 
 
-/* sharpen_white */
+/* sharpen_light */
 
-static ssize_t sharpen_white_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+static ssize_t sharpen_light_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%u\n", sharpen_white);
+	return sprintf(buf, "%u\n", sharpen_light);
 }
 
-static ssize_t sharpen_white_store(struct kobject *kobj,
+static ssize_t sharpen_light_store(struct kobject *kobj,
 			   struct kobj_attribute *attr, const char *buf, size_t count)
 {
 	int new_val;
@@ -1343,7 +1343,7 @@ static ssize_t sharpen_white_store(struct kobject *kobj,
 		new_val = 0;
 	if (new_val > 1)
 		new_val = 1;
-	sharpen_white = new_val;
+	sharpen_light = new_val;
 	mDNIe_Set_Mode();
 	return count;
 }
@@ -2037,7 +2037,7 @@ MX_ATTR_RW(hijack);
 MX_ATTR_RW(offset_mode);
 MX_ATTR_RO(effect_mask);
 MX_ATTR_RW(sharpen_dark);
-MX_ATTR_RW(sharpen_white);
+MX_ATTR_RW(sharpen_light);
 MX_ATTR_RW(chroma);
 MX_ATTR_RW(gamma);
 
@@ -2046,7 +2046,7 @@ static struct attribute *mdnie_control_attrs[] = {
 	&offset_mode_attr.attr,
 	&effect_mask_attr.attr,
 	&sharpen_dark_attr.attr,
-	&sharpen_white_attr.attr,
+	&sharpen_light_attr.attr,
 	&chroma_attr.attr,
 	&gamma_attr.attr,
 	NULL,
