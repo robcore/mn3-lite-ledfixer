@@ -387,7 +387,7 @@ static inline int sanitize_offset(int inset, char lcvalue)
 			outset = midset;
 			goto goodstuff;
 		} else if ((midset + thelc) < 0) {
-			if (thelc => 0) {
+			if (thelc >= 0) {
 				outset = (thelc - (thelc * 2));
 				goto goodstuff;
 			}
