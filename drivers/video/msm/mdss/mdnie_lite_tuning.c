@@ -177,7 +177,7 @@ int get_lcd_panel_res(void);
 struct mdnie_lite_tun_type mdnie_tun_state = {
 	.mdnie_enable = false,
 	.scenario = mDNIe_UI_MODE,
-	.background = AUTO_MODE,
+	.background = NATURAL_MODE,
 	.outdoor = OUTDOOR_OFF_MODE,
 	.accessibility = ACCESSIBILITY_OFF,
 #if defined(CONFIG_TDMB)
@@ -725,6 +725,31 @@ static void update_mdnie_mode(void)
 		}
 
 		if (offset_mode) {
+			offset_cyan[0] = sanitize_offset(offset_cyan[0], LITE_CONTROL_2[18]);
+			offset_red[0] = sanitize_offset(offset_red[0], LITE_CONTROL_2[19]);
+			offset_cyan[1] = sanitize_offset(offset_cyan[1], LITE_CONTROL_2[20]);
+			offset_red[1] = sanitize_offset(offset_red[1], LITE_CONTROL_2[21]);
+			offset_cyan[2] = sanitize_offset(offset_cyan[2], LITE_CONTROL_2[22]);
+			offset_red[2] = sanitize_offset(offset_red[2], LITE_CONTROL_2[23]);
+			offset_magenta[0] = sanitize_offset(offset_magenta[0], LITE_CONTROL_2[24]);
+			offset_green[0] = sanitize_offset(offset_green[0], LITE_CONTROL_2[25]);
+			offset_magenta[1] = sanitize_offset(offset_magenta[1], LITE_CONTROL_2[26]);
+			offset_green[1] = sanitize_offset(offset_green[1], LITE_CONTROL_2[27]);
+			offset_magenta[2] = sanitize_offset(offset_magenta[2], LITE_CONTROL_2[28]);
+			offset_green[2] = sanitize_offset(offset_green[2], LITE_CONTROL_2[29]);
+			offset_yellow[0] = sanitize_offset(offset_yellow[0], LITE_CONTROL_2[30]);
+			offset_blue[0] = sanitize_offset(offset_blue[0], LITE_CONTROL_2[31]);
+			offset_yellow[1] = sanitize_offset(offset_yellow[1], LITE_CONTROL_2[32]);
+			offset_blue[1] = sanitize_offset(offset_blue[1], LITE_CONTROL_2[33]);
+			offset_yellow[2] = sanitize_offset(offset_yellow[2], LITE_CONTROL_2[34]);
+			offset_blue[2] = sanitize_offset(offset_blue[2], LITE_CONTROL_2[35]);
+			offset_white[0] = sanitize_offset(offset_white[0], LITE_CONTROL_2[36]);
+			offset_black[0] = sanitize_offset(offset_black[0], LITE_CONTROL_2[37]);
+			offset_white[1] = sanitize_offset(offset_white[1], LITE_CONTROL_2[38]);
+			offset_black[1] = sanitize_offset(offset_black[1], LITE_CONTROL_2[39]);
+			offset_white[2] = sanitize_offset(offset_white[2], LITE_CONTROL_2[40]);
+			offset_black[2] = sanitize_offset(offset_black[2], LITE_CONTROL_2[41]);
+
 			LITE_CONTROL_2[18] += sanitize_offset(offset_cyan[0], LITE_CONTROL_2[18]);
 			LITE_CONTROL_2[19] += sanitize_offset(offset_red[0], LITE_CONTROL_2[19]);
 			LITE_CONTROL_2[20] += sanitize_offset(offset_cyan[1], LITE_CONTROL_2[20]);
@@ -2171,6 +2196,7 @@ static struct kobject *offset_kobj;
 static struct kobject *gcurve_kobj;
 static struct kobject *cc_kobj;
 
+static bool msd_initialized = false;
 void init_mdnie_class(void)
 {
 	if (mdnie_tun_state.mdnie_enable) {
@@ -2262,6 +2288,8 @@ void init_mdnie_class(void)
 	}
 
 	mdnie_tun_state.mdnie_enable = true;
+	if (msd_initialized)
+		mDNIe_Set_Mode();
 	return;
 
 ccfail:
@@ -2289,12 +2317,15 @@ mdniefail:
 	mdnie_control_kobj = NULL;
 
 	mdnie_tun_state.mdnie_enable = true;
+	if (msd_initialized)
+		mDNIe_Set_Mode();
 	return;
 }
 
 void mdnie_lite_tuning_init(struct mipi_samsung_driver_data *msd)
 {
 	mdnie_msd = msd;
+	msd_initialized = true;
 }
 
 #define coordinate_data_size 6
