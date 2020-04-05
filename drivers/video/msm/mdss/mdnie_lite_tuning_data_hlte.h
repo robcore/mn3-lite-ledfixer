@@ -270,114 +270,114 @@ static unsigned char NATURAL_UI_1[] = {
 };
 
 static unsigned char NATURAL_UI_2[] = {
-	0xEC,
-	0x00, //roi ctrl
-	0x00, //roi0 x start
-	0x00,
-	0x00, //roi0 x end
-	0x00,
-	0x00, //roi0 y start
-	0x00,
-	0x00, //roi0 y end
-	0x00,
-	0x00, //roi1 x strat
-	0x00,
-	0x00, //roi1 x end
-	0x00,
-	0x00, //roi1 y start
-	0x00,
-	0x00, //roi1 y end
-	0x00,
-	0x00, //scr Cr Yb CYAN R
-	0xf9, //scr Rr Bb RED R
-	0xec, //scr Cg Yg CYAN G
-	0x0d, //scr Rg Bg RED G
-	0xd0, //scr Cb Yr CYAN B
-	0x0b, //scr Rb Br RED b
-	0xff, //scr Mr Mb MAGENTA R
-	0x00, //scr Gr Gb GREEN R
-	0x14, //scr Mg Mg MAGENTA G
-	0xde, //scr Gg Gg GREEN G
-	0xd8, //scr Mb Mr MAGENTA B
-	0x00, //scr Gb Gr GREEN B
-	0xee, //scr Yr Cb YELLOW R
-	0x1c, //scr Br Rb BLUE R
-	0xeb, //scr Yg Cg YELLOW G
-	0x16, //scr Bg Rg BLUE G
-	0x24, //scr Yb Cr YELLOW B
-	0xf2, //scr Bb Rr BLUE B
-	0xff, //scr Wr Wb WHITE R
-	0x19, //scr Kr Kb BLACK R
-	0xf7, //scr Wg Wg WHITE G
-	0x19, //scr Kg Kg BLACK G
-	0xee, //scr Wb Wr WHITE B
-	0x19, //scr Kb Kr BLACK B
-	0x00, //curve 1 b
-	0x20, //curve 1 a
-	0x00, //curve 2 b
-	0x20, //curve 2 a
-	0x00, //curve 3 b
-	0x20, //curve 3 a
-	0x00, //curve 4 b
-	0x20, //curve 4 a
-	0x02, //curve 5 b
-	0x1b, //curve 5 a
-	0x02, //curve 6 b
-	0x1b, //curve 6 a
-	0x02, //curve 7 b
-	0x1b, //curve 7 a
-	0x01, //curve 8 b
-	0x1b, //curve 8 a
-	0x09, //curve 9 b
-	0xa6, //curve 9 a
-	0x09, //curve10 b
-	0xa6, //curve10 a
-	0x09, //curve11 b
-	0xa6, //curve11 a
-	0x09, //curve12 b
-	0xa6, //curve12 a
-	0x00, //curve13 b
-	0x20, //curve13 a
-	0x00, //curve14 b
-	0x20, //curve14 a
-	0x00, //curve15 b
-	0x20, //curve15 a
-	0x00, //curve16 b
-	0x20, //curve16 a
-	0x00, //curve17 b
-	0x20, //curve17 a
-	0x00, //curve18 b
-	0x20, //curve18 a
-	0x00, //curve19 b
-	0x20, //curve19 a
-	0x00, //curve20 b
-	0x20, //curve20 a
-	0x00, //curve21 b
-	0x20, //curve21 a
-	0x00, //curve22 b
-	0x20, //curve22 a
-	0x00, //curve23 b
-	0x20, //curve23 a
-	0x00, //curve24 b
-	0xFF, //curve24 a
-	0x04, //cc r1 0.2
-	0x90,
-	0x1f, //cc r2
-	0x88,
-	0x1f, //cc r3
-	0xe8,
-	0x1f, //cc g1
-	0xc3,
-	0x04, //cc g2
-	0x55,
-	0x1f, //cc g3
-	0xe8,
-	0x1f, //cc b1
-	0xc3,
-	0x1f, //cc b2
-	0x88,
-	0x04, //cc b3
-	0xb5,
+	0xEC, //0
+	0x00, //1 roi ctrl
+	0x00, //2 roi0 x start
+	0x00, //3
+	0x00, //4 roi0 x end
+	0x00, //5
+	0x00, //6 roi0 y start
+	0x00, //7
+	0x00, //8 roi0 y end
+	0x00, //9
+	0x00, //10 roi1 x strat
+	0x00, //11
+	0x00, //12 roi1 x end
+	0x00, //13
+	0x00, //14 roi1 y start
+	0x00, //15
+	0x00, //16 roi1 y end
+	0x00, //17
+	0x00, //18 scr Cr Yb CYAN R
+	0xf9, //19 scr Rr Bb RED R
+	0xec, //20 scr Cg Yg CYAN G
+	0x0d, //21 scr Rg Bg RED G
+	0xd0, //22 scr Cb Yr CYAN B
+	0x0b, //23 scr Rb Br RED b
+	0xff, //24 scr Mr Mb MAGENTA R
+	0x00, //25 scr Gr Gb GREEN R
+	0x14, //26 scr Mg Mg MAGENTA G
+	0xde, //27 scr Gg Gg GREEN G
+	0xd8, //28 scr Mb Mr MAGENTA B
+	0x00, //29 scr Gb Gr GREEN B
+	0xee, //30 scr Yr Cb YELLOW R
+	0x1c, //31 scr Br Rb BLUE R
+	0xeb, //32 scr Yg Cg YELLOW G
+	0x16, //33 scr Bg Rg BLUE G
+	0x24, //34 scr Yb Cr YELLOW B
+	0xf2, //35 scr Bb Rr BLUE B
+	0xff, //36 scr Wr Wb WHITE R
+	0x19, //37 scr Kr Kb BLACK R
+	0xf7, //38 scr Wg Wg WHITE G
+	0x19, //39 scr Kg Kg BLACK G
+	0xee, //40 scr Wb Wr WHITE B
+	0x19, //41 scr Kb Kr BLACK B
+	0x00, //42 curve 1 b
+	0x20, //43 curve 1 a
+	0x00, //44 curve 2 b
+	0x20, //45 curve 2 a
+	0x00, //46 curve 3 b
+	0x20, //47 curve 3 a
+	0x00, //48 curve 4 b
+	0x20, //49 curve 4 a
+	0x02, //50 curve 5 b
+	0x1b, //51 curve 5 a
+	0x02, //52 curve 6 b
+	0x1b, //53 curve 6 a
+	0x02, //54 curve 7 b
+	0x1b, //55 curve 7 a
+	0x01, //56 curve 8 b
+	0x1b, //57 curve 8 a
+	0x09, //58 curve 9 b
+	0xa6, //59 curve 9 a
+	0x09, //60 curve10 b
+	0xa6, //61 curve10 a
+	0x09, //62 curve11 b
+	0xa6, //63 curve11 a
+	0x09, //64 curve12 b
+	0xa6, //65 curve12 a
+	0x00, //66 curve13 b
+	0x20, //67 curve13 a
+	0x00, //68 curve14 b
+	0x20, //69 curve14 a
+	0x00, //70 curve15 b
+	0x20, //71 curve15 a
+	0x00, //72 curve16 b
+	0x20, //73 curve16 a
+	0x00, //74 curve17 b
+	0x20, //75 curve17 a
+	0x00, //76 curve18 b
+	0x20, //77 curve18 a
+	0x00, //78 curve19 b
+	0x20, //79 curve19 a
+	0x00, //80 curve20 b
+	0x20, //81 curve20 a
+	0x00, //82 curve21 b
+	0x20, //83 curve21 a
+	0x00, //84 curve22 b
+	0x20, //85 curve22 a
+	0x00, //86 curve23 b
+	0x20, //87 curve23 a
+	0x00, //88 curve24 b
+	0xFF, //89 curve24 a
+	0x04, //90 cc r1 0.2
+	0x90, //91
+	0x1f, //92 cc r2
+	0x88, //93
+	0x1f, //94 cc r3
+	0xe8, //95
+	0x1f, //96 cc g1
+	0xc3, //97
+	0x04, //98 cc g2
+	0x55, //99
+	0x1f, //100 cc g3
+	0xe8, //101
+	0x1f, //102 cc b1
+	0xc3, //103
+	0x1f, //104 cc b2
+	0x88, //105
+	0x04, //106 cc b3
+	0xb5, //107
 };
 
 static unsigned char DYNAMIC_UI_1[] = {

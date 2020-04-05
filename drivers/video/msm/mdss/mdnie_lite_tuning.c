@@ -686,7 +686,7 @@ static void update_mdnie_mode(void)
 			LITE_CONTROL_2[i + 42] = custom_curve[i];
 
 		for (i = 0; i < 17; i++)
-			LITE_CONTROL_2[i + 91] = chroma_correction[i];
+			LITE_CONTROL_2[i + 90] = chroma_correction[i];
 
 		result = (LITE_CONTROL_1[4] >> (sharpen_dark_bit));
 		if (sharpen_dark) {
@@ -830,7 +830,7 @@ static void update_mdnie_mode(void)
 		for (i = 0; i < 47; i++)
 			custom_curve[i] = LITE_CONTROL_2[i + 42];
 		for (i = 0; i < 17; i++)
-			chroma_correction[i] = LITE_CONTROL_2[i + 91];
+			chroma_correction[i] = LITE_CONTROL_2[i + 90];
 
 		LITE_CONTROL_1[4] = source_1[4];
 
@@ -1480,7 +1480,7 @@ static ssize_t _name##_store		\
 	int i, cc_highlow, cc_strength;			\
 	if (sscanf(buf, "%d %d", &cc_highlow, &cc_strength) == 2) {				\
 		if ((cc_highlow != 4) && (cc_highlow != 31))	\
-			chroma_correction[firstval] = LITE_CONTROL_2[firstval + 91];		\
+			chroma_correction[firstval] = LITE_CONTROL_2[firstval + 90];		\
 		else	\
 			chroma_correction[firstval] = cc_highlow;		\
 		clamp_val(chroma_correction[secondval], 0, 255);		\
