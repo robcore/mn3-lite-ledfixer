@@ -121,6 +121,7 @@ static int char_to_int_v255(char data1, char data2)
 
 static bool first_adj_complete = false;
 static unsigned int gcontrol_enabled = 0;
+static unsigned int gcontrol_gradient_enabled = 0;
 static unsigned int gcontrol_offset_mode = 1;
 static int gcontrol_red = 0;
 static int gcontrol_green = 0;
@@ -1828,9 +1829,17 @@ static void gamma_init_H_revJ(struct SMART_DIM *pSmart, char *str, int size)
 	*/
 	for (cnt = 1; cnt < S6E3FA_TABLE_MAX; cnt++) {
 		table_index = find_candela_table(pSmart->brightness_level);
+		if (gcontrol_enabled) {
+			if (gcontrol_gradient_enabled)
+				bl_index[S6E3FA_TABLE_MAX - cnt] +=
+					gradation_offset_H_revJ[table_index][cnt - 1];
+			else
+				bl_index[S6E3FA_TABLE_MAX - cnt] += 0;
+		} else {
+			bl_index[S6E3FA_TABLE_MAX - cnt] +=
+				gradation_offset_H_revJ[table_index][cnt - 1];
+		}
 
-		bl_index[S6E3FA_TABLE_MAX - cnt] +=
-			gradation_offset_H_revJ[table_index][cnt - 1];
 		/* THERE IS M-GRAY0 target */
 		if (bl_index[S6E3FA_TABLE_MAX - cnt] == 0)
 			bl_index[S6E3FA_TABLE_MAX - cnt] = 1;
@@ -2094,6 +2103,21 @@ static ssize_t gcontrol_enabled_store(struct kobject *kobj,
 	return count;
 }
 
+static ssize_t gcontrol_gradient_enabled_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", gcontrol_gradient_enabled);
+}
+
+static ssize_t gcontrol_gradient_enabled_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
+	int newen;
+	sscanf(buf, "%d", &newen);
+	gcontrol_gradient_enabled = clamp_val(newen, 0, 1);
+	wrap_smart_dimming_init();
+	return count;
+}
+
 static ssize_t gcontrol_offset_mode_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
 	return sprintf(buf, "%u\n", gcontrol_offset_mode);
@@ -2108,6 +2132,22 @@ static ssize_t gcontrol_offset_mode_store(struct kobject *kobj,
 	wrap_smart_dimming_init();
 	return count;
 }
+
+static struct kobj_attribute gcontrol_enabled_attribute =
+	__ATTR(gcontrol_enabled, 0644,
+		gcontrol_enabled_show,
+		gcontrol_enabled_store);
+
+static struct kobj_attribute gcontrol_gradient_enabled_attribute =
+	__ATTR(gcontrol_gradient_enabled, 0644,
+		gcontrol_gradient_enabled_show,
+		gcontrol_gradient_enabled_store);
+
+static struct kobj_attribute gcontrol_offset_mode_attribute =
+	__ATTR(gcontrol_offset_mode, 0644,
+		gcontrol_offset_mode_show,
+		gcontrol_offset_mode_store);
+
 
 static struct kobj_attribute gcontrol_red_attribute =
 	__ATTR(gcontrol_red, 0644,
@@ -2124,23 +2164,14 @@ static struct kobj_attribute gcontrol_blue_attribute =
 		gcontrol_blue_show,
 		gcontrol_blue_store);
 
-static struct kobj_attribute gcontrol_enabled_attribute =
-	__ATTR(gcontrol_enabled, 0644,
-		gcontrol_enabled_show,
-		gcontrol_enabled_store);
-
-static struct kobj_attribute gcontrol_offset_mode_attribute =
-	__ATTR(gcontrol_offset_mode, 0644,
-		gcontrol_offset_mode_show,
-		gcontrol_offset_mode_store);
-
 static struct attribute *gamma_control_attrs[] =
 {
+	&gcontrol_enabled_attribute.attr,
+	&gcontrol_gradient_enabled_attribute.attr,
+	&gcontrol_offset_mode_attribute.attr,
 	&gcontrol_red_attribute.attr,
 	&gcontrol_green_attribute.attr,
 	&gcontrol_blue_attribute.attr,
-	&gcontrol_enabled_attribute.attr,
-	&gcontrol_offset_mode_attribute.attr,
 	NULL
 };
 
