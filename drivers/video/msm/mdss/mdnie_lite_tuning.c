@@ -149,12 +149,12 @@ static int offset_yellow[3] = {0, 0, 0};
 static int offset_magenta[3] = {0, 0, 0};
 static int offset_cyan[3] = {0, 0, 0};
 
-static unsigned int sharpen_boost = 0;
-static unsigned int sharpen = 0;
+static unsigned int sharpen_dark = 0;
+static unsigned int sharpen_white = 0;
 static unsigned int chroma = 0;
 static unsigned int gamma = 0;
-static int sharpen_bit = 3;
-static int sharpen_boost_bit = 2; //not actually sure what, if anything, this bit handles but the others work
+static int sharpen_white_bit = 3;
+static int sharpen_dark_bit = 2;
 static int chroma_bit = 1;
 static int gamma_bit = 0;
 
@@ -688,22 +688,22 @@ static void update_mdnie_mode(void)
 		for (i = 0; i < 17; i++)
 			LITE_CONTROL_2[i + 91] = chroma_correction[i];
 
-		result = (LITE_CONTROL_1[4] >> (sharpen_boost_bit));
-		if (sharpen_boost) {
+		result = (LITE_CONTROL_1[4] >> (sharpen_dark_bit));
+		if (sharpen_dark) {
 			if (!(result & 1))
-				LITE_CONTROL_1[4] |= 1 << sharpen_boost_bit;
+				LITE_CONTROL_1[4] |= 1 << sharpen_dark_bit;
 		} else {
 			if (result & 1)
-				LITE_CONTROL_1[4] &= ~(1 << sharpen_boost_bit);
+				LITE_CONTROL_1[4] &= ~(1 << sharpen_dark_bit);
 		}
 
-		result = (LITE_CONTROL_1[4] >> (sharpen_bit));
-		if (sharpen) {
+		result = (LITE_CONTROL_1[4] >> (sharpen_white_bit));
+		if (sharpen_white) {
 			if (!(result & 1))
-				LITE_CONTROL_1[4] |= 1 << sharpen_bit;
+				LITE_CONTROL_1[4] |= 1 << sharpen_white_bit;
 		} else {
 			if (result & 1)
-				LITE_CONTROL_1[4] &= ~(1 << sharpen_bit);
+				LITE_CONTROL_1[4] &= ~(1 << sharpen_white_bit);
 		}
 
 		result = (LITE_CONTROL_1[4] >> (chroma_bit));
@@ -834,11 +834,11 @@ static void update_mdnie_mode(void)
 
 		LITE_CONTROL_1[4] = source_1[4];
 
-		result = (LITE_CONTROL_1[4] >> (sharpen_boost_bit));
-		sharpen_boost = result & 1;
+		result = (LITE_CONTROL_1[4] >> (sharpen_dark_bit));
+		sharpen_dark = result & 1;
 
-		result = (LITE_CONTROL_1[4] >> (sharpen_bit));
-		sharpen = result & 1;
+		result = (LITE_CONTROL_1[4] >> (sharpen_white_bit));
+		sharpen_white = result & 1;
 
 		result = (LITE_CONTROL_1[4] >> (chroma_bit));
 		chroma = result & 1;
@@ -1284,6 +1284,108 @@ static ssize_t effect_mask_show(struct kobject *kobj, struct kobj_attribute *att
 	return sprintf(buf, "Decimal:%u\nHex:0x%x\n", LITE_CONTROL_1[4], LITE_CONTROL_1[4]);
 }
 
+/* offset_mode */
+
+static ssize_t offset_mode_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", offset_mode);
+}
+
+static ssize_t offset_mode_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
+	int new_val;
+	sscanf(buf, "%d", &new_val);
+	if (new_val < 0)
+		new_val = 0;
+	if (new_val > 1)
+		new_val = 1;
+	offset_mode = new_val;
+	mDNIe_Set_Mode();
+	return count;
+}
+
+/* sharpen_dark */
+
+static ssize_t sharpen_dark_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", sharpen_dark);
+}
+
+static ssize_t sharpen_dark_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
+	int new_val;
+	sscanf(buf, "%d", &new_val);
+	if (new_val < 0)
+		new_val = 0;
+	if (new_val > 1)
+		new_val = 1;
+	sharpen_dark = new_val;
+	mDNIe_Set_Mode();
+	return count;
+}
+
+
+/* sharpen_white */
+
+static ssize_t sharpen_white_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", sharpen_white);
+}
+
+static ssize_t sharpen_white_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
+	int new_val;
+	sscanf(buf, "%d", &new_val);
+	if (new_val < 0)
+		new_val = 0;
+	if (new_val > 1)
+		new_val = 1;
+	sharpen_white = new_val;
+	mDNIe_Set_Mode();
+	return count;
+}
+
+static ssize_t chroma_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", chroma);
+}
+
+static ssize_t chroma_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
+	int new_val;
+	sscanf(buf, "%d", &new_val);
+	if (new_val < 0)
+		new_val = 0;
+	if (new_val > 1)
+		new_val = 1;
+	chroma = new_val;
+	mDNIe_Set_Mode();
+	return count;
+}
+
+static ssize_t gamma_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", gamma);
+}
+
+static ssize_t gamma_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
+	int new_val;
+	sscanf(buf, "%d", &new_val);
+	if (new_val < 0)
+		new_val = 0;
+	if (new_val > 1)
+		new_val = 1;
+	gamma = new_val;
+	mDNIe_Set_Mode();
+	return count;
+}
+
 /* Custom Curve */
 
 #define show_one_curve(_name, bval, aval)			\
@@ -1409,108 +1511,6 @@ store_one_cc(cc_g3, 10, 11);
 store_one_cc(cc_b1, 12, 13);
 store_one_cc(cc_b2, 14, 15);
 store_one_cc(cc_b3, 16, 17);
-
-/* offset_mode */
-
-static ssize_t offset_mode_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
-{
-	return sprintf(buf, "%u\n", offset_mode);
-}
-
-static ssize_t offset_mode_store(struct kobject *kobj,
-			   struct kobj_attribute *attr, const char *buf, size_t count)
-{
-	int new_val;
-	sscanf(buf, "%d", &new_val);
-	if (new_val < 0)
-		new_val = 0;
-	if (new_val > 1)
-		new_val = 1;
-	offset_mode = new_val;
-	mDNIe_Set_Mode();
-	return count;
-}
-
-/* sharpen_boost */
-
-static ssize_t sharpen_boost_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
-{
-	return sprintf(buf, "%u\n", sharpen_boost);
-}
-
-static ssize_t sharpen_boost_store(struct kobject *kobj,
-			   struct kobj_attribute *attr, const char *buf, size_t count)
-{
-	int new_val;
-	sscanf(buf, "%d", &new_val);
-	if (new_val < 0)
-		new_val = 0;
-	if (new_val > 1)
-		new_val = 1;
-	sharpen_boost = new_val;
-	mDNIe_Set_Mode();
-	return count;
-}
-
-
-/* sharpen */
-
-static ssize_t sharpen_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
-{
-	return sprintf(buf, "%u\n", sharpen);
-}
-
-static ssize_t sharpen_store(struct kobject *kobj,
-			   struct kobj_attribute *attr, const char *buf, size_t count)
-{
-	int new_val;
-	sscanf(buf, "%d", &new_val);
-	if (new_val < 0)
-		new_val = 0;
-	if (new_val > 1)
-		new_val = 1;
-	sharpen = new_val;
-	mDNIe_Set_Mode();
-	return count;
-}
-
-static ssize_t chroma_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
-{
-	return sprintf(buf, "%u\n", chroma);
-}
-
-static ssize_t chroma_store(struct kobject *kobj,
-			   struct kobj_attribute *attr, const char *buf, size_t count)
-{
-	int new_val;
-	sscanf(buf, "%d", &new_val);
-	if (new_val < 0)
-		new_val = 0;
-	if (new_val > 1)
-		new_val = 1;
-	chroma = new_val;
-	mDNIe_Set_Mode();
-	return count;
-}
-
-static ssize_t gamma_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
-{
-	return sprintf(buf, "%u\n", gamma);
-}
-
-static ssize_t gamma_store(struct kobject *kobj,
-			   struct kobj_attribute *attr, const char *buf, size_t count)
-{
-	int new_val;
-	sscanf(buf, "%d", &new_val);
-	if (new_val < 0)
-		new_val = 0;
-	if (new_val > 1)
-		new_val = 1;
-	gamma = new_val;
-	mDNIe_Set_Mode();
-	return count;
-}
 
 /* black */
 
@@ -2036,8 +2036,8 @@ static ssize_t offset_cyan_store(struct kobject *kobj,
 MX_ATTR_RW(hijack);
 MX_ATTR_RW(offset_mode);
 MX_ATTR_RO(effect_mask);
-MX_ATTR_RW(sharpen_boost);
-MX_ATTR_RW(sharpen);
+MX_ATTR_RW(sharpen_dark);
+MX_ATTR_RW(sharpen_white);
 MX_ATTR_RW(chroma);
 MX_ATTR_RW(gamma);
 
@@ -2045,8 +2045,8 @@ static struct attribute *mdnie_control_attrs[] = {
 	&hijack_attr.attr,
 	&offset_mode_attr.attr,
 	&effect_mask_attr.attr,
-	&sharpen_boost_attr.attr,
-	&sharpen_attr.attr,
+	&sharpen_dark_attr.attr,
+	&sharpen_white_attr.attr,
 	&chroma_attr.attr,
 	&gamma_attr.attr,
 	NULL,
@@ -2287,10 +2287,7 @@ void init_mdnie_class(void)
 		goto ccfail;
 	}
 
-	mdnie_tun_state.mdnie_enable = true;
-	if (msd_initialized)
-		mDNIe_Set_Mode();
-	return;
+	goto success;
 
 ccfail:
 	kobject_put(cc_kobj);
@@ -2316,10 +2313,10 @@ mdniefail:
 	kobject_put(mdnie_control_kobj);
 	mdnie_control_kobj = NULL;
 
+success:
 	mdnie_tun_state.mdnie_enable = true;
 	if (msd_initialized)
 		mDNIe_Set_Mode();
-	return;
 }
 
 void mdnie_lite_tuning_init(struct mipi_samsung_driver_data *msd)
