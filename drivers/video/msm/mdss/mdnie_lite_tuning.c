@@ -703,122 +703,122 @@ static void update_mdnie_mode(void)
 		}
 
 		if (offset_mode) {
-			new_control = LITE_CONTROL_2[18]
+			new_control = LITE_CONTROL_2[18];
 			new_control += offset_cyan[0];
 			clamp_val(new_control, 0, 255);
 			offset_cyan[0] = sanitize_offset(new_control, LITE_CONTROL_2[18]);
 
-			new_control = LITE_CONTROL_2[19]
+			new_control = LITE_CONTROL_2[19];
 			new_control += offset_red[0];
 			clamp_val(new_control, 0, 255);
 			offset_red[0] = sanitize_offset(new_control, LITE_CONTROL_2[19]);
 
-			new_control = LITE_CONTROL_2[20]
+			new_control = LITE_CONTROL_2[20];
 			new_control += offset_cyan[1];
 			clamp_val(new_control, 0, 255);
 			offset_cyan[1] = sanitize_offset(new_control, LITE_CONTROL_2[20]);
 
-			new_control = LITE_CONTROL_2[21]
+			new_control = LITE_CONTROL_2[21];
 			new_control += offset_red[1];
 			clamp_val(new_control, 0, 255);
 			offset_red[1] = sanitize_offset(new_control, LITE_CONTROL_2[21]);
 
-			new_control = LITE_CONTROL_2[22]
+			new_control = LITE_CONTROL_2[22];
 			new_control += offset_cyan[2];
 			clamp_val(new_control, 0, 255);
 			offset_cyan[2] = sanitize_offset(new_control, LITE_CONTROL_2[22]);
 
-			new_control = LITE_CONTROL_2[23]
+			new_control = LITE_CONTROL_2[23];
 			new_control += offset_red[2];
 			clamp_val(new_control, 0, 255);
 			offset_red[2] = sanitize_offset(new_control, LITE_CONTROL_2[23]);
 
-			new_control = LITE_CONTROL_2[24]
+			new_control = LITE_CONTROL_2[24];
 			new_control += offset_magenta[0];
 			clamp_val(new_control, 0, 255);
 			offset_magenta[0] = sanitize_offset(new_control, LITE_CONTROL_2[24]);
 
-			new_control = LITE_CONTROL_2[25]
+			new_control = LITE_CONTROL_2[25];
 			new_control += offset_green[0];
 			clamp_val(new_control, 0, 255);
 			offset_green[0] = sanitize_offset(new_control, LITE_CONTROL_2[25]);
 
-			new_control = LITE_CONTROL_2[26]
+			new_control = LITE_CONTROL_2[26];
 			new_control += offset_magenta[1];
 			clamp_val(new_control, 0, 255);
 			offset_magenta[1] = sanitize_offset(new_control, LITE_CONTROL_2[26]);
 
-			new_control = LITE_CONTROL_2[27]
+			new_control = LITE_CONTROL_2[27];
 			new_control += offset_green[1];
 			clamp_val(new_control, 0, 255);
 			offset_green[1] = sanitize_offset(new_control, LITE_CONTROL_2[27]);
 
-			new_control = LITE_CONTROL_2[28]
+			new_control = LITE_CONTROL_2[28];
 			new_control += offset_magenta[2];
 			clamp_val(new_control, 0, 255);
 			offset_magenta[2] = sanitize_offset(new_control, LITE_CONTROL_2[28]);
 
-			new_control = LITE_CONTROL_2[29]
+			new_control = LITE_CONTROL_2[29];
 			new_control += offset_green[2];
 			clamp_val(new_control, 0, 255);
 			offset_green[2] = sanitize_offset(new_control, LITE_CONTROL_2[29]);
 
-			new_control = LITE_CONTROL_2[30]
+			new_control = LITE_CONTROL_2[30];
 			new_control += offset_yellow[0];
 			clamp_val(new_control, 0, 255);
 			offset_yellow[0] = sanitize_offset(new_control, LITE_CONTROL_2[30]);
 
-			new_control = LITE_CONTROL_2[31]
+			new_control = LITE_CONTROL_2[31];
 			new_control += offset_blue[0];
 			clamp_val(new_control, 0, 255);
 			offset_blue[0] = sanitize_offset(new_control, LITE_CONTROL_2[31]);
 
-			new_control = LITE_CONTROL_2[32]
+			new_control = LITE_CONTROL_2[32];
 			new_control += offset_yellow[1];
 			clamp_val(new_control, 0, 255);
 			offset_yellow[1] = sanitize_offset(new_control, LITE_CONTROL_2[32]);
 
-			new_control = LITE_CONTROL_2[33]
+			new_control = LITE_CONTROL_2[33];
 			new_control += offset_blue[1];
 			clamp_val(new_control, 0, 255);
 			offset_blue[1] = sanitize_offset(new_control, LITE_CONTROL_2[33]);
 
-			new_control = LITE_CONTROL_2[34]
+			new_control = LITE_CONTROL_2[34];
 			new_control += offset_yellow[2];
 			clamp_val(new_control, 0, 255);
 			offset_yellow[2] = sanitize_offset(new_control, LITE_CONTROL_2[34]);
 
-			new_control = LITE_CONTROL_2[35]
+			new_control = LITE_CONTROL_2[35];
 			new_control += offset_blue[2];
 			clamp_val(new_control, 0, 255);
 			offset_blue[2] = sanitize_offset(new_control, LITE_CONTROL_2[35]);
 
-			new_control = LITE_CONTROL_2[36]
+			new_control = LITE_CONTROL_2[36];
 			new_control += offset_white[0];
 			clamp_val(new_control, 0, 255);
 			offset_white[0] = sanitize_offset(new_control, LITE_CONTROL_2[36]);
 
-			new_control = LITE_CONTROL_2[37]
+			new_control = LITE_CONTROL_2[37];
 			new_control += offset_black[0];
 			clamp_val(new_control, 0, 255);
 			offset_black[0] = sanitize_offset(new_control, LITE_CONTROL_2[37]);
 
-			new_control = LITE_CONTROL_2[38]
+			new_control = LITE_CONTROL_2[38];
 			new_control += offset_white[1];
 			clamp_val(new_control, 0, 255);
 			offset_white[1] = sanitize_offset(new_control, LITE_CONTROL_2[38]);
 
-			new_control = LITE_CONTROL_2[39]
+			new_control = LITE_CONTROL_2[39];
 			new_control += offset_black[1];
 			clamp_val(new_control, 0, 255);
 			offset_black[1] = sanitize_offset(new_control, LITE_CONTROL_2[39]);
 
-			new_control = LITE_CONTROL_2[40]
+			new_control = LITE_CONTROL_2[40];
 			new_control += offset_white[2];
 			clamp_val(new_control, 0, 255);
 			offset_white[2] = sanitize_offset(new_control, LITE_CONTROL_2[40]);
 
-			new_control = LITE_CONTROL_2[41]
+			new_control = LITE_CONTROL_2[41];
 			new_control += offset_black[2];
 			clamp_val(new_control, 0, 255);
 			offset_black[2] = sanitize_offset(new_control, LITE_CONTROL_2[41]);
