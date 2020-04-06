@@ -364,10 +364,11 @@ static int sanitize_offset(int Lnewval, int Loldval)
 	int oldval = Loldval;
 	int outset = 0;
 
-	if (newval == oldval)
+	clamp_val(newval. 0, 255);
+	clamp_val(oldval. 0, 255);
+	if (newval == oldval) {
 		return outset;
-
-	if (newval > oldval) {
+	} else if (newval > oldval) {
 		outset = newval - oldval;
 	} else if (newval < oldval) {
 		outset = oldval - newval;
