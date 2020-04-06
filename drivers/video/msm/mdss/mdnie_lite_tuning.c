@@ -380,8 +380,8 @@ static int sanitize_offset(int Lnewval, int Loldval)
 static void update_mdnie_mode(void)
 {
 	unsigned char *source_1, *source_2;
-	int result;
-	unsigned int i, new_control;
+	int result, new_control;
+	unsigned int i;
 
 	switch (mdnie_tun_state.scenario) {
 	case mDNIe_UI_MODE:
