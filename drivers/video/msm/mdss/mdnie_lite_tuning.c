@@ -124,6 +124,10 @@ static struct mipi_samsung_driver_data *mdnie_msd;
 #define INPUT_PAYLOAD2(x) PAYLOAD2.payload = x
 #endif
 
+#define ADDRESS_SCR_WHITE_RED 0x24  // 36 0x7A
+#define ADDRESS_SCR_WHITE_GREEN 0x26 // 38 0x7C
+#define ADDRESS_SCR_WHITE_BLUE 0x28 // 40 0x7E
+
 /* Hijack */
 
 static unsigned char LITE_CONTROL_1[5];
@@ -358,8 +362,8 @@ static int sanitize_offset(int Lnewval, int Loldval)
 	int oldval = Loldval;
 	int outset = 0;
 
-	clamp_val(newval. 0, 255);
-	clamp_val(oldval. 0, 255);
+	clamp_val(newval, 0, 255);
+	clamp_val(oldval, 0, 255);
 	if (newval == oldval) {
 		return outset;
 	} else if (newval > oldval) {
