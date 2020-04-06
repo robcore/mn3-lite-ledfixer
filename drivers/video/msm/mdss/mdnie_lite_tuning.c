@@ -358,9 +358,11 @@ void sending_tuning_cmd(void)
 	mutex_unlock(&mdnie_msd->lock);
 }
 
-static inline int sanitize_offset(int inset, char lcvalue)
+static int sanitize_offset(int inset, char lcvalue)
 {
-	int midset, outset, thelc;
+	int midset = 0;
+	int thelc = 0;
+	int outset = 256;
 
 	midset = inset;
 	thelc = (int)lcvalue;
@@ -372,34 +374,17 @@ static inline int sanitize_offset(int inset, char lcvalue)
 
 	if (midset == 0) {
 		outset = midset;
-		goto goodstuff;
 	} else if (midset > 0) {
-		if ((midset + thelc) <= 255) {
-			outset = midset;
-			goto goodstuff;
-		} else if ((midset + thelc) > 255) {
-			if (thelc <= 255)
-				outset = (255 - thelc);
-			goto goodstuff;
-		}
+			outset = max(midset, 255 - thelc);
 	} else if (midset < 0) {
-		if ((midset + thelc) >= 0) {
-			outset = midset;
-			goto goodstuff;
-		} else if ((midset + thelc) < 0) {
-			if (thelc >= 0) {
-				outset = (thelc - (thelc * 2));
-				goto goodstuff;
-			}
-		}
-	} else {
-		outset = midset;
+			outset = min(midset, 0 - thelc);
 	}
 
-goodstuff:
-	if (((outset + thelc) > 255) || ((outset + thelc) < 0)) {
-		return 0;
-	}
+	clamp_val(outset, 0 - thelc, 255 - thelc);
+
+	if (outset == 256) //somehow?
+		outset = 0;
+
 	return outset;
 }
 
@@ -408,6 +393,7 @@ static void update_mdnie_mode(void)
 	unsigned char *source_1, *source_2;
 	int result;
 	unsigned int i;
+	int local_offset;
 
 	switch (mdnie_tun_state.scenario) {
 	case mDNIe_UI_MODE:
@@ -730,55 +716,102 @@ static void update_mdnie_mode(void)
 		}
 
 		if (offset_mode) {
-			offset_cyan[0] = sanitize_offset(offset_cyan[0], LITE_CONTROL_2[18]);
-			offset_red[0] = sanitize_offset(offset_red[0], LITE_CONTROL_2[19]);
-			offset_cyan[1] = sanitize_offset(offset_cyan[1], LITE_CONTROL_2[20]);
-			offset_red[1] = sanitize_offset(offset_red[1], LITE_CONTROL_2[21]);
-			offset_cyan[2] = sanitize_offset(offset_cyan[2], LITE_CONTROL_2[22]);
-			offset_red[2] = sanitize_offset(offset_red[2], LITE_CONTROL_2[23]);
-			offset_magenta[0] = sanitize_offset(offset_magenta[0], LITE_CONTROL_2[24]);
-			offset_green[0] = sanitize_offset(offset_green[0], LITE_CONTROL_2[25]);
-			offset_magenta[1] = sanitize_offset(offset_magenta[1], LITE_CONTROL_2[26]);
-			offset_green[1] = sanitize_offset(offset_green[1], LITE_CONTROL_2[27]);
-			offset_magenta[2] = sanitize_offset(offset_magenta[2], LITE_CONTROL_2[28]);
-			offset_green[2] = sanitize_offset(offset_green[2], LITE_CONTROL_2[29]);
-			offset_yellow[0] = sanitize_offset(offset_yellow[0], LITE_CONTROL_2[30]);
-			offset_blue[0] = sanitize_offset(offset_blue[0], LITE_CONTROL_2[31]);
-			offset_yellow[1] = sanitize_offset(offset_yellow[1], LITE_CONTROL_2[32]);
-			offset_blue[1] = sanitize_offset(offset_blue[1], LITE_CONTROL_2[33]);
-			offset_yellow[2] = sanitize_offset(offset_yellow[2], LITE_CONTROL_2[34]);
-			offset_blue[2] = sanitize_offset(offset_blue[2], LITE_CONTROL_2[35]);
-			offset_white[0] = sanitize_offset(offset_white[0], LITE_CONTROL_2[36]);
-			offset_black[0] = sanitize_offset(offset_black[0], LITE_CONTROL_2[37]);
-			offset_white[1] = sanitize_offset(offset_white[1], LITE_CONTROL_2[38]);
-			offset_black[1] = sanitize_offset(offset_black[1], LITE_CONTROL_2[39]);
-			offset_white[2] = sanitize_offset(offset_white[2], LITE_CONTROL_2[40]);
-			offset_black[2] = sanitize_offset(offset_black[2], LITE_CONTROL_2[41]);
+			local_offset = offset_cyan[0];
+			offset_cyan[0] = sanitize_offset(local_offset, LITE_CONTROL_2[18]);
 
-			LITE_CONTROL_2[18] += sanitize_offset(offset_cyan[0], LITE_CONTROL_2[18]);
-			LITE_CONTROL_2[19] += sanitize_offset(offset_red[0], LITE_CONTROL_2[19]);
-			LITE_CONTROL_2[20] += sanitize_offset(offset_cyan[1], LITE_CONTROL_2[20]);
-			LITE_CONTROL_2[21] += sanitize_offset(offset_red[1], LITE_CONTROL_2[21]);
-			LITE_CONTROL_2[22] += sanitize_offset(offset_cyan[2], LITE_CONTROL_2[22]);
-			LITE_CONTROL_2[23] += sanitize_offset(offset_red[2], LITE_CONTROL_2[23]);
-			LITE_CONTROL_2[24] += sanitize_offset(offset_magenta[0], LITE_CONTROL_2[24]);
-			LITE_CONTROL_2[25] += sanitize_offset(offset_green[0], LITE_CONTROL_2[25]);
-			LITE_CONTROL_2[26] += sanitize_offset(offset_magenta[1], LITE_CONTROL_2[26]);
-			LITE_CONTROL_2[27] += sanitize_offset(offset_green[1], LITE_CONTROL_2[27]);
-			LITE_CONTROL_2[28] += sanitize_offset(offset_magenta[2], LITE_CONTROL_2[28]);
-			LITE_CONTROL_2[29] += sanitize_offset(offset_green[2], LITE_CONTROL_2[29]);
-			LITE_CONTROL_2[30] += sanitize_offset(offset_yellow[0], LITE_CONTROL_2[30]);
-			LITE_CONTROL_2[31] += sanitize_offset(offset_blue[0], LITE_CONTROL_2[31]);
-			LITE_CONTROL_2[32] += sanitize_offset(offset_yellow[1], LITE_CONTROL_2[32]);
-			LITE_CONTROL_2[33] += sanitize_offset(offset_blue[1], LITE_CONTROL_2[33]);
-			LITE_CONTROL_2[34] += sanitize_offset(offset_yellow[2], LITE_CONTROL_2[34]);
-			LITE_CONTROL_2[35] += sanitize_offset(offset_blue[2], LITE_CONTROL_2[35]);
-			LITE_CONTROL_2[36] += sanitize_offset(offset_white[0], LITE_CONTROL_2[36]);
-			LITE_CONTROL_2[37] += sanitize_offset(offset_black[0], LITE_CONTROL_2[37]);
-			LITE_CONTROL_2[38] += sanitize_offset(offset_white[1], LITE_CONTROL_2[38]);
-			LITE_CONTROL_2[39] += sanitize_offset(offset_black[1], LITE_CONTROL_2[39]);
-			LITE_CONTROL_2[40] += sanitize_offset(offset_white[2], LITE_CONTROL_2[40]);
-			LITE_CONTROL_2[41] += sanitize_offset(offset_black[2], LITE_CONTROL_2[41]);
+			local_offset = offset_red[0];
+			offset_red[0] = sanitize_offset(local_offset, LITE_CONTROL_2[19]);
+
+			local_offset = offset_cyan[1];
+			offset_cyan[1] = sanitize_offset(local_offset, LITE_CONTROL_2[20]);
+
+			local_offset = offset_red[1];
+			offset_red[1] = sanitize_offset(local_offset, LITE_CONTROL_2[21]);
+
+			local_offset = offset_cyan[2];
+			offset_cyan[2] = sanitize_offset(local_offset, LITE_CONTROL_2[22]);
+
+			local_offset = offset_red[2];
+			offset_red[2] = sanitize_offset(local_offset, LITE_CONTROL_2[23]);
+
+			local_offset = offset_magenta[0];
+			offset_magenta[0] = sanitize_offset(local_offset, LITE_CONTROL_2[24]);
+
+			local_offset = offset_green[0];
+			offset_green[0] = sanitize_offset(local_offset, LITE_CONTROL_2[25]);
+
+			local_offset = offset_magenta[1];
+			offset_magenta[1] = sanitize_offset(local_offset, LITE_CONTROL_2[26]);
+
+			local_offset = offset_green[1];
+			offset_green[1] = sanitize_offset(local_offset, LITE_CONTROL_2[27]);
+
+			local_offset = offset_magenta[2];
+			offset_magenta[2] = sanitize_offset(local_offset, LITE_CONTROL_2[28]);
+
+			local_offset = offset_green[2];
+			offset_green[2] = sanitize_offset(local_offset, LITE_CONTROL_2[29]);
+
+			local_offset = offset_yellow[0];
+			offset_yellow[0] = sanitize_offset(local_offset, LITE_CONTROL_2[30]);
+
+			local_offset = offset_blue[0];
+			offset_blue[0] = sanitize_offset(local_offset, LITE_CONTROL_2[31]);
+
+			local_offset = offset_yellow[1];
+			offset_yellow[1] = sanitize_offset(local_offset, LITE_CONTROL_2[32]);
+
+			local_offset = offset_blue[1];
+			offset_blue[1] = sanitize_offset(local_offset, LITE_CONTROL_2[33]);
+
+			local_offset = offset_yellow[2];
+			offset_yellow[2] = sanitize_offset(local_offset, LITE_CONTROL_2[34]);
+
+			local_offset = offset_blue[2];
+			offset_blue[2] = sanitize_offset(local_offset, LITE_CONTROL_2[35]);
+
+			local_offset = offset_white[0];
+			offset_white[0] = sanitize_offset(local_offset, LITE_CONTROL_2[36]);
+
+			local_offset = offset_black[0];
+			offset_black[0] = sanitize_offset(local_offset, LITE_CONTROL_2[37]);
+
+			local_offset = offset_white[1];
+			offset_white[1] = sanitize_offset(local_offset, LITE_CONTROL_2[38]);
+
+			local_offset = offset_black[1];
+			offset_black[1] = sanitize_offset(local_offset, LITE_CONTROL_2[39]);
+
+			local_offset = offset_white[2];
+			offset_white[2] = sanitize_offset(local_offset, LITE_CONTROL_2[40]);
+
+			local_offset = offset_black[2];
+			offset_black[2] = sanitize_offset(local_offset, LITE_CONTROL_2[41]);
+
+			LITE_CONTROL_2[18] += offset_cyan[0];
+			LITE_CONTROL_2[19] += offset_red[0];
+			LITE_CONTROL_2[20] += offset_cyan[1];
+			LITE_CONTROL_2[21] += offset_red[1];
+			LITE_CONTROL_2[22] += offset_cyan[2];
+			LITE_CONTROL_2[23] += offset_red[2];
+			LITE_CONTROL_2[24] += offset_magenta[0];
+			LITE_CONTROL_2[25] += offset_green[0];
+			LITE_CONTROL_2[26] += offset_magenta[1];
+			LITE_CONTROL_2[27] += offset_green[1];
+			LITE_CONTROL_2[28] += offset_magenta[2];
+			LITE_CONTROL_2[29] += offset_green[2];
+			LITE_CONTROL_2[30] += offset_yellow[0];
+			LITE_CONTROL_2[31] += offset_blue[0];
+			LITE_CONTROL_2[32] += offset_yellow[1];
+			LITE_CONTROL_2[33] += offset_blue[1];
+			LITE_CONTROL_2[34] += offset_yellow[2];
+			LITE_CONTROL_2[35] += offset_blue[2];
+			LITE_CONTROL_2[36] += offset_white[0];
+			LITE_CONTROL_2[37] += offset_black[0];
+			LITE_CONTROL_2[38] += offset_white[1];
+			LITE_CONTROL_2[39] += offset_black[1];
+			LITE_CONTROL_2[40] += offset_white[2];
+			LITE_CONTROL_2[41] += offset_black[2];
 
 			cyan[0] = LITE_CONTROL_2[18];
 			red[0] = LITE_CONTROL_2[19];
