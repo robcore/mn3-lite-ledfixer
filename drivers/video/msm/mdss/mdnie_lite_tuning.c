@@ -118,10 +118,10 @@ static char LITE_CONTROL_1[5];
 static char LITE_CONTROL_2[108];
 
 static int hijack = 0;
-static int override_color[24];
+static char override_color[24];
 
 static unsigned int offset_mode = 1;
-static int offset_color[24];
+static char offset_color[24];
 static unsigned int sharpen_dark = 0;
 static unsigned int sharpen_light = 0;
 static unsigned int chroma = 0;
