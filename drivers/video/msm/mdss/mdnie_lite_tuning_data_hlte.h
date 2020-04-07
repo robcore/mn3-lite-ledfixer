@@ -49,30 +49,30 @@ static char SCREEN_CURTAIN_2[] = {
 	0x00,
 	0x00, //roi1 y end
 	0x00,
-	0x00, //scr Cr Yb
-	0xff, //scr Rr Bb
-	0xff, //scr Cg Yg
-	0x00, //scr Rg Bg
-	0xff, //scr Cb Yr
-	0x00, //scr Rb Br
-	0xff, //scr Mr Mb
-	0x00, //scr Gr Gb
-	0x00, //scr Mg Mg
-	0xff, //scr Gg Gg
-	0xff, //scr Mb Mr
-	0x00, //scr Gb Gr
-	0xff, //scr Yr Cb
-	0x00, //scr Br Rb
-	0xff, //scr Yg Cg
-	0x00, //scr Bg Rg
-	0x00, //scr Yb Cr
-	0xff, //scr Bb Rr
-	0xff, //scr Wr Wb
-	0x00, //scr Kr Kb
-	0xff, //scr Wg Wg
-	0x00, //scr Kg Kg
-	0xff, //scr Wb Wr
-	0x00, //scr Kb Kr
+	0x00, //scr Cr Yb 0  18
+	0xff, //scr Rr Bb 1  19
+	0xff, //scr Cg Yg 2  20
+	0x00, //scr Rg Bg 3  21
+	0xff, //scr Cb Yr 4  22
+	0x00, //scr Rb Br 5  23
+	0xff, //scr Mr Mb 6  24
+	0x00, //scr Gr Gb 7  25
+	0x00, //scr Mg Mg 8  26
+	0xff, //scr Gg Gg 9  27
+	0xff, //scr Mb Mr 10 28
+	0x00, //scr Gb Gr 11 29
+	0xff, //scr Yr Cb 12 30
+	0x00, //scr Br Rb 13 31
+	0xff, //scr Yg Cg 14 32
+	0x00, //scr Bg Rg 15 33
+	0x00, //scr Yb Cr 16 34
+	0xff, //scr Bb Rr 17 35
+	0xff, //scr Wr Wb 18 36
+	0x00, //scr Kr Kb 19 37
+	0xff, //scr Wg Wg 20 38
+	0x00, //scr Kg Kg 21 39
+	0xff, //scr Wb Wr 22 40
+	0x00, //scr Kb Kr 23 41
 	0x00, //curve 1 b
 	0x20, //curve 1 a
 	0x00, //curve 2 b
