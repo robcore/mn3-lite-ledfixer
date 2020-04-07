@@ -153,9 +153,9 @@ struct mdnie_lite_tun_type mdnie_tun_state = {
 	.background = NATURAL_MODE,
 	.outdoor = OUTDOOR_OFF_MODE,
 	.accessibility = ACCESSIBILITY_OFF,
-	.scr_white_red = 0xff,
-	.scr_white_green = 0xff,
-	.scr_white_blue = 0xff,
+//	.scr_white_red = 0xff,
+//	.scr_white_green = 0xff,
+//	.scr_white_blue = 0xff,
 };
 
 const char scenario_name[MAX_mDNIe_MODE][16] = {
@@ -203,9 +203,9 @@ static char level2_key[] = {
 };
 
 static char mx_level1_key_disable[] = {
- 	0xF0,
- 	0xA5, 0xA5,
- };
+	0xF0,
+	0xA5, 0xA5,
+};
 
 static char tune_data1[MDNIE_TUNE_FIRST_SIZE] = {0,};
 static char tune_data2[MDNIE_TUNE_SECOND_SIZE] = {0,};
@@ -634,9 +634,9 @@ static void update_mdnie_mode(void)
 				LITE_CONTROL_2[i + 18] = override_color[i];
 		}
 	} else {
-
 		for (i = 0; i < 47; i++)
 			custom_curve[i] = LITE_CONTROL_2[i + 42];
+
 		for (i = 0; i < 17; i++)
 			chroma_correction[i] = LITE_CONTROL_2[i + 90];
 
@@ -653,6 +653,7 @@ static void update_mdnie_mode(void)
 
 		result = (LITE_CONTROL_1[4] >> (gamma_bit));
 		gamma = result & 1;
+
 		for (i = 0; i < 23 ; i++)
 			override_color[i] = LITE_CONTROL_2[i + 18];
 	}
@@ -695,9 +696,9 @@ void mDNIe_Set_Mode(void)
 			mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][0]);
 		INPUT_PAYLOAD2(
 			mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][1]);
-			mdnie_tun_state.scr_white_red = mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][1][ADDRESS_SCR_WHITE_RED];
-			mdnie_tun_state.scr_white_green = mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][1][ADDRESS_SCR_WHITE_GREEN];
-			mdnie_tun_state.scr_white_blue= mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][1][ADDRESS_SCR_WHITE_BLUE];
+//			mdnie_tun_state.scr_white_red = mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][1][ADDRESS_SCR_WHITE_RED];
+//			mdnie_tun_state.scr_white_green = mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][1][ADDRESS_SCR_WHITE_GREEN];
+//			mdnie_tun_state.scr_white_blue= mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][1][ADDRESS_SCR_WHITE_BLUE];
 
 	}
 
@@ -1028,7 +1029,7 @@ static ssize_t accessibility_store(struct device *dev,
 
 	return size;
 }
-
+/*
 static ssize_t sensorRGB_show(struct device *dev,
 		struct device_attribute *attr, char *buf)
 {
@@ -1068,7 +1069,7 @@ static ssize_t sensorRGB_store(struct device *dev,
 
 	return size;
 }
-
+*/
 static DEVICE_ATTR(scenario, 0664, scenario_show, scenario_store);
 static DEVICE_ATTR(mode, 0664, mode_show, mode_store);
 static DEVICE_ATTR(mdnieset_user_select_file_cmd, 0664,
@@ -1083,7 +1084,7 @@ static DEVICE_ATTR(playspeed, 0664,
 static DEVICE_ATTR(accessibility, 0664,
 			accessibility_show,
 			accessibility_store);
-static DEVICE_ATTR(sensorRGB, 0664, sensorRGB_show, sensorRGB_store);
+//static DEVICE_ATTR(sensorRGB, 0664, sensorRGB_show, sensorRGB_store);
 
 static struct class *mdnie_class;
 struct device *tune_mdnie_dev;
@@ -2027,15 +2028,19 @@ void init_mdnie_class(void)
 	}
 
 	mdnie_class = class_create(THIS_MODULE, "mdnie");
-	if (IS_ERR(mdnie_class))
+	if (IS_ERR_OR_NULL(mdnie_class)) {
 		pr_err("Failed to create class(mdnie)!\n");
-
+		goto classfail;
+	}
 	tune_mdnie_dev =
 	    device_create(mdnie_class, NULL, 0, NULL,
 		  "mdnie");
-	if (IS_ERR(tune_mdnie_dev))
+	if (IS_ERR_OR_NULL(tune_mdnie_dev)) {
 		pr_err("Failed to create device(mdnie)!\n");
-
+		class_destroy(mdnie_class);
+		mdnie_class = NULL;
+		goto classfail;
+	}
 	if (device_create_file
 	    (tune_mdnie_dev, &dev_attr_scenario) < 0)
 		pr_err("Failed to create device file(%s)!\n",
@@ -2078,12 +2083,13 @@ void init_mdnie_class(void)
 		(tune_mdnie_dev, &dev_attr_accessibility) < 0)
 		pr_err("Failed to create device file(%s)!=n",
 			dev_attr_accessibility.attr.name);
-
+/*
 	if (device_create_file
 		(tune_mdnie_dev, &dev_attr_sensorRGB) < 0)
 		pr_err("Failed to create device file(%s)!=n",
 			dev_attr_sensorRGB.attr.name);
-
+*/
+classfail:
 	mdnie_control_kobj = kobject_create_and_add("mdnie_control", kernel_kobj);
 	if (sysfs_create_group(mdnie_control_kobj, &mdnie_control_attr_group)) {
 		pr_err("Failed to create mdnie_control kobject!\n");

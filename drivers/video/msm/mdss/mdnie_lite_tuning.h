@@ -187,9 +187,9 @@ struct mdnie_lite_tun_type {
 	enum BACKGROUND background;
 	enum OUTDOOR outdoor;
 	enum ACCESSIBILITY accessibility;
-	int scr_white_red;
-	int scr_white_green;
-	int scr_white_blue;
+//	int scr_white_red;
+//	int scr_white_green;
+//	int scr_white_blue;
 };
 
 #if defined(CONFIG_FB_MSM_MDSS_MDP3)
