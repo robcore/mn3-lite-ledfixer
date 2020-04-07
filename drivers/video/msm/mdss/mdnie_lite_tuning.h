@@ -187,14 +187,9 @@ struct mdnie_lite_tun_type {
 	enum BACKGROUND background;
 	enum OUTDOOR outdoor;
 	enum ACCESSIBILITY accessibility;
-#if defined(CONFIG_TDMB)
-	enum DMB dmb;
-#endif
-#if defined(CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_CMD_WQHD_PT_PANEL)
 	int scr_white_red;
 	int scr_white_green;
 	int scr_white_blue;
-#endif
 };
 
 #if defined(CONFIG_FB_MSM_MDSS_MDP3)

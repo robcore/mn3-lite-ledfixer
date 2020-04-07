@@ -124,6 +124,10 @@ static struct mipi_samsung_driver_data *mdnie_msd;
 #define INPUT_PAYLOAD2(x) PAYLOAD2.payload = x
 #endif
 
+#define ADDRESS_SCR_WHITE_RED 0x24  // 36 0x7A
+#define ADDRESS_SCR_WHITE_GREEN 0x26 // 38 0x7C
+#define ADDRESS_SCR_WHITE_BLUE 0x28 // 40 0x7E
+
 /* Hijack */
 
 static char LITE_CONTROL_1[5];
@@ -180,14 +184,9 @@ struct mdnie_lite_tun_type mdnie_tun_state = {
 	.background = NATURAL_MODE,
 	.outdoor = OUTDOOR_OFF_MODE,
 	.accessibility = ACCESSIBILITY_OFF,
-#if defined(CONFIG_TDMB)
-	.dmb = DMB_MODE_OFF,
-#endif
-#if defined(CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_CMD_WQHD_PT_PANEL)
 	.scr_white_red = 0xff,
 	.scr_white_green = 0xff,
 	.scr_white_blue = 0xff,
-#endif
 };
 
 const char scenario_name[MAX_mDNIe_MODE][16] = {
@@ -246,12 +245,7 @@ static char level2_key[] = {
 #endif
 #endif
 
-#if defined(CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_CMD_WQHD_PT_PANEL) || defined (CONFIG_FB_MSM_MIPI_MAGNA_OCTA_CMD_HD_PT_PANEL)
-static char level1_key_disable[] = {
-	0xF0,
-	0xA5, 0xA5,
-};
-#elif defined(CONFIG_FB_MSM_MIPI_VIDEO_WVGA_NT35502_PT_PANEL)
+#if defined(CONFIG_FB_MSM_MIPI_VIDEO_WVGA_NT35502_PT_PANEL)
 static char cmd_disable[6] = { 0xF0, 0x55, 0xAA, 0x52, 0x00, 0x00 };
 #endif
 
@@ -266,9 +260,7 @@ static char tune_data1[MDNIE_TUNE_FIRST_SIZE] = {0,};
 static char tune_data2[MDNIE_TUNE_SECOND_SIZE] = {0,};
 #endif
 
-#if defined(CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_CMD_WQHD_PT_PANEL)
 static char white_rgb_buf[MDNIE_TUNE_FIRST_SIZE] = {0,};
-#endif
 
 #if defined(CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_CMD_WQHD_PT_PANEL) || defined(CONFIG_FB_MSM_MIPI_MAGNA_OCTA_CMD_HD_PT_PANEL) \
 	|| defined(CONFIG_FB_MSM_MIPI_MAGNA_OCTA_VIDEO_WXGA_PT_DUAL_PANEL)
@@ -292,18 +284,20 @@ static struct dsi_cmd_desc mdni_tune_cmd[] = {
 	{{DTYPE_DCS_LWRITE, 1, 0, 0, 0, sizeof(tune_data5)}, tune_data5},
 	{{DTYPE_DCS_LWRITE, 1, 0, 0, 0, sizeof(cmd_disable)}, cmd_disable},
 #else
-	{{DTYPE_DCS_LWRITE, 1, 0, 0, 0, sizeof(level1_key)}, level1_key},
-	{{DTYPE_DCS_LWRITE, 1, 0, 0, 0, sizeof(level2_key)}, level2_key},
+	{{DTYPE_DCS_LWRITE, 0, 0, 0, 0,
+		sizeof(level1_key)}, level1_key},
+	{{DTYPE_DCS_LWRITE, 0, 0, 0, 0,
+		sizeof(level2_key)}, level2_key},
 
 	{{DTYPE_DCS_LWRITE, 1, 0, 0, 0,
 		sizeof(tune_data1)}, tune_data1},
 	{{DTYPE_DCS_LWRITE, 1, 0, 0, 0,
 		sizeof(tune_data2)}, tune_data2},
 
-#if defined(CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_CMD_WQHD_PT_PANEL) || defined(CONFIG_FB_MSM_MIPI_MAGNA_OCTA_CMD_HD_PT_PANEL)
+
 	{{DTYPE_DCS_LWRITE, 1, 0, 0, 0,
 		sizeof(level1_key_disable)}, level1_key_disable},
-#endif
+
 #endif
 };
 
@@ -984,6 +978,10 @@ void mDNIe_Set_Mode(void)
 			mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][0]);
 		INPUT_PAYLOAD2(
 			mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][1]);
+			mdnie_tun_state.scr_white_red = mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][1][ADDRESS_SCR_WHITE_RED];
+			mdnie_tun_state.scr_white_green = mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][1][ADDRESS_SCR_WHITE_GREEN];
+			mdnie_tun_state.scr_white_blue= mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][1][ADDRESS_SCR_WHITE_BLUE];
+
 	}
 
 	sending_tuning_cmd();
@@ -1314,6 +1312,46 @@ static ssize_t accessibility_store(struct device *dev,
 	return size;
 }
 
+static ssize_t sensorRGB_show(struct device *dev,
+		struct device_attribute *attr, char *buf)
+{
+		return sprintf(buf, "%d %d %d\n", mdnie_tun_state.scr_white_red, mdnie_tun_state.scr_white_green, mdnie_tun_state.scr_white_blue);
+}
+
+static ssize_t sensorRGB_store(struct device *dev,
+		struct device_attribute *attr, const char *buf, size_t size)
+{
+	int red, green, blue;
+	char white_red, white_green, white_blue;
+
+	sscanf(buf, "%d %d %d", &red, &green, &blue);
+
+	if ((mdnie_tun_state.accessibility == ACCESSIBILITY_OFF) && (mdnie_tun_state.background == AUTO_MODE) &&	\
+		((mdnie_tun_state.scenario == mDNIe_BROWSER_MODE) || (mdnie_tun_state.scenario == mDNIe_eBOOK_MODE)))
+	{
+		white_red = (char)(red);
+		white_green = (char)(green);
+		white_blue= (char)(blue);
+		mdnie_tun_state.scr_white_red = red;
+		mdnie_tun_state.scr_white_green = green;
+		mdnie_tun_state.scr_white_blue= blue;
+		DPRINT("%s: white_red = %d, white_green = %d, white_blue = %d\n", __func__, white_red, white_green, white_blue);
+
+			INPUT_PAYLOAD1(mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][0]);
+			memcpy(white_rgb_buf, mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][1], MDNIE_TUNE_FIRST_SIZE);
+
+		white_rgb_buf[ADDRESS_SCR_WHITE_RED] = white_red;
+		white_rgb_buf[ADDRESS_SCR_WHITE_GREEN] = white_green;
+		white_rgb_buf[ADDRESS_SCR_WHITE_BLUE] = white_blue;
+
+		INPUT_PAYLOAD2(white_rgb_buf);
+		sending_tuning_cmd();
+		free_tun_cmd();
+	}
+
+	return size;
+}
+
 static DEVICE_ATTR(scenario, 0664, scenario_show, scenario_store);
 static DEVICE_ATTR(mode, 0664, mode_show, mode_store);
 static DEVICE_ATTR(mdnieset_user_select_file_cmd, 0664,
@@ -1328,6 +1366,7 @@ static DEVICE_ATTR(playspeed, 0664,
 static DEVICE_ATTR(accessibility, 0664,
 			accessibility_show,
 			accessibility_store);
+static DEVICE_ATTR(sensorRGB, 0664, sensorRGB_show, sensorRGB_store);
 
 static struct class *mdnie_class;
 struct device *tune_mdnie_dev;
@@ -2330,6 +2369,11 @@ void init_mdnie_class(void)
 		(tune_mdnie_dev, &dev_attr_accessibility) < 0)
 		pr_err("Failed to create device file(%s)!=n",
 			dev_attr_accessibility.attr.name);
+
+	if (device_create_file
+		(tune_mdnie_dev, &dev_attr_sensorRGB) < 0)
+		pr_err("Failed to create device file(%s)!=n",
+			dev_attr_sensorRGB.attr.name);
 
 	mdnie_control_kobj = kobject_create_and_add("mdnie_control", kernel_kobj);
 	if (sysfs_create_group(mdnie_control_kobj, &mdnie_control_attr_group)) {
