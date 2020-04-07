@@ -4538,7 +4538,7 @@ int mdss_dsi_panel_init(struct device_node *node, struct mdss_dsi_ctrl_pdata *ct
 
 	msd.dstat.on = 0;
 	msd.dstat.temperature_value = 148;
-	msd.dstat.recent_bright_level = 255;
+	msd.dstat.recent_bright_level = 111;
 
 #if !defined(CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_VIDEO_FULL_HD_PT_PANEL)\
 		&& !defined(CONFIG_FB_MSM_MDSS_MAGNA_OCTA_VIDEO_720P_PT_PANEL)\
