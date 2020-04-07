@@ -108,9 +108,9 @@ static struct mipi_samsung_driver_data *mdnie_msd;
 #define INPUT_PAYLOAD1(x) PAYLOAD1.payload = x
 #define INPUT_PAYLOAD2(x) PAYLOAD2.payload = x
 
-#define ADDRESS_SCR_WHITE_RED 0x24  // 36 0x7A
-#define ADDRESS_SCR_WHITE_GREEN 0x26 // 38 0x7C
-#define ADDRESS_SCR_WHITE_BLUE 0x28 // 40 0x7E
+//#define ADDRESS_SCR_WHITE_RED 0x24  // 36 0x7A
+//#define ADDRESS_SCR_WHITE_GREEN 0x26 // 38 0x7C
+//#define ADDRESS_SCR_WHITE_BLUE 0x28 // 40 0x7E
 
 /* Hijack */
 
@@ -119,9 +119,11 @@ static char LITE_CONTROL_2[108];
 
 static int hijack = 0;
 static char override_color[24];
+static char offset_color[24];
+static char custom_curve[48];
+static char chroma_correction[18];
 
 static unsigned int offset_mode = 1;
-static char offset_color[24];
 static unsigned int sharpen_dark = 0;
 static unsigned int sharpen_light = 0;
 static unsigned int chroma = 0;
@@ -131,8 +133,6 @@ static int sharpen_dark_bit = 2;
 static int chroma_bit = 1;
 static int gamma_bit = 0;
 
-static char custom_curve[48];
-static char chroma_correction[18];
 /* Hijack Extra End  */
 
 //static unsigned int previous_mode;
@@ -214,9 +214,9 @@ static char tune_data2[MDNIE_TUNE_SECOND_SIZE] = {0,};
 static char white_rgb_buf[MDNIE_TUNE_FIRST_SIZE] = {0,};
 
 static struct dsi_cmd_desc mdni_tune_cmd[] = {
-	{{DTYPE_DCS_LWRITE, 0, 0, 0, 0,
+	{{DTYPE_DCS_LWRITE, 1, 0, 0, 0,
 		sizeof(level1_key)}, level1_key},
-	{{DTYPE_DCS_LWRITE, 0, 0, 0, 0,
+	{{DTYPE_DCS_LWRITE, 1, 0, 0, 0,
 		sizeof(level2_key)}, level2_key},
 
 	{{DTYPE_DCS_LWRITE, 1, 0, 0, 0,
