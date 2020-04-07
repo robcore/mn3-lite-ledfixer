@@ -631,7 +631,7 @@ static void update_mdnie_mode(void)
 			}
 		} else {
 			for (i = 0; i < 23 ; i++)
-			LITE_CONTROL_2[i + 18] = override_color[i];
+				LITE_CONTROL_2[i + 18] = override_color[i];
 		}
 	} else {
 
