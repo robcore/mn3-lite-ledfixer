@@ -202,11 +202,12 @@ static char level2_key[] = {
 	0x5A, 0x5A,
 };
 
+/*
 static char mx_level1_key_disable[] = {
 	0xF0,
 	0xA5, 0xA5,
 };
-
+*/
 static char tune_data1[MDNIE_TUNE_FIRST_SIZE] = {0,};
 static char tune_data2[MDNIE_TUNE_SECOND_SIZE] = {0,};
 
@@ -222,10 +223,10 @@ static struct dsi_cmd_desc mdni_tune_cmd[] = {
 		sizeof(tune_data1)}, tune_data1},
 	{{DTYPE_DCS_LWRITE, 1, 0, 0, 0,
 		sizeof(tune_data2)}, tune_data2},
-
-
+/*
 	{{DTYPE_DCS_LWRITE, 1, 0, 0, 0,
 		sizeof(mx_level1_key_disable)}, mx_level1_key_disable},
+*/
 };
 
 void print_tun_data(void)
