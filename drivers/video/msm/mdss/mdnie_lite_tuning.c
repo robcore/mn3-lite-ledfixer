@@ -280,23 +280,6 @@ void sending_tuning_cmd(void)
 	mutex_unlock(&mdnie_msd->lock);
 }
 
-static int sanitize_offset(int newval, int oldval)
-{
-	int outset = 0;
-
-	clamp(newval, 0, 255);
-	clamp(oldval, 0, 255);
-	if (newval == oldval) {
-		return outset;
-	} else if (newval > oldval) {
-		outset = newval - oldval;
-	} else if (newval < oldval) {
-		outset = oldval - newval;
-		outset *= -1;
-	}
-	return outset;
-}
-
 static void update_mdnie_mode(void)
 {
 	char *source_1, *source_2;
@@ -573,19 +556,26 @@ static void update_mdnie_mode(void)
 		return;
 	}
 
-	for (i = 0; i < 4 ; i++)
+	for (i = 0; i < 4; i++)
 		LITE_CONTROL_1[i] = source_1[i];
 
-	for (i = 0; i < 107 ; i++)
+	for (i = 0; i < 107; i++)
 		LITE_CONTROL_2[i] = source_2[i];
 
 	if (hijack) {
 
 		for (i = 0; i < 47; i++)
-			LITE_CONTROL_2[i + 42] = custom_curve[i];
+			LITE_CONTROL_2[i + 42] = max(0,min(255, custom_curve[i]));
 
 		for (i = 0; i < 17; i++)
-			LITE_CONTROL_2[i + 90] = chroma_correction[i];
+			LITE_CONTROL_2[i + 90] = max(0,min(255, chroma_correction[i]));
+
+		for (i = 0; i < 23; i++) {
+			if (offset_mode)
+				LITE_CONTROL_2[i + 18] = max(0,min(255, LITE_CONTROL_2[i + 18] + offset_color[i]));
+			else
+				LITE_CONTROL_2[i + 18] = max(0,min(255, override_color[i]));
+		}
 
 		result = (LITE_CONTROL_1[4] >> (sharpen_dark_bit));
 		if (sharpen_dark) {
@@ -622,24 +612,15 @@ static void update_mdnie_mode(void)
 			if (result & 1)
 				LITE_CONTROL_1[4] &= ~(1 << gamma_bit);
 		}
-
-		if (offset_mode) {
-			for (i = 0; i < 23 ; i++) {
-				new_control = clamp(offset_color[i] + LITE_CONTROL_2[i + 18], 0, 255);
-				offset_color[i] = sanitize_offset(new_control, LITE_CONTROL_2[i + 18]);
-				LITE_CONTROL_2[i + 18] = clamp(offset_color[i] + LITE_CONTROL_2[i + 18], 0, 255);
-				override_color[i] = LITE_CONTROL_2[i + 18];
-			}
-		} else {
-			for (i = 0; i < 23; i++)
-				LITE_CONTROL_2[i + 18] = override_color[i];
-		}
 	} else {
 		for (i = 0; i < 47; i++)
-			custom_curve[i] = LITE_CONTROL_2[i + 42];
+			custom_curve[i] = max(0,min(255, LITE_CONTROL_2[i + 42]));
 
 		for (i = 0; i < 17; i++)
-			chroma_correction[i] = LITE_CONTROL_2[i + 90];
+			chroma_correction[i] = max(0,min(255, LITE_CONTROL_2[i + 90]));
+
+		for (i = 0; i < 23; i++)
+			override_color[i] = max(0,min(255, LITE_CONTROL_2[i + 18]));
 
 		LITE_CONTROL_1[4] = source_1[4];
 
@@ -654,9 +635,6 @@ static void update_mdnie_mode(void)
 
 		result = (LITE_CONTROL_1[4] >> (gamma_bit));
 		gamma = result & 1;
-
-		for (i = 0; i < 23 ; i++)
-			override_color[i] = LITE_CONTROL_2[i + 18];
 	}
 }
 
@@ -1100,13 +1078,13 @@ static ssize_t hijack_show(struct kobject *kobj, struct kobj_attribute *attr, ch
 static ssize_t hijack_store(struct kobject *kobj,
 			   struct kobj_attribute *attr, const char *buf, size_t count)
 {
-	int new_val;
-	sscanf(buf, "%d", &new_val);
-	if (new_val < 0)
-		new_val = 0;
-	if (new_val > 1)
-		new_val = 1;
-	hijack = new_val;
+	int newval;
+	sscanf(buf, "%d", &newval);
+	if (newval < 0)
+		newval = 0;
+	if (newval > 1)
+		newval = 1;
+	hijack = newval;
 	mDNIe_Set_Mode();
 	return count;
 }
@@ -1127,13 +1105,13 @@ static ssize_t offset_mode_show(struct kobject *kobj, struct kobj_attribute *att
 static ssize_t offset_mode_store(struct kobject *kobj,
 			   struct kobj_attribute *attr, const char *buf, size_t count)
 {
-	int new_val;
-	sscanf(buf, "%d", &new_val);
-	if (new_val < 0)
-		new_val = 0;
-	if (new_val > 1)
-		new_val = 1;
-	offset_mode = new_val;
+	int newval;
+	sscanf(buf, "%d", &newval);
+	if (newval < 0)
+		newval = 0;
+	if (newval > 1)
+		newval = 1;
+	offset_mode = newval;
 	mDNIe_Set_Mode();
 	return count;
 }
@@ -1148,13 +1126,13 @@ static ssize_t sharpen_dark_show(struct kobject *kobj, struct kobj_attribute *at
 static ssize_t sharpen_dark_store(struct kobject *kobj,
 			   struct kobj_attribute *attr, const char *buf, size_t count)
 {
-	int new_val;
-	sscanf(buf, "%d", &new_val);
-	if (new_val < 0)
-		new_val = 0;
-	if (new_val > 1)
-		new_val = 1;
-	sharpen_dark = new_val;
+	int newval;
+	sscanf(buf, "%d", &newval);
+	if (newval < 0)
+		newval = 0;
+	if (newval > 1)
+		newval = 1;
+	sharpen_dark = newval;
 	mDNIe_Set_Mode();
 	return count;
 }
@@ -1170,13 +1148,13 @@ static ssize_t sharpen_light_show(struct kobject *kobj, struct kobj_attribute *a
 static ssize_t sharpen_light_store(struct kobject *kobj,
 			   struct kobj_attribute *attr, const char *buf, size_t count)
 {
-	int new_val;
-	sscanf(buf, "%d", &new_val);
-	if (new_val < 0)
-		new_val = 0;
-	if (new_val > 1)
-		new_val = 1;
-	sharpen_light = new_val;
+	int newval;
+	sscanf(buf, "%d", &newval);
+	if (newval < 0)
+		newval = 0;
+	if (newval > 1)
+		newval = 1;
+	sharpen_light = newval;
 	mDNIe_Set_Mode();
 	return count;
 }
@@ -1189,13 +1167,13 @@ static ssize_t chroma_show(struct kobject *kobj, struct kobj_attribute *attr, ch
 static ssize_t chroma_store(struct kobject *kobj,
 			   struct kobj_attribute *attr, const char *buf, size_t count)
 {
-	int new_val;
-	sscanf(buf, "%d", &new_val);
-	if (new_val < 0)
-		new_val = 0;
-	if (new_val > 1)
-		new_val = 1;
-	chroma = new_val;
+	int newval;
+	sscanf(buf, "%d", &newval);
+	if (newval < 0)
+		newval = 0;
+	if (newval > 1)
+		newval = 1;
+	chroma = newval;
 	mDNIe_Set_Mode();
 	return count;
 }
@@ -1208,13 +1186,13 @@ static ssize_t gamma_show(struct kobject *kobj, struct kobj_attribute *attr, cha
 static ssize_t gamma_store(struct kobject *kobj,
 			   struct kobj_attribute *attr, const char *buf, size_t count)
 {
-	int new_val;
-	sscanf(buf, "%d", &new_val);
-	if (new_val < 0)
-		new_val = 0;
-	if (new_val > 1)
-		new_val = 1;
-	gamma = new_val;
+	int newval;
+	sscanf(buf, "%d", &newval);
+	if (newval < 0)
+		newval = 0;
+	if (newval > 1)
+		newval = 1;
+	gamma = newval;
 	mDNIe_Set_Mode();
 	return count;
 }
@@ -1225,7 +1203,7 @@ static ssize_t gamma_store(struct kobject *kobj,
 static ssize_t _name##_show					\
 (struct kobject *kobj, struct kobj_attribute *attr, char *buf)	\
 {								\
-	return sprintf(buf, "%u %u\n", (unsigned int)custom_curve[bval], (unsigned int)custom_curve[aval]);			\
+	return sprintf(buf, "%d %d\n", (int)custom_curve[bval], (int)custom_curve[aval]);			\
 }
 
 #define store_one_curve(_name, bval, aval)		\
@@ -1238,8 +1216,8 @@ static ssize_t _name##_store		\
 	if (sscanf(buf, "%d %d", &curve_b, &curve_a) == 2) {				\
 		clamp(curve_b, 0, 255);		\
 		clamp(curve_a, 0, 255);		\
-		custom_curve[bval] = curve_b;		\
-		custom_curve[aval] = curve_a;		\
+		custom_curve[bval] = (char)curve_b;		\
+		custom_curve[aval] = (char)curve_a;		\
 	} else {		\
 		return count;		\
 	}						\
@@ -1301,7 +1279,7 @@ store_one_curve(gcurve24, 46, 47);
 static ssize_t _name##_show					\
 (struct kobject *kobj, struct kobj_attribute *attr, char *buf)	\
 {								\
-	return sprintf(buf, "%u %u\n", (unsigned int)chroma_correction[firstval], (unsigned int)chroma_correction[secondval]);			\
+	return sprintf(buf, "%d %d\n", (int)chroma_correction[firstval], (int)chroma_correction[secondval]);			\
 }
 
 #define store_one_cc(_name, firstval, secondval)		\
@@ -1315,9 +1293,9 @@ static ssize_t _name##_store		\
 		if ((cc_highlow != 4) && (cc_highlow != 31) && (cc_highlow != 0))	\
 			chroma_correction[firstval] = LITE_CONTROL_2[firstval + 90];		\
 		else	\
-			chroma_correction[firstval] = cc_highlow;		\
+			chroma_correction[firstval] = (char)cc_highlow;		\
 		clamp(cc_strength, 0, 255);		\
-		chroma_correction[secondval] = cc_strength;		\
+		chroma_correction[secondval] = (char)cc_strength;		\
 	} else {		\
 		return count;		\
 	}						\
@@ -1349,25 +1327,22 @@ store_one_cc(cc_b3, 16, 17);
 
 static ssize_t black_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%d %d %d\n", override_color[19], override_color[21], override_color[23]);
+	return sprintf(buf, "%d %d %d\n", (int)override_color[19], (int)override_color[21], (int)override_color[23]);
 }
 
 static ssize_t black_store(struct kobject *kobj,
 			   struct kobj_attribute *attr, const char *buf, size_t count)
 {
-	int i, new_val, NEWRED, NEWGREEN, NEWBLUE;
+	int i, newval, newred, newgreen, newblue;
 
-	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
-		clamp(NEWRED, 0, 255);
-		clamp(NEWGREEN, 0, 255);
-		clamp(NEWBLUE, 0, 255);
-		override_color[19] = NEWRED;
-		override_color[21] = NEWGREEN;
-		override_color[23] = NEWBLUE;
-	} else if (sscanf(buf, "%d", &new_val) == 1) {
-		override_color[19] = clamp(new_val, 0, 255);
-		override_color[21] = clamp(new_val, 0, 255);
-		override_color[23] = clamp(new_val, 0, 255);
+	if (sscanf(buf, "%d %d %d", &newred, &newgreen, &newblue) == 3) {
+		override_color[19] = (char)newred;
+		override_color[21] = (char)newgreen;
+		override_color[23] = (char)newblue;
+	} else if (sscanf(buf, "%d", &newval) == 1) {
+		override_color[19] = (char)newval;
+		override_color[21] = (char)newval;
+		override_color[23] = (char)newval;
 	} else {
 		return count;
 	}
@@ -1381,25 +1356,22 @@ static ssize_t black_store(struct kobject *kobj,
 
 static ssize_t white_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%d %d %d\n", override_color[18], override_color[20], override_color[22]);
+	return sprintf(buf, "%d %d %d\n", (int)override_color[18], (int)override_color[20], (int)override_color[22]);
 }
 
 static ssize_t white_store(struct kobject *kobj,
 			   struct kobj_attribute *attr, const char *buf, size_t count)
 {
-	int i, new_val, NEWRED, NEWGREEN, NEWBLUE;
+	int i, newval, newred, newgreen, newblue;
 
-	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
-		clamp(NEWRED, 0, 255);
-		clamp(NEWGREEN, 0, 255);
-		clamp(NEWBLUE, 0, 255);
-		override_color[18] = NEWRED;
-		override_color[20] = NEWGREEN;
-		override_color[22] = NEWBLUE;
-	} else if (sscanf(buf, "%d", &new_val) == 1) {
-		override_color[18] = clamp(new_val, 0, 255);
-		override_color[20] = clamp(new_val, 0, 255);
-		override_color[22] = clamp(new_val, 0, 255);
+	if (sscanf(buf, "%d %d %d", &newred, &newgreen, &newblue) == 3) {
+		override_color[18] = (char)newred;
+		override_color[20] = (char)newgreen;
+		override_color[22] = (char)newblue;
+	} else if (sscanf(buf, "%d", &newval) == 1) {
+		override_color[18] = (char)newval;
+		override_color[20] = (char)newval;
+		override_color[22] = (char)newval;
 	} else {
 		return count;
 	}
@@ -1413,23 +1385,20 @@ static ssize_t white_store(struct kobject *kobj,
 
 static ssize_t red_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%d %d %d\n", override_color[1], override_color[3], override_color[5]);
+	return sprintf(buf, "%d %d %d\n", (int)override_color[1], (int)override_color[3], (int)override_color[5]);
 }
 
 static ssize_t red_store(struct kobject *kobj,
 			   struct kobj_attribute *attr, const char *buf, size_t count)
 {
-	int i, new_val, NEWRED, NEWGREEN, NEWBLUE;
+	int i, newval, newred, newgreen, newblue;
 
-	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
-		clamp(NEWRED, 0, 255);
-		clamp(NEWGREEN, 0, 255);
-		clamp(NEWBLUE, 0, 255);
-		override_color[1] = NEWRED;
-		override_color[3] = NEWGREEN;
-		override_color[5] = NEWBLUE;
-	} else if (sscanf(buf, "%d", &new_val) == 1) {
-		override_color[1] = clamp(new_val, 0, 255);
+	if (sscanf(buf, "%d %d %d", &newred, &newgreen, &newblue) == 3) {
+		override_color[1] = (char)newred;
+		override_color[3] = (char)newgreen;
+		override_color[5] = (char)newblue;
+	} else if (sscanf(buf, "%d", &newval) == 1) {
+		override_color[1] = (char)newval;
 		override_color[3] = 0;
 		override_color[5] = 0;
 	} else {
@@ -1445,24 +1414,21 @@ static ssize_t red_store(struct kobject *kobj,
 
 static ssize_t green_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%d %d %d\n", override_color[7], override_color[9], override_color[11]);
+	return sprintf(buf, "%d %d %d\n", (int)override_color[7], (int)override_color[9], (int)override_color[11]);
 }
 
 static ssize_t green_store(struct kobject *kobj,
 			   struct kobj_attribute *attr, const char *buf, size_t count)
 {
-	int i, new_val, NEWRED, NEWGREEN, NEWBLUE;
+	int i, newval, newred, newgreen, newblue;
 
-	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
-		clamp(NEWRED, 0, 255);
-		clamp(NEWGREEN, 0, 255);
-		clamp(NEWBLUE, 0, 255);
-		override_color[7] = NEWRED;
-		override_color[9] = NEWGREEN;
-		override_color[11] = NEWBLUE;
-	} else if (sscanf(buf, "%d", &new_val) == 1) {
+	if (sscanf(buf, "%d %d %d", &newred, &newgreen, &newblue) == 3) {
+		override_color[7] = (char)newred;
+		override_color[9] = (char)newgreen;
+		override_color[11] = (char)newblue;
+	} else if (sscanf(buf, "%d", &newval) == 1) {
 		override_color[7] = 0;
-		override_color[9] = clamp(new_val, 0, 255);
+		override_color[9] = (char)newval;
 		override_color[11] = 0;
 	} else {
 		return count;
@@ -1477,25 +1443,22 @@ static ssize_t green_store(struct kobject *kobj,
 
 static ssize_t blue_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%d %d %d\n", override_color[13], override_color[15], override_color[17]);
+	return sprintf(buf, "%d %d %d\n", (int)override_color[13], (int)override_color[15], (int)override_color[17]);
 }
 
 static ssize_t blue_store(struct kobject *kobj,
 			   struct kobj_attribute *attr, const char *buf, size_t count)
 {
-	int i, new_val, NEWRED, NEWGREEN, NEWBLUE;
+	int i, newval, newred, newgreen, newblue;
 
-	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
-		clamp(NEWRED, 0, 255);
-		clamp(NEWGREEN, 0, 255);
-		clamp(NEWBLUE, 0, 255);
-		override_color[13] = NEWRED;
-		override_color[15] = NEWGREEN;
-		override_color[17] = NEWBLUE;
-	} else if (sscanf(buf, "%d", &new_val) == 1) {
+	if (sscanf(buf, "%d %d %d", &newred, &newgreen, &newblue) == 3) {
+		override_color[13] = (char)newred;
+		override_color[15] = (char)newgreen;
+		override_color[17] = (char)newblue;
+	} else if (sscanf(buf, "%d", &newval) == 1) {
 		override_color[13] = 0;
 		override_color[15] = 0;
-		override_color[17] = clamp(new_val, 0, 255);
+		override_color[17] = (char)newval;
 	} else {
 		return count;
 	}
@@ -1508,24 +1471,21 @@ static ssize_t blue_store(struct kobject *kobj,
 /* yellow */
 static ssize_t yellow_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%d %d %d\n", override_color[12], override_color[14], override_color[16]);
+	return sprintf(buf, "%d %d %d\n", (int)override_color[12], (int)override_color[14], (int)override_color[16]);
 }
 
 static ssize_t yellow_store(struct kobject *kobj,
 			   struct kobj_attribute *attr, const char *buf, size_t count)
 {
-	int i, new_val, NEWRED, NEWGREEN, NEWBLUE;
+	int i, newval, newred, newgreen, newblue;
 
-	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
-		clamp(NEWRED, 0, 255);
-		clamp(NEWGREEN, 0, 255);
-		clamp(NEWBLUE, 0, 255);
-		override_color[12] = NEWRED;
-		override_color[14] = NEWGREEN;
-		override_color[16] = NEWBLUE;
-	} else if (sscanf(buf, "%d", &new_val) == 1) {
-		override_color[12] = clamp(new_val, 0, 255);
-		override_color[14] = clamp(new_val, 0, 255);
+	if (sscanf(buf, "%d %d %d", &newred, &newgreen, &newblue) == 3) {
+		override_color[12] = (char)newred;
+		override_color[14] = (char)newgreen;
+		override_color[16] = (char)newblue;
+	} else if (sscanf(buf, "%d", &newval) == 1) {
+		override_color[12] = (char)newval;
+		override_color[14] = (char)newval;
 		override_color[16] = 0;
 	} else {
 		return count;
@@ -1539,25 +1499,22 @@ static ssize_t yellow_store(struct kobject *kobj,
 /* magenta */
 static ssize_t magenta_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%d %d %d\n", override_color[6], override_color[8], override_color[10]);
+	return sprintf(buf, "%d %d %d\n", (int)override_color[6], (int)override_color[8], (int)override_color[10]);
 }
 
 static ssize_t magenta_store(struct kobject *kobj,
 			   struct kobj_attribute *attr, const char *buf, size_t count)
 {
-	int i, new_val, NEWRED, NEWGREEN, NEWBLUE;
+	int i, newval, newred, newgreen, newblue;
 
-	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
-		clamp(NEWRED, 0, 255);
-		clamp(NEWGREEN, 0, 255);
-		clamp(NEWBLUE, 0, 255);
-		override_color[6] = NEWRED;
-		override_color[8] = NEWGREEN;
-		override_color[10] = NEWBLUE;
-	} else if (sscanf(buf, "%d", &new_val) == 1) {
-		override_color[6] = clamp(new_val, 0, 255);
+	if (sscanf(buf, "%d %d %d", &newred, &newgreen, &newblue) == 3) {
+		override_color[6] = (char)newred;
+		override_color[8] = (char)newgreen;
+		override_color[10] = (char)newblue;
+	} else if (sscanf(buf, "%d", &newval) == 1) {
+		override_color[6] = (char)newval;
 		override_color[8] = 0;
-		override_color[10] = clamp(new_val, 0, 255);
+		override_color[10] = (char)newval;
 	} else {
 		return count;
 	}
@@ -1570,25 +1527,22 @@ static ssize_t magenta_store(struct kobject *kobj,
 /* cyan */
 static ssize_t cyan_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%d %d %d\n", override_color[0], override_color[2], override_color[4]);
+	return sprintf(buf, "%d %d %d\n", (int)override_color[0], (int)override_color[2], (int)override_color[4]);
 }
 
 static ssize_t cyan_store(struct kobject *kobj,
 			   struct kobj_attribute *attr, const char *buf, size_t count)
 {
-	int i, new_val, NEWRED, NEWGREEN, NEWBLUE;
+	int i, newval, newred, newgreen, newblue;
 
-	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
-		clamp(NEWRED, 0, 255);
-		clamp(NEWGREEN, 0, 255);
-		clamp(NEWBLUE, 0, 255);
-		override_color[0] = NEWRED;
-		override_color[2] = NEWGREEN;
-		override_color[4] = NEWBLUE;
-	} else if (sscanf(buf, "%d", &new_val) == 1) {
+	if (sscanf(buf, "%d %d %d", &newred, &newgreen, &newblue) == 3) {
+		override_color[0] = (char)newred;
+		override_color[2] = (char)newgreen;
+		override_color[4] = (char)newblue;
+	} else if (sscanf(buf, "%d", &newval) == 1) {
 		override_color[0] = 0;
-		override_color[2] = clamp(new_val, 0, 255);
-		override_color[4] = clamp(new_val, 0, 255);
+		override_color[2] = (char)newval;
+		override_color[4] = (char)newval;
 	} else {
 		return count;
 	}
@@ -1602,22 +1556,22 @@ static ssize_t cyan_store(struct kobject *kobj,
 
 static ssize_t offset_black_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%d %d %d\n", offset_color[19], offset_color[21], offset_color[23]);
+	return sprintf(buf, "%d %d %d\n", (int)offset_color[19], (int)offset_color[21], (int)offset_color[23]);
 }
 
 static ssize_t offset_black_store(struct kobject *kobj,
 			   struct kobj_attribute *attr, const char *buf, size_t count)
 {
-	int new_val, NEWRED, NEWGREEN, NEWBLUE;
+	int newval, newred, newgreen, newblue;
 
-	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
-		offset_color[19] = NEWRED;
-		offset_color[21] = NEWGREEN;
-		offset_color[23] = NEWBLUE;
-	} else if (sscanf(buf, "%d", &new_val) == 1) {
-		offset_color[19] = new_val;
-		offset_color[21] = new_val;
-		offset_color[23] = new_val;
+	if (sscanf(buf, "%d %d %d", &newred, &newgreen, &newblue) == 3) {
+		offset_color[19] = (char)newred;
+		offset_color[21] = (char)newgreen;
+		offset_color[23] = (char)newblue;
+	} else if (sscanf(buf, "%d", &newval) == 1) {
+		offset_color[19] = (char)newval;
+		offset_color[21] = (char)newval;
+		offset_color[23] = (char)newval;
 	} else {
 		return count;
 	}
@@ -1631,22 +1585,22 @@ static ssize_t offset_black_store(struct kobject *kobj,
 
 static ssize_t offset_white_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%d %d %d\n", offset_color[18], offset_color[20], offset_color[22]);
+	return sprintf(buf, "%d %d %d\n", (int)offset_color[18], (int)offset_color[20], (int)offset_color[22]);
 }
 
 static ssize_t offset_white_store(struct kobject *kobj,
 			   struct kobj_attribute *attr, const char *buf, size_t count)
 {
-	int new_val, NEWRED, NEWGREEN, NEWBLUE;
+	int newval, newred, newgreen, newblue;
 
-	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
-		offset_color[18] = NEWRED;
-		offset_color[20] = NEWGREEN;
-		offset_color[22] = NEWBLUE;
-	} else if (sscanf(buf, "%d", &new_val) == 1) {
-		offset_color[18] = new_val;
-		offset_color[20] = new_val;
-		offset_color[22] = new_val;
+	if (sscanf(buf, "%d %d %d", &newred, &newgreen, &newblue) == 3) {
+		offset_color[18] = (char)newred;
+		offset_color[20] = (char)newgreen;
+		offset_color[22] = (char)newblue;
+	} else if (sscanf(buf, "%d", &newval) == 1) {
+		offset_color[18] = (char)newval;
+		offset_color[20] = (char)newval;
+		offset_color[22] = (char)newval;
 	} else {
 		return count;
 	}
@@ -1660,20 +1614,20 @@ static ssize_t offset_white_store(struct kobject *kobj,
 
 static ssize_t offset_red_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%d %d %d\n", offset_color[1], offset_color[3], offset_color[5]);
+	return sprintf(buf, "%d %d %d\n", (int)offset_color[1], (int)offset_color[3], (int)offset_color[5]);
 }
 
 static ssize_t offset_red_store(struct kobject *kobj,
 			   struct kobj_attribute *attr, const char *buf, size_t count)
 {
-	int new_val, NEWRED, NEWGREEN, NEWBLUE;
+	int newval, newred, newgreen, newblue;
 
-	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
-		offset_color[1] = NEWRED;
-		offset_color[3] = NEWGREEN;
-		offset_color[5] = NEWBLUE;
-	} else if (sscanf(buf, "%d", &new_val) == 1) {
-		offset_color[1] = new_val;
+	if (sscanf(buf, "%d %d %d", &newred, &newgreen, &newblue) == 3) {
+		offset_color[1] = (char)newred;
+		offset_color[3] = (char)newgreen;
+		offset_color[5] = (char)newblue;
+	} else if (sscanf(buf, "%d", &newval) == 1) {
+		offset_color[1] = (char)newval;
 		offset_color[3] = 0;
 		offset_color[5] = 0;
 	} else {
@@ -1689,21 +1643,21 @@ static ssize_t offset_red_store(struct kobject *kobj,
 
 static ssize_t offset_green_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%d %d %d\n", offset_color[7], offset_color[9], offset_color[11]);
+	return sprintf(buf, "%d %d %d\n", (int)offset_color[7], (int)offset_color[9], (int)offset_color[11]);
 }
 
 static ssize_t offset_green_store(struct kobject *kobj,
 			   struct kobj_attribute *attr, const char *buf, size_t count)
 {
-	int new_val, NEWRED, NEWGREEN, NEWBLUE;
+	int newval, newred, newgreen, newblue;
 
-	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
-		offset_color[7] = NEWRED;
-		offset_color[9] = NEWGREEN;
-		offset_color[11] = NEWBLUE;
-	} else if (sscanf(buf, "%d", &new_val) == 1) {
+	if (sscanf(buf, "%d %d %d", &newred, &newgreen, &newblue) == 3) {
+		offset_color[7] = (char)newred;
+		offset_color[9] = (char)newgreen;
+		offset_color[11] = (char)newblue;
+	} else if (sscanf(buf, "%d", &newval) == 1) {
 		offset_color[7] = 0;
-		offset_color[9] = new_val;
+		offset_color[9] = (char)newval;
 		offset_color[11] = 0;
 	} else {
 		return count;
@@ -1718,22 +1672,22 @@ static ssize_t offset_green_store(struct kobject *kobj,
 
 static ssize_t offset_blue_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%d %d %d\n", offset_color[13], offset_color[15], offset_color[17]);
+	return sprintf(buf, "%d %d %d\n", (int)offset_color[13], (int)offset_color[15], (int)offset_color[17]);
 }
 
 static ssize_t offset_blue_store(struct kobject *kobj,
 			   struct kobj_attribute *attr, const char *buf, size_t count)
 {
-	int new_val, NEWRED, NEWGREEN, NEWBLUE;
+	int newval, newred, newgreen, newblue;
 
-	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
-		offset_color[13] = NEWRED;
-		offset_color[15] = NEWGREEN;
-		offset_color[17] = NEWBLUE;
-	} else if (sscanf(buf, "%d", &new_val) == 1) {
+	if (sscanf(buf, "%d %d %d", &newred, &newgreen, &newblue) == 3) {
+		offset_color[13] = (char)newred;
+		offset_color[15] = (char)newgreen;
+		offset_color[17] = (char)newblue;
+	} else if (sscanf(buf, "%d", &newval) == 1) {
 		offset_color[13] = 0;
 		offset_color[15] = 0;
-		offset_color[17] = new_val;
+		offset_color[17] = (char)newval;
 	} else {
 		return count;
 	}
@@ -1746,21 +1700,21 @@ static ssize_t offset_blue_store(struct kobject *kobj,
 /* offset_yellow */
 static ssize_t offset_yellow_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%d %d %d\n", offset_color[12], offset_color[14], offset_color[16]);
+	return sprintf(buf, "%d %d %d\n", (int)offset_color[12], (int)offset_color[14], (int)offset_color[16]);
 }
 
 static ssize_t offset_yellow_store(struct kobject *kobj,
 			   struct kobj_attribute *attr, const char *buf, size_t count)
 {
-	int new_val, NEWRED, NEWGREEN, NEWBLUE;
+	int newval, newred, newgreen, newblue;
 
-	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
-		offset_color[12] = NEWRED;
-		offset_color[14] = NEWGREEN;
-		offset_color[16] = NEWBLUE;
-	} else if (sscanf(buf, "%d", &new_val) == 1) {
-		offset_color[12] = new_val;
-		offset_color[14] = new_val;
+	if (sscanf(buf, "%d %d %d", &newred, &newgreen, &newblue) == 3) {
+		offset_color[12] = (char)newred;
+		offset_color[14] = (char)newgreen;
+		offset_color[16] = (char)newblue;
+	} else if (sscanf(buf, "%d", &newval) == 1) {
+		offset_color[12] = (char)newval;
+		offset_color[14] = (char)newval;
 		offset_color[16] = 0;
 	} else {
 		return count;
@@ -1774,22 +1728,22 @@ static ssize_t offset_yellow_store(struct kobject *kobj,
 /* offset_magenta */
 static ssize_t offset_magenta_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%d %d %d\n", offset_color[6], offset_color[8], offset_color[10]);
+	return sprintf(buf, "%d %d %d\n", (int)offset_color[6], (int)offset_color[8], (int)offset_color[10]);
 }
 
 static ssize_t offset_magenta_store(struct kobject *kobj,
 			   struct kobj_attribute *attr, const char *buf, size_t count)
 {
-	int new_val, NEWRED, NEWGREEN, NEWBLUE;
+	int newval, newred, newgreen, newblue;
 
-	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
-		offset_color[6] = NEWRED;
-		offset_color[8] = NEWGREEN;
-		offset_color[10] = NEWBLUE;
-	} else if (sscanf(buf, "%d", &new_val) == 1) {
-		offset_color[6] = new_val;
+	if (sscanf(buf, "%d %d %d", &newred, &newgreen, &newblue) == 3) {
+		offset_color[6] = (char)newred;
+		offset_color[8] = (char)newgreen;
+		offset_color[10] = (char)newblue;
+	} else if (sscanf(buf, "%d", &newval) == 1) {
+		offset_color[6] = (char)newval;
 		offset_color[8] = 0;
-		offset_color[10] = new_val;
+		offset_color[10] = (char)newval;
 	} else {
 		return count;
 	}
@@ -1802,22 +1756,22 @@ static ssize_t offset_magenta_store(struct kobject *kobj,
 /* offset_cyan */
 static ssize_t offset_cyan_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%d %d %d\n", offset_color[0], offset_color[2], offset_color[4]);
+	return sprintf(buf, "%d %d %d\n", (int)offset_color[0], (int)offset_color[2], (int)offset_color[4]);
 }
 
 static ssize_t offset_cyan_store(struct kobject *kobj,
 			   struct kobj_attribute *attr, const char *buf, size_t count)
 {
-	int new_val, NEWRED, NEWGREEN, NEWBLUE;
+	int newval, newred, newgreen, newblue;
 
-	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
-		offset_color[0] = NEWRED;
-		offset_color[2] = NEWGREEN;
-		offset_color[4] = NEWBLUE;
-	} else if (sscanf(buf, "%d", &new_val) == 1) {
+	if (sscanf(buf, "%d %d %d", &newred, &newgreen, &newblue) == 3) {
+		offset_color[0] = (char)newred;
+		offset_color[2] = (char)newgreen;
+		offset_color[4] = (char)newblue;
+	} else if (sscanf(buf, "%d", &newval) == 1) {
 		offset_color[0] = 0;
-		offset_color[2] = new_val;
-		offset_color[4] = new_val;
+		offset_color[2] = (char)newval;
+		offset_color[4] = (char)newval;
 	} else {
 		return count;
 	}
