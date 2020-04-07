@@ -631,7 +631,7 @@ static void update_mdnie_mode(void)
 				override_color[i] = LITE_CONTROL_2[i + 18];
 			}
 		} else {
-			for (i = 0; i < 23 ; i++)
+			for (i = 0; i < 23; i++)
 				LITE_CONTROL_2[i + 18] = override_color[i];
 		}
 	} else {
@@ -684,6 +684,7 @@ void mDNIe_Set_Mode(void)
 
 	play_speed_1_5 = 0;
 	update_mdnie_mode();
+
 	if (hijack == 1) {
 		DPRINT(" = CONTROL MODE =\n");
 		INPUT_PAYLOAD1(LITE_CONTROL_1);
@@ -1610,14 +1611,10 @@ static ssize_t offset_black_store(struct kobject *kobj,
 	int new_val, NEWRED, NEWGREEN, NEWBLUE;
 
 	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
-		clamp(NEWRED, -255, 255);
-		clamp(NEWGREEN, -255, 255);
-		clamp(NEWBLUE, -255, 255);
 		offset_color[19] = NEWRED;
 		offset_color[21] = NEWGREEN;
 		offset_color[23] = NEWBLUE;
 	} else if (sscanf(buf, "%d", &new_val) == 1) {
-		clamp(new_val, -255, 255);
 		offset_color[19] = new_val;
 		offset_color[21] = new_val;
 		offset_color[23] = new_val;
@@ -1643,14 +1640,10 @@ static ssize_t offset_white_store(struct kobject *kobj,
 	int new_val, NEWRED, NEWGREEN, NEWBLUE;
 
 	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
-		clamp(NEWRED, -255, 255);
-		clamp(NEWGREEN, -255, 255);
-		clamp(NEWBLUE, -255, 255);
 		offset_color[18] = NEWRED;
 		offset_color[20] = NEWGREEN;
 		offset_color[22] = NEWBLUE;
 	} else if (sscanf(buf, "%d", &new_val) == 1) {
-		clamp(new_val, -255, 255);
 		offset_color[18] = new_val;
 		offset_color[20] = new_val;
 		offset_color[22] = new_val;
@@ -1676,14 +1669,10 @@ static ssize_t offset_red_store(struct kobject *kobj,
 	int new_val, NEWRED, NEWGREEN, NEWBLUE;
 
 	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
-		clamp(NEWRED, -255, 255);
-		clamp(NEWGREEN, -255, 255);
-		clamp(NEWBLUE, -255, 255);
 		offset_color[1] = NEWRED;
 		offset_color[3] = NEWGREEN;
 		offset_color[5] = NEWBLUE;
 	} else if (sscanf(buf, "%d", &new_val) == 1) {
-		clamp(new_val, -255, 255);
 		offset_color[1] = new_val;
 		offset_color[3] = 0;
 		offset_color[5] = 0;
@@ -1709,14 +1698,10 @@ static ssize_t offset_green_store(struct kobject *kobj,
 	int new_val, NEWRED, NEWGREEN, NEWBLUE;
 
 	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
-		clamp(NEWRED, -255, 255);
-		clamp(NEWGREEN, -255, 255);
-		clamp(NEWBLUE, -255, 255);
 		offset_color[7] = NEWRED;
 		offset_color[9] = NEWGREEN;
 		offset_color[11] = NEWBLUE;
 	} else if (sscanf(buf, "%d", &new_val) == 1) {
-		clamp(new_val, -255, 255);
 		offset_color[7] = 0;
 		offset_color[9] = new_val;
 		offset_color[11] = 0;
@@ -1742,14 +1727,10 @@ static ssize_t offset_blue_store(struct kobject *kobj,
 	int new_val, NEWRED, NEWGREEN, NEWBLUE;
 
 	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
-		clamp(NEWRED, -255, 255);
-		clamp(NEWGREEN, -255, 255);
-		clamp(NEWBLUE, -255, 255);
 		offset_color[13] = NEWRED;
 		offset_color[15] = NEWGREEN;
 		offset_color[17] = NEWBLUE;
 	} else if (sscanf(buf, "%d", &new_val) == 1) {
-		clamp(new_val, -255, 255);
 		offset_color[13] = 0;
 		offset_color[15] = 0;
 		offset_color[17] = new_val;
@@ -1774,14 +1755,10 @@ static ssize_t offset_yellow_store(struct kobject *kobj,
 	int new_val, NEWRED, NEWGREEN, NEWBLUE;
 
 	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
-		clamp(NEWRED, -255, 255);
-		clamp(NEWGREEN, -255, 255);
-		clamp(NEWBLUE, -255, 255);
 		offset_color[12] = NEWRED;
 		offset_color[14] = NEWGREEN;
 		offset_color[16] = NEWBLUE;
 	} else if (sscanf(buf, "%d", &new_val) == 1) {
-		clamp(new_val, -255, 255);
 		offset_color[12] = new_val;
 		offset_color[14] = new_val;
 		offset_color[16] = 0;
@@ -1806,14 +1783,10 @@ static ssize_t offset_magenta_store(struct kobject *kobj,
 	int new_val, NEWRED, NEWGREEN, NEWBLUE;
 
 	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
-		clamp(NEWRED, -255, 255);
-		clamp(NEWGREEN, -255, 255);
-		clamp(NEWBLUE, -255, 255);
 		offset_color[6] = NEWRED;
 		offset_color[8] = NEWGREEN;
 		offset_color[10] = NEWBLUE;
 	} else if (sscanf(buf, "%d", &new_val) == 1) {
-		clamp(new_val, -255, 255);
 		offset_color[6] = new_val;
 		offset_color[8] = 0;
 		offset_color[10] = new_val;
@@ -1838,14 +1811,10 @@ static ssize_t offset_cyan_store(struct kobject *kobj,
 	int new_val, NEWRED, NEWGREEN, NEWBLUE;
 
 	if (sscanf(buf, "%d %d %d", &NEWRED, &NEWGREEN, &NEWBLUE) == 3) {
-		clamp(NEWRED, -255, 255);
-		clamp(NEWGREEN, -255, 255);
-		clamp(NEWBLUE, -255, 255);
 		offset_color[0] = NEWRED;
 		offset_color[2] = NEWGREEN;
 		offset_color[4] = NEWBLUE;
 	} else if (sscanf(buf, "%d", &new_val) == 1) {
-		clamp(new_val, -255, 255);
 		offset_color[0] = 0;
 		offset_color[2] = new_val;
 		offset_color[4] = new_val;
