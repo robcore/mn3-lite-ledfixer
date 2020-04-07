@@ -21,7 +21,7 @@
 
 ////////////////// UI /// /////////////////////
 
-static unsigned char SCREEN_CURTAIN_1[] = {
+static char SCREEN_CURTAIN_1[] = {
 	//start
 	0xEB,
 	0x01, //mdnie_en
@@ -30,7 +30,7 @@ static unsigned char SCREEN_CURTAIN_1[] = {
 	0x00, //sharpen cc gamma 00 0 0
 };
 
-static unsigned char SCREEN_CURTAIN_2[] = {
+static char SCREEN_CURTAIN_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -142,7 +142,7 @@ static unsigned char SCREEN_CURTAIN_2[] = {
 	//end
 };
 
-static unsigned char STANDARD_UI_1[] = {
+static char STANDARD_UI_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -150,7 +150,7 @@ static unsigned char STANDARD_UI_1[] = {
 	0x01, //sharpen cc gamma 00 0 0
 };
 
-static unsigned char STANDARD_UI_2[] = {
+static char STANDARD_UI_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -261,7 +261,7 @@ static unsigned char STANDARD_UI_2[] = {
 	0x48,
 };
 
-static unsigned char NATURAL_UI_1[] = {
+static char NATURAL_UI_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -269,7 +269,7 @@ static unsigned char NATURAL_UI_1[] = {
 	0x09, //sharpen cc gamma 00 0 0
 };
 
-static unsigned char NATURAL_UI_2[] = {
+static char NATURAL_UI_2[] = {
 	0xEC, //0
 	0x00, //1 roi ctrl
 	0x00, //2 roi0 x start
@@ -380,7 +380,7 @@ static unsigned char NATURAL_UI_2[] = {
 	0xb5, //107
 };
 
-static unsigned char DYNAMIC_UI_1[] = {
+static char DYNAMIC_UI_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -388,7 +388,7 @@ static unsigned char DYNAMIC_UI_1[] = {
 	0x03, //sharpen cc gamma 00 0 0
 };
 
-static unsigned char DYNAMIC_UI_2[] = {
+static char DYNAMIC_UI_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -499,7 +499,7 @@ static unsigned char DYNAMIC_UI_2[] = {
 	0x36,
 };
 
-static unsigned char MOVIE_UI_1[] = {
+static char MOVIE_UI_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -507,7 +507,7 @@ static unsigned char MOVIE_UI_1[] = {
 	0x01, //sharpen cc gamma 00 0 0
 };
 
-static unsigned char MOVIE_UI_2[] = {
+static char MOVIE_UI_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -618,7 +618,7 @@ static unsigned char MOVIE_UI_2[] = {
 	0xb5,
 };
 
-static unsigned char AUTO_UI_1[] = {
+static char AUTO_UI_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -626,7 +626,7 @@ static unsigned char AUTO_UI_1[] = {
 	0x01, //sharpen cc gamma 00 0 0
 };
 
-static unsigned char AUTO_UI_2[] = {
+static char AUTO_UI_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -738,7 +738,7 @@ static unsigned char AUTO_UI_2[] = {
 };
 
 ////////////////// GALLERY /////////////////////
-static unsigned char STANDARD_GALLERY_1[] = {
+static char STANDARD_GALLERY_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -746,7 +746,7 @@ static unsigned char STANDARD_GALLERY_1[] = {
 	0x09, //sharpen cc gamma 00 0 0
 };
 
-static unsigned char STANDARD_GALLERY_2[] = {
+static char STANDARD_GALLERY_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -857,7 +857,7 @@ static unsigned char STANDARD_GALLERY_2[] = {
 	0x36,
 };
 
-static unsigned char NATURAL_GALLERY_1[] = {
+static char NATURAL_GALLERY_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -865,7 +865,7 @@ static unsigned char NATURAL_GALLERY_1[] = {
 	0x05, //sharpen cc gamma 00 0 0
 };
 
-static unsigned char NATURAL_GALLERY_2[] = {
+static char NATURAL_GALLERY_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -976,7 +976,7 @@ static unsigned char NATURAL_GALLERY_2[] = {
 	0xb5,
 };
 
-static unsigned char DYNAMIC_GALLERY_1[] = {
+static char DYNAMIC_GALLERY_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -984,7 +984,7 @@ static unsigned char DYNAMIC_GALLERY_1[] = {
 	0x0b, //sharpen cc gamma 00 0 0
 };
 
-static unsigned char DYNAMIC_GALLERY_2[] = {
+static char DYNAMIC_GALLERY_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -1095,7 +1095,7 @@ static unsigned char DYNAMIC_GALLERY_2[] = {
 	0x36,
 };
 
-static unsigned char MOVIE_GALLERY_1[] = {
+static char MOVIE_GALLERY_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -1103,7 +1103,7 @@ static unsigned char MOVIE_GALLERY_1[] = {
 	0x05, //sharpen cc gamma 00 0 0
 };
 
-static unsigned char MOVIE_GALLERY_2[] = {
+static char MOVIE_GALLERY_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -1214,7 +1214,7 @@ static unsigned char MOVIE_GALLERY_2[] = {
 	0xb5,
 };
 
-static unsigned char AUTO_GALLERY_1[] = {
+static char AUTO_GALLERY_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -1222,7 +1222,7 @@ static unsigned char AUTO_GALLERY_1[] = {
 	0x09, //sharpen cc gamma 00 0 0
 };
 
-static unsigned char AUTO_GALLERY_2[] = {
+static char AUTO_GALLERY_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -1335,7 +1335,7 @@ static unsigned char AUTO_GALLERY_2[] = {
 
 ////////////////// VIDEO /////////////////////
 
-static unsigned char STANDARD_VIDEO_1[] = {
+static char STANDARD_VIDEO_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -1343,7 +1343,7 @@ static unsigned char STANDARD_VIDEO_1[] = {
 	0x01, //sharpen cc gamma 00 0 0
 };
 
-static unsigned char STANDARD_VIDEO_2[] = {
+static char STANDARD_VIDEO_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -1454,7 +1454,7 @@ static unsigned char STANDARD_VIDEO_2[] = {
 	0x36,
 };
 
-static unsigned char NATURAL_VIDEO_1[] = {
+static char NATURAL_VIDEO_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -1462,7 +1462,7 @@ static unsigned char NATURAL_VIDEO_1[] = {
 	0x01, //sharpen cc gamma 00 0 0
 };
 
-static unsigned char NATURAL_VIDEO_2[] = {
+static char NATURAL_VIDEO_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -1573,7 +1573,7 @@ static unsigned char NATURAL_VIDEO_2[] = {
 	0xb5,
 };
 
-static unsigned char DYNAMIC_VIDEO_1[] = {
+static char DYNAMIC_VIDEO_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -1581,7 +1581,7 @@ static unsigned char DYNAMIC_VIDEO_1[] = {
 	0x03, //sharpen cc gamma 00 0 0
 };
 
-static unsigned char DYNAMIC_VIDEO_2[] = {
+static char DYNAMIC_VIDEO_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -1692,7 +1692,7 @@ static unsigned char DYNAMIC_VIDEO_2[] = {
 	0x36,
 };
 
-static unsigned char MOVIE_VIDEO_1[] = {
+static char MOVIE_VIDEO_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -1700,7 +1700,7 @@ static unsigned char MOVIE_VIDEO_1[] = {
 	0x01, //sharpen cc gamma 00 0 0
 };
 
-static unsigned char MOVIE_VIDEO_2[] = {
+static char MOVIE_VIDEO_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -1811,7 +1811,7 @@ static unsigned char MOVIE_VIDEO_2[] = {
 	0xb5,
 };
 
-static unsigned char AUTO_VIDEO_1[] = {
+static char AUTO_VIDEO_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -1819,7 +1819,7 @@ static unsigned char AUTO_VIDEO_1[] = {
 	0x01, //sharpen cc gamma 00 0 0
 };
 
-static unsigned char AUTO_VIDEO_2[] = {
+static char AUTO_VIDEO_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -1932,7 +1932,7 @@ static unsigned char AUTO_VIDEO_2[] = {
 
 ////////////////// VT /////////////////////
 
-static unsigned char STANDARD_VT_1[] = {
+static char STANDARD_VT_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -1940,7 +1940,7 @@ static unsigned char STANDARD_VT_1[] = {
 	0x09, //sharpen cc gamma 00 0 0
 };
 
-static unsigned char STANDARD_VT_2[] = {
+static char STANDARD_VT_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -2051,7 +2051,7 @@ static unsigned char STANDARD_VT_2[] = {
 	0x36,
 };
 
-static unsigned char NATURAL_VT_1[] = {
+static char NATURAL_VT_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -2059,7 +2059,7 @@ static unsigned char NATURAL_VT_1[] = {
 	0x05, //sharpen cc gamma 00 0 0
 };
 
-static unsigned char NATURAL_VT_2[] = {
+static char NATURAL_VT_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -2170,7 +2170,7 @@ static unsigned char NATURAL_VT_2[] = {
 	0xb5,
 };
 
-static unsigned char DYNAMIC_VT_1[] = {
+static char DYNAMIC_VT_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -2178,7 +2178,7 @@ static unsigned char DYNAMIC_VT_1[] = {
 	0x0b, //sharpen cc gamma 00 0 0
 };
 
-static unsigned char DYNAMIC_VT_2[] = {
+static char DYNAMIC_VT_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -2289,7 +2289,7 @@ static unsigned char DYNAMIC_VT_2[] = {
 	0x36,
 };
 
-static unsigned char MOVIE_VT_1[] = {
+static char MOVIE_VT_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -2297,7 +2297,7 @@ static unsigned char MOVIE_VT_1[] = {
 	0x05, //sharpen cc gamma 00 0 0
 };
 
-static unsigned char MOVIE_VT_2[] = {
+static char MOVIE_VT_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -2408,7 +2408,7 @@ static unsigned char MOVIE_VT_2[] = {
 	0xb5,
 };
 
-static unsigned char AUTO_VT_1[] = {
+static char AUTO_VT_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -2416,7 +2416,7 @@ static unsigned char AUTO_VT_1[] = {
 	0x09, //sharpen cc gamma 00 0 0
 };
 
-static unsigned char AUTO_VT_2[] = {
+static char AUTO_VT_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -2529,7 +2529,7 @@ static unsigned char AUTO_VT_2[] = {
 
 ////////////////// CAMERA /////////////////////
 
-static unsigned char CAMERA_1[] = {
+static char CAMERA_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -2537,7 +2537,7 @@ static unsigned char CAMERA_1[] = {
 	0x01, //sharpen cc gamma 00 0 0
 };
 
-static unsigned char CAMERA_2[] = {
+static char CAMERA_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -2648,7 +2648,7 @@ static unsigned char CAMERA_2[] = {
 	0x36,
 };
 
-static unsigned char AUTO_CAMERA_1[] = {
+static char AUTO_CAMERA_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -2656,7 +2656,7 @@ static unsigned char AUTO_CAMERA_1[] = {
 	0x01, //sharpen cc gamma 00 0 0
 };
 
-static unsigned char AUTO_CAMERA_2[] = {
+static char AUTO_CAMERA_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -2768,13 +2768,13 @@ static unsigned char AUTO_CAMERA_2[] = {
 };
 
 
-static unsigned char CAMERA_OUTDOOR_1[] = {
+static char CAMERA_OUTDOOR_1[] = {
 	0xEB,
 	0x01, 0x00, 0x03,
 	0x0b,
 };
 
-static unsigned char CAMERA_OUTDOOR_2[] = {
+static char CAMERA_OUTDOOR_2[] = {
 	0xEC,
 	0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00,
@@ -2814,13 +2814,13 @@ static unsigned char CAMERA_OUTDOOR_2[] = {
 	0x04, 0xb5,
 };
 
-static unsigned char COLD_1[] = {
+static char COLD_1[] = {
 	0xEB,
 	0x01, 0x00, 0x33,
 	0x08,
 };
 
-static unsigned char COLD_2[] = {
+static char COLD_2[] = {
 	0xEC,
 	0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00,
@@ -2860,13 +2860,13 @@ static unsigned char COLD_2[] = {
 	0x04, 0x36,
 };
 
-static unsigned char COLD_OUTDOOR_1[] = {
+static char COLD_OUTDOOR_1[] = {
 	0xEB,
 	0x01, 0x00, 0x33,
 	0x0b,
 };
 
-static unsigned char COLD_OUTDOOR_2[] = {
+static char COLD_OUTDOOR_2[] = {
 	0xEC,
 	0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00,
@@ -2906,13 +2906,13 @@ static unsigned char COLD_OUTDOOR_2[] = {
 	0x04, 0xb5,
 };
 
-static unsigned char WARM_1[] = {
+static char WARM_1[] = {
 	0xEB,
 	0x01, 0x00, 0x33,
 	0x08,
 };
 
-static unsigned char WARM_2[] = {
+static char WARM_2[] = {
 	0xEC,
 	0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00,
@@ -2952,13 +2952,13 @@ static unsigned char WARM_2[] = {
 	0x04, 0x36,
 };
 
-static unsigned char WARM_OUTDOOR_1[] = {
+static char WARM_OUTDOOR_1[] = {
 	0xEB,
 	0x01, 0x00, 0x33,
 	0x0b,
 };
 
-static unsigned char WARM_OUTDOOR_2[] = {
+static char WARM_OUTDOOR_2[] = {
 	0xEC,
 	0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00,
@@ -2998,7 +2998,7 @@ static unsigned char WARM_OUTDOOR_2[] = {
 	0x04, 0xb5,
 };
 
-static unsigned char NEGATIVE_1[] = {
+static char NEGATIVE_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -3006,7 +3006,7 @@ static unsigned char NEGATIVE_1[] = {
 	0x00, //sharpen cc gamma 00 0 0
 };
 
-static unsigned char NEGATIVE_2[] = {
+static char NEGATIVE_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -3117,13 +3117,13 @@ static unsigned char NEGATIVE_2[] = {
 	0x00,
 };
 
-static unsigned char OUTDOOR_VIDEO_1[] = {
+static char OUTDOOR_VIDEO_1[] = {
 	0xEB,
 	0x01, 0x00, 0x03,
 	0x0b,
 };
 
-static unsigned char OUTDOOR_VIDEO_2[] = {
+static char OUTDOOR_VIDEO_2[] = {
 	0xEC,
 	0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00,
@@ -3163,7 +3163,7 @@ static unsigned char OUTDOOR_VIDEO_2[] = {
 	0x04, 0xb5,
 };
 
-static unsigned char COLOR_BLIND_1[] = {
+static char COLOR_BLIND_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -3171,7 +3171,7 @@ static unsigned char COLOR_BLIND_1[] = {
 	0x00, //sharpen cc gamma 00 0 0
 };
 
-static unsigned char COLOR_BLIND_2[] = {
+static char COLOR_BLIND_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -3284,7 +3284,7 @@ static unsigned char COLOR_BLIND_2[] = {
 
 ////////////////// BROWSER /////////////////////
 
-static unsigned char STANDARD_BROWSER_1[] = {
+static char STANDARD_BROWSER_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -3292,7 +3292,7 @@ static unsigned char STANDARD_BROWSER_1[] = {
 	0x01, //sharpen cc gamma 00 0 0
 };
 
-static unsigned char STANDARD_BROWSER_2[] = {
+static char STANDARD_BROWSER_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -3403,7 +3403,7 @@ static unsigned char STANDARD_BROWSER_2[] = {
 	0x36,
 };
 
-static unsigned char NATURAL_BROWSER_1[] = {
+static char NATURAL_BROWSER_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -3411,7 +3411,7 @@ static unsigned char NATURAL_BROWSER_1[] = {
 	0x01, //sharpen cc gamma 00 0 0
 };
 
-static unsigned char NATURAL_BROWSER_2[] = {
+static char NATURAL_BROWSER_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -3522,7 +3522,7 @@ static unsigned char NATURAL_BROWSER_2[] = {
 	0xb5,
 };
 
-static unsigned char DYNAMIC_BROWSER_1[] = {
+static char DYNAMIC_BROWSER_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -3530,7 +3530,7 @@ static unsigned char DYNAMIC_BROWSER_1[] = {
 	0x03, //sharpen cc gamma 00 0 0
 };
 
-static unsigned char DYNAMIC_BROWSER_2[] = {
+static char DYNAMIC_BROWSER_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -3641,7 +3641,7 @@ static unsigned char DYNAMIC_BROWSER_2[] = {
 	0x36,
 };
 
-static unsigned char MOVIE_BROWSER_1[] = {
+static char MOVIE_BROWSER_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -3649,7 +3649,7 @@ static unsigned char MOVIE_BROWSER_1[] = {
 	0x01, //sharpen cc gamma 00 0 0
 };
 
-static unsigned char MOVIE_BROWSER_2[] = {
+static char MOVIE_BROWSER_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -3760,7 +3760,7 @@ static unsigned char MOVIE_BROWSER_2[] = {
 	0xb5,
 };
 
-static unsigned char AUTO_BROWSER_1[] = {
+static char AUTO_BROWSER_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -3768,7 +3768,7 @@ static unsigned char AUTO_BROWSER_1[] = {
 	0x01, //sharpen cc gamma 00 0 0
 };
 
-static unsigned char AUTO_BROWSER_2[] = {
+static char AUTO_BROWSER_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -3881,7 +3881,7 @@ static unsigned char AUTO_BROWSER_2[] = {
 
 ////////////////// eBOOK /////////////////////
 
-static unsigned char AUTO_EBOOK_1[] = {
+static char AUTO_EBOOK_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -3889,7 +3889,7 @@ static unsigned char AUTO_EBOOK_1[] = {
 	0x01, //sharpen cc gamma 00 0 0
 };
 
-static unsigned char AUTO_EBOOK_2[] = {
+static char AUTO_EBOOK_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -4000,7 +4000,7 @@ static unsigned char AUTO_EBOOK_2[] = {
 	0x36,
 };
 
-static unsigned char STANDARD_EBOOK_1[] = {
+static char STANDARD_EBOOK_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -4008,7 +4008,7 @@ static unsigned char STANDARD_EBOOK_1[] = {
 	0x01, //sharpen cc gamma 00 0 0
 };
 
-static unsigned char STANDARD_EBOOK_2[] = {
+static char STANDARD_EBOOK_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -4119,7 +4119,7 @@ static unsigned char STANDARD_EBOOK_2[] = {
 	0x36,
 };
 
-static unsigned char DYNAMIC_EBOOK_1[] = {
+static char DYNAMIC_EBOOK_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -4127,7 +4127,7 @@ static unsigned char DYNAMIC_EBOOK_1[] = {
 	0x01, //sharpen cc gamma 00 0 0
 };
 
-static unsigned char DYNAMIC_EBOOK_2[] = {
+static char DYNAMIC_EBOOK_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -4238,7 +4238,7 @@ static unsigned char DYNAMIC_EBOOK_2[] = {
 	0x36,
 };
 
-static unsigned char NATURAL_EBOOK_1[] = {
+static char NATURAL_EBOOK_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -4246,7 +4246,7 @@ static unsigned char NATURAL_EBOOK_1[] = {
 	0x01, //sharpen cc gamma 00 0 0
 };
 
-static unsigned char NATURAL_EBOOK_2[] = {
+static char NATURAL_EBOOK_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -4357,7 +4357,7 @@ static unsigned char NATURAL_EBOOK_2[] = {
 	0x36,
 };
 
-static unsigned char MOVIE_EBOOK_1[] = {
+static char MOVIE_EBOOK_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -4365,7 +4365,7 @@ static unsigned char MOVIE_EBOOK_1[] = {
 	0x01, //sharpen cc gamma 00 0 0
 };
 
-static unsigned char MOVIE_EBOOK_2[] = {
+static char MOVIE_EBOOK_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -4476,7 +4476,7 @@ static unsigned char MOVIE_EBOOK_2[] = {
 	0x36,
 };
 
-static unsigned char AUTO_EMAIL_1[] = {
+static char AUTO_EMAIL_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -4484,7 +4484,7 @@ static unsigned char AUTO_EMAIL_1[] = {
 	0x01, //sharpen cc gamma 00 0 0
 };
 
-static unsigned char AUTO_EMAIL_2[] = {
+static char AUTO_EMAIL_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -4595,7 +4595,7 @@ static unsigned char AUTO_EMAIL_2[] = {
 	0x36,
 };
 
-static unsigned char *blind_tune_value[ACCESSIBILITY_MAX][2] = {
+static char *blind_tune_value[ACCESSIBILITY_MAX][2] = {
 		/*
 			ACCESSIBILITY_OFF,
 			NEGATIVE,
@@ -4607,7 +4607,7 @@ static unsigned char *blind_tune_value[ACCESSIBILITY_MAX][2] = {
 		{SCREEN_CURTAIN_1, SCREEN_CURTAIN_2},
 };
 
-static unsigned char *mdnie_tune_value[MAX_mDNIe_MODE][MAX_BACKGROUND_MODE][MAX_OUTDOOR_MODE][2] = {
+static char *mdnie_tune_value[MAX_mDNIe_MODE][MAX_BACKGROUND_MODE][MAX_OUTDOOR_MODE][2] = {
 		/*
 			DYNAMIC_MODE (outdoor off/on)
 			STANDARD_MODE (outdoor off/on)

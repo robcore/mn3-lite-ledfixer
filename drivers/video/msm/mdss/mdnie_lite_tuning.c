@@ -126,18 +126,18 @@ static struct mipi_samsung_driver_data *mdnie_msd;
 
 /* Hijack */
 
-static unsigned char LITE_CONTROL_1[5];
-static unsigned char LITE_CONTROL_2[108];
+static char LITE_CONTROL_1[5];
+static char LITE_CONTROL_2[108];
 
-static unsigned int hijack = 0;
-static unsigned int black[3] = {0, 0, 0};
-static unsigned int white[3] = {0, 0, 0};
-static unsigned int red[3] = {0, 0, 0};
-static unsigned int green[3] = {0, 0, 0};
-static unsigned int blue[3] = {0, 0, 0};
-static unsigned int yellow[3] = {0, 0, 0};
-static unsigned int magenta[3] = {0, 0, 0};
-static unsigned int cyan[3] = {0, 0, 0};
+static int hijack = 0;
+static int black[3] = {0, 0, 0};
+static int white[3] = {0, 0, 0};
+static int red[3] = {0, 0, 0};
+static int green[3] = {0, 0, 0};
+static int blue[3] = {0, 0, 0};
+static int yellow[3] = {0, 0, 0};
+static int magenta[3] = {0, 0, 0};
+static int cyan[3] = {0, 0, 0};
 
 static unsigned int offset_mode = 1;
 static int offset_black[3] = {0, 0, 0};
@@ -158,8 +158,8 @@ static int sharpen_dark_bit = 2;
 static int chroma_bit = 1;
 static int gamma_bit = 0;
 
-static unsigned char custom_curve[48];
-static unsigned char chroma_correction[18];
+static char custom_curve[48];
+static char chroma_correction[18];
 /* Hijack Extra End  */
 
 //static unsigned int previous_mode;
@@ -379,7 +379,7 @@ static int sanitize_offset(int Lnewval, int Loldval)
 
 static void update_mdnie_mode(void)
 {
-	unsigned char *source_1, *source_2;
+	char *source_1, *source_2;
 	int result, new_control;
 	unsigned int i;
 
