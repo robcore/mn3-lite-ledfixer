@@ -114,7 +114,7 @@ int32_t g_nforce_32;
 #elif defined(CONFIG_SEC_S_PROJECT)
 #define MOTOR_STRENGTH			87/*MOTOR_STRENGTH 87 %*/
 #else
-#define MOTOR_STRENGTH			99/*MOTOR_STRENGTH 98 %*/
+#define MOTOR_STRENGTH			98/*MOTOR_STRENGTH 98 %*/
 #endif
 
 
@@ -179,7 +179,7 @@ int32_t g_nforce_32;
 #endif
 
 
-#define MOTOR_MIN_STRENGTH			64/*IMMERSION VALUE*/
+#define MOTOR_MIN_STRENGTH			54/*IMMERSION VALUE*/
 /*
  * ** Global variables for LRA PWM M,N and D values.
  * */

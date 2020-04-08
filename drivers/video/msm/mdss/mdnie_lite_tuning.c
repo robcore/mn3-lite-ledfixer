@@ -626,7 +626,7 @@ static void update_mdnie_mode(void)
 	if (hijack) {
 		if (offset_mode) {
 			for (i = 0; i < 24; i++) {
-					if (i = 24)
+					if (i == 24)
 						break;
 				override_color[i] = LITE_CONTROL_2[i + 18];
 				override_color[i] += offset_color[i];
@@ -639,7 +639,7 @@ static void update_mdnie_mode(void)
 			}
 		} else {
 				for (i = 0; i < 24; i++) {
-					if (i = 24)
+					if (i == 24)
 						break;
 				if (override_color[i] > 255)
 					override_color[i] = 255;
@@ -705,7 +705,7 @@ static void update_mdnie_mode(void)
 		}
 	} else {
 		for (i = 0; i < 24; i++) {
-			if (i = 24)
+			if (i == 24)
 				break;
 			if (LITE_CONTROL_2[i + 18] > 255)
 				LITE_CONTROL_2[i + 18] = 255;
