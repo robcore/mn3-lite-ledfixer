@@ -64,6 +64,8 @@
 #elif defined(CONFIG_FB_MSM_MDSS_MAGNA_OCTA_VIDEO_720P_PANEL) \
 	|| defined(CONFIG_FB_MSM_MIPI_MAGNA_OCTA_VIDEO_WXGA_PT_DUAL_PANEL)
 #include "mdnie_lite_tuning_data_kmini.h"
+#elif defined(CONFIG_FB_MSM_MIPI_VIDEO_WVGA_NT35502_PT_PANEL) // KANAS
+#include "mdnie_lite_tuning_data_wvga_nt35502.h"
 #elif defined (CONFIG_FB_MSM_MDSS_SHARP_HD_PANEL)
 #include "mdss_ms01_panel.h"
 #include "mdnie_lite_tuning_data_ms01.h"
@@ -102,15 +104,25 @@ static struct mipi_samsung_driver_data *mdnie_msd;
 
 /*#define MDNIE_LITE_TUN_DATA_DEBUG*/
 
+#if defined(CONFIG_FB_MSM_MIPI_VIDEO_WVGA_NT35502_PT_PANEL)
+#define PAYLOAD1 mdni_tune_cmd[1]
+#define PAYLOAD2 mdni_tune_cmd[2]
+#define PAYLOAD3 mdni_tune_cmd[3]
+#define PAYLOAD4 mdni_tune_cmd[4]
+#define PAYLOAD5 mdni_tune_cmd[5]
+
+#define INPUT_PAYLOAD1(x) PAYLOAD1.payload = x
+#define INPUT_PAYLOAD2(x) PAYLOAD2.payload = x
+#define INPUT_PAYLOAD3(x) PAYLOAD3.payload = x
+#define INPUT_PAYLOAD4(x) PAYLOAD4.payload = x
+#define INPUT_PAYLOAD5(x) PAYLOAD5.payload = x
+#else
 #define PAYLOAD1 mdni_tune_cmd[3]
 #define PAYLOAD2 mdni_tune_cmd[2]
 
 #define INPUT_PAYLOAD1(x) PAYLOAD1.payload = x
 #define INPUT_PAYLOAD2(x) PAYLOAD2.payload = x
-
-//#define ADDRESS_SCR_WHITE_RED 0x24  // 36 0x7A
-//#define ADDRESS_SCR_WHITE_GREEN 0x26 // 38 0x7C
-//#define ADDRESS_SCR_WHITE_BLUE 0x28 // 40 0x7E
+#endif
 
 /* Hijack */
 static char LITE_CONTROL_1[5];
@@ -188,28 +200,74 @@ const char accessibility_name[ACCESSIBILITY_MAX][20] = {
 	"SCREEN_CURTAIN_MODE",
 };
 
+#if defined(CONFIG_FB_MSM_MIPI_VIDEO_WVGA_NT35502_PT_PANEL)
+static char cmd_enable[6] = { 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00 };
+#else
 static char level1_key[] = {
 	0xF0,
 	0x5A, 0x5A,
 };
 
+#if defined(CONFIG_FB_MSM_MDSS_SAMSUNG_OCTA_VIDEO_720P_PT_PANEL) ||defined(CONFIG_FB_MSM_MDSS_MAGNA_OCTA_VIDEO_720P_PANEL) \
+	|| defined(CONFIG_FB_MSM_MIPI_MAGNA_OCTA_VIDEO_WXGA_PT_DUAL_PANEL)
+static char level2_key[] = {
+	0xF1,
+	0x5A, 0x5A,
+};
+#else
 static char level2_key[] = {
 	0xF0,
 	0x5A, 0x5A,
 };
+#endif
+#endif
 
-/*
-static char mx_level1_key_disable[] = {
+#if defined(CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_CMD_WQHD_PT_PANEL) || defined (CONFIG_FB_MSM_MIPI_MAGNA_OCTA_CMD_HD_PT_PANEL)
+static char level1_key_disable[] = {
 	0xF0,
 	0xA5, 0xA5,
 };
-*/
+#elif defined(CONFIG_FB_MSM_MIPI_VIDEO_WVGA_NT35502_PT_PANEL)
+static char cmd_disable[6] = { 0xF0, 0x55, 0xAA, 0x52, 0x00, 0x00 };
+#endif
+
+#if defined(CONFIG_FB_MSM_MIPI_VIDEO_WVGA_NT35502_PT_PANEL)
 static char tune_data1[MDNIE_TUNE_FIRST_SIZE] = {0,};
 static char tune_data2[MDNIE_TUNE_SECOND_SIZE] = {0,};
+static char tune_data3[MDNIE_TUNE_THIRD_SIZE] = { 0,};
+static char tune_data4[MDNIE_TUNE_FOURTH_SIZE] = { 0,};
+static char tune_data5[MDNIE_TUNE_FIFTH_SIZE] = { 0,};
+#else
+static char tune_data1[MDNIE_TUNE_FIRST_SIZE] = {0,};
+static char tune_data2[MDNIE_TUNE_SECOND_SIZE] = {0,};
+#endif
 
-//static char white_rgb_buf[MDNIE_TUNE_FIRST_SIZE] = {0,};
+#if defined(CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_CMD_WQHD_PT_PANEL)
+static char white_rgb_buf[MDNIE_TUNE_FIRST_SIZE] = {0,};
+#endif
+
+#if defined(CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_CMD_WQHD_PT_PANEL) || defined(CONFIG_FB_MSM_MIPI_MAGNA_OCTA_CMD_HD_PT_PANEL) \
+	|| defined(CONFIG_FB_MSM_MIPI_MAGNA_OCTA_VIDEO_WXGA_PT_DUAL_PANEL)
+static char tune_data1_adb[MDNIE_TUNE_FIRST_SIZE] = {0,};
+static char tune_data2_adb[MDNIE_TUNE_SECOND_SIZE] = {0,};
+
+void copy_tuning_data_from_adb(char *data1, char *data2)
+{
+	memcpy(tune_data1_adb, data1, MDNIE_TUNE_FIRST_SIZE);
+	memcpy(tune_data2_adb, data2, MDNIE_TUNE_SECOND_SIZE);
+}
+#endif
 
 static struct dsi_cmd_desc mdni_tune_cmd[] = {
+#if defined(CONFIG_FB_MSM_MIPI_VIDEO_WVGA_NT35502_PT_PANEL)
+	{{DTYPE_DCS_LWRITE, 1, 0, 0, 0, sizeof(cmd_enable)}, cmd_enable},
+	{{DTYPE_DCS_LWRITE, 0, 0, 0, 0, sizeof(tune_data1)}, tune_data1},
+	{{DTYPE_DCS_LWRITE, 0, 0, 0, 0, sizeof(tune_data2)}, tune_data2},
+	{{DTYPE_DCS_LWRITE, 0, 0, 0, 0, sizeof(tune_data3)}, tune_data3},
+	{{DTYPE_DCS_LWRITE, 0, 0, 0, 0, sizeof(tune_data4)}, tune_data4},
+	{{DTYPE_DCS_LWRITE, 1, 0, 0, 0, sizeof(tune_data5)}, tune_data5},
+	{{DTYPE_DCS_LWRITE, 1, 0, 0, 0, sizeof(cmd_disable)}, cmd_disable},
+#else
 	{{DTYPE_DCS_LWRITE, 1, 0, 0, 0,
 		sizeof(level1_key)}, level1_key},
 	{{DTYPE_DCS_LWRITE, 1, 0, 0, 0,
@@ -219,10 +277,12 @@ static struct dsi_cmd_desc mdni_tune_cmd[] = {
 		sizeof(tune_data1)}, tune_data1},
 	{{DTYPE_DCS_LWRITE, 1, 0, 0, 0,
 		sizeof(tune_data2)}, tune_data2},
-/*
+
+#if defined(CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_CMD_WQHD_PT_PANEL) || defined(CONFIG_FB_MSM_MIPI_MAGNA_OCTA_CMD_HD_PT_PANEL)
 	{{DTYPE_DCS_LWRITE, 1, 0, 0, 0,
-		sizeof(mx_level1_key_disable)}, mx_level1_key_disable},
-*/
+		sizeof(level1_key_disable)}, level1_key_disable},
+#endif
+#endif
 };
 
 void print_tun_data(void)
@@ -279,10 +339,7 @@ void sending_tuning_cmd(void)
 static void update_mdnie_mode(void)
 {
 	char *source_1, *source_2;
-	s8 newcontrol = 0;
-	s8 newsetting = 0;
-	int result;
-	int i;
+	int result, i;
 
 	switch (mdnie_tun_state.scenario) {
 	case mDNIe_UI_MODE:
@@ -564,47 +621,43 @@ static void update_mdnie_mode(void)
 	}
 
 	if (hijack) {
-		for (i = 0; i < 17; i++) {
-			newcontrol = LITE_CONTROL_2[i + 90];
-			newsetting = chroma_correction[i];
-			newcontrol = newsetting;
-			clamp_t(s8, newcontrol, 0, 255);
-			LITE_CONTROL_2[i + 90] = newcontrol;
-			newcontrol = 0;
-			newsetting = 0;
-		}
-
 		if (offset_mode) {
 			for (i = 0; i < 23; i++) {
-				newcontrol = LITE_CONTROL_2[i + 18];
-				newsetting = offset_color[i];
-				newcontrol = (newcontrol + newsetting);
-				clamp_t(s8, newcontrol, 0, 255);
-				LITE_CONTROL_2[i + 18] = newcontrol;
-				override_color[i] = LITE_CONTROL_2[i + 18];
-				newcontrol = 0;
-				newsetting = 0;
+				override_color[i] = LITE_CONTROL_2[i + 18] + offset_color[i];
+				if (override_color[i] > 255)
+					override_color[i] = 255;
+				if (override_color[i] < 0)
+					override_color[i] = 0;
+
+				LITE_CONTROL_2[i + 18] = override_color[i];
 			}
 		} else {
 			for (i = 0; i < 23; i++) {
-				newcontrol = LITE_CONTROL_2[i + 18];
-				newsetting = override_color[i];
-				newcontrol = newsetting;
-				clamp_t(s8, newcontrol, 0, 255);
-				LITE_CONTROL_2[i + 18] = newcontrol;
-				newcontrol = 0;
-				newsetting = 0;
+				if (override_color[i] > 255)
+					override_color[i] = 255;
+				if (override_color[i] < 0)
+					override_color[i] = 0;
+			
+				LITE_CONTROL_2[i + 18] = override_color[i];
 			}
 		}
 
-		for (i = 0; i < 47; i++) {
-			newcontrol = LITE_CONTROL_2[i + 42];
-			newsetting = custom_curve[i];
-			newcontrol = newsetting;
-			clamp_t(s8, newcontrol, 0, 255);
-			LITE_CONTROL_2[i + 42] = newcontrol;
-			newcontrol = 0;
-			newsetting = 0;
+		for (i = 0; i < 47; i++) {.
+			if (custom_curve[i] > 255)
+				custom_curve[i] = 255;
+			if (custom_curve[i] < 0)
+				custom_curve[i] = 0;
+
+			LITE_CONTROL_2[i + 42] = custom_curve[i];
+		}
+
+		for (i = 0; i < 17; i++) {
+			if (chroma_correction[i] > 255)
+				chroma_correction[i] = 255;
+			if (chroma_correction[i] < 0)
+				chroma_correction[i] = 0;
+
+			LITE_CONTROL_2[i + 90] = chroma_correction[i]
 		}
 
 		result = (LITE_CONTROL_1[4] >> (sharpen_dark_bit));
@@ -643,28 +696,30 @@ static void update_mdnie_mode(void)
 				LITE_CONTROL_1[4] &= ~(1 << gamma_bit);
 		}
 	} else {
-		for (i = 0; i < 17; i++) {
-			newsetting = chroma_correction[i];
-			newcontrol = LITE_CONTROL_2[i + 90];
-			newsetting = newcontrol;
-			clamp_t(s8, newsetting, 0, 255);
-			chroma_correction[i] = newsetting;
-		}
-
 		for (i = 0; i < 23; i++) {
-			newsetting = override_color[i];
-			newcontrol = LITE_CONTROL_2[i + 18];
-			newsetting = newcontrol;
-			clamp_t(s8, newsetting, 0, 255);
-			override_color[i] = newsetting;
+			if (LITE_CONTROL_2[i + 18] > 255)
+				LITE_CONTROL_2[i + 18] = 255;
+			if (LITE_CONTROL_2[i + 18] < 0)
+				LITE_CONTROL_2[i + 18] = 0;
+
+			override_color[i] = LITE_CONTROL_2[i + 18];
 		}
 
 		for (i = 0; i < 47; i++) {
-			newsetting = custom_curve[i];
-			newcontrol = LITE_CONTROL_2[i + 42];
-			newsetting = newcontrol;
-			clamp_t(s8, newsetting, 0, 255);
-			custom_curve[i] = newsetting;
+			if (LITE_CONTROL_2[i + 42] > 255)
+				LITE_CONTROL_2[i + 42] = 255;
+			if (LITE_CONTROL_2[i + 42] < 0)
+				LITE_CONTROL_2[i + 42] = 0;
+
+			custom_curve[i] = LITE_CONTROL_2[i + 42];
+		}
+
+		for (i = 0; i < 17; i++) {
+			if (LITE_CONTROL_2[i + 90] > 255)
+				LITE_CONTROL_2[i + 90] = 255;
+			if (LITE_CONTROL_2[i + 90] < 0)
+				LITE_CONTROL_2[i + 90] = 0;
+			chroma_correction[i] = LITE_CONTROL_2[i + 90];
 		}
 
 		LITE_CONTROL_1[4] = source_1[4];
@@ -681,8 +736,6 @@ static void update_mdnie_mode(void)
 		result = (LITE_CONTROL_1[4] >> (gamma_bit));
 		gamma = result & 1;
 	}
-	memset(source_1, 0, MDNIE_TUNE_FIRST_SIZE);
-	memset(source_2, 0, MDNIE_TUNE_SECOND_SIZE);
 }
 
 /*
