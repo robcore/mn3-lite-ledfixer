@@ -113,7 +113,6 @@ static struct mipi_samsung_driver_data *mdnie_msd;
 //#define ADDRESS_SCR_WHITE_BLUE 0x28 // 40 0x7E
 
 /* Hijack */
-
 static char LITE_CONTROL_1[5];
 static char LITE_CONTROL_2[108];
 
@@ -153,9 +152,6 @@ struct mdnie_lite_tun_type mdnie_tun_state = {
 	.background = NATURAL_MODE,
 	.outdoor = OUTDOOR_OFF_MODE,
 	.accessibility = ACCESSIBILITY_OFF,
-//	.scr_white_red = 0xff,
-//	.scr_white_green = 0xff,
-//	.scr_white_blue = 0xff,
 };
 
 const char scenario_name[MAX_mDNIe_MODE][16] = {
@@ -211,7 +207,7 @@ static char mx_level1_key_disable[] = {
 static char tune_data1[MDNIE_TUNE_FIRST_SIZE] = {0,};
 static char tune_data2[MDNIE_TUNE_SECOND_SIZE] = {0,};
 
-static char white_rgb_buf[MDNIE_TUNE_FIRST_SIZE] = {0,};
+//static char white_rgb_buf[MDNIE_TUNE_FIRST_SIZE] = {0,};
 
 static struct dsi_cmd_desc mdni_tune_cmd[] = {
 	{{DTYPE_DCS_LWRITE, 1, 0, 0, 0,
@@ -283,8 +279,10 @@ void sending_tuning_cmd(void)
 static void update_mdnie_mode(void)
 {
 	char *source_1, *source_2;
-	int result, new_control;
-	unsigned int i;
+	s8 newcontrol = 0;
+	s8 newsetting = 0;
+	int result;
+	int i;
 
 	switch (mdnie_tun_state.scenario) {
 	case mDNIe_UI_MODE:
@@ -556,25 +554,57 @@ static void update_mdnie_mode(void)
 		return;
 	}
 
-	for (i = 0; i < 4; i++)
+	for (i = 0; i < 4; i++) {
 		LITE_CONTROL_1[i] = source_1[i];
+	}
 
-	for (i = 0; i < 107; i++)
+	i = 0;
+	for (i = 0; i < 107; i++) {
 		LITE_CONTROL_2[i] = source_2[i];
+	}
 
 	if (hijack) {
+		for (i = 0; i < 17; i++) {
+			newcontrol = LITE_CONTROL_2[i + 90];
+			newsetting = chroma_correction[i];
+			newcontrol = newsetting;
+			clamp_t(s8, newcontrol, 0, 255);
+			LITE_CONTROL_2[i + 90] = newcontrol;
+			newcontrol = 0;
+			newsetting = 0;
+		}
 
-		for (i = 0; i < 47; i++)
-			LITE_CONTROL_2[i + 42] = max(0,min(255, custom_curve[i]));
+		if (offset_mode) {
+			for (i = 0; i < 23; i++) {
+				newcontrol = LITE_CONTROL_2[i + 18];
+				newsetting = offset_color[i];
+				newcontrol = (newcontrol + newsetting);
+				clamp_t(s8, newcontrol, 0, 255);
+				LITE_CONTROL_2[i + 18] = newcontrol;
+				override_color[i] = LITE_CONTROL_2[i + 18];
+				newcontrol = 0;
+				newsetting = 0;
+			}
+		} else {
+			for (i = 0; i < 23; i++) {
+				newcontrol = LITE_CONTROL_2[i + 18];
+				newsetting = override_color[i];
+				newcontrol = newsetting;
+				clamp_t(s8, newcontrol, 0, 255);
+				LITE_CONTROL_2[i + 18] = newcontrol;
+				newcontrol = 0;
+				newsetting = 0;
+			}
+		}
 
-		for (i = 0; i < 17; i++)
-			LITE_CONTROL_2[i + 90] = max(0,min(255, chroma_correction[i]));
-
-		for (i = 0; i < 23; i++) {
-			if (offset_mode)
-				LITE_CONTROL_2[i + 18] = max(0,min(255, LITE_CONTROL_2[i + 18] + offset_color[i]));
-			else
-				LITE_CONTROL_2[i + 18] = max(0,min(255, override_color[i]));
+		for (i = 0; i < 47; i++) {
+			newcontrol = LITE_CONTROL_2[i + 42];
+			newsetting = custom_curve[i];
+			newcontrol = newsetting;
+			clamp_t(s8, newcontrol, 0, 255);
+			LITE_CONTROL_2[i + 42] = newcontrol;
+			newcontrol = 0;
+			newsetting = 0;
 		}
 
 		result = (LITE_CONTROL_1[4] >> (sharpen_dark_bit));
@@ -613,14 +643,29 @@ static void update_mdnie_mode(void)
 				LITE_CONTROL_1[4] &= ~(1 << gamma_bit);
 		}
 	} else {
-		for (i = 0; i < 47; i++)
-			custom_curve[i] = max(0,min(255, LITE_CONTROL_2[i + 42]));
+		for (i = 0; i < 17; i++) {
+			newsetting = chroma_correction[i];
+			newcontrol = LITE_CONTROL_2[i + 90];
+			newsetting = newcontrol;
+			clamp_t(s8, newsetting, 0, 255);
+			chroma_correction[i] = newsetting;
+		}
 
-		for (i = 0; i < 17; i++)
-			chroma_correction[i] = max(0,min(255, LITE_CONTROL_2[i + 90]));
+		for (i = 0; i < 23; i++) {
+			newsetting = override_color[i];
+			newcontrol = LITE_CONTROL_2[i + 18];
+			newsetting = newcontrol;
+			clamp_t(s8, newsetting, 0, 255);
+			override_color[i] = newsetting;
+		}
 
-		for (i = 0; i < 23; i++)
-			override_color[i] = max(0,min(255, LITE_CONTROL_2[i + 18]));
+		for (i = 0; i < 47; i++) {
+			newsetting = custom_curve[i];
+			newcontrol = LITE_CONTROL_2[i + 42];
+			newsetting = newcontrol;
+			clamp_t(s8, newsetting, 0, 255);
+			custom_curve[i] = newsetting;
+		}
 
 		LITE_CONTROL_1[4] = source_1[4];
 
@@ -676,10 +721,6 @@ void mDNIe_Set_Mode(void)
 			mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][0]);
 		INPUT_PAYLOAD2(
 			mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][1]);
-//			mdnie_tun_state.scr_white_red = mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][1][ADDRESS_SCR_WHITE_RED];
-//			mdnie_tun_state.scr_white_green = mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][1][ADDRESS_SCR_WHITE_GREEN];
-//			mdnie_tun_state.scr_white_blue= mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][1][ADDRESS_SCR_WHITE_BLUE];
-
 	}
 
 	sending_tuning_cmd();
