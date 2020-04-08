@@ -2226,7 +2226,7 @@ CONFIG_SLIMBUS_MSM_NGD=y
 #
 # PPS support
 #
-# CONFIG_PPS is not set
+CONFIG_PPS=y
 
 #
 # PPS generators support

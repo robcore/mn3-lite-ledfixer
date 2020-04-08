@@ -161,7 +161,7 @@ int get_lcd_panel_res(void);
 struct mdnie_lite_tun_type mdnie_tun_state = {
 	.mdnie_enable = false,
 	.scenario = mDNIe_UI_MODE,
-	.background = NATURAL_MODE,
+	.background = 2,
 	.outdoor = OUTDOOR_OFF_MODE,
 	.accessibility = ACCESSIBILITY_OFF,
 };
@@ -339,7 +339,7 @@ void sending_tuning_cmd(void)
 static void update_mdnie_mode(void)
 {
 	char *source_1, *source_2;
-	int result, i;
+	int result, i = 0;
 
 	switch (mdnie_tun_state.scenario) {
 	case mDNIe_UI_MODE:
@@ -616,14 +616,20 @@ static void update_mdnie_mode(void)
 	}
 
 	i = 0;
+
 	for (i = 0; i < 107; i++) {
 		LITE_CONTROL_2[i] = source_2[i];
 	}
 
+	i = 0;
+
 	if (hijack) {
 		if (offset_mode) {
-			for (i = 0; i < 23; i++) {
-				override_color[i] = LITE_CONTROL_2[i + 18] + offset_color[i];
+			for (i = 0; i < 24; i++) {
+					if (i = 24)
+						break;
+				override_color[i] = LITE_CONTROL_2[i + 18];
+				override_color[i] += offset_color[i];
 				if (override_color[i] > 255)
 					override_color[i] = 255;
 				if (override_color[i] < 0)
@@ -632,7 +638,9 @@ static void update_mdnie_mode(void)
 				LITE_CONTROL_2[i + 18] = override_color[i];
 			}
 		} else {
-			for (i = 0; i < 23; i++) {
+				for (i = 0; i < 24; i++) {
+					if (i = 24)
+						break;
 				if (override_color[i] > 255)
 					override_color[i] = 255;
 				if (override_color[i] < 0)
@@ -696,7 +704,9 @@ static void update_mdnie_mode(void)
 				LITE_CONTROL_1[4] &= ~(1 << gamma_bit);
 		}
 	} else {
-		for (i = 0; i < 23; i++) {
+		for (i = 0; i < 24; i++) {
+			if (i = 24)
+				break;
 			if (LITE_CONTROL_2[i + 18] > 255)
 				LITE_CONTROL_2[i + 18] = 255;
 			if (LITE_CONTROL_2[i + 18] < 0)
@@ -1456,7 +1466,11 @@ static ssize_t black_store(struct kobject *kobj,
 
 static ssize_t white_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%d %d %d\n", override_color[18], override_color[20], override_color[22]);
+	int localred = override_color[18];
+	int localgreen = override_color[20];
+	int localblue = override_color[22];
+
+	return sprintf(buf, "%d %d %d\n", localred, localgreen, localblue);
 }
 
 static ssize_t white_store(struct kobject *kobj,
@@ -1485,8 +1499,11 @@ static ssize_t white_store(struct kobject *kobj,
 
 static ssize_t red_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%d %d %d\n", override_color[1], override_color[3], override_color[5]);
-}
+	int localred = override_color[1];
+	int localgreen = override_color[3];
+	int localblue = override_color[5];
+
+	return sprintf(buf, "%d %d %d\n", localred, localgreen, localblue);}
 
 static ssize_t red_store(struct kobject *kobj,
 			   struct kobj_attribute *attr, const char *buf, size_t count)
@@ -1514,8 +1531,11 @@ static ssize_t red_store(struct kobject *kobj,
 
 static ssize_t green_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%d %d %d\n", override_color[7], override_color[9], override_color[11]);
-}
+	int localred = override_color[7];
+	int localgreen = override_color[9];
+	int localblue = override_color[11];
+
+	return sprintf(buf, "%d %d %d\n", localred, localgreen, localblue);}
 
 static ssize_t green_store(struct kobject *kobj,
 			   struct kobj_attribute *attr, const char *buf, size_t count)
@@ -1543,7 +1563,11 @@ static ssize_t green_store(struct kobject *kobj,
 
 static ssize_t blue_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%d %d %d\n", override_color[13], override_color[15], override_color[17]);
+	int localred = override_color[13];
+	int localgreen = override_color[15];
+	int localblue = override_color[17];
+
+	return sprintf(buf, "%d %d %d\n", localred, localgreen, localblue);
 }
 
 static ssize_t blue_store(struct kobject *kobj,
@@ -1571,7 +1595,11 @@ static ssize_t blue_store(struct kobject *kobj,
 /* yellow */
 static ssize_t yellow_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%d %d %d\n", override_color[12], override_color[14], override_color[16]);
+	int localred = override_color[12];
+	int localgreen = override_color[14];
+	int localblue = override_color[16];
+
+	return sprintf(buf, "%d %d %d\n", localred, localgreen, localblue);
 }
 
 static ssize_t yellow_store(struct kobject *kobj,
@@ -1599,7 +1627,11 @@ static ssize_t yellow_store(struct kobject *kobj,
 /* magenta */
 static ssize_t magenta_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%d %d %d\n", override_color[6], override_color[8], override_color[10]);
+	int localred = override_color[6];
+	int localgreen = override_color[8];
+	int localblue = override_color[10];
+
+	return sprintf(buf, "%d %d %d\n", localred, localgreen, localblue);
 }
 
 static ssize_t magenta_store(struct kobject *kobj,
@@ -1627,7 +1659,11 @@ static ssize_t magenta_store(struct kobject *kobj,
 /* cyan */
 static ssize_t cyan_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%d %d %d\n", override_color[0], override_color[2], override_color[4]);
+	int localred = override_color[0];
+	int localgreen = override_color[2];
+	int localblue = override_color[4];
+
+	return sprintf(buf, "%d %d %d\n", localred, localgreen, localblue);
 }
 
 static ssize_t cyan_store(struct kobject *kobj,
