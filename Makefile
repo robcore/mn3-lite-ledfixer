@@ -246,7 +246,7 @@ CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
 HOSTCC       = gcc
 HOSTCXX      = g++
 HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes
-HOSTCXXFLAGS =
+HOSTCXXFLAGS = 
 
 # Decide whether to build built-in, modular, or both.
 # Normally, just do built-in.
@@ -377,17 +377,14 @@ KBUILD_CPPFLAGS := -D__KERNEL__
 KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -Wno-unused-variable -Wno-maybe-uninitialized \
 		   -Werror-implicit-function-declaration \
-		   #-fno-strict-aliasing -fno-common \
-		   -std=gnu89 -fomit-frame-pointer -fno-omit-frame-pointer \ # -fno-align-functions -fno-align-loops \
+		   -fno-strict-aliasing -fno-common \
+		   -std=gnu89 -fomit-frame-pointer -fno-omit-frame-pointer -fno-align-functions -fno-align-loops \
 		   -Wno-unused-function -Wno-unused-label -Wno-array-bounds \
 		   -Wno-format-security -Wno-format-truncation \
 		   -Wno-misleading-indentation -Wno-int-in-bool-context \
 		   -Wno-bool-compare -Wno-tautological-compare \
-#		   -fno-delete-null-pointer-checks -Wno-pointer-compare \
-		   -fno-delete-null-pointer-checks \
-		   -fno-aggressive-loop-optimizations \
+		   -fno-delete-null-pointer-checks -Wno-pointer-compare \
 		   -Wno-switch-unreachable -Wno-stringop-overflow
-
 KBUILD_AFLAGS_KERNEL :=
 KBUILD_CFLAGS_KERNEL :=
 KBUILD_AFLAGS   := -D__ASSEMBLY__
