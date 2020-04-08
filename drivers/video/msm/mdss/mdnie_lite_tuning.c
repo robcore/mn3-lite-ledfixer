@@ -231,11 +231,11 @@ void print_tun_data(void)
 
 	DPRINT("\n");
 	DPRINT("---- size1 : %d", PAYLOAD1.dchdr.dlen);
-	for (i = 0; i < (MDNIE_TUNE_SECOND_SIZE - 1); i++)
+	for (i = 0; i < (MDNIE_TUNE_FIRST_SIZE - 1); i++)
 		DPRINT("0x%x ", PAYLOAD1.payload[i]);
 	DPRINT("\n");
 	DPRINT("---- size2 : %d", PAYLOAD2.dchdr.dlen);
-	for (i = 0; i < (MDNIE_TUNE_FIRST_SIZE - 1); i++)
+	for (i = 0; i < (MDNIE_TUNE_SECOND_SIZE - 1); i++)
 		DPRINT("0x%x ", PAYLOAD2.payload[i]);
 	DPRINT("\n");
 }
@@ -681,6 +681,8 @@ static void update_mdnie_mode(void)
 		result = (LITE_CONTROL_1[4] >> (gamma_bit));
 		gamma = result & 1;
 	}
+	memset(source_1, 0, MDNIE_TUNE_FIRST_SIZE);
+	memset(source_2, 0, MDNIE_TUNE_SECOND_SIZE);
 }
 
 /*
