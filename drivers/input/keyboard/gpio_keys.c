@@ -1038,7 +1038,7 @@ static int gpio_keys_get_devtree_pdata(struct device *dev,
 
 	vddo_vreg = devm_regulator_get(dev, "vddo");
 	if (IS_ERR(vddo_vreg))
-	dev_err(dev, "[Keys] no regulator: ignoring\n");
+		dev_dbg(dev, "[Keys] no regulator: ignoring\n");
 	else{
 		if(!of_property_read_u32(node, "vddo-voltage", &reg))
 		regulator_set_voltage(vddo_vreg, reg*1000, reg*1000);

@@ -440,10 +440,10 @@ qpnp_pon_input_dispatch(struct qpnp_pon *pon, u32 pon_type)
 	}
 
 	if (cfg->pon_type == PON_RESIN )
-		printk(KERN_INFO "%s: VOLUME DOWN key is %s\n",
+		pr_debug("%s: VOLUME DOWN key is %s\n",
 				__func__, (pon_rt_sts & pon_rt_bit) ? "pressed" : "released");
 	else
-		printk(KERN_INFO "%s: PWR key is %s\n",
+		pr_debug("%s: PWR key is %s\n",
 				__func__, (pon_rt_sts & pon_rt_bit) ? "pressed" : "released");
 
 	input_report_key(pon->pon_input, cfg->key_code,
