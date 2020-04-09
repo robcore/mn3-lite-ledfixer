@@ -639,7 +639,7 @@ static void update_mdnie_mode(void)
 			for (i = 0; i < 24; i++) {
 					if (i == 24)
 						break;
-				override_color[i] = char_to_int(LITE_CONTROL_2[i + 18]);
+				override_color[i] = LITE_CONTROL_2[i + 18];
 				override_color[i] += offset_color[i];
 				if (override_color[i] > 255)
 					override_color[i] = 255;
@@ -717,7 +717,7 @@ static void update_mdnie_mode(void)
 		for (i = 0; i < 24; i++) {
 			if (i == 24)
 				break;
-			override_color[i] = char_to_int(LITE_CONTROL_2[i + 18]);
+			override_color[i] = LITE_CONTROL_2[i + 18];
 			if (override_color[i] > 255)
 				override_color[i] = 255;
 			if (override_color[i] < 0)
@@ -725,7 +725,7 @@ static void update_mdnie_mode(void)
 		}
 
 		for (i = 0; i < 47; i++) {
-			custom_curve[i] = char_to_int(LITE_CONTROL_2[i + 42]);
+			custom_curve[i] = LITE_CONTROL_2[i + 42];
 			if (custom_curve[i] > 255)
 				custom_curve[i] = 255;
 			if (custom_curve[i] < 0)
@@ -1405,7 +1405,7 @@ static ssize_t _name##_store		\
 	int i, cc_highlow, cc_strength;			\
 	if (sscanf(buf, "%d %d", &cc_highlow, &cc_strength) == 2) {				\
 		if ((cc_highlow != 4) && (cc_highlow != 31) && (cc_highlow != 0))	\
-			chroma_correction[firstval] = char_to_int(LITE_CONTROL_2[firstval + 90]);		\
+			chroma_correction[firstval] = LITE_CONTROL_2[firstval + 90];		\
 		else	\
 			chroma_correction[firstval] = cc_highlow;		\
 		clamp(cc_strength, 0, 255);		\
