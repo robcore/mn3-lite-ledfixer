@@ -35,7 +35,7 @@ long sysfs_deprecated = 1;
 #else
 long sysfs_deprecated = 0;
 #endif
-static __init int sysfs_deprecated_setup(char *arg)
+static int __init sysfs_deprecated_setup(char *arg)
 {
 	return strict_strtol(arg, 10, &sysfs_deprecated);
 }
@@ -65,7 +65,7 @@ static inline int device_is_not_partition(struct device *dev)
  * @dev: struct device to get the name of
  *
  * Will return the device's driver's name if it is bound to a device.  If
- * the device is not bound to a device, it will return the name of the bus
+ * the device is not bound to a driver, it will return the name of the bus
  * it is attached to.  If it is not attached to a bus either, an empty
  * string will be returned.
  */
@@ -172,12 +172,12 @@ ssize_t device_show_int(struct device *dev,
 EXPORT_SYMBOL_GPL(device_show_int);
 
 /**
- *	device_release - free device structure.
- *	@kobj:	device's kobject.
+ * device_release - free device structure.
+ * @kobj: device's kobject.
  *
- *	This is called once the reference count for the object
- *	reaches 0. We forward the call to the device's release
- *	method, which should handle actually freeing the structure.
+ * This is called once the reference count for the object
+ * reaches 0. We forward the call to the device's release
+ * method, which should handle actually freeing the structure.
  */
 static void device_release(struct kobject *kobj)
 {
@@ -257,9 +257,9 @@ static int dev_uevent(struct kset *kset, struct kobject *kobj,
 		name = device_get_devnode(dev, &mode, &tmp);
 		if (name) {
 			add_uevent_var(env, "DEVNAME=%s", name);
-			kfree(tmp);
 			if (mode)
 				add_uevent_var(env, "DEVMODE=%#o", mode & 0777);
+			kfree(tmp);
 		}
 	}
 
