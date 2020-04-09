@@ -129,10 +129,10 @@ static char LITE_CONTROL_1[5];
 static char LITE_CONTROL_2[108];
 
 static int hijack = 0;
-static char override_color[24];
+static int override_color[24];
 static int offset_color[24];
-static char custom_curve[48];
-static char chroma_correction[18];
+static int custom_curve[48];
+static int chroma_correction[18];
 
 static unsigned int offset_mode = 1;
 static unsigned int sharpen_dark = 0;
@@ -284,6 +284,19 @@ static struct dsi_cmd_desc mdni_tune_cmd[] = {
 #endif
 #endif
 };
+
+static int char_to_int(char data1)
+{
+	int cal_data;
+
+	if (data1 & 0x80) {
+		cal_data = data1 & 0x7F;
+		cal_data *= -1;
+	} else
+		cal_data = data1;
+
+	return cal_data;
+}
 
 void print_tun_data(void)
 {
@@ -626,18 +639,18 @@ static void update_mdnie_mode(void)
 			for (i = 0; i < 24; i++) {
 					if (i == 24)
 						break;
-				override_color[i] = LITE_CONTROL_2[i + 18];
+				override_color[i] = char_to_int(LITE_CONTROL_2[i + 18]);
 				override_color[i] += offset_color[i];
 				if (override_color[i] > 255)
 					override_color[i] = 255;
 				if (override_color[i] < 0)
 					override_color[i] = 0;
-				if (override_color[i] == LITE_CONTROL_2[i + 18])
+				if (override_color[i] == char_to_int(LITE_CONTROL_2[i + 18]))
 					offset_color[i] = 0;
-				if (override_color[i] > LITE_CONTROL_2[i + 18])
-					offset_color[i] = override_color[i] - LITE_CONTROL_2[i + 18];
-				if (override_color[i] < LITE_CONTROL_2[i + 18]) {
-					offset_color[i] = LITE_CONTROL_2[i + 18] - override_color[i];
+				if (override_color[i] > char_to_int(LITE_CONTROL_2[i + 18]))
+					offset_color[i] = override_color[i] - char_to_int(LITE_CONTROL_2[i + 18]);
+				if (override_color[i] < char_to_int(LITE_CONTROL_2[i + 18])) {
+					offset_color[i] = char_to_int(LITE_CONTROL_2[i + 18]) - override_color[i];
 					offset_color[i] = ~offset_color[i];
 					offset_color[i]++;
 				}
@@ -713,29 +726,27 @@ static void update_mdnie_mode(void)
 		for (i = 0; i < 24; i++) {
 			if (i == 24)
 				break;
-			if (LITE_CONTROL_2[i + 18] > 255)
-				LITE_CONTROL_2[i + 18] = 255;
-			if (LITE_CONTROL_2[i + 18] < 0)
-				LITE_CONTROL_2[i + 18] = 0;
-
-			override_color[i] = LITE_CONTROL_2[i + 18];
+			override_color[i] = char_to_int(LITE_CONTROL_2[i + 18]);
+			if (override_color[i] > 255)
+				override_color[i] = 255;
+			if (override_color[i] < 0)
+				override_color[i] = 0;
 		}
 
 		for (i = 0; i < 47; i++) {
-			if (LITE_CONTROL_2[i + 42] > 255)
-				LITE_CONTROL_2[i + 42] = 255;
-			if (LITE_CONTROL_2[i + 42] < 0)
-				LITE_CONTROL_2[i + 42] = 0;
-
-			custom_curve[i] = LITE_CONTROL_2[i + 42];
+			custom_curve[i] = char_to_int(LITE_CONTROL_2[i + 42]);
+			if (custom_curve[i] > 255)
+				custom_curve[i] = 255;
+			if (custom_curve[i] < 0)
+				custom_curve[i] = 0;
 		}
 
 		for (i = 0; i < 17; i++) {
-			if (LITE_CONTROL_2[i + 90] > 255)
-				LITE_CONTROL_2[i + 90] = 255;
-			if (LITE_CONTROL_2[i + 90] < 0)
-				LITE_CONTROL_2[i + 90] = 0;
 			chroma_correction[i] = LITE_CONTROL_2[i + 90];
+			if (chroma_correction[i] > 255)
+				chroma_correction[i] = 255;
+			if (chroma_correction[i] < 0)
+				chroma_correction[i] = 0;
 		}
 
 		LITE_CONTROL_1[4] = source_1[4];
