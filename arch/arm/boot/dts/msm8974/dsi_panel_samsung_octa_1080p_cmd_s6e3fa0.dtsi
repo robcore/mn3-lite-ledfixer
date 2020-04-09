@@ -317,9 +317,9 @@
 
 			samsung,panel-acl-cmds-list = [
 					29 01 00 00 00 00 02 55 00
-					29 01 00 00 00 00 02 55 01
-					29 01 00 00 00 00 02 55 02 /* ACL 25% */
-					29 01 00 00 00 00 02 55 03 ];
+					29 01 00 00 00 00 02 55 00
+					29 01 00 00 00 00 02 55 00 /* ACL 25% */
+					29 01 00 00 00 00 02 55 00 ];
 
 			/* bl_level , Index in acl command list */
 			samsung,panel-acl-map-table =  <
