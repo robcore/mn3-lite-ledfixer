@@ -40,8 +40,7 @@
 static ssize_t show_##name(struct device *dev,			\
 		struct device_attribute *attr, char *buf)	\
 {								\
-	unsigned int cpu = dev->id;				\
-	return sprintf(buf, "%d\n", topology_##name(cpu));	\
+	return sprintf(buf, "%d\n", topology_##name(dev->id));	\
 }
 
 #if defined(topology_thread_cpumask) || defined(topology_core_cpumask) || \
@@ -67,8 +66,7 @@ static ssize_t show_cpumap(int type, const struct cpumask *mask, char *buf)
 static ssize_t show_##name(struct device *dev,				\
 			   struct device_attribute *attr, char *buf)	\
 {									\
-	unsigned int cpu = dev->id;					\
-	return show_cpumap(0, topology_##name(cpu), buf);		\
+	return show_cpumap(0, topology_##name(dev->id), buf);		\
 }
 
 #define define_siblings_show_list(name)					\
@@ -76,8 +74,7 @@ static ssize_t show_##name##_list(struct device *dev,			\
 				  struct device_attribute *attr,	\
 				  char *buf)				\
 {									\
-	unsigned int cpu = dev->id;					\
-	return show_cpumap(1, topology_##name(cpu), buf);		\
+	return show_cpumap(1, topology_##name(dev->id), buf);		\
 }
 
 #else
