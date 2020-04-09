@@ -109,8 +109,7 @@ int rtc_set_mmss(struct rtc_device *rtc, unsigned long secs)
 				err = rtc->ops->set_time(rtc->dev.parent,
 						&new);
 		}
-	}
-	else
+	} else
 		err = -EINVAL;
 
 	mutex_unlock(&rtc->ops_lock);
@@ -216,7 +215,7 @@ int __rtc_read_alarm(struct rtc_device *rtc, struct rtc_wkalrm *alarm)
 			return err;
 
 		/* note that tm_sec is a "don't care" value here: */
-	} while (   before.tm_min   != now.tm_min
+	} while (before.tm_min   != now.tm_min
 		 || before.tm_hour  != now.tm_hour
 		 || before.tm_mon   != now.tm_mon
 		 || before.tm_year  != now.tm_year);
@@ -367,14 +366,14 @@ int rtc_set_alarm(struct rtc_device *rtc, struct rtc_wkalrm *alarm)
 	err = mutex_lock_interruptible(&rtc->ops_lock);
 	if (err)
 		return err;
-	if (rtc->aie_timer.enabled) {
+	if (rtc->aie_timer.enabled)
 		rtc_timer_remove(rtc, &rtc->aie_timer);
-	}
+
 	rtc->aie_timer.node.expires = rtc_tm_to_ktime(alarm->time);
 	rtc->aie_timer.period = ktime_set(0, 0);
-	if (alarm->enabled) {
+	if (alarm->enabled)
 		err = rtc_timer_enqueue(rtc, &rtc->aie_timer);
-	}
+
 	mutex_unlock(&rtc->ops_lock);
 	return err;
 }
@@ -416,7 +415,7 @@ EXPORT_SYMBOL_GPL(rtc_initialize_alarm);
 #ifdef CONFIG_RTC_AUTO_PWRON
 int rtc_set_bootalarm(struct rtc_device *rtc, struct rtc_wkalrm *alarm)
 {
-    	int err;
+	int err;
 
 /*	err = mutex_lock_interruptible(&rtc->ops_lock); */
 /*	if (err) */
@@ -430,7 +429,7 @@ int rtc_set_bootalarm(struct rtc_device *rtc, struct rtc_wkalrm *alarm)
 		err = -EINVAL;
 	} else
 		err = rtc->ops->set_bootalarm(rtc->dev.parent, alarm);
-	pr_info("[SAPA] %s\n",__func__);
+	pr_info("[SAPA] %s\n", __func__);
 /*	mutex_unlock(&rtc->ops_lock); */
 	return err;
 }
@@ -438,8 +437,8 @@ EXPORT_SYMBOL_GPL(rtc_set_bootalarm);
 
 int rtc_get_bootalarm(struct rtc_device *rtc, struct rtc_wkalrm *alarm)
 {
- 	int err;
- 
+	int err;
+
 /*	err = mutex_lock_interruptible(&rtc->ops_lock); */
 /*	if (err) */
 /*		return err; */
@@ -452,7 +451,7 @@ int rtc_get_bootalarm(struct rtc_device *rtc, struct rtc_wkalrm *alarm)
 		err = -EINVAL;
 	} else
 		err = rtc->ops->read_bootalarm(rtc->dev.parent, alarm);
-	pr_info("[SAPA] %s\n",__func__);
+	pr_info("[SAPA] %s\n", __func__);
 /*	mutex_unlock(&rtc->ops_lock); */
 	return err;
 }
