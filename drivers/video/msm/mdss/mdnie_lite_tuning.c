@@ -130,7 +130,7 @@ static char LITE_CONTROL_2[108];
 
 static int hijack = 0;
 static char override_color[24];
-static char offset_color[24];
+static int offset_color[24];
 static char custom_curve[48];
 static char chroma_correction[18];
 
@@ -322,10 +322,8 @@ void sending_tuning_cmd(void)
 	if (mfd == NULL)
 		return;
 
-	if (mfd->resume_state == MIPI_SUSPEND_STATE) {
-		DPRINT("[ERROR] not ST_DSI_RESUME. do not send mipi cmd.\n");
+	if (mfd->resume_state == MIPI_SUSPEND_STATE)
 		return;
-	}
 
 	mutex_lock(&mdnie_msd->lock);
 
@@ -640,7 +638,8 @@ static void update_mdnie_mode(void)
 					offset_color[i] = override_color[i] - LITE_CONTROL_2[i + 18];
 				if (override_color[i] < LITE_CONTROL_2[i + 18]) {
 					offset_color[i] = LITE_CONTROL_2[i + 18] - override_color[i];
-					offset_color[i] *= -1;
+					offset_color[i] = ~offset_color[i];
+					offset_color[i]++;
 				}
 				LITE_CONTROL_2[i + 18] = override_color[i];
 			}
