@@ -634,7 +634,14 @@ static void update_mdnie_mode(void)
 					override_color[i] = 255;
 				if (override_color[i] < 0)
 					override_color[i] = 0;
-
+				if (override_color[i] == LITE_CONTROL_2[i + 18])
+					offset_color[i] = 0;
+				if (override_color[i] > LITE_CONTROL_2[i + 18])
+					offset_color[i] = override_color[i] - LITE_CONTROL_2[i + 18];
+				if (override_color[i] < LITE_CONTROL_2[i + 18]) {
+					offset_color[i] = LITE_CONTROL_2[i + 18] - override_color[i];
+					offset_color[i] *= -1;
+				}
 				LITE_CONTROL_2[i + 18] = override_color[i];
 			}
 		} else {
