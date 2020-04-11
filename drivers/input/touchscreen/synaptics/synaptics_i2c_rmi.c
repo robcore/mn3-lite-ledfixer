@@ -235,7 +235,7 @@ static int __init synaptics_read_lcd_id(char *mode)
 	}
 
 	synaptics_lcd_id = ((retval >> 8) & 0xFF) >> 4;
-	printk(KERN_ERR "%s: string is %s, integer is %x, ID2[0x%02x], system_rev is %d\n",
+	pr_debug("%s: string is %s, integer is %x, ID2[0x%02x], system_rev is %d\n",
 			__func__, mode, retval, synaptics_lcd_id, system_rev);
 
 	return 0;
@@ -268,7 +268,7 @@ static int synaptics_parse_dt(struct device *dev,
 
 	rc = of_property_read_u32_array(np, "synaptics,tsp-coords", coords, 2);
 	if (rc < 0) {
-		dev_info(dev, "%s: Unable to read synaptics,tsp-coords\n", __func__);
+		dev_dbg(dev, "%s: Unable to read synaptics,tsp-coords\n", __func__);
 		return rc;
 	}
 
@@ -282,11 +282,11 @@ static int synaptics_parse_dt(struct device *dev,
 			rc = of_property_read_string_index(np, "synaptics,supply-name",
 				i, &dt_data->name_of_supply[i]);
 			if (rc && (rc != -EINVAL)) {
-				dev_err(dev, "%s: Unable to read %s\n", __func__,
+				dev_dbg(dev, "%s: Unable to read %s\n", __func__,
 						"synaptics,supply-name");
 				return rc;
 			}
-			dev_info(dev, "%s: supply%d: %s\n", __func__, i, dt_data->name_of_supply[i]);
+			dev_dbg(dev, "%s: supply%d: %s\n", __func__, i, dt_data->name_of_supply[i]);
 		}
 	}
 
@@ -296,7 +296,7 @@ static int synaptics_parse_dt(struct device *dev,
 	 */
 	rc = of_property_read_u32_array(np, "synaptics,tsp-extra_config", dt_data->extra_config, 4);
 	if (rc < 0)
-		dev_info(dev, "%s: Unable to read synaptics,tsp-extra_config\n", __func__);
+		dev_dbg(dev, "%s: Unable to read synaptics,tsp-extra_config\n", __func__);
 
 	/* f1a button info, touchkey LED */
 	dt_data->tkey_led_en = of_get_named_gpio(np, "synaptics,tkeyled-gpio", 0);
@@ -305,7 +305,7 @@ static int synaptics_parse_dt(struct device *dev,
 	if (prop && prop->value) {
 		f1a_button_map = kzalloc(sizeof(*f1a_button_map), GFP_KERNEL);
 		if (!f1a_button_map) {
-			dev_err(dev, "Failed to allocate f1a memory\n");
+			dev_dbg(dev, "Failed to allocate f1a memory\n");
 			return -ENOMEM;
 		}
 
@@ -314,7 +314,7 @@ static int synaptics_parse_dt(struct device *dev,
 		rc = of_property_read_u32_array(np, "synaptics,tsp-keycodes",
 			f1a_button_map->map, f1a_button_map->nbuttons);
 		if (rc && (rc != -EINVAL)) {
-			dev_info(dev, "%s: Unable to read %s, free button map memory\n", __func__,
+			dev_dbg(dev, "%s: Unable to read %s, free button map memory\n", __func__,
 					"synaptics,tsp-keycodes");
 			kfree(f1a_button_map);
 			return rc;
@@ -322,7 +322,7 @@ static int synaptics_parse_dt(struct device *dev,
 
 		dt_data->f1a_button_map = f1a_button_map;
 
-		pr_err("%s tkey enabled! ", __func__);
+		pr_debug("%s tkey enabled! ", __func__);
 		for (i = 0; i < dt_data->f1a_button_map->nbuttons; i++)
 			pr_cont("keycode[%d] = %d ", i,
 				dt_data->f1a_button_map->map[i]);
@@ -332,19 +332,19 @@ static int synaptics_parse_dt(struct device *dev,
 	/* project info */
 	rc = of_property_read_string(np, "synaptics,tsp-project", &dt_data->project);
 	if (rc < 0) {
-		dev_info(dev, "%s: Unable to read synaptics,tsp-project\n", __func__);
+		dev_dbg(dev, "%s: Unable to read synaptics,tsp-project\n", __func__);
 		dt_data->project = "0";
 	}
 	rc = of_property_read_string(np, "synaptics,sub-project", &dt_data->sub_project);
 	if (rc < 0) {
-		dev_info(dev, "%s: Unable to read synaptics,sub-project\n", __func__);
+		dev_dbg(dev, "%s: Unable to read synaptics,sub-project\n", __func__);
 		dt_data->sub_project = "0";
 	}
 
 	if (dt_data->extra_config[2] > 0)
-		pr_err("%s: OCTA ID = %d\n", __func__, gpio_get_value(dt_data->extra_config[2]));
+		pr_debug("%s: OCTA ID = %d\n", __func__, gpio_get_value(dt_data->extra_config[2]));
 
-	pr_err("%s: power= %d, tsp_int= %d, X= %d, Y= %d, project= %s, config[%d][%d][%d][%d], tablet = %d reset= %d\n",
+	pr_debug("%s: power= %d, tsp_int= %d, X= %d, Y= %d, project= %s, config[%d][%d][%d][%d], tablet = %d reset= %d\n",
 		__func__, dt_data->external_ldo, dt_data->irq_gpio,
 			dt_data->coords[0], dt_data->coords[1], dt_data->project,
 			dt_data->extra_config[0], dt_data->extra_config[1], dt_data->extra_config[2],
@@ -366,7 +366,7 @@ static void synaptics_request_gpio(struct synaptics_rmi4_data *rmi4_data)
 
 	ret = gpio_request(rmi4_data->dt_data->irq_gpio, "synaptics,irq_gpio");
 	if (ret) {
-		pr_err("%s: unable to request irq_gpio [%d]\n",
+		pr_debug("%s: unable to request irq_gpio [%d]\n",
 				__func__, rmi4_data->dt_data->irq_gpio);
 		return;
 	}
@@ -374,7 +374,7 @@ static void synaptics_request_gpio(struct synaptics_rmi4_data *rmi4_data)
 	if (rmi4_data->dt_data->external_ldo > 0) {
 		ret = gpio_request(rmi4_data->dt_data->external_ldo, "synaptics,external_ldo");
 		if (ret) {
-			pr_err("%s: unable to request external_ldo [%d]\n",
+			pr_debug("%s: unable to request external_ldo [%d]\n",
 					__func__, rmi4_data->dt_data->external_ldo);
 			return;
 		}
@@ -383,7 +383,7 @@ static void synaptics_request_gpio(struct synaptics_rmi4_data *rmi4_data)
 	if (rmi4_data->dt_data->external_ldo2 > 0) {
 		ret = gpio_request(rmi4_data->dt_data->external_ldo2, "synaptics,external_ldo2");
 		if (ret) {
-			pr_err("%s: unable to request external_ldo [%d]\n",
+			pr_debug("%s: unable to request external_ldo [%d]\n",
 					__func__, rmi4_data->dt_data->external_ldo2);
 			return;
 		}
@@ -392,7 +392,7 @@ static void synaptics_request_gpio(struct synaptics_rmi4_data *rmi4_data)
 	if (rmi4_data->dt_data->tkey_led_en > 0) {
 		ret = gpio_request(rmi4_data->dt_data->tkey_led_en, "synaptics,tkey_led_vdd_on");
 		if (ret) {
-			pr_err("%s: unable to request tkey_led_vdd_on [%d]\n",
+			pr_debug("%s: unable to request tkey_led_vdd_on [%d]\n",
 					__func__, rmi4_data->dt_data->tkey_led_en);
 			return;
 		}
@@ -401,7 +401,7 @@ static void synaptics_request_gpio(struct synaptics_rmi4_data *rmi4_data)
 	if (rmi4_data->dt_data->reset_gpio > 0) {
 		ret = gpio_request(rmi4_data->dt_data->reset_gpio, "synaptics,reset-gpio");
 		if (ret) {
-			pr_err("%s: unable to request reset_gpio [%d]\n",
+			pr_debug("%s: unable to request reset_gpio [%d]\n",
 					__func__, rmi4_data->dt_data->reset_gpio);
 			return;
 		}
@@ -412,7 +412,7 @@ static void synaptics_request_gpio(struct synaptics_rmi4_data *rmi4_data)
 	if (rmi4_data->dt_data->id_gpio > 0) {
 		ret = gpio_request(rmi4_data->dt_data->id_gpio, "synaptics,id-gpio");
 		if (ret) {
-			pr_err("%s: unable to request id_gpio [%d]\n",
+			pr_debug("%s: unable to request id_gpio [%d]\n",
 					__func__, rmi4_data->dt_data->id_gpio);
 			return;
 		}
@@ -477,7 +477,7 @@ static ssize_t synaptics_rmi4_f51_enables_store(struct device *dev,
 			&rmi4_data->f51_handle->proximity_enables,
 			sizeof(rmi4_data->f51_handle->proximity_enables));
 	if (retval < 0) {
-		dev_err(dev,
+		dev_dbg(dev,
 				"%s: Failed to write proximity enables, error = %d\n",
 				__func__, retval);
 		return retval;
@@ -501,7 +501,7 @@ static ssize_t synaptics_rmi4_f51_general_control_show(struct device *dev,
 			&data,
 			sizeof(data));
 	if (retval < 0)
-		dev_err(dev,
+		dev_dbg(dev,
 				"%s: Failed to read general control, error = %d\n",
 				__func__, retval);
 
@@ -529,7 +529,7 @@ static ssize_t synaptics_rmi4_f51_general_control_store(struct device *dev,
 			&rmi4_data->f51_handle->general_control,
 			sizeof(rmi4_data->f51_handle->general_control));
 	if (retval < 0) {
-		dev_err(dev,
+		dev_dbg(dev,
 				"%s: Failed to write general control, error = %d\n",
 				__func__, retval);
 		return retval;
@@ -556,7 +556,7 @@ static ssize_t synaptics_rmi4_register_value_store(struct device *dev,
 			sizeof(data));
 
 	for (i = 0; i < 10; i++)
-		dev_info(&rmi4_data->i2c_client->dev, "%s:[%d] register address=0x%X, register value= %X\n",
+		dev_dbg(&rmi4_data->i2c_client->dev, "%s:[%d] register address=0x%X, register value= %X\n",
 				__func__, i, input, data[i]);
 
 	return count;
@@ -576,14 +576,14 @@ static ssize_t synaptics_rmi4_global_show(struct device *dev,
 			0x0c,
 			&data,
 			sizeof(data));
-	dev_info(&rmi4_data->i2c_client->dev, "%s: device_control: %x\n[%d]",
+	dev_dbg(&rmi4_data->i2c_client->dev, "%s: device_control: %x\n[%d]",
 			__func__, data, retval);
 	data = 0;
 	retval = synaptics_rmi4_i2c_read(rmi4_data,
 			0x0d,
 			&data,
 			sizeof(data));
-	dev_info(&rmi4_data->i2c_client->dev, "%s: device_status: %x\n[%d]",
+	dev_dbg(&rmi4_data->i2c_client->dev, "%s: device_status: %x\n[%d]",
 			__func__, data, retval);
 	return snprintf(buf, PAGE_SIZE, "%u\n",
 			retval);
@@ -607,7 +607,7 @@ static ssize_t synaptics_rmi4_global_store(struct device *dev,
 			0x06,
 			&data[0],
 			sizeof(data));
-	dev_info(&rmi4_data->i2c_client->dev, "%s: %x, %x, %x, %x, %x, %x, %x, %x\n",
+	dev_dbg(&rmi4_data->i2c_client->dev, "%s: %x, %x, %x, %x, %x, %x, %x, %x\n",
 			__func__, data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7]);
 
 	return count;
@@ -624,7 +624,7 @@ static int synaptics_rmi4_f12_obj_type_enable(struct synaptics_rmi4_data *rmi4_d
 			&rmi4_data->obj_type_enable,
 			sizeof(rmi4_data->obj_type_enable));
 	if (retval < 0)
-		dev_err(&rmi4_data->i2c_client->dev, "%s: write fail[%d]\n",
+		dev_dbg(&rmi4_data->i2c_client->dev, "%s: write fail[%d]\n",
 			__func__, retval);
 
 	return retval;
@@ -640,14 +640,14 @@ int synaptics_rmi4_glove_mode_enables(struct synaptics_rmi4_data *rmi4_data)
 
 	retval = synaptics_rmi4_f12_set_feature(rmi4_data);
 	if (retval < 0) {
-		dev_err(&rmi4_data->i2c_client->dev,
+		dev_dbg(&rmi4_data->i2c_client->dev,
 			"%s: f12 set_feature write fail[%d]\n", __func__, retval);
 	}
 	
 #ifdef ENABLE_F12_OBJTYPE
 	retval = synaptics_rmi4_f12_obj_type_enable(rmi4_data);
 	if (retval < 0) {
-		dev_err(&rmi4_data->i2c_client->dev,
+		dev_dbg(&rmi4_data->i2c_client->dev,
 			"%s: f12 obj_type write fail[%d]\n", __func__, retval);
 	}
 #endif
@@ -692,7 +692,7 @@ static ssize_t synaptics_rmi4_glove_mode_enable_store(struct device *dev,
 
 	retval = synaptics_rmi4_glove_mode_enables(rmi4_data);
 	if (retval < 0) {
-		dev_err(dev,
+		dev_dbg(dev,
 				"%s: Failed to set glove mode enable, error = %d\n",
 				__func__, retval);
 		return retval;
@@ -738,7 +738,7 @@ static ssize_t synaptics_rmi4_closed_cover_enable_store(struct device *dev,
 
 	retval = synaptics_rmi4_f12_set_feature(rmi4_data);
 	if (retval < 0) {
-		dev_err(dev,
+		dev_dbg(dev,
 				"%s: Failed to set closed cover enable, error = %d\n",
 				__func__, retval);
 		return retval;
@@ -784,7 +784,7 @@ static ssize_t synaptics_rmi4_fast_detect_enable_store(struct device *dev,
 
 	retval = synaptics_rmi4_f12_set_feature(rmi4_data);
 	if (retval < 0) {
-		dev_err(dev,
+		dev_dbg(dev,
 				"%s: Failed to set fast detect enable, error = %d\n",
 				__func__, retval);
 		return retval;
@@ -806,7 +806,7 @@ static void synaptics_change_dvfs_lock(struct work_struct *work)
 
 	if (rmi4_data->dvfs_boost_mode == DVFS_STAGE_DUAL) {
 		if (rmi4_data->stay_awake) {
-			dev_info(&rmi4_data->i2c_client->dev,
+			dev_dbg(&rmi4_data->i2c_client->dev,
 					"%s: do fw update, do not change cpu frequency.\n",
 					__func__);
 		} else {
@@ -816,7 +816,7 @@ static void synaptics_change_dvfs_lock(struct work_struct *work)
 		}
 	} else if (rmi4_data->dvfs_boost_mode == DVFS_STAGE_NINTH) {
 		if (rmi4_data->stay_awake) {
-			dev_info(&rmi4_data->i2c_client->dev,
+			dev_dbg(&rmi4_data->i2c_client->dev,
 					"%s: do fw update, do not change cpu frequency.\n",
 					__func__);
 		} else {
@@ -832,7 +832,7 @@ static void synaptics_change_dvfs_lock(struct work_struct *work)
 	}
 
 	if (retval < 0)
-		dev_err(&rmi4_data->i2c_client->dev,
+		dev_dbg(&rmi4_data->i2c_client->dev,
 				"%s: booster change failed(%d).\n",
 				__func__, retval);
 	mutex_unlock(&rmi4_data->dvfs_lock);
@@ -846,7 +846,7 @@ static void synaptics_set_dvfs_off(struct work_struct *work)
 	int retval;
 
 	if (rmi4_data->stay_awake) {
-		dev_info(&rmi4_data->i2c_client->dev,
+		dev_dbg(&rmi4_data->i2c_client->dev,
 				"%s: do fw update, do not change cpu frequency.\n",
 				__func__);
 	} else {
@@ -856,7 +856,7 @@ static void synaptics_set_dvfs_off(struct work_struct *work)
 		rmi4_data->dvfs_freq = -1;
 
 		if (retval < 0)
-			dev_err(&rmi4_data->i2c_client->dev,
+			dev_dbg(&rmi4_data->i2c_client->dev,
 					"%s: booster stop failed(%d).\n",
 					__func__, retval);
 		rmi4_data->dvfs_lock_status = false;
@@ -907,7 +907,7 @@ static void synaptics_set_dvfs_lock(struct synaptics_rmi4_data *rmi4_data,
 				rmi4_data->dvfs_freq = MIN_TOUCH_LIMIT;
 
 				if (ret < 0)
-					dev_err(&rmi4_data->i2c_client->dev,
+					dev_dbg(&rmi4_data->i2c_client->dev,
 							"%s: cpu first lock failed(%d)\n",
 							__func__, ret);
 			} else if ((rmi4_data->dvfs_freq != MIN_TOUCH_HIGH_LIMIT) &&
@@ -917,7 +917,7 @@ static void synaptics_set_dvfs_lock(struct synaptics_rmi4_data *rmi4_data,
 				rmi4_data->dvfs_freq = MIN_TOUCH_HIGH_LIMIT;
 
 				if (ret < 0)
-					dev_err(&rmi4_data->i2c_client->dev,
+					dev_dbg(&rmi4_data->i2c_client->dev,
 							"%s: cpu first lock failed(%d)\n",
 							__func__, ret);
 			}
@@ -966,7 +966,7 @@ static void synaptics_tkey_change_dvfs_lock(struct work_struct *work)
 
 	retval = set_freq_limit(DVFS_TOUCH_ID, rmi4_data->tkey_dvfs_freq);
 	if (retval < 0)
-		dev_info(&rmi4_data->i2c_client->dev,
+		dev_dbg(&rmi4_data->i2c_client->dev,
 			"%s: booster change failed(%d).\n",
 			__func__, retval);
 	rmi4_data->tkey_dvfs_lock_status = false;
@@ -981,14 +981,14 @@ static void synaptics_tkey_set_dvfs_off(struct work_struct *work)
 	int retval;
 
 	if (rmi4_data->stay_awake) {
-		dev_info(&rmi4_data->i2c_client->dev,
+		dev_dbg(&rmi4_data->i2c_client->dev,
 				"%s: do fw update, do not change cpu frequency.\n",
 				__func__);
 	} else {
 		mutex_lock(&rmi4_data->tkey_dvfs_lock);
 		retval = set_freq_limit(DVFS_TOUCH_ID, -1);
 		if (retval < 0)
-			dev_info(&rmi4_data->i2c_client->dev,
+			dev_dbg(&rmi4_data->i2c_client->dev,
 				"%s: booster stop failed(%d).\n",
 				__func__, retval);
 
@@ -1016,7 +1016,7 @@ static void synaptics_tkey_set_dvfs_lock(struct synaptics_rmi4_data *rmi4_data,
 		if (rmi4_data->tkey_dvfs_lock_status) {
 			ret = set_freq_limit(DVFS_TOUCH_ID, rmi4_data->tkey_dvfs_freq);
 			if (ret < 0)
-				dev_info(&rmi4_data->i2c_client->dev,
+				dev_dbg(&rmi4_data->i2c_client->dev,
 					"%s: cpu first lock failed(%d)\n", __func__, ret);
 			rmi4_data->tkey_dvfs_lock_status = false;
 		}
@@ -1068,7 +1068,7 @@ static ssize_t synaptics_rmi4_f01_reset_store(struct device *dev,
 
 	retval = synaptics_rmi4_reset_device(rmi4_data);
 	if (retval < 0) {
-		dev_err(dev,
+		dev_dbg(dev,
 				"%s: Failed to issue reset command, error = %d\n",
 				__func__, retval);
 		return retval;
@@ -1116,7 +1116,7 @@ static ssize_t synaptics_rmi4_f01_flashprog_show(struct device *dev,
 			device_status.data,
 			sizeof(device_status.data));
 	if (retval < 0) {
-		dev_err(dev,
+		dev_dbg(dev,
 				"%s: Failed to read device status, error = %d\n",
 				__func__, retval);
 		return retval;
@@ -1168,7 +1168,7 @@ static ssize_t synaptics_rmi4_0dbutton_store(struct device *dev,
 					&intr_enable,
 					sizeof(intr_enable));
 			if (retval < 0) {
-				dev_err(&rmi4_data->i2c_client->dev, "%s:%4d read fail[%d]\n",
+				dev_dbg(&rmi4_data->i2c_client->dev, "%s:%4d read fail[%d]\n",
 					__func__, __LINE__, retval);
 				return retval;
 			}
@@ -1235,12 +1235,12 @@ static int synaptics_rmi4_set_page(struct synaptics_rmi4_data *rmi4_data,
 			retval = i2c_master_send(i2c, buf, PAGE_SELECT_LEN);
 			if (retval != PAGE_SELECT_LEN) {
 				if ((rmi4_data->tsp_probe != true) && (retry>=1)) {
-					dev_err(&i2c->dev,
+					dev_dbg(&i2c->dev,
 							"%s: TSP needs to reboot\n", __func__);
 					retval = TSP_NEEDTO_REBOOT;
 					return retval;
 				}
-				dev_err(&i2c->dev,
+				dev_dbg(&i2c->dev,
 						"%s: I2C retry = %d, i2c_master_send retval = %d\n",
 						__func__, retry + 1, retval);
 				if (retval == 0)
@@ -1294,7 +1294,7 @@ static int synaptics_rmi4_i2c_read(struct synaptics_rmi4_data *rmi4_data,
 	mutex_lock(&(rmi4_data->rmi4_io_ctrl_mutex));
 
 	if (rmi4_data->touch_stopped) {
-		dev_err(&rmi4_data->i2c_client->dev, "%s: Sensor stopped\n",
+		dev_dbg(&rmi4_data->i2c_client->dev, "%s: Sensor stopped\n",
 				__func__);
 		retval = 0;
 		goto exit;
@@ -1309,13 +1309,13 @@ static int synaptics_rmi4_i2c_read(struct synaptics_rmi4_data *rmi4_data,
 			retval = length;
 			break;
 		}
-		dev_err(&rmi4_data->i2c_client->dev, "%s: I2C retry %d\n",
+		dev_dbg(&rmi4_data->i2c_client->dev, "%s: I2C retry %d\n",
 				__func__, retry + 1);
 		msleep(20);
 	}
 
 	if (retry == SYN_I2C_RETRY_TIMES) {
-		dev_err(&rmi4_data->i2c_client->dev,
+		dev_dbg(&rmi4_data->i2c_client->dev,
 				"%s: I2C read over retry limit\n",
 				__func__);
 		retval = -EIO;
@@ -1354,7 +1354,7 @@ static int synaptics_rmi4_i2c_write(struct synaptics_rmi4_data *rmi4_data,
 	mutex_lock(&(rmi4_data->rmi4_io_ctrl_mutex));
 
 	if (rmi4_data->touch_stopped) {
-		dev_err(&rmi4_data->i2c_client->dev, "%s: Sensor stopped\n",
+		dev_dbg(&rmi4_data->i2c_client->dev, "%s: Sensor stopped\n",
 				__func__);
 		retval = 0;
 		goto exit;
@@ -1372,14 +1372,14 @@ static int synaptics_rmi4_i2c_write(struct synaptics_rmi4_data *rmi4_data,
 			retval = length;
 			break;
 		}
-		dev_err(&rmi4_data->i2c_client->dev,
+		dev_dbg(&rmi4_data->i2c_client->dev,
 				"%s: I2C retry %d\n",
 				__func__, retry + 1);
 		msleep(20);
 	}
 
 	if (retry == SYN_I2C_RETRY_TIMES) {
-		dev_err(&rmi4_data->i2c_client->dev,
+		dev_dbg(&rmi4_data->i2c_client->dev,
 				"%s: I2C write over retry limit\n",
 				__func__);
 		retval = -EIO;
@@ -1439,7 +1439,7 @@ static int synaptics_rmi4_f11_abs_report(struct synaptics_rmi4_data *rmi4_data,
 			finger_status_reg,
 			num_of_finger_status_regs);
 	if (retval < 0) {
-		dev_err(&rmi4_data->i2c_client->dev, "%s:%4d read fail[%d]\n",
+		dev_dbg(&rmi4_data->i2c_client->dev, "%s:%4d read fail[%d]\n",
 					__func__, __LINE__, retval);
 		return 0;
 	}
@@ -1470,7 +1470,7 @@ static int synaptics_rmi4_f11_abs_report(struct synaptics_rmi4_data *rmi4_data,
 					data,
 					data_reg_blk_size);
 			if (retval < 0) {
-				dev_err(&rmi4_data->i2c_client->dev, "%s:%4d read fail[%d]\n",
+				dev_dbg(&rmi4_data->i2c_client->dev, "%s:%4d read fail[%d]\n",
 					__func__, __LINE__, retval);
 				return 0;
 			}
@@ -1612,7 +1612,7 @@ static int synaptics_rmi4_f12_abs_report(struct synaptics_rmi4_data *rmi4_data,
 			(unsigned char *)fhandler->data,
 			fingers_to_process * size_of_2d_data);
 	if (retval < 0) {
-		dev_err(&rmi4_data->i2c_client->dev, "%s:%4d read fail[%d]\n",
+		dev_dbg(&rmi4_data->i2c_client->dev, "%s:%4d read fail[%d]\n",
 				__func__, __LINE__, retval);
 		return 0;
 	}
@@ -1672,7 +1672,7 @@ static int synaptics_rmi4_f12_abs_report(struct synaptics_rmi4_data *rmi4_data,
 #ifdef USE_PALM_REJECTION_KERNEL
 				if ((finger_status == PALM_PRESSED) &&
 					(rmi4_data->f51_handle->surface_data.palm == 0)) {
-					dev_info(&rmi4_data->i2c_client->dev,
+					dev_dbg(&rmi4_data->i2c_client->dev,
 							"%s: finger status 0x3, but No Palm. Reject!\n",
 							__func__);
 
@@ -1730,11 +1730,11 @@ static int synaptics_rmi4_f12_abs_report(struct synaptics_rmi4_data *rmi4_data,
 
 			if (!rmi4_data->finger[finger].state) {
 #if !defined(CONFIG_SAMSUNG_PRODUCT_SHIP)
-				dev_info(&rmi4_data->i2c_client->dev,
+				dev_dbg(&rmi4_data->i2c_client->dev,
 						"[%d][P] 0x%02x, x = %d, y = %d, wx = %d, wy = %d |[%d]\n",
 						finger, finger_status, x, y, wx, wy, fingers_to_process);
 #else
-				dev_info(&rmi4_data->i2c_client->dev,
+				dev_dbg(&rmi4_data->i2c_client->dev,
 						"[%d][P] 0x%02x\n",
 						finger, finger_status);
 #endif
@@ -1744,7 +1744,7 @@ static int synaptics_rmi4_f12_abs_report(struct synaptics_rmi4_data *rmi4_data,
 
 #if !defined(CONFIG_SAMSUNG_PRODUCT_SHIP)
 			if (rmi4_data->debug_log & 0x2)
-				dev_info(&rmi4_data->i2c_client->dev,
+				dev_dbg(&rmi4_data->i2c_client->dev,
 						"[%d] 0x%02x, x = %d, y = %d, wx = %d, wy = %d |[%d]\n",
 						finger, finger_status, x, y, wx, wy, fingers_to_process);
 #endif
@@ -1753,11 +1753,11 @@ static int synaptics_rmi4_f12_abs_report(struct synaptics_rmi4_data *rmi4_data,
 
 		if (rmi4_data->finger[finger].state && (!finger_status)) {
 #if !defined(CONFIG_SAMSUNG_PRODUCT_SHIP)
-			dev_info(&rmi4_data->i2c_client->dev, "[%d][R] 0x%02x M[%d], Ver[%02X%02X][%X/%d]\n",
+			dev_dbg(&rmi4_data->i2c_client->dev, "[%d][R] 0x%02x M[%d], Ver[%02X%02X][%X/%d]\n",
 					finger, finger_status, rmi4_data->finger[finger].mcount,
 					rmi4_data->ic_revision_of_ic, rmi4_data->fw_version_of_ic, rmi4_data->lcd_id, system_rev);
 #else
-			dev_info(&rmi4_data->i2c_client->dev, "[%d][R] 0x%02x M[%d], Ver[%02X%02X][%X/%d]\n",
+			dev_dbg(&rmi4_data->i2c_client->dev, "[%d][R] 0x%02x M[%d], Ver[%02X%02X][%X/%d]\n",
 					finger, finger_status, rmi4_data->finger[finger].mcount,
 					rmi4_data->ic_revision_of_ic, rmi4_data->fw_version_of_ic, rmi4_data->lcd_id, system_rev);
 #endif
@@ -1827,7 +1827,7 @@ static void synaptics_rmi4_f1a_report(struct synaptics_rmi4_data *rmi4_data,
 			f1a->button_data_buffer,
 			f1a->button_bitmask_size);
 	if (retval < 0) {
-		dev_err(&rmi4_data->i2c_client->dev,
+		dev_dbg(&rmi4_data->i2c_client->dev,
 				"%s: Failed to read button data registers\n",
 				__func__);
 		return;
@@ -1845,7 +1845,7 @@ static void synaptics_rmi4_f1a_report(struct synaptics_rmi4_data *rmi4_data,
 		else
 			current_status[button] = status;
 
-		dev_info(&rmi4_data->i2c_client->dev,
+		dev_dbg(&rmi4_data->i2c_client->dev,
 				"%s: Button %d (code %d) ->%d\n",
 				__func__, button,
 				f1a->button_map[button],
@@ -1914,7 +1914,7 @@ static int synaptics_rmi4_f51_edge_swipe(struct synaptics_rmi4_data *rmi4_data,
 			data->edge_swipe_data,
 			sizeof(data->edge_swipe_data));
 	if (retval < 0) {
-		dev_err(&rmi4_data->i2c_client->dev, "%s: read fail[%d]\n",
+		dev_dbg(&rmi4_data->i2c_client->dev, "%s: read fail[%d]\n",
 					__func__, retval);
 		return retval;
 	}
@@ -1928,7 +1928,7 @@ static int synaptics_rmi4_f51_edge_swipe(struct synaptics_rmi4_data *rmi4_data,
 
 #if !defined(CONFIG_SAMSUNG_PRODUCT_SHIP)
 	if (rmi4_data->debug_log & 0x1)
-		dev_info(&rmi4_data->i2c_client->dev,
+		dev_dbg(&rmi4_data->i2c_client->dev,
 				"%s: edge_data : x[%d], y[%d], z[%d] ,wx[%d], wy[%d], area[%d], angle[%d][%d]\n", __func__,
 				data->edge_swipe_x_msb << 8 | data->edge_swipe_x_lsb,
 				data->edge_swipe_y_msb << 8 | data->edge_swipe_y_lsb,
@@ -1983,7 +1983,7 @@ static int synaptics_rmi4_f51_side_btns(struct synaptics_rmi4_data *rmi4_data,
 					input_report_key(rmi4_data->input_dev,
 						KEY_SIDE_TOUCH_0 + button, status);
 
-			dev_info(&rmi4_data->i2c_client->dev,
+			dev_dbg(&rmi4_data->i2c_client->dev,
 					"%s: SIDE_KEY #%d %s[%X], CAM[%X]\n",
 					__func__, button, status ? "PRESS" : "RELEASE",
 					rmi4_data->sidekey_data,
@@ -2024,7 +2024,7 @@ static int synaptics_rmi4_f51_detection_flag(struct synaptics_rmi4_data *rmi4_da
 			data->proximity_data,
 			sizeof(data->proximity_data));
 	if (retval < 0) {
-		dev_err(&rmi4_data->i2c_client->dev,
+		dev_dbg(&rmi4_data->i2c_client->dev,
 				"%s: Failed to read proximity data registers\n",
 				__func__);
 		return retval;
@@ -2052,7 +2052,7 @@ static int synaptics_rmi4_f51_detection_flag(struct synaptics_rmi4_data *rmi4_da
 					rmi4_data->hand_grip, 1);
 
 			input_sync(rmi4_data->input_dev);
-			dev_info(&rmi4_data->i2c_client->dev, "%s: (%d) %s Hand grip.(old = %s)\n",
+			dev_dbg(&rmi4_data->i2c_client->dev, "%s: (%d) %s Hand grip.(old = %s)\n",
 					__func__, data->profile_handedness_status,
 					rmi4_data->hand_grip == SW_RIGHT_HAND ? "RIGHT" :
 					rmi4_data->hand_grip == SW_LEFT_HAND ? "LEFT" : "BOTH",
@@ -2072,7 +2072,7 @@ static int synaptics_rmi4_f51_detection_flag(struct synaptics_rmi4_data *rmi4_da
 
 	if (data->proximity_data[0] == HOVER_UN_DETECTED) {
 		if (rmi4_data->f51_finger_is_hover) {
-			dev_info (&rmi4_data->i2c_client->dev,
+			dev_dbg (&rmi4_data->i2c_client->dev,
 				"%s: Hover finger[OUT]\n", __func__);
 			rmi4_data->f51_finger_is_hover = false;
 		}
@@ -2105,10 +2105,10 @@ static int synaptics_rmi4_f51_detection_flag(struct synaptics_rmi4_data *rmi4_da
 
 		if (!rmi4_data->f51_finger_is_hover) {
 #if !defined(CONFIG_SAMSUNG_PRODUCT_SHIP)
-			dev_info(&rmi4_data->i2c_client->dev,
+			dev_dbg(&rmi4_data->i2c_client->dev,
 				"Hover finger[IN]: x = %d, y = %d, z = %d\n", x, y, z);
 #else
-			dev_info(&rmi4_data->i2c_client->dev,
+			dev_dbg(&rmi4_data->i2c_client->dev,
 				"Hover finger[IN]\n");
 #endif
 			rmi4_data->f51_finger_is_hover = true;
@@ -2140,7 +2140,7 @@ static int synaptics_rmi4_f51_detection_flag2(struct synaptics_rmi4_data *rmi4_d
 			rmi4_data->f51_handle->detection_flag2_addr,
 			&detection_flag2, 1);
 	if (retval < 0) {
-		dev_err(&rmi4_data->i2c_client->dev,
+		dev_dbg(&rmi4_data->i2c_client->dev,
 				"%s: Failed to read detection flag2\n",
 				__func__);
 	}
@@ -2153,7 +2153,7 @@ static int synaptics_rmi4_f51_detection_flag2(struct synaptics_rmi4_data *rmi4_d
 				rmi4_data->fingers_on_2d) {
 			retval = synaptics_rmi4_f51_edge_swipe(rmi4_data, fhandler);
 		if (retval < 0) {
-			dev_err(&rmi4_data->i2c_client->dev,
+			dev_dbg(&rmi4_data->i2c_client->dev,
 					"%s: Failed to read edge swipe data\n",
 					__func__);
 			return retval;
@@ -2167,7 +2167,7 @@ static int synaptics_rmi4_f51_detection_flag2(struct synaptics_rmi4_data *rmi4_d
 					rmi4_data->f51_handle->edge_swipe_data_addr + EDGE_SWIPE_SUMSIZE_OFFSET,
 					wx_wy_sumsize, sizeof(wx_wy_sumsize));
 		if (retval < 0) {
-				dev_err(&rmi4_data->i2c_client->dev, "%s: Failed to read sumsize data[%d]\n",
+				dev_dbg(&rmi4_data->i2c_client->dev, "%s: Failed to read sumsize data[%d]\n",
 							__func__, retval);
 			return retval;
 		}
@@ -2183,7 +2183,7 @@ static int synaptics_rmi4_f51_detection_flag2(struct synaptics_rmi4_data *rmi4_d
 	if ((detection_flag2 & SIDE_BUTTON_DETECTED) && rmi4_data->sidekey_enables) {
 		retval = synaptics_rmi4_f51_side_btns(rmi4_data, fhandler);
 		if (retval < 0) {
-			dev_err(&rmi4_data->i2c_client->dev,
+			dev_dbg(&rmi4_data->i2c_client->dev,
 					"%s: Failed to read side button data\n",
 					__func__);
 			return retval;
@@ -2200,7 +2200,7 @@ static void synaptics_rmi4_f51_report(struct synaptics_rmi4_data *rmi4_data,
 
 	retval = synaptics_rmi4_f51_detection_flag(rmi4_data, fhandler);
 	if (retval < 0) {
-		dev_err(&rmi4_data->i2c_client->dev,
+		dev_dbg(&rmi4_data->i2c_client->dev,
 				"%s: Failed to read detection_flag\n",
 				__func__);
 		return;
@@ -2209,7 +2209,7 @@ static void synaptics_rmi4_f51_report(struct synaptics_rmi4_data *rmi4_data,
 
 	retval = synaptics_rmi4_f51_detection_flag2(rmi4_data, fhandler);
 	if (retval < 0) {
-		dev_err(&rmi4_data->i2c_client->dev,
+		dev_dbg(&rmi4_data->i2c_client->dev,
 				"%s: Failed to read detection_flag2\n",
 				__func__);
 		return;
@@ -2263,7 +2263,7 @@ static void synaptics_rmi4_report_touch(struct synaptics_rmi4_data *rmi4_data,
 		break;
 #endif
 	default:
-		dev_info(&rmi4_data->i2c_client->dev,
+		dev_dbg(&rmi4_data->i2c_client->dev,
 				"%s: fn_number : %d\n",
 				__func__, fhandler->fn_number);
 		break;
@@ -2302,7 +2302,7 @@ static int synaptics_rmi4_sensor_report(struct synaptics_rmi4_data *rmi4_data)
 			data,
 			rmi4_data->num_of_intr_regs + 1);
 	if (retval < 0) {
-		dev_err(&rmi4_data->i2c_client->dev,
+		dev_dbg(&rmi4_data->i2c_client->dev,
 				"%s: Failed to read interrupt status\n",
 				__func__);
 		return retval;
@@ -2311,16 +2311,16 @@ static int synaptics_rmi4_sensor_report(struct synaptics_rmi4_data *rmi4_data)
 	status.data[0] = data[0];
 	if (status.unconfigured) {
 		if (rmi4_data->doing_reflash) {
-			dev_err(&rmi4_data->i2c_client->dev,
+			dev_dbg(&rmi4_data->i2c_client->dev,
 					"Spontaneous reset detected during reflash.\n");
 			return 0;
 		}
 
-		dev_info(&rmi4_data->i2c_client->dev,
+		dev_dbg(&rmi4_data->i2c_client->dev,
 				"Spontaneous reset detected\n");
 		retval = synaptics_rmi4_reinit_device(rmi4_data);
 		if (retval < 0) {
-			dev_err(&rmi4_data->i2c_client->dev,
+			dev_dbg(&rmi4_data->i2c_client->dev,
 					"%s: Failed to reinit device\n",
 					__func__);
 		}
@@ -2372,7 +2372,7 @@ static irqreturn_t synaptics_rmi4_irq(int irq, void *data)
 	do {
 		retval = synaptics_rmi4_sensor_report(rmi4_data);
 		if (retval < 0) {
-			dev_err(&rmi4_data->i2c_client->dev, "%s: Failed to read",
+			dev_dbg(&rmi4_data->i2c_client->dev, "%s: Failed to read",
 					__func__);
 			goto out;
 		}
@@ -2411,7 +2411,7 @@ int synaptics_rmi4_irq_enable(struct synaptics_rmi4_data *rmi4_data,
 				intr_status,
 				rmi4_data->num_of_intr_regs);
 		if (retval < 0) {
-			dev_err(&rmi4_data->i2c_client->dev, "%s: read fail[%d]\n",
+			dev_dbg(&rmi4_data->i2c_client->dev, "%s: read fail[%d]\n",
 					__func__, retval);
 			return retval;
 		}
@@ -2426,7 +2426,7 @@ int synaptics_rmi4_irq_enable(struct synaptics_rmi4_data *rmi4_data,
 				DRIVER_NAME, rmi4_data);
 
 		if (retval < 0) {
-			dev_err(&rmi4_data->i2c_client->dev,
+			dev_dbg(&rmi4_data->i2c_client->dev,
 					"%s: Failed to create irq thread\n",
 					__func__);
 			return retval;
@@ -2476,7 +2476,7 @@ static int synaptics_rmi4_f11_init(struct synaptics_rmi4_data *rmi4_data,
 			query,
 			sizeof(query));
 	if (retval < 0) {
-		dev_err(&rmi4_data->i2c_client->dev, "%s:%d read fail[%d]\n",
+		dev_dbg(&rmi4_data->i2c_client->dev, "%s:%d read fail[%d]\n",
 					__func__, __LINE__, retval);
 		return retval;
 	}
@@ -2494,7 +2494,7 @@ static int synaptics_rmi4_f11_init(struct synaptics_rmi4_data *rmi4_data,
 			control,
 			sizeof(control));
 	if (retval < 0) {
-		dev_err(&rmi4_data->i2c_client->dev, "%s:%d read fail[%d]\n",
+		dev_dbg(&rmi4_data->i2c_client->dev, "%s:%d read fail[%d]\n",
 					__func__, __LINE__, retval);
 		return retval;
 	}
@@ -2504,7 +2504,7 @@ static int synaptics_rmi4_f11_init(struct synaptics_rmi4_data *rmi4_data,
 		((control[7] & MASK_4BIT) << 8);
 	rmi4_data->sensor_max_y = ((control[8] & MASK_8BIT) << 0) |
 		((control[9] & MASK_4BIT) << 8);
-	dev_info(&rmi4_data->i2c_client->dev,
+	dev_dbg(&rmi4_data->i2c_client->dev,
 			"%s: Function %02x max x = %d max y = %d\n",
 			__func__, fhandler->fn_number,
 			rmi4_data->sensor_max_x,
@@ -2513,7 +2513,7 @@ static int synaptics_rmi4_f11_init(struct synaptics_rmi4_data *rmi4_data,
 		rmi4_data->sensor_max_x = rmi4_data->dt_data->coords[0];
 		rmi4_data->sensor_max_y = rmi4_data->dt_data->coords[1];
 
-		dev_info(&rmi4_data->i2c_client->dev,
+		dev_dbg(&rmi4_data->i2c_client->dev,
 				"%s: Function %02x read failed, run dtsi coords. max x = %d max y = %d\n",
 				__func__, fhandler->fn_number,
 				rmi4_data->sensor_max_x,
@@ -2559,7 +2559,7 @@ int synaptics_rmi4_f12_ctrl11_set (struct synaptics_rmi4_data *rmi4_data,
 			ctrl_11.data,
 			sizeof(ctrl_11.data));
 	if (retval < 0) {
-		dev_err(&rmi4_data->i2c_client->dev, "%s: read fail[%d]\n",
+		dev_dbg(&rmi4_data->i2c_client->dev, "%s: read fail[%d]\n",
 				__func__, retval);
 		return retval;
 	}
@@ -2571,7 +2571,7 @@ int synaptics_rmi4_f12_ctrl11_set (struct synaptics_rmi4_data *rmi4_data,
 			ctrl_11.data,
 			sizeof(ctrl_11.data));
 	if (retval < 0) {
-		dev_err(&rmi4_data->i2c_client->dev, "%s: write fail[%d]\n",
+		dev_dbg(&rmi4_data->i2c_client->dev, "%s: write fail[%d]\n",
 				__func__, retval);
 		return retval;
 	}
@@ -2589,12 +2589,12 @@ int synaptics_rmi4_f12_set_feature(struct synaptics_rmi4_data *rmi4_data)
 				&rmi4_data->feature_enable,
 				sizeof(rmi4_data->feature_enable));
 		if (retval < 0) {
-			dev_err(&rmi4_data->i2c_client->dev, "%s: write fail[%d]\n",
+			dev_dbg(&rmi4_data->i2c_client->dev, "%s: write fail[%d]\n",
 				__func__, retval);
 			return retval;
 		}
 
-		dev_info(&rmi4_data->i2c_client->dev, "%s: 0x%x\n",
+		dev_dbg(&rmi4_data->i2c_client->dev, "%s: 0x%x\n",
 				__func__, rmi4_data->feature_enable);
 	}
 
@@ -2610,7 +2610,7 @@ static int synaptics_rmi4_f12_set_report(struct synaptics_rmi4_data *rmi4_data)
 			&rmi4_data->report_enable,
 			sizeof(rmi4_data->report_enable));
 	if (retval < 0) {
-		dev_err(&rmi4_data->i2c_client->dev, "%s: write fail[%d]\n",
+		dev_dbg(&rmi4_data->i2c_client->dev, "%s: write fail[%d]\n",
 				__func__, retval);
 		return retval;
 	}
@@ -2666,7 +2666,7 @@ static int synaptics_rmi4_f12_init(struct synaptics_rmi4_data *rmi4_data,
 			query_5.data,
 			sizeof(query_5.data));
 	if (retval < 0) {
-		dev_err(&rmi4_data->i2c_client->dev, "%s:%4d read fail[%d]\n",
+		dev_dbg(&rmi4_data->i2c_client->dev, "%s:%4d read fail[%d]\n",
 				__func__, __LINE__, retval);
 		return retval;
 	}
@@ -2717,7 +2717,7 @@ static int synaptics_rmi4_f12_init(struct synaptics_rmi4_data *rmi4_data,
 			ctrl_23.data,
 			sizeof(ctrl_23.data));
 	if (retval < 0) {
-		dev_err(&rmi4_data->i2c_client->dev, "%s:%4d read fail[%d]\n",
+		dev_dbg(&rmi4_data->i2c_client->dev, "%s:%4d read fail[%d]\n",
 				__func__, __LINE__, retval);
 		return retval;
 	}
@@ -2733,7 +2733,7 @@ static int synaptics_rmi4_f12_init(struct synaptics_rmi4_data *rmi4_data,
 			&size_of_query8,
 			sizeof(size_of_query8));
 	if (retval < 0) {
-		dev_err(&rmi4_data->i2c_client->dev, "%s:%4d read fail[%d]\n",
+		dev_dbg(&rmi4_data->i2c_client->dev, "%s:%4d read fail[%d]\n",
 				__func__, __LINE__, retval);
 		return retval;
 	}
@@ -2743,7 +2743,7 @@ static int synaptics_rmi4_f12_init(struct synaptics_rmi4_data *rmi4_data,
 			query_8.data,
 			size_of_query8);
 	if (retval < 0) {
-		dev_err(&rmi4_data->i2c_client->dev, "%s:%4d read fail[%d]\n",
+		dev_dbg(&rmi4_data->i2c_client->dev, "%s:%4d read fail[%d]\n",
 				__func__, __LINE__, retval);
 		return retval;
 	}
@@ -2777,7 +2777,7 @@ static int synaptics_rmi4_f12_init(struct synaptics_rmi4_data *rmi4_data,
 			query_10.data,
 			sizeof(query_10.data));
 	if (retval < 0) {
-		dev_err(&rmi4_data->i2c_client->dev, "%s:%4d read fail[%d]\n",
+		dev_dbg(&rmi4_data->i2c_client->dev, "%s:%4d read fail[%d]\n",
 				__func__, __LINE__, retval);
 		return retval;
 	}
@@ -2815,14 +2815,14 @@ static int synaptics_rmi4_f12_init(struct synaptics_rmi4_data *rmi4_data,
 				&rmi4_data->feature_enable,
 				sizeof(rmi4_data->feature_enable));
 		if (retval < 0) {
-			dev_err(&rmi4_data->i2c_client->dev, "%s:%4d read fail[%d]\n",
+			dev_dbg(&rmi4_data->i2c_client->dev, "%s:%4d read fail[%d]\n",
 					__func__, __LINE__, retval);
 			return retval;
 		}
 	
 		retval = synaptics_rmi4_f12_set_feature(rmi4_data);
 		if (retval < 0) {
-			dev_err(&rmi4_data->i2c_client->dev, "%s: f12_set_feature fail[%d]\n",
+			dev_dbg(&rmi4_data->i2c_client->dev, "%s: f12_set_feature fail[%d]\n",
 					__func__, retval);
 			return retval;
 		}
@@ -2830,7 +2830,7 @@ static int synaptics_rmi4_f12_init(struct synaptics_rmi4_data *rmi4_data,
 
 	retval = synaptics_rmi4_f12_set_report(rmi4_data);
 	if (retval < 0) {
-		dev_err(&rmi4_data->i2c_client->dev, "%s: f12_set_report fail[%d]\n",
+		dev_dbg(&rmi4_data->i2c_client->dev, "%s: f12_set_report fail[%d]\n",
 				__func__, retval);
 		return retval;
 	}
@@ -2838,7 +2838,7 @@ static int synaptics_rmi4_f12_init(struct synaptics_rmi4_data *rmi4_data,
 #ifdef ENABLE_F12_OBJTYPE
 	retval = synaptics_rmi4_f12_obj_type_enable(rmi4_data);
 	if (retval < 0) {
-		dev_err(&rmi4_data->i2c_client->dev,
+		dev_dbg(&rmi4_data->i2c_client->dev,
 				"%s, Failed to set object. [%d]\n",
 			__func__, retval);
 		return retval;
@@ -2850,7 +2850,7 @@ static int synaptics_rmi4_f12_init(struct synaptics_rmi4_data *rmi4_data,
 			ctrl_8.data,
 			sizeof(ctrl_8.data));
 	if (retval < 0) {
-		dev_err(&rmi4_data->i2c_client->dev, "%s:%4d read fail[%d]\n",
+		dev_dbg(&rmi4_data->i2c_client->dev, "%s:%4d read fail[%d]\n",
 				__func__, __LINE__, retval);
 		return retval;
 	}
@@ -2862,7 +2862,7 @@ static int synaptics_rmi4_f12_init(struct synaptics_rmi4_data *rmi4_data,
 	rmi4_data->sensor_max_y =
 		((unsigned short)ctrl_8.max_y_coord_lsb << 0) |
 		((unsigned short)ctrl_8.max_y_coord_msb << 8);
-	dev_info(&rmi4_data->i2c_client->dev,
+	dev_dbg(&rmi4_data->i2c_client->dev,
 			"%s: Function %02x max x = %d max y = %d\n",
 			__func__, fhandler->fn_number,
 			rmi4_data->sensor_max_x,
@@ -2871,7 +2871,7 @@ static int synaptics_rmi4_f12_init(struct synaptics_rmi4_data *rmi4_data,
 		rmi4_data->sensor_max_x = rmi4_data->dt_data->coords[0];
 		rmi4_data->sensor_max_y = rmi4_data->dt_data->coords[1];
 
-		dev_info(&rmi4_data->i2c_client->dev,
+		dev_dbg(&rmi4_data->i2c_client->dev,
 				"%s: Function %02x read failed, run dtsi coords. max x = %d max y = %d\n",
 				__func__, fhandler->fn_number,
 				rmi4_data->sensor_max_x,
@@ -2890,14 +2890,14 @@ static int synaptics_rmi4_f12_init(struct synaptics_rmi4_data *rmi4_data,
 			ctrl_9.data,
 			sizeof(ctrl_9.data));
 	if (retval < 0) {
-		dev_err(&rmi4_data->i2c_client->dev, "%s:%4d read fail[%d]\n",
+		dev_dbg(&rmi4_data->i2c_client->dev, "%s:%4d read fail[%d]\n",
 				__func__, __LINE__, retval);
 		return retval;
 	}
 
 	rmi4_data->touch_threshold = (int)ctrl_9.touch_threshold;
 	rmi4_data->gloved_sensitivity = (int)ctrl_9.gloved_finger;
-	dev_info(&rmi4_data->i2c_client->dev,
+	dev_dbg(&rmi4_data->i2c_client->dev,
 			"%s: %02x num_Rx:%d num_Tx:%d, node:%d, threshold:%d, gloved sensitivity:%x\n",
 			__func__, fhandler->fn_number,
 			rmi4_data->num_of_rx, rmi4_data->num_of_tx,
@@ -2909,12 +2909,12 @@ static int synaptics_rmi4_f12_init(struct synaptics_rmi4_data *rmi4_data,
 			ctrl_11.data,
 			sizeof(ctrl_11.data));
 	if (retval < 0) {
-		dev_err(&rmi4_data->i2c_client->dev, "%s:%4d read fail[%d]\n",
+		dev_dbg(&rmi4_data->i2c_client->dev, "%s:%4d read fail[%d]\n",
 				__func__, __LINE__, retval);
 		return retval;
 	}
 
-	dev_info(&rmi4_data->i2c_client->dev,
+	dev_dbg(&rmi4_data->i2c_client->dev,
 			"%s: jitter filter strenth = %d, glove jitter filter strenght = %d\n",
 			__func__, (int)ctrl_11.jitter_filter_strength,
 			(int)ctrl_11.gloved_finger_jitter_filter_strength);
@@ -2947,7 +2947,7 @@ static int synaptics_rmi4_f1a_alloc_mem(struct synaptics_rmi4_data *rmi4_data,
 
 	f1a = kzalloc(sizeof(*f1a), GFP_KERNEL);
 	if (!f1a) {
-		dev_err(&rmi4_data->i2c_client->dev,
+		dev_dbg(&rmi4_data->i2c_client->dev,
 				"%s: Failed to alloc mem for function handle\n",
 				__func__);
 		return -ENOMEM;
@@ -2961,7 +2961,7 @@ static int synaptics_rmi4_f1a_alloc_mem(struct synaptics_rmi4_data *rmi4_data,
 			f1a->button_query.data,
 			sizeof(f1a->button_query.data));
 	if (retval < 0) {
-		dev_err(&rmi4_data->i2c_client->dev,
+		dev_dbg(&rmi4_data->i2c_client->dev,
 				"%s: Failed to read query registers\n",
 				__func__);
 		return retval;
@@ -2971,7 +2971,7 @@ static int synaptics_rmi4_f1a_alloc_mem(struct synaptics_rmi4_data *rmi4_data,
 
 	f1a->button_control.txrx_map = kzalloc(f1a->max_count * 2, GFP_KERNEL);
 	if (!f1a->button_control.txrx_map) {
-		dev_err(&rmi4_data->i2c_client->dev,
+		dev_dbg(&rmi4_data->i2c_client->dev,
 				"%s: Failed to alloc mem for tx rx mapping\n",
 				__func__);
 		return -ENOMEM;
@@ -2982,7 +2982,7 @@ static int synaptics_rmi4_f1a_alloc_mem(struct synaptics_rmi4_data *rmi4_data,
 	f1a->button_data_buffer = kcalloc(f1a->button_bitmask_size,
 			sizeof(*(f1a->button_data_buffer)), GFP_KERNEL);
 	if (!f1a->button_data_buffer) {
-		dev_err(&rmi4_data->i2c_client->dev,
+		dev_dbg(&rmi4_data->i2c_client->dev,
 				"%s: Failed to alloc mem for data buffer\n",
 				__func__);
 		return -ENOMEM;
@@ -2991,7 +2991,7 @@ static int synaptics_rmi4_f1a_alloc_mem(struct synaptics_rmi4_data *rmi4_data,
 	f1a->button_map = kcalloc(f1a->max_count,
 			sizeof(*(f1a->button_map)), GFP_KERNEL);
 	if (!f1a->button_map) {
-		dev_err(&rmi4_data->i2c_client->dev,
+		dev_dbg(&rmi4_data->i2c_client->dev,
 				"%s: Failed to alloc mem for button map\n",
 				__func__);
 		return -ENOMEM;
@@ -3018,7 +3018,7 @@ static int synaptics_rmi4_f1a_button_map(struct synaptics_rmi4_data *rmi4_data,
 				f1a->button_control.txrx_map,
 				sizeof(f1a->button_control.txrx_map));
 		if (retval < 0) {
-			dev_err(&rmi4_data->i2c_client->dev,
+			dev_dbg(&rmi4_data->i2c_client->dev,
 					"%s: Failed to read tx rx mapping\n",
 					__func__);
 			return retval;
@@ -3028,12 +3028,12 @@ static int synaptics_rmi4_f1a_button_map(struct synaptics_rmi4_data *rmi4_data,
 	}
 
 	if (!rmi4_data->dt_data->f1a_button_map) {
-		dev_err(&rmi4_data->i2c_client->dev,
+		dev_dbg(&rmi4_data->i2c_client->dev,
 				"%s: f1a_button_map is NULL in dtsi file\n",
 				__func__);
 		return -ENODEV;
 	} else if (!rmi4_data->dt_data->f1a_button_map->map) {
-		dev_err(&rmi4_data->i2c_client->dev,
+		dev_dbg(&rmi4_data->i2c_client->dev,
 				"%s: Button map is missing in dtsi file\n",
 				__func__);
 		return -ENODEV;
@@ -3120,12 +3120,12 @@ int synaptics_rmi4_tsp_read_test_result(struct synaptics_rmi4_data *rmi4_data)
 			&data,
 			sizeof(data));
 	if (retval < 0) {
-		dev_err(&rmi4_data->i2c_client->dev, "%s: read fail[%d]\n",
+		dev_dbg(&rmi4_data->i2c_client->dev, "%s: read fail[%d]\n",
 				__func__, retval);
 		return retval;
 	}
 
-	dev_info(&rmi4_data->i2c_client->dev, "%s: test_result : [%x]\n",
+	dev_dbg(&rmi4_data->i2c_client->dev, "%s: test_result : [%x]\n",
 			__func__, data >> 4);
 
 	return data >> 4;
@@ -3143,7 +3143,7 @@ static int synaptics_rmi4_f34_read_version(struct synaptics_rmi4_data *rmi4_data
 			rmi4_data->bootloader_id,
 			sizeof(rmi4_data->bootloader_id));
 	if (retval < 0) {
-		dev_info(&rmi4_data->i2c_client->dev,
+		dev_dbg(&rmi4_data->i2c_client->dev,
 			"%s: Failed to read. error = %d\n",
 			__func__, retval);
 		return retval;
@@ -3156,12 +3156,12 @@ static int synaptics_rmi4_f34_read_version(struct synaptics_rmi4_data *rmi4_data
 			ctrl_3.data,
 			sizeof(ctrl_3.data));
 	if (retval < 0) {
-		dev_err(&rmi4_data->i2c_client->dev, "%s: read fail[%d]\n",
+		dev_dbg(&rmi4_data->i2c_client->dev, "%s: read fail[%d]\n",
 				__func__, retval);
 		return retval;
 	}
 
-	dev_info(&rmi4_data->i2c_client->dev, "%s: [IC] test_result[%x][date, revision, version] [%02d/%02d, 0x%02X, 0x%02X], Bootlader : v%s\n",
+	dev_dbg(&rmi4_data->i2c_client->dev, "%s: [IC] test_result[%x][date, revision, version] [%02d/%02d, 0x%02X, 0x%02X], Bootlader : v%s\n",
 			__func__, ctrl_3.fw_release_month >> 4, ctrl_3.fw_release_month & 0xF, ctrl_3.fw_release_date,
 			ctrl_3.fw_release_revision, ctrl_3.fw_release_version, rmi4_data->bootloader_id);
 
@@ -3185,7 +3185,7 @@ static int synaptics_rmi4_f34_init(struct synaptics_rmi4_data *rmi4_data,
 
 	retval = synaptics_rmi4_f34_read_version(rmi4_data, fhandler);
 	if (retval < 0) {
-		dev_err(&rmi4_data->i2c_client->dev, "%s: read fail[%d]\n",
+		dev_dbg(&rmi4_data->i2c_client->dev, "%s: read fail[%d]\n",
 				__func__, retval);
 		return retval;
 	}
@@ -3217,11 +3217,11 @@ static void synaptics_rmi4_rezero_work(struct work_struct *work)
 			&custom_rezero, sizeof(custom_rezero));
 
 	if (retval < 0) {
-		dev_err(&rmi4_data->i2c_client->dev, "%s: fail to write custom rezero\n",
+		dev_dbg(&rmi4_data->i2c_client->dev, "%s: fail to write custom rezero\n",
 			__func__);
 		return;
 	}
-	dev_info(&rmi4_data->i2c_client->dev, "%s\n", __func__);
+	dev_dbg(&rmi4_data->i2c_client->dev, "%s\n", __func__);
 }
 #endif
 
@@ -3232,7 +3232,7 @@ int synaptics_rmi4_f51_grip_edge_exclusion_rx(struct synaptics_rmi4_data *rmi4_d
 	unsigned char grip_edge = 0;
 
 	if (!rmi4_data->f51_handle) {
-		printk(KERN_ERR "%s: f51 is not set!\n", __func__);
+		pr_debug("%s: f51 is not set!\n", __func__);
 		return -ENODEV;
 	}
 
@@ -3246,10 +3246,10 @@ int synaptics_rmi4_f51_grip_edge_exclusion_rx(struct synaptics_rmi4_data *rmi4_d
 			&grip_edge,
 			sizeof(grip_edge));
 	if (retval <= 0)
-		dev_err(&rmi4_data->i2c_client->dev, "%s: fail to set grip_edge[%X][ret:%d]\n",
+		dev_dbg(&rmi4_data->i2c_client->dev, "%s: fail to set grip_edge[%X][ret:%d]\n",
 				__func__, grip_edge, retval);
 	else
-		dev_info(&rmi4_data->i2c_client->dev, "%s: value is 0x%02x\n",
+		dev_dbg(&rmi4_data->i2c_client->dev, "%s: value is 0x%02x\n",
 				__func__, grip_edge);
 
 	return retval;
@@ -3262,7 +3262,7 @@ int synaptics_proximity_no_sleep_set(struct synaptics_rmi4_data *rmi4_data, bool
 	unsigned char no_sleep = 0;
 
 	if (!rmi4_data->f51_handle) {
-		printk(KERN_ERR "%s: f51 is not set!\n", __func__);
+		pr_debug("%s: f51 is not set!\n", __func__);
 		return -ENODEV;
 	}
 
@@ -3272,7 +3272,7 @@ int synaptics_proximity_no_sleep_set(struct synaptics_rmi4_data *rmi4_data, bool
 			sizeof(no_sleep));
 
 	if (retval <= 0)
-		dev_err(&rmi4_data->i2c_client->dev, "%s: fail to read no_sleep[ret:%d]\n",
+		dev_dbg(&rmi4_data->i2c_client->dev, "%s: fail to read no_sleep[ret:%d]\n",
 				__func__, retval);
 
 	if (enables)
@@ -3285,7 +3285,7 @@ int synaptics_proximity_no_sleep_set(struct synaptics_rmi4_data *rmi4_data, bool
 			&no_sleep,
 			sizeof(no_sleep));
 	if (retval <= 0)
-		dev_err(&rmi4_data->i2c_client->dev, "%s: fail to set no_sleep[%X][ret:%d]\n",
+		dev_dbg(&rmi4_data->i2c_client->dev, "%s: fail to set no_sleep[%X][ret:%d]\n",
 				__func__, no_sleep, retval);
 
 	return retval;
@@ -3297,7 +3297,7 @@ static int synaptics_rmi4_f51_set_enables(struct synaptics_rmi4_data *rmi4_data)
 	int retval;
 
 	if (!rmi4_data->f51_handle) {
-		printk(KERN_ERR "%s: f51 is not set!\n", __func__);
+		pr_debug("%s: f51 is not set!\n", __func__);
 		return 0;
 	}
 
@@ -3306,7 +3306,7 @@ static int synaptics_rmi4_f51_set_enables(struct synaptics_rmi4_data *rmi4_data)
 			&rmi4_data->f51_handle->proximity_enables,
 			sizeof(rmi4_data->f51_handle->proximity_enables));
 	if (retval < 0) {
-		dev_err(&rmi4_data->i2c_client->dev,
+		dev_dbg(&rmi4_data->i2c_client->dev,
 				"%s: Failed to write proximity enable\n",
 				__func__);
 		return retval;
@@ -3333,7 +3333,7 @@ int synaptics_rmi4_set_custom_ctrl_register(struct synaptics_rmi4_data *rmi4_dat
 		retval = synaptics_rmi4_i2c_read(rmi4_data,
 				address, data, length);
 		if (retval < 0) {
-			dev_err(&rmi4_data->i2c_client->dev, "%s: do not read 0x%04X\n",
+			dev_dbg(&rmi4_data->i2c_client->dev, "%s: do not read 0x%04X\n",
 				__func__, address);
 			return -EIO;
 		}
@@ -3346,20 +3346,20 @@ int synaptics_rmi4_set_custom_ctrl_register(struct synaptics_rmi4_data *rmi4_dat
 			ii++;
 		}
 
-		dev_info(&rmi4_data->i2c_client->dev, "%s: [R]0x%04X, length:%d, data: %s\n",
+		dev_dbg(&rmi4_data->i2c_client->dev, "%s: [R]0x%04X, length:%d, data: %s\n",
 			__func__, address, length, temp);
 	} else {
 		retval = synaptics_rmi4_i2c_write(rmi4_data,
 				address, value, length);
 		if (retval < 0) {
-			dev_err(&rmi4_data->i2c_client->dev, "%s: do not write 0x%X ~ %d byte\n",
+			dev_dbg(&rmi4_data->i2c_client->dev, "%s: do not write 0x%X ~ %d byte\n",
 				__func__, address, length);
 		} else {
 
 			retval = synaptics_rmi4_i2c_read(rmi4_data,
 					address, data, length);
 			if (retval < 0) {
-				dev_err(&rmi4_data->i2c_client->dev, "%s: do not read 0x%04X\n",
+				dev_dbg(&rmi4_data->i2c_client->dev, "%s: do not read 0x%04X\n",
 						__func__, address);
 				return -EIO;
 			}
@@ -3370,7 +3370,7 @@ int synaptics_rmi4_set_custom_ctrl_register(struct synaptics_rmi4_data *rmi4_dat
 				strcat(temp, t_temp);
 				ii++;
 			}
-			dev_info(&rmi4_data->i2c_client->dev, "%s: [W]0x%04X, length:%d, data: %s\n",
+			dev_dbg(&rmi4_data->i2c_client->dev, "%s: [W]0x%04X, length:%d, data: %s\n",
 					__func__, address, length, temp);
 		}
 
@@ -3409,7 +3409,7 @@ static int synaptics_rmi4_f51_init(struct synaptics_rmi4_data *rmi4_data,
 	fhandler->data_size = sizeof(*data);
 	data = kzalloc(fhandler->data_size, GFP_KERNEL);
 	if (!data) {
-			dev_err(&rmi4_data->i2c_client->dev,
+			dev_dbg(&rmi4_data->i2c_client->dev,
 					"%s: Failed to alloc fhandler data\n",
 					__func__);
 			return -ENOMEM;
@@ -3420,7 +3420,7 @@ static int synaptics_rmi4_f51_init(struct synaptics_rmi4_data *rmi4_data,
 
 	rmi4_data->f51_handle = kzalloc(sizeof(struct synaptics_rmi4_f51_handle), GFP_KERNEL);
 	if (!rmi4_data->f51_handle) {
-			dev_err(&rmi4_data->i2c_client->dev,
+			dev_dbg(&rmi4_data->i2c_client->dev,
 					"%s: Failed to alloc f51_handler data\n",
 					__func__);
 			return -ENOMEM;
@@ -3443,12 +3443,12 @@ static int synaptics_rmi4_f51_init(struct synaptics_rmi4_data *rmi4_data,
 			query.data,
 			sizeof(query.data));
 	if (retval < 0) {
-		dev_err(&rmi4_data->i2c_client->dev, "%s:%4d read fail[%d]\n",
+		dev_dbg(&rmi4_data->i2c_client->dev, "%s:%4d read fail[%d]\n",
 				__func__, __LINE__, retval);
 		return retval;
 	}
 
-	dev_err(&rmi4_data->i2c_client->dev, "%s: f51 query feature feature1:%X, feature2:%X\n",
+	dev_dbg(&rmi4_data->i2c_client->dev, "%s: f51 query feature feature1:%X, feature2:%X\n",
 			__func__, query.features, query.side_touch_feature);
 
 	data_addr_offset = F51_DATA_RESERVED_SIZE;
@@ -3494,13 +3494,13 @@ static int synaptics_rmi4_f51_init(struct synaptics_rmi4_data *rmi4_data,
 
 	retval = synaptics_rmi4_f51_set_enables(rmi4_data);
 	if (retval < 0) {
-		dev_err(&rmi4_data->i2c_client->dev,
+		dev_dbg(&rmi4_data->i2c_client->dev,
 				"%s: f51_set_enables fail[%d]\n",
 				__func__, retval);
 		return retval;
 	}
 
-	dev_info(&rmi4_data->i2c_client->dev,
+	dev_dbg(&rmi4_data->i2c_client->dev,
 			"%s: edge_swipe: %04X, detection_flag2 : %04X\n",
 			__func__, rmi4_data->f51_handle->edge_swipe_data_addr,
 			rmi4_data->f51_handle->detection_flag2_addr);
@@ -3513,7 +3513,7 @@ static int synaptics_rmi4_f51_init(struct synaptics_rmi4_data *rmi4_data,
 #ifdef USE_STYLUS
 		rmi4_data->f51_handle->stylus_enable_addr = fhandler->full_addr.ctrl_base + F51_CUSTOM_CTRL87_OFFSET;
 #endif
-	dev_info(&rmi4_data->i2c_client->dev,
+	dev_dbg(&rmi4_data->i2c_client->dev,
 			"%s: sidekey_threshold addr : %04X, stylus_enable_addr : %04X\n",
 			__func__, rmi4_data->f51_handle->sidekey_threshold_addr,
 			rmi4_data->f51_handle->stylus_enable_addr);
@@ -3526,7 +3526,7 @@ int synaptics_rmi4_proximity_enables(struct synaptics_rmi4_data *rmi4_data, unsi
 	int retval;
 
 	if (!rmi4_data->f51_handle) {
-		printk(KERN_ERR "%s: f51 is not set!\n", __func__);
+		pr_debug("%s: f51 is not set!\n", __func__);
 		return -ENODEV;
 	}
 
@@ -3566,12 +3566,12 @@ static int synaptics_rmi4_check_status(struct synaptics_rmi4_data *rmi4_data)
 			status.data,
 			sizeof(status.data));
 	if (retval < 0) {
-		dev_err(&rmi4_data->i2c_client->dev, "%s:%4d read fail[%d]\n",
+		dev_dbg(&rmi4_data->i2c_client->dev, "%s:%4d read fail[%d]\n",
 				__func__, __LINE__, retval);
 		return retval;
 	}
 
-	dev_info(&rmi4_data->i2c_client->dev, "%s: Device status[0x%02x] status.code[%d]\n",
+	dev_dbg(&rmi4_data->i2c_client->dev, "%s: Device status[0x%02x] status.code[%d]\n",
 			__func__, status.data[0], status.status_code);
 
 	while (status.status_code == STATUS_CRC_IN_PROGRESS) {
@@ -3585,7 +3585,7 @@ static int synaptics_rmi4_check_status(struct synaptics_rmi4_data *rmi4_data)
 				status.data,
 				sizeof(status.data));
 		if (retval < 0) {
-			dev_err(&rmi4_data->i2c_client->dev, "%s:%4d read fail[%d]\n",
+			dev_dbg(&rmi4_data->i2c_client->dev, "%s:%4d read fail[%d]\n",
 				__func__, __LINE__, retval);
 			return retval;
 		}
@@ -3595,7 +3595,7 @@ static int synaptics_rmi4_check_status(struct synaptics_rmi4_data *rmi4_data)
 
 	if (status.flash_prog == 1) {
 		rmi4_data->firmware_cracked = rmi4_data->flash_prog_mode = true;
-		dev_info(&rmi4_data->i2c_client->dev, "%s: In flash prog mode, status = 0x%02x\n",
+		dev_dbg(&rmi4_data->i2c_client->dev, "%s: In flash prog mode, status = 0x%02x\n",
 				__func__, status.status_code);
 	} else {
 		rmi4_data->flash_prog_mode = false;
@@ -3606,7 +3606,7 @@ static int synaptics_rmi4_check_status(struct synaptics_rmi4_data *rmi4_data)
 			&intr_status,
 			sizeof(intr_status));
 	if (retval < 0) {
-		dev_err(&rmi4_data->i2c_client->dev,
+		dev_dbg(&rmi4_data->i2c_client->dev,
 				"%s: Failed to read interrupt status\n",
 				__func__);
 		return retval;
@@ -3625,7 +3625,7 @@ static void synaptics_rmi4_set_configured(struct synaptics_rmi4_data *rmi4_data)
 			&device_ctrl,
 			sizeof(device_ctrl));
 	if (retval < 0) {
-		dev_err(&(rmi4_data->i2c_client->dev),
+		dev_dbg(&(rmi4_data->i2c_client->dev),
 				"%s: Failed to set configured\n",
 				__func__);
 		return;
@@ -3638,7 +3638,7 @@ static void synaptics_rmi4_set_configured(struct synaptics_rmi4_data *rmi4_data)
 			&device_ctrl,
 			sizeof(device_ctrl));
 	if (retval < 0) {
-		dev_err(&(rmi4_data->i2c_client->dev),
+		dev_dbg(&(rmi4_data->i2c_client->dev),
 				"%s: Failed to set configured\n",
 				__func__);
 	}
@@ -3728,7 +3728,7 @@ static int synaptics_rmi4_query_device(struct synaptics_rmi4_data *rmi4_data)
 					(unsigned char *)&rmi_fd,
 					sizeof(rmi_fd));
 			if (retval < 0) {
-				dev_err(&rmi4_data->i2c_client->dev, "%s: read fail[%d]\n",
+				dev_dbg(&rmi4_data->i2c_client->dev, "%s: read fail[%d]\n",
 							__func__, retval);
 				return retval;
 			}
@@ -3743,7 +3743,7 @@ static int synaptics_rmi4_query_device(struct synaptics_rmi4_data *rmi4_data)
 			}
 
 			/* Display function description infomation */
-			dev_info(&rmi4_data->i2c_client->dev, "%s: F%02x found (page %d): INT_SRC[%02X] BASE_ADDRS[%02X,%02X,%02X,%02x]\n",
+			dev_dbg(&rmi4_data->i2c_client->dev, "%s: F%02x found (page %d): INT_SRC[%02X] BASE_ADDRS[%02X,%02X,%02X,%02x]\n",
 					__func__, rmi_fd.fn_number, page_number,
 					rmi_fd.intr_src_count, rmi_fd.data_base_addr,
 					rmi_fd.ctrl_base_addr, rmi_fd.cmd_base_addr,
@@ -3762,7 +3762,7 @@ static int synaptics_rmi4_query_device(struct synaptics_rmi4_data *rmi4_data)
 
 				retval = synaptics_rmi4_check_status(rmi4_data);
 				if (retval < 0) {
-					dev_err(&rmi4_data->i2c_client->dev,
+					dev_dbg(&rmi4_data->i2c_client->dev,
 							"%s: Failed to check status\n",
 							__func__);
 					return retval;
@@ -3777,7 +3777,7 @@ static int synaptics_rmi4_query_device(struct synaptics_rmi4_data *rmi4_data)
 				retval = synaptics_rmi4_alloc_fh(&fhandler,
 						&rmi_fd, page_number);
 				if (retval < 0) {
-					dev_err(&rmi4_data->i2c_client->dev,
+					dev_dbg(&rmi4_data->i2c_client->dev,
 							"%s: Failed to alloc for F%d\n",
 							__func__,
 							rmi_fd.fn_number);
@@ -3786,7 +3786,7 @@ static int synaptics_rmi4_query_device(struct synaptics_rmi4_data *rmi4_data)
 				retval = synaptics_rmi4_f11_init(rmi4_data,
 						fhandler, &rmi_fd, intr_count);
 				if (retval < 0) {
-					dev_err(&rmi4_data->i2c_client->dev,
+					dev_dbg(&rmi4_data->i2c_client->dev,
 							"%s: f11_init fail[%d]\n",
 							__func__, retval);
 					kfree(fhandler);
@@ -3799,7 +3799,7 @@ static int synaptics_rmi4_query_device(struct synaptics_rmi4_data *rmi4_data)
 				retval = synaptics_rmi4_alloc_fh(&fhandler,
 						&rmi_fd, page_number);
 				if (retval < 0) {
-					dev_err(&rmi4_data->i2c_client->dev,
+					dev_dbg(&rmi4_data->i2c_client->dev,
 							"%s: Failed to alloc for F%d\n",
 							__func__,
 							rmi_fd.fn_number);
@@ -3808,7 +3808,7 @@ static int synaptics_rmi4_query_device(struct synaptics_rmi4_data *rmi4_data)
 				retval = synaptics_rmi4_f12_init(rmi4_data,
 						fhandler, &rmi_fd, intr_count);
 				if (retval < 0) {
-					dev_err(&rmi4_data->i2c_client->dev,
+					dev_dbg(&rmi4_data->i2c_client->dev,
 							"%s: f12_init fail[%d]\n",
 							__func__, retval);
 					kfree(fhandler);
@@ -3821,7 +3821,7 @@ static int synaptics_rmi4_query_device(struct synaptics_rmi4_data *rmi4_data)
 				retval = synaptics_rmi4_alloc_fh(&fhandler,
 						&rmi_fd, page_number);
 				if (retval < 0) {
-					dev_err(&rmi4_data->i2c_client->dev,
+					dev_dbg(&rmi4_data->i2c_client->dev,
 							"%s: Failed to alloc for F%d\n",
 							__func__,
 							rmi_fd.fn_number);
@@ -3830,7 +3830,7 @@ static int synaptics_rmi4_query_device(struct synaptics_rmi4_data *rmi4_data)
 				retval = synaptics_rmi4_f1a_init(rmi4_data,
 						fhandler, &rmi_fd, intr_count);
 				if (retval < 0) {
-					dev_err(&rmi4_data->i2c_client->dev,
+					dev_dbg(&rmi4_data->i2c_client->dev,
 							"%s: f1a_init fail[%d]\n",
 							__func__, retval);
 					kfree(fhandler);
@@ -3844,7 +3844,7 @@ static int synaptics_rmi4_query_device(struct synaptics_rmi4_data *rmi4_data)
 				retval = synaptics_rmi4_alloc_fh(&fhandler,
 						&rmi_fd, page_number);
 				if (retval < 0) {
-					dev_err(&rmi4_data->i2c_client->dev,
+					dev_dbg(&rmi4_data->i2c_client->dev,
 							"%s: Failed to alloc for F%d\n",
 							__func__,
 							rmi_fd.fn_number);
@@ -3854,7 +3854,7 @@ static int synaptics_rmi4_query_device(struct synaptics_rmi4_data *rmi4_data)
 				retval = synaptics_rmi4_f34_init(rmi4_data,
 						fhandler, &rmi_fd, intr_count);
 				if (retval < 0) {
-					dev_err(&rmi4_data->i2c_client->dev,
+					dev_dbg(&rmi4_data->i2c_client->dev,
 							"%s: f34_init fail[%d]\n",
 							__func__, retval);
 					kfree(fhandler);
@@ -3869,7 +3869,7 @@ static int synaptics_rmi4_query_device(struct synaptics_rmi4_data *rmi4_data)
 				retval = synaptics_rmi4_alloc_fh(&fhandler,
 						&rmi_fd, page_number);
 				if (retval < 0) {
-					dev_err(&rmi4_data->i2c_client->dev,
+					dev_dbg(&rmi4_data->i2c_client->dev,
 							"%s: Failed to alloc for F%d\n",
 							__func__,
 							rmi_fd.fn_number);
@@ -3878,7 +3878,7 @@ static int synaptics_rmi4_query_device(struct synaptics_rmi4_data *rmi4_data)
 				retval = synaptics_rmi4_f51_init(rmi4_data,
 						fhandler, &rmi_fd, intr_count);
 				if (retval < 0) {
-					dev_err(&rmi4_data->i2c_client->dev,
+					dev_dbg(&rmi4_data->i2c_client->dev,
 							"%s: f51_init fail[%d]\n",
 							__func__, retval);
 					kfree(fhandler);
@@ -3900,7 +3900,7 @@ static int synaptics_rmi4_query_device(struct synaptics_rmi4_data *rmi4_data)
 
 flash_prog_mode:
 	rmi4_data->num_of_intr_regs = (intr_count + 7) / 8;
-	dev_info(&rmi4_data->i2c_client->dev,
+	dev_dbg(&rmi4_data->i2c_client->dev,
 			"%s: Number of interrupt registers = %d sum of intr_count = %d\n",
 			__func__, rmi4_data->num_of_intr_regs, intr_count);
 
@@ -3909,7 +3909,7 @@ flash_prog_mode:
 			f01_query,
 			sizeof(f01_query));
 	if (retval < 0) {
-		dev_err(&rmi4_data->i2c_client->dev, "%s:%4d read fail[%d]\n",
+		dev_dbg(&rmi4_data->i2c_client->dev, "%s:%4d read fail[%d]\n",
 					__func__, __LINE__, retval);
 		return retval;
 	}
@@ -3937,7 +3937,7 @@ flash_prog_mode:
 			f01_pr_number,
 			sizeof(f01_pr_number));
 	if (retval < 0) {
-		dev_err(&rmi4_data->i2c_client->dev, "%s:%4d read fail[%d]\n",
+		dev_dbg(&rmi4_data->i2c_client->dev, "%s:%4d read fail[%d]\n",
 					__func__, __LINE__, retval);
 		return retval;
 	}
@@ -3995,20 +3995,20 @@ flash_prog_mode:
 			0x31, f01_package_id,
 			sizeof(f01_package_id));
 	if (retval < 0) {
-		dev_err(&rmi4_data->i2c_client->dev, "%s:%4d read fail[%d]\n",
+		dev_dbg(&rmi4_data->i2c_client->dev, "%s:%4d read fail[%d]\n",
 					__func__, __LINE__, retval);
 		return retval;
 	}
 
 	rmi->package_id = (f01_package_id[1] << 8) | f01_package_id[0];
 	rmi->package_rev = (f01_package_id[3] << 8) | f01_package_id[2];
-	dev_info(&rmi4_data->i2c_client->dev,
+	dev_dbg(&rmi4_data->i2c_client->dev,
 			"%s: [%s] package_id is %d, package_rev is %d\n",
 			__func__, rmi->product_id_string,
 			rmi->package_id, rmi->package_rev);
 
 	if (rmi->manufacturer_id != 1) {
-		dev_err(&rmi4_data->i2c_client->dev,
+		dev_dbg(&rmi4_data->i2c_client->dev,
 				"%s: Non-Synaptics device found, manufacturer ID = %d\n",
 				__func__, rmi->manufacturer_id);
 	}
@@ -4018,7 +4018,7 @@ flash_prog_mode:
 			rmi->build_id,
 			sizeof(rmi->build_id));
 	if (retval < 0) {
-		dev_err(&rmi4_data->i2c_client->dev, "%s:%4d read fail[%d]\n",
+		dev_dbg(&rmi4_data->i2c_client->dev, "%s:%4d read fail[%d]\n",
 					__func__, __LINE__, retval);
 		return retval;
 	}
@@ -4037,7 +4037,7 @@ flash_prog_mode:
 			}
 
 			/* To display each fhandler data */
-			dev_info(&rmi4_data->i2c_client->dev,
+			dev_dbg(&rmi4_data->i2c_client->dev,
 				"%s: F%02x : NUM_SOURCE[%02X] NUM_INT_REG[%02X] INT_MASK[%02X]\n",
 					__func__, fhandler->fn_number,
 					fhandler->num_of_data_sources, fhandler->intr_reg_num,
@@ -4048,7 +4048,7 @@ flash_prog_mode:
 	/* Enable the interrupt sources */
 	for (ii = 0; ii < rmi4_data->num_of_intr_regs; ii++) {
 		if (rmi4_data->intr_mask[ii] != 0x00) {
-			dev_info(&rmi4_data->i2c_client->dev,
+			dev_dbg(&rmi4_data->i2c_client->dev,
 					"%s: Interrupt enable mask %d = 0x%02x\n",
 					__func__, ii, rmi4_data->intr_mask[ii]);
 			intr_addr = rmi4_data->f01_ctrl_base_addr + 1 + ii;
@@ -4057,7 +4057,7 @@ flash_prog_mode:
 					&(rmi4_data->intr_mask[ii]),
 					sizeof(rmi4_data->intr_mask[ii]));
 			if (retval < 0) {
-				dev_err(&rmi4_data->i2c_client->dev, "%s:%4d write fail[%d]\n",
+				dev_dbg(&rmi4_data->i2c_client->dev, "%s:%4d write fail[%d]\n",
 					__func__, __LINE__, retval);
 				return retval;
 			}
@@ -4077,7 +4077,7 @@ static void synaptics_rmi4_release_support_fn(struct synaptics_rmi4_data *rmi4_d
 	rmi = &(rmi4_data->rmi4_mod_info);
 
 	if (list_empty(&rmi->support_fn_list)) {
-		dev_err(&rmi4_data->i2c_client->dev, "%s: support_fn_list is empty\n",
+		dev_dbg(&rmi4_data->i2c_client->dev, "%s: support_fn_list is empty\n",
 				__func__);
 #ifdef PROXIMITY
 		if (rmi4_data->f51_handle)
@@ -4219,7 +4219,7 @@ static int synaptics_rmi4_set_input_device(struct synaptics_rmi4_data *rmi4_data
 
 	rmi4_data->input_dev = input_allocate_device();
 	if (rmi4_data->input_dev == NULL) {
-		dev_err(&rmi4_data->i2c_client->dev,
+		dev_dbg(&rmi4_data->i2c_client->dev,
 				"%s: Failed to allocate input device\n",
 				__func__);
 		retval = -ENOMEM;
@@ -4228,7 +4228,7 @@ static int synaptics_rmi4_set_input_device(struct synaptics_rmi4_data *rmi4_data
 
 	retval = synaptics_rmi4_query_device(rmi4_data);
 	if (retval < 0) {
-		dev_err(&rmi4_data->i2c_client->dev,
+		dev_dbg(&rmi4_data->i2c_client->dev,
 				"%s: Failed to query device\n",
 				__func__);
 		goto err_query_device;
@@ -4258,7 +4258,7 @@ static int synaptics_rmi4_set_input_device(struct synaptics_rmi4_data *rmi4_data
 
 	retval = input_register_device(rmi4_data->input_dev);
 	if (retval) {
-		dev_err(&rmi4_data->i2c_client->dev,
+		dev_dbg(&rmi4_data->i2c_client->dev,
 				"%s: Failed to register input device\n",
 				__func__);
 		goto err_register_input;
@@ -4295,12 +4295,12 @@ int synaptics_rmi4_free_fingers(struct synaptics_rmi4_data *rmi4_data)
 {
 	unsigned char ii;
 
-	dev_info(&rmi4_data->i2c_client->dev, "%s\n", __func__);
+	dev_dbg(&rmi4_data->i2c_client->dev, "%s\n", __func__);
 
 /* if firmware is broken, occurs null pinter exception : cause is rmi4_data->f51_handle is NULL */
 #ifdef PROXIMITY
 	if (!rmi4_data->tsp_probe || !rmi4_data->f51_handle) {
-		dev_info(&rmi4_data->i2c_client->dev, "%s: probe is not done\n", __func__);
+		dev_dbg(&rmi4_data->i2c_client->dev, "%s: probe is not done\n", __func__);
 		return 0;
 	}
 #endif
@@ -4383,7 +4383,7 @@ static int synaptics_rmi4_reinit_device(struct synaptics_rmi4_data *rmi4_data)
 #ifdef GLOVE_MODE
 				retval = synaptics_rmi4_glove_mode_enables(rmi4_data);				
 				if (retval < 0) {
-					dev_err(&rmi4_data->i2c_client->dev,
+					dev_dbg(&rmi4_data->i2c_client->dev,
 							"%s: Failed to glove mode enable, error = %d\n",
 							__func__, retval);
 					goto exit;
@@ -4391,13 +4391,13 @@ static int synaptics_rmi4_reinit_device(struct synaptics_rmi4_data *rmi4_data)
 #else
 				retval = synaptics_rmi4_f12_set_feature(rmi4_data);
 				if (retval < 0) {
-					dev_err(&rmi4_data->i2c_client->dev,
+					dev_dbg(&rmi4_data->i2c_client->dev,
 						"%s: f12 set_feature write fail[%d]\n", __func__, retval);
 				}
 #endif
 				retval = synaptics_rmi4_f12_set_report(rmi4_data);
 				if (retval < 0) {
-					dev_err(&rmi4_data->i2c_client->dev,
+					dev_dbg(&rmi4_data->i2c_client->dev,
 							"%s: f12_set_report failed[%d]\n",
 							__func__, retval);
 					goto exit;
@@ -4414,7 +4414,7 @@ static int synaptics_rmi4_reinit_device(struct synaptics_rmi4_data *rmi4_data)
 				&f51_general_control, sizeof(f51_general_control));
 
 		/* Read the Hsync's status */
-		dev_info(&rmi4_data->i2c_client->dev,
+		dev_dbg(&rmi4_data->i2c_client->dev,
 			"%s: Hsync [%s[0x%x]]\n", __func__,
 			(f51_general_control & HSYNC_STATUS) ? "GD" : "NG",
 			f51_general_control);
@@ -4436,7 +4436,7 @@ static int synaptics_rmi4_reinit_device(struct synaptics_rmi4_data *rmi4_data)
 #endif
 		retval = synaptics_rmi4_f51_set_enables(rmi4_data);
 		if (retval < 0) {
-			dev_err(&rmi4_data->i2c_client->dev, "%s: f51_set_enables fail[%d]\n",
+			dev_dbg(&rmi4_data->i2c_client->dev, "%s: f51_set_enables fail[%d]\n",
 						__func__, retval);
 			goto exit;
 		}
@@ -4444,7 +4444,7 @@ static int synaptics_rmi4_reinit_device(struct synaptics_rmi4_data *rmi4_data)
 #endif
 	for (ii = 0; ii < rmi4_data->num_of_intr_regs; ii++) {
 		if (rmi4_data->intr_mask[ii] != 0x00) {
-			dev_info(&rmi4_data->i2c_client->dev,
+			dev_dbg(&rmi4_data->i2c_client->dev,
 					"%s: Interrupt enable mask %d = 0x%02x\n",
 					__func__, ii, rmi4_data->intr_mask[ii]);
 			intr_addr = rmi4_data->f01_ctrl_base_addr + 1 + ii;
@@ -4453,7 +4453,7 @@ static int synaptics_rmi4_reinit_device(struct synaptics_rmi4_data *rmi4_data)
 					&(rmi4_data->intr_mask[ii]),
 					sizeof(rmi4_data->intr_mask[ii]));
 			if (retval < 0) {
-				dev_err(&rmi4_data->i2c_client->dev, "%s: write fail[%d]\n",
+				dev_dbg(&rmi4_data->i2c_client->dev, "%s: write fail[%d]\n",
 					__func__, retval);
 				goto exit;
 			}
@@ -4486,7 +4486,7 @@ static int synaptics_rmi4_reset_device(struct synaptics_rmi4_data *rmi4_data)
 				&command,
 				sizeof(command));
 		if (retval < 0) {
-			dev_err(&rmi4_data->i2c_client->dev,
+			dev_dbg(&rmi4_data->i2c_client->dev,
 					"%s: Failed to issue reset command, error = %d\n",
 					__func__, retval);
 			goto out;
@@ -4504,13 +4504,13 @@ static int synaptics_rmi4_reset_device(struct synaptics_rmi4_data *rmi4_data)
 
 		if (rmi4_data->firmware_cracked) {
 			synaptics_rmi4_remove_exp_fn(rmi4_data);
-			dev_info(&rmi4_data->i2c_client->dev,
+			dev_dbg(&rmi4_data->i2c_client->dev,
 						"%s: removed exp_func..\n",
 						__func__);
 
 			retval = synaptics_rmi4_init_exp_fn(rmi4_data);
 			if (retval < 0)
-				dev_err(&rmi4_data->i2c_client->dev,
+				dev_dbg(&rmi4_data->i2c_client->dev,
 						"%s: Failed to init_exp_fn at cracked fw reflash.\n",
 						__func__);
 
@@ -4519,7 +4519,7 @@ static int synaptics_rmi4_reset_device(struct synaptics_rmi4_data *rmi4_data)
 
 		retval = synaptics_rmi4_f54_set_control(rmi4_data);
 		if (retval < 0)
-			dev_err(&rmi4_data->i2c_client->dev,
+			dev_dbg(&rmi4_data->i2c_client->dev,
 					"%s: Failed to set f54 control\n",
 					__func__);
 	}
@@ -4528,7 +4528,7 @@ static int synaptics_rmi4_reset_device(struct synaptics_rmi4_data *rmi4_data)
 
 	retval = synaptics_rmi4_query_device(rmi4_data);
 	if (retval < 0) {
-		dev_err(&rmi4_data->i2c_client->dev,
+		dev_dbg(&rmi4_data->i2c_client->dev,
 				"%s: Failed to query device\n",
 				__func__);
 	}
@@ -4561,7 +4561,7 @@ static void synaptics_charger_conn(struct synaptics_rmi4_data *rmi4_data,
 			&charger_connected,
 			sizeof(charger_connected));
 	if (retval < 0) {
-		dev_err(&(rmi4_data->input_dev->dev),
+		dev_dbg(&(rmi4_data->input_dev->dev),
 				"%s: Failed to set configured\n",
 				__func__);
 		return;
@@ -4578,12 +4578,12 @@ static void synaptics_charger_conn(struct synaptics_rmi4_data *rmi4_data,
 			sizeof(charger_connected));
 
 	if (retval < 0) {
-		dev_err(&(rmi4_data->input_dev->dev),
+		dev_dbg(&(rmi4_data->input_dev->dev),
 				"%s: Failed to set configured\n",
 				__func__);
 	}
 
-	dev_info(&rmi4_data->i2c_client->dev,
+	dev_dbg(&rmi4_data->i2c_client->dev,
 			"%s: device_control : %x, ta_status : %x\n",
 			__func__, charger_connected, ta_status);
 
@@ -4594,13 +4594,13 @@ static void synaptics_ta_cb(struct synaptics_rmi_callbacks *cb, int ta_status)
 	struct synaptics_rmi4_data *rmi4_data =
 		container_of(cb, struct synaptics_rmi4_data, callbacks);
 
-	dev_info(&rmi4_data->i2c_client->dev,
+	dev_dbg(&rmi4_data->i2c_client->dev,
 			"%s: ta_status : %x\n", __func__, ta_status);
 
 	rmi4_data->ta_status = ta_status;
 
 	if (rmi4_data->touch_stopped || rmi4_data->doing_reflash) {
-		dev_err(&rmi4_data->i2c_client->dev,
+		dev_dbg(&rmi4_data->i2c_client->dev,
 				"%s: device is in suspend state or reflash.\n",
 				__func__);
 		return;
@@ -4632,7 +4632,7 @@ static void synaptics_rmi4_f51_finger_timer(unsigned long data)
 		input_sync(rmi4_data->input_dev);
 
 		if (rmi4_data->f51_finger_is_hover) {
-			dev_info(&rmi4_data->i2c_client->dev,
+			dev_dbg(&rmi4_data->i2c_client->dev,
 				"%s: Hover finger[OUT]\n", __func__);
 			rmi4_data->f51_finger_is_hover = false;
 		}
@@ -4647,7 +4647,7 @@ static void synaptics_rmi4_remove_exp_fn(struct synaptics_rmi4_data *rmi4_data)
 	struct synaptics_rmi4_exp_fn *exp_fhandler, *n;
 
 	if (list_empty(&exp_fn_list)) {
-		dev_err(&rmi4_data->i2c_client->dev, "%s: exp_fn_list empty\n",
+		dev_dbg(&rmi4_data->i2c_client->dev, "%s: exp_fn_list empty\n",
 				__func__);
 		return;
 	}
@@ -4679,11 +4679,11 @@ static int synaptics_rmi4_init_exp_fn(struct synaptics_rmi4_data *rmi4_data)
 
 	retval = rmidev_module_register();
 	if (retval < 0) {
-		dev_err(&rmi4_data->i2c_client->dev,
+		dev_dbg(&rmi4_data->i2c_client->dev,
 				"%s: Failed to register rmidev module\n",
 				__func__);
 		if (rmi4_data->firmware_cracked)
-			dev_err(&rmi4_data->i2c_client->dev,
+			dev_dbg(&rmi4_data->i2c_client->dev,
 					"%s: ffirmware_cracked, skip exit routine(rmidev)\n",
 					__func__);
 		else
@@ -4692,11 +4692,11 @@ static int synaptics_rmi4_init_exp_fn(struct synaptics_rmi4_data *rmi4_data)
 
 	retval = rmi4_f54_module_register();
 	if (retval < 0) {
-		dev_err(&rmi4_data->i2c_client->dev,
+		dev_dbg(&rmi4_data->i2c_client->dev,
 				"%s: Failed to register f54 module\n",
 				__func__);
 		if (rmi4_data->firmware_cracked)
-			dev_err(&rmi4_data->i2c_client->dev,
+			dev_dbg(&rmi4_data->i2c_client->dev,
 					"%s: firmware_cracked, skip exit routine(f54)\n",
 					__func__);
 		else
@@ -4705,11 +4705,11 @@ static int synaptics_rmi4_init_exp_fn(struct synaptics_rmi4_data *rmi4_data)
 
 	retval = rmi4_fw_update_module_register();
 	if (retval < 0) {
-		dev_err(&rmi4_data->i2c_client->dev,
+		dev_dbg(&rmi4_data->i2c_client->dev,
 				"%s: Failed to register fw update module\n",
 				__func__);
 		if (rmi4_data->firmware_cracked)
-			dev_err(&rmi4_data->i2c_client->dev,
+			dev_dbg(&rmi4_data->i2c_client->dev,
 					"%s: firmware_cracked, skip exit routine(fw)\n",
 					__func__);
 		else
@@ -4718,11 +4718,11 @@ static int synaptics_rmi4_init_exp_fn(struct synaptics_rmi4_data *rmi4_data)
 
 	retval = rmidb_module_register();
 	if (retval < 0) {
-		dev_err(&rmi4_data->i2c_client->dev,
+		dev_dbg(&rmi4_data->i2c_client->dev,
 				"%s: Failed to register rmidb module\n",
 				__func__);
 		if (rmi4_data->firmware_cracked)
-			dev_err(&rmi4_data->i2c_client->dev,
+			dev_dbg(&rmi4_data->i2c_client->dev,
 					"%s: firmware_cracked, skip exit routine(rmidb)\n",
 					__func__);
 		else
@@ -4733,7 +4733,7 @@ static int synaptics_rmi4_init_exp_fn(struct synaptics_rmi4_data *rmi4_data)
 #ifdef CONFIG_TOUCHSCREEN_SYNAPTICS_I2C_RMI_G
 	retval = rmi_guest_module_register();
 	if (retval < 0) {
-		dev_err(&rmi4_data->i2c_client->dev,
+		dev_dbg(&rmi4_data->i2c_client->dev,
 				"%s: Failed to register guest module\n",
 				__func__);
 		goto error_exit;
@@ -4749,11 +4749,11 @@ static int synaptics_rmi4_init_exp_fn(struct synaptics_rmi4_data *rmi4_data)
 					__func__, exp_fhandler->fn_type);
 			retval = exp_fhandler->func_init(rmi4_data);
 			if (retval < 0) {
-				dev_err(&rmi4_data->i2c_client->dev,
+				dev_dbg(&rmi4_data->i2c_client->dev,
 						"%s: Failed to init exp fn\n",
 						__func__);
 				if (rmi4_data->firmware_cracked)
-					dev_err(&rmi4_data->i2c_client->dev,
+					dev_dbg(&rmi4_data->i2c_client->dev,
 							"%s: firmware_cracked, list add exp_func.\n",
 							__func__);
 				else
@@ -4794,7 +4794,7 @@ int synaptics_rmi4_new_function(enum exp_fn fn_type,
 
 	exp_fhandler = kzalloc(sizeof(*exp_fhandler), GFP_KERNEL);
 	if (!exp_fhandler) {
-		pr_err("%s: Failed to alloc mem for expansion function\n",
+		pr_debug("%s: Failed to alloc mem for expansion function\n",
 				__func__);
 		return -ENOMEM;
 	}
@@ -4814,7 +4814,7 @@ void synaptics_power_ctrl(struct synaptics_rmi4_data *rmi4_data, bool enable)
 
 	if (rmi4_data->dt_data->external_ldo > 0) {
 		retval = gpio_direction_output(rmi4_data->dt_data->external_ldo, enable);
-		dev_info(dev, "%s: sensor_en[3.3V][%d] is %s[%s]\n",
+		dev_dbg(dev, "%s: sensor_en[3.3V][%d] is %s[%s]\n",
 				__func__, rmi4_data->dt_data->external_ldo,
 				enable ? "enabled" : "disabled", (retval < 0) ? "NG" : "OK");
 	}
@@ -4822,7 +4822,7 @@ void synaptics_power_ctrl(struct synaptics_rmi4_data *rmi4_data, bool enable)
 	mdelay(5);
 	if (rmi4_data->dt_data->external_ldo2 > 0) {
 		retval = gpio_direction_output(rmi4_data->dt_data->external_ldo2, enable);
-		dev_info(dev, "%s: sensor_en[3.3V][%d] is %s[%s]\n",
+		dev_dbg(dev, "%s: sensor_en[3.3V][%d] is %s[%s]\n",
 				__func__, rmi4_data->dt_data->external_ldo2,
 				enable ? "enabled" : "disabled", (retval < 0) ? "NG" : "OK");
 	}
@@ -4831,16 +4831,16 @@ void synaptics_power_ctrl(struct synaptics_rmi4_data *rmi4_data, bool enable)
 		/* Enable regulators according to the order */
 		for (i = 0; i < rmi4_data->dt_data->num_of_supply; i++) {
 			if (regulator_is_enabled(rmi4_data->supplies[i].consumer)) {
-				dev_err(dev, "%s: %s is already enabled\n", __func__,
+				dev_dbg(dev, "%s: %s is already enabled\n", __func__,
 					rmi4_data->supplies[i].supply);
 			} else {
 				retval = regulator_enable(rmi4_data->supplies[i].consumer);
 				if (retval) {
-					dev_err(dev, "%s: Fail to enable regulator %s[%d]\n",
+					dev_dbg(dev, "%s: Fail to enable regulator %s[%d]\n",
 						__func__, rmi4_data->supplies[i].supply, retval);
 					goto err;
 				}
-				dev_info(dev, "%s: %s is enabled[OK]\n",
+				dev_dbg(dev, "%s: %s is enabled[OK]\n",
 					__func__, rmi4_data->supplies[i].supply);
 			}
 		}
@@ -4849,7 +4849,7 @@ void synaptics_power_ctrl(struct synaptics_rmi4_data *rmi4_data, bool enable)
 		retval = qpnp_pin_config(rmi4_data->dt_data->irq_gpio,
 				&synaptics_int_set[SYNAPTICS_PM_GPIO_STATE_WAKE]);
 		if (retval < 0)
-			dev_info(dev, "%s: wakeup int config return: %d\n", __func__, retval);
+			dev_dbg(dev, "%s: wakeup int config return: %d\n", __func__, retval);
 #endif
 
 	} else {
@@ -4858,14 +4858,14 @@ void synaptics_power_ctrl(struct synaptics_rmi4_data *rmi4_data, bool enable)
 			if (regulator_is_enabled(rmi4_data->supplies[i].consumer)) {
 				retval = regulator_disable(rmi4_data->supplies[i].consumer);
 				if (retval) {
-					dev_err(dev, "%s: Fail to disable regulator %s[%d]\n",
+					dev_dbg(dev, "%s: Fail to disable regulator %s[%d]\n",
 						__func__, rmi4_data->supplies[i].supply, retval);
 					goto err;
 				}
-				dev_info(dev, "%s: %s is disabled[OK]\n",
+				dev_dbg(dev, "%s: %s is disabled[OK]\n",
 					__func__, rmi4_data->supplies[i].supply);
 			} else {
-				dev_err(dev, "%s: %s is already disabled\n", __func__,
+				dev_dbg(dev, "%s: %s is already disabled\n", __func__,
 					rmi4_data->supplies[i].supply);
 			}
 		}
@@ -4874,13 +4874,13 @@ void synaptics_power_ctrl(struct synaptics_rmi4_data *rmi4_data, bool enable)
 		retval = qpnp_pin_config(rmi4_data->dt_data->irq_gpio,
 				&synaptics_int_set[SYNAPTICS_PM_GPIO_STATE_SLEEP]);
 		if (retval < 0)
-			dev_info(dev, "%s: sleep int config return: %d\n", __func__, retval);
+			dev_dbg(dev, "%s: sleep int config return: %d\n", __func__, retval);
 #endif
 	}
 
 	if (rmi4_data->dt_data->reset_gpio > 0) {
 		retval = gpio_direction_output(rmi4_data->dt_data->reset_gpio, enable);
-		dev_info(dev, "%s: reset_gpio[%d] is %s[%s]\n",
+		dev_dbg(dev, "%s: reset_gpio[%d] is %s[%s]\n",
 				__func__, rmi4_data->dt_data->reset_gpio,
 				enable ? "enabled" : "disabled", (retval < 0) ? "NG" : "OK");
 	}
@@ -4898,7 +4898,7 @@ err:
 		for (i = 0; i < rmi4_data->dt_data->num_of_supply; i++) {
 			if (regulator_is_enabled(rmi4_data->supplies[i].consumer)) {
 				retval = regulator_disable(rmi4_data->supplies[i].consumer);
-				dev_err(dev, "%s: %s is disabled[%s]\n",
+				dev_dbg(dev, "%s: %s is disabled[%s]\n",
 						__func__, rmi4_data->supplies[i].supply,
 						(retval < 0) ? "NG" : "OK");
 			}
@@ -4906,14 +4906,14 @@ err:
 
 		if (rmi4_data->dt_data->external_ldo > 0) {
 			retval = gpio_direction_output(rmi4_data->dt_data->external_ldo, enable);
-			dev_err(dev, "%s: sensor_en[3.3V][%d] is %s[%s]\n",
+			dev_dbg(dev, "%s: sensor_en[3.3V][%d] is %s[%s]\n",
 					__func__, rmi4_data->dt_data->external_ldo,
 					enable ? "enabled" : "disabled", (retval < 0) ? "NG" : "OK");
 		}
 #if defined(CONFIG_SEC_RUBENS_PROJECT)
 		if (rmi4_data->dt_data->external_ldo2 > 0) {
 			retval = gpio_direction_output(rmi4_data->dt_data->external_ldo2, enable);
-			dev_err(dev, "%s: sensor_en[3.3V][%d] is %s[%s]\n",
+			dev_dbg(dev, "%s: sensor_en[3.3V][%d] is %s[%s]\n",
 					__func__, rmi4_data->dt_data->external_ldo2,
 					enable ? "enabled" : "disabled", (retval < 0) ? "NG" : "OK");
 		}
@@ -4923,7 +4923,7 @@ err:
 		for (i = 0; i < rmi4_data->dt_data->num_of_supply; i++) {
 			if (!regulator_is_enabled(rmi4_data->supplies[i].consumer)) {
 				retval = regulator_enable(rmi4_data->supplies[i].consumer);
-				dev_err(dev, "%s: %s is enabled[%s]\n",
+				dev_dbg(dev, "%s: %s is enabled[%s]\n",
 						__func__, rmi4_data->supplies[i].supply,
 						(retval < 0) ? "NG" : "OK");
 			}
@@ -4931,14 +4931,14 @@ err:
 
 		if (rmi4_data->dt_data->external_ldo > 0) {
 			retval = gpio_direction_output(rmi4_data->dt_data->external_ldo, enable);
-			dev_err(dev, "%s: sensor_en[3.3V][%d] is %s[%s]\n",
+			dev_dbg(dev, "%s: sensor_en[3.3V][%d] is %s[%s]\n",
 					__func__, rmi4_data->dt_data->external_ldo,
 					enable ? "enabled" : "disabled", (retval < 0) ? "NG" : "OK");
 		}
 #if defined(CONFIG_SEC_RUBENS_PROJECT)
 		if (rmi4_data->dt_data->external_ldo2 > 0) {
 			retval = gpio_direction_output(rmi4_data->dt_data->external_ldo2, enable);
-			dev_err(dev, "%s: sensor_en[3.3V][%d] is %s[%s]\n",
+			dev_dbg(dev, "%s: sensor_en[3.3V][%d] is %s[%s]\n",
 					__func__, rmi4_data->dt_data->external_ldo2,
 					enable ? "enabled" : "disabled", (retval < 0) ? "NG" : "OK");
 		}
@@ -4975,7 +4975,7 @@ static void synaptics_get_firmware_name(struct synaptics_rmi4_data *rmi4_data)
 						rmi4_data->firmware_name = FW_IMAGE_NAME_S5100_K_A2_FHD;
 					} else {
 						rmi4_data->firmware_name = FW_IMAGE_NAME_NONE;
-						dev_info(&rmi4_data->i2c_client->dev,
+						dev_dbg(&rmi4_data->i2c_client->dev,
 								"%s: product id(lockdown) is not F / IC: %s. bootloader id %s\n",
 								__func__, rmi->product_id_string + 9, &rmi4_data->bootloader_id[2]);
 					}
@@ -5040,13 +5040,13 @@ int synaptics_tkey_led_vdd_on(struct synaptics_rmi4_data *rmi4_data, bool onoff)
 	if (!reg_l17) {
 		reg_l17 = regulator_get(NULL, "8941_l17");
 		if (IS_ERR(reg_l17)) {
-			dev_err(dev, "could not get 8941_l17, rc = %ld=n",
+			dev_dbg(dev, "could not get 8941_l17, rc = %ld=n",
 				PTR_ERR(reg_l17));
 			return ret;
 		}
 		ret = regulator_set_voltage(reg_l17, 3100000, 3100000);
 		if (ret) {
-			dev_err(dev, "%s: unable to set ldo17 voltage to 3.1V\n",
+			dev_dbg(dev, "%s: unable to set ldo17 voltage to 3.1V\n",
 				__func__);
 			return ret;
 		}
@@ -5056,22 +5056,22 @@ int synaptics_tkey_led_vdd_on(struct synaptics_rmi4_data *rmi4_data, bool onoff)
 		if (!regulator_is_enabled(reg_l17)) {
 			ret = regulator_enable(reg_l17);
 			if (ret) {
-				pr_err("enable l17 failed, rc=%d\n", ret);
+				pr_debug("enable l17 failed, rc=%d\n", ret);
 				return ret;
 			}
-			dev_info(dev, "keyled 3.1V on is finished.\n");
+			dev_dbg(dev, "keyled 3.1V on is finished.\n");
 		} else
-			dev_info(dev, "keyled 3.1V is already on.\n");
+			dev_dbg(dev, "keyled 3.1V is already on.\n");
 	} else {
 		if (regulator_is_enabled(reg_l17)) {
 			ret = regulator_disable(reg_l17);
 			if (ret) {
-				pr_err("disable l17 failed, rc=%d\n", ret);
+				pr_debug("disable l17 failed, rc=%d\n", ret);
 				return ret;
 			}
-			dev_info(dev, "keyled 3.1V off is finished.\n");
+			dev_dbg(dev, "keyled 3.1V off is finished.\n");
 		} else
-			dev_info(dev, "keyled 3.1V is already off.\n");
+			dev_dbg(dev, "keyled 3.1V is already off.\n");
 	}
 
 	return 0;
@@ -5121,17 +5121,17 @@ static int __devinit synaptics_rmi4_probe(struct i2c_client *client,
 	struct synaptics_rmi4_device_info *rmi;
 	struct synaptics_rmi4_device_tree_data *dt_data;
 
-	dev_err(&client->dev, "%s start.\n", __func__);
+	dev_dbg(&client->dev, "%s start.\n", __func__);
 	if (!i2c_check_functionality(client->adapter,
 				I2C_FUNC_SMBUS_BYTE_DATA)) {
-		dev_err(&client->dev,
+		dev_dbg(&client->dev,
 				"%s: SMBus byte data not supported\n",
 				__func__);
 		return -EIO;
 	}
 #if defined(CONFIG_FB_MSM8x26_MDSS_CHECK_LCD_CONNECTION)
         if (get_lcd_attached() == 0) {
-                dev_err(&client->dev, "%s : get_lcd_attached()=0 \n", __func__);
+                dev_dbg(&client->dev, "%s : get_lcd_attached()=0 \n", __func__);
                 return -EIO;
         }
 #endif
@@ -5140,7 +5140,7 @@ static int __devinit synaptics_rmi4_probe(struct i2c_client *client,
 				sizeof(struct synaptics_rmi4_device_tree_data),
 				GFP_KERNEL);
 		if (!dt_data) {
-			dev_err(&client->dev, "Failed to allocate memory\n");
+			dev_dbg(&client->dev, "Failed to allocate memory\n");
 			return -ENOMEM;
 		}
 		retval = synaptics_parse_dt(&client->dev, dt_data);
@@ -5148,11 +5148,11 @@ static int __devinit synaptics_rmi4_probe(struct i2c_client *client,
 			return retval;
 	} else	{
 		dt_data = client->dev.platform_data;
-		printk(KERN_ERR "TSP failed to align dtsi %s", __func__);
+		pr_debug("TSP failed to align dtsi %s", __func__);
 	}
 
 	if (!dt_data) {
-		dev_err(&client->dev,
+		dev_dbg(&client->dev,
 				"%s: device tree data is not found\n",
 				__func__);
 		return -EINVAL;
@@ -5160,7 +5160,7 @@ static int __devinit synaptics_rmi4_probe(struct i2c_client *client,
 
 	rmi4_data = kzalloc(sizeof(*rmi4_data), GFP_KERNEL);
 	if (!rmi4_data) {
-		dev_err(&client->dev,
+		dev_dbg(&client->dev,
 				"%s: Failed to alloc mem for rmi4_data\n",
 				__func__);
 		return -ENOMEM;
@@ -5208,7 +5208,7 @@ static int __devinit synaptics_rmi4_probe(struct i2c_client *client,
 	rmi4_data->supplies = kzalloc(
 		sizeof(struct regulator_bulk_data) * rmi4_data->dt_data->num_of_supply, GFP_KERNEL);
 	if (!rmi4_data->supplies) {
-		dev_err(&client->dev,
+		dev_dbg(&client->dev,
 			"%s: Failed to alloc mem for supplies\n", __func__);
 		retval = -ENOMEM;
 
@@ -5224,7 +5224,7 @@ static int __devinit synaptics_rmi4_probe(struct i2c_client *client,
 #ifdef COMMON_INPUT_BOOSTER
 	rmi4_data->tsp_booster = kzalloc(sizeof(struct input_booster), GFP_KERNEL);
 	if (!rmi4_data->tsp_booster) {
-		dev_err(&client->dev,
+		dev_dbg(&client->dev,
 			"%s: Failed to alloc mem for tsp_booster\n", __func__);
 		goto err_get_tsp_booster;
 	} else {
@@ -5245,7 +5245,7 @@ err_tsp_reboot:
 
 	retval = synaptics_rmi4_set_input_device(rmi4_data);
 	if (retval < 0) {
-		dev_err(&client->dev,
+		dev_dbg(&client->dev,
 				"%s: Failed to set up input device\n",
 				__func__);
 
@@ -5253,7 +5253,7 @@ err_tsp_reboot:
 			synaptics_power_ctrl(rmi4_data, false);
 			msleep(SYNAPTICS_POWER_MARGIN_TIME);
 			rmi4_data->rebootcount++;
-			dev_err(&client->dev,
+			dev_dbg(&client->dev,
 					"%s: reboot sequence by i2c fail\n",
 					__func__);
 			goto err_tsp_reboot;
@@ -5264,7 +5264,7 @@ err_tsp_reboot:
 
 	retval = synaptics_rmi4_init_exp_fn(rmi4_data);
 	if (retval < 0) {
-		dev_err(&client->dev,
+		dev_dbg(&client->dev,
 				"%s: Failed to register rmidev module\n",
 				__func__);
 		goto err_init_exp_fn;
@@ -5272,7 +5272,7 @@ err_tsp_reboot:
 
 	retval = synaptics_rmi4_irq_enable(rmi4_data, true);
 	if (retval < 0) {
-		dev_err(&client->dev,
+		dev_dbg(&client->dev,
 				"%s: Failed to enable attention interrupt\n",
 				__func__);
 		goto err_enable_irq;
@@ -5282,7 +5282,7 @@ err_tsp_reboot:
 		retval = sysfs_create_file(&rmi4_data->input_dev->dev.kobj,
 				&attrs[attr_count].attr);
 		if (retval < 0) {
-			dev_err(&client->dev,
+			dev_dbg(&client->dev,
 					"%s: Failed to create sysfs attributes\n",
 					__func__);
 			goto err_sysfs;
@@ -5292,7 +5292,7 @@ err_tsp_reboot:
 	synaptics_get_firmware_name(rmi4_data);
 	retval = synaptics_rmi4_fw_update_on_probe(rmi4_data);
 	if (retval < 0) {
-		dev_err(&client->dev, "%s: Failed to firmware update\n",
+		dev_dbg(&client->dev, "%s: Failed to firmware update\n",
 				__func__);
 		goto err_fw_update;
 	}
@@ -5304,7 +5304,7 @@ err_tsp_reboot:
 
 	retval = led_classdev_register(&client->dev, &rmi4_data->leds);
 	if (retval) {
-		dev_err(&client->dev,
+		dev_dbg(&client->dev,
 			"Failed to register led(%d)\n", retval);
 		goto err_led_reg;
 	}
@@ -5323,7 +5323,7 @@ err_tsp_reboot:
 
 		rmi4_data->callbacks.inform_charger = synaptics_ta_cb;
 		if (rmi4_data->register_cb) {
-			dev_err(&client->dev, "Register TA Callback\n");
+			dev_dbg(&client->dev, "Register TA Callback\n");
 			rmi4_data->register_cb(&rmi4_data->callbacks);
 		}
 	}
@@ -5334,7 +5334,7 @@ err_tsp_reboot:
 #if defined(CONFIG_SEC_HESTIA_PROJECT)
         retval = synaptics_rmi4_reset_device(rmi4_data);
         if (retval < 0) {
-                dev_err(&client->dev,
+                dev_dbg(&client->dev,
                                 "%s: Failed to issue reset command, error = %d\n",
                                 __func__, retval);
                 return retval;
@@ -5364,7 +5364,7 @@ err_sysfs:
 	}
 
 	synaptics_rmi4_irq_enable(rmi4_data, false);
-	dev_info(&rmi4_data->i2c_client->dev,
+	dev_dbg(&rmi4_data->i2c_client->dev,
 		"%s: driver unloading..\n", __func__);
 
 err_enable_irq:
@@ -5395,7 +5395,7 @@ err_mem_regulator:
 
 	kfree(rmi4_data);
 
-	printk(KERN_ERR "%s: driver unload done..\n", __func__);
+	pr_debug("%s: driver unload done..\n", __func__);
 	return retval;
 }
 
@@ -5404,7 +5404,7 @@ static void synaptics_rmi4_shutdown(struct i2c_client *client)
 {
 	struct synaptics_rmi4_data *rmi4_data = i2c_get_clientdata(client);
 
-	dev_info(&rmi4_data->i2c_client->dev, "%s() is called\n", __func__);
+	dev_dbg(&rmi4_data->i2c_client->dev, "%s() is called\n", __func__);
 
 	synaptics_rmi4_stop_device(rmi4_data);
 }
@@ -5487,7 +5487,7 @@ static void synaptics_rmi4_sensor_sleep(struct synaptics_rmi4_data *rmi4_data)
 #ifdef SIDE_TOUCH
 	unsigned char sidekey_only_active;
 #endif
-	dev_info(&rmi4_data->i2c_client->dev, "%s\n", __func__);
+	dev_dbg(&rmi4_data->i2c_client->dev, "%s\n", __func__);
 
 #ifdef SIDE_TOUCH
 	retval = synaptics_rmi4_i2c_read(rmi4_data,
@@ -5495,7 +5495,7 @@ static void synaptics_rmi4_sensor_sleep(struct synaptics_rmi4_data *rmi4_data)
 			&sidekey_only_active,
 			sizeof(sidekey_only_active));
 	if (retval < 0) {
-		dev_err(&(rmi4_data->i2c_client->dev),
+		dev_dbg(&(rmi4_data->i2c_client->dev),
 				"%s: Failed to read f51_general_control2\n",
 				__func__);
 		rmi4_data->sensor_sleep = false;
@@ -5509,7 +5509,7 @@ static void synaptics_rmi4_sensor_sleep(struct synaptics_rmi4_data *rmi4_data)
 			&sidekey_only_active,
 			sizeof(sidekey_only_active));
 	if (retval < 0) {
-		dev_err(&(rmi4_data->i2c_client->dev),
+		dev_dbg(&(rmi4_data->i2c_client->dev),
 				"%s: Failed to write f51_general_control2\n",
 				__func__);
 		rmi4_data->sensor_sleep = false;
@@ -5525,7 +5525,7 @@ static void synaptics_rmi4_sensor_sleep(struct synaptics_rmi4_data *rmi4_data)
 			&device_ctrl,
 			sizeof(device_ctrl));
 	if (retval < 0) {
-		dev_err(&(rmi4_data->i2c_client->dev),
+		dev_dbg(&(rmi4_data->i2c_client->dev),
 				"%s: Failed to enter sleep mode\n",
 				__func__);
 		rmi4_data->sensor_sleep = false;
@@ -5539,7 +5539,7 @@ static void synaptics_rmi4_sensor_sleep(struct synaptics_rmi4_data *rmi4_data)
 			&device_ctrl,
 			sizeof(device_ctrl));
 	if (retval < 0) {
-		dev_err(&(rmi4_data->i2c_client->dev),
+		dev_dbg(&(rmi4_data->i2c_client->dev),
 				"%s: Failed to enter sleep mode\n",
 				__func__);
 		rmi4_data->sensor_sleep = false;
@@ -5570,7 +5570,7 @@ static void synaptics_rmi4_sensor_wake(struct synaptics_rmi4_data *rmi4_data)
 #ifdef SIDE_TOUCH
 	unsigned char sidekey_only_active;
 #endif
-	dev_info(&rmi4_data->i2c_client->dev, "%s\n", __func__);
+	dev_dbg(&rmi4_data->i2c_client->dev, "%s\n", __func__);
 
 #ifdef DISABLE_IRQ_WHEN_ENTER_DEEPSLEEP
 	synaptics_rmi4_irq_enable(rmi4_data, true);
@@ -5581,7 +5581,7 @@ static void synaptics_rmi4_sensor_wake(struct synaptics_rmi4_data *rmi4_data)
 			&sidekey_only_active,
 			sizeof(sidekey_only_active));
 	if (retval < 0) {
-		dev_err(&(rmi4_data->i2c_client->dev),
+		dev_dbg(&(rmi4_data->i2c_client->dev),
 				"%s: Failed to read f51_general_control2\n",
 				__func__);
 		rmi4_data->sensor_sleep = false;
@@ -5595,7 +5595,7 @@ static void synaptics_rmi4_sensor_wake(struct synaptics_rmi4_data *rmi4_data)
 			&sidekey_only_active,
 			sizeof(sidekey_only_active));
 	if (retval < 0) {
-		dev_err(&(rmi4_data->i2c_client->dev),
+		dev_dbg(&(rmi4_data->i2c_client->dev),
 				"%s: Failed to write f51_general_control2\n",
 				__func__);
 		rmi4_data->sensor_sleep = false;
@@ -5610,7 +5610,7 @@ static void synaptics_rmi4_sensor_wake(struct synaptics_rmi4_data *rmi4_data)
 			&device_ctrl,
 			sizeof(device_ctrl));
 	if (retval < 0) {
-		dev_err(&(rmi4_data->i2c_client->dev),
+		dev_dbg(&(rmi4_data->i2c_client->dev),
 				"%s: Failed to wake from sleep mode\n",
 				__func__);
 		rmi4_data->sensor_sleep = true;
@@ -5624,7 +5624,7 @@ static void synaptics_rmi4_sensor_wake(struct synaptics_rmi4_data *rmi4_data)
 			&device_ctrl,
 			sizeof(device_ctrl));
 	if (retval < 0) {
-		dev_err(&(rmi4_data->i2c_client->dev),
+		dev_dbg(&(rmi4_data->i2c_client->dev),
 				"%s: Failed to wake from sleep mode\n",
 				__func__);
 		rmi4_data->sensor_sleep = true;
@@ -5642,7 +5642,7 @@ static int synaptics_rmi4_stop_device(struct synaptics_rmi4_data *rmi4_data)
 	mutex_lock(&rmi4_data->rmi4_device_mutex);
 
 	if (rmi4_data->touch_stopped) {
-		dev_err(&rmi4_data->i2c_client->dev, "%s already power off\n",
+		dev_dbg(&rmi4_data->i2c_client->dev, "%s already power off\n",
 				__func__);
 		goto out;
 	}
@@ -5665,7 +5665,7 @@ static int synaptics_rmi4_start_device(struct synaptics_rmi4_data *rmi4_data)
 	mutex_lock(&rmi4_data->rmi4_device_mutex);
 
 	if (!rmi4_data->touch_stopped) {
-		dev_err(&rmi4_data->i2c_client->dev, "%s already power on\n",
+		dev_dbg(&rmi4_data->i2c_client->dev, "%s already power on\n",
 				__func__);
 		goto out;
 	}
@@ -5679,14 +5679,14 @@ static int synaptics_rmi4_start_device(struct synaptics_rmi4_data *rmi4_data)
 #if defined(CONFIG_SEC_FACTORY)
 	retval = synaptics_rmi4_query_device(rmi4_data);
 	if (retval < 0) {
-		dev_err(&rmi4_data->i2c_client->dev,
+		dev_dbg(&rmi4_data->i2c_client->dev,
 			"%s: Failed to query device\n",
 			__func__);
 	}
 #else
 	retval = synaptics_rmi4_reinit_device(rmi4_data);
 	if (retval < 0) {
-		dev_err(&rmi4_data->i2c_client->dev,
+		dev_dbg(&rmi4_data->i2c_client->dev,
 			"%s: Failed to reinit device\n",
 			__func__);
 	}
@@ -5712,7 +5712,7 @@ static int synaptics_rmi4_input_open(struct input_dev *dev)
 	struct synaptics_rmi4_data *rmi4_data = input_get_drvdata(dev);
 	int retval;
 
-	dev_info(&rmi4_data->i2c_client->dev, "%s %s\n", __func__, rmi4_data->use_deepsleep ? "wakeup" : "");
+	dev_dbg(&rmi4_data->i2c_client->dev, "%s %s\n", __func__, rmi4_data->use_deepsleep ? "wakeup" : "");
 
 	gpio_tlmm_config(GPIO_CFG(rmi4_data->dt_data->scl_gpio, 3, GPIO_CFG_INPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA), 1);
 	gpio_tlmm_config(GPIO_CFG(rmi4_data->dt_data->sda_gpio, 3, GPIO_CFG_INPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA), 1);
@@ -5721,7 +5721,7 @@ static int synaptics_rmi4_input_open(struct input_dev *dev)
 	} else {
 		retval = synaptics_rmi4_start_device(rmi4_data);
 		if (retval < 0)
-			dev_err(&rmi4_data->i2c_client->dev,
+			dev_dbg(&rmi4_data->i2c_client->dev,
 					"%s: Failed to start device\n", __func__);
 	}
 
@@ -5732,7 +5732,7 @@ static void synaptics_rmi4_input_close(struct input_dev *dev)
 {
 	struct synaptics_rmi4_data *rmi4_data = input_get_drvdata(dev);
 
-	dev_info(&rmi4_data->i2c_client->dev, "%s %s\n", __func__, rmi4_data->use_deepsleep ? "deepsleep" : "");
+	dev_dbg(&rmi4_data->i2c_client->dev, "%s %s\n", __func__, rmi4_data->use_deepsleep ? "deepsleep" : "");
 
 	if (rmi4_data->use_deepsleep) {
 		synaptics_rmi4_sensor_sleep(rmi4_data);
@@ -5766,11 +5766,11 @@ static void synaptics_rmi4_early_suspend(struct early_suspend *h)
 		container_of(h, struct synaptics_rmi4_data,
 				early_suspend);
 
-	dev_info(&rmi4_data->i2c_client->dev, "%s\n", __func__);
+	dev_dbg(&rmi4_data->i2c_client->dev, "%s\n", __func__);
 
 	if (rmi4_data->stay_awake) {
 		rmi4_data->staying_awake = true;
-		dev_info(&rmi4_data->i2c_client->dev, "%s : return due to staying_awake\n",
+		dev_dbg(&rmi4_data->i2c_client->dev, "%s : return due to staying_awake\n",
 				__func__);
 		return;
 	} else {
@@ -5798,17 +5798,17 @@ static void synaptics_rmi4_late_resume(struct early_suspend *h)
 		container_of(h, struct synaptics_rmi4_data,
 				early_suspend);
 
-	dev_info(&rmi4_data->i2c_client->dev, "%s\n", __func__);
+	dev_dbg(&rmi4_data->i2c_client->dev, "%s\n", __func__);
 
 	if (rmi4_data->staying_awake) {
-		dev_info(&rmi4_data->i2c_client->dev, "%s : return due to staying_awake\n",
+		dev_dbg(&rmi4_data->i2c_client->dev, "%s : return due to staying_awake\n",
 				__func__);
 		return;
 	}
 
 	retval = synaptics_rmi4_start_device(rmi4_data);
 	if (retval < 0)
-		dev_err(&rmi4_data->i2c_client->dev,
+		dev_dbg(&rmi4_data->i2c_client->dev,
 				"%s: Failed to start device\n", __func__);
 
 	return;
@@ -5832,7 +5832,7 @@ static int synaptics_rmi4_suspend(struct device *dev)
 	dev_dbg(&rmi4_data->i2c_client->dev, "%s\n", __func__);
 
 	if (rmi4_data->staying_awake) {
-		dev_info(&rmi4_data->i2c_client->dev, "%s : return due to staying_awake\n",
+		dev_dbg(&rmi4_data->i2c_client->dev, "%s : return due to staying_awake\n",
 				__func__);
 		return 0;
 	}
@@ -5869,7 +5869,7 @@ static int synaptics_rmi4_resume(struct device *dev)
 	if (rmi4_data->input_dev->users) {
 		retval = synaptics_rmi4_start_device(rmi4_data);
 		if (retval < 0)
-			dev_err(&rmi4_data->i2c_client->dev,
+			dev_dbg(&rmi4_data->i2c_client->dev,
 					"%s: Failed to start device\n", __func__);
 	}
 
