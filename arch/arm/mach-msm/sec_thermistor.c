@@ -128,7 +128,7 @@ static ssize_t sec_therm_show_temperature_flash_led(struct device *dev,
 	temper = convert_adc_to_temper(info, adc);
 	#endif
 
-	dev_info(info->dev, "%s: adc_flash=%d\n", __func__, adc);
+	dev_dbg(info->dev, "%s: adc_flash=%d\n", __func__, adc);
 	return sprintf(buf, "%d\n", temper);
 }
 
@@ -186,14 +186,14 @@ static int sec_therm_get_adc_data(struct sec_therm_info *info)
 		rc = qpnp_vadc_read(NULL, MSM_THERM_CH , &results);
 
 		if (rc) {
-			pr_err("error reading AMUX %d, rc = %d\n",
+			pr_debug("error reading AMUX %d, rc = %d\n",
 						MSM_THERM_CH, rc);
 			goto err;
 		}
 		adc_data = results.adc_code;
 
 		if (i == 0) {
-			pr_err("reading MSM_THERM_CH [rc = %d] [adc_code = %d]\n",
+			pr_debug("reading MSM_THERM_CH [rc = %d] [adc_code = %d]\n",
 									rc,results.adc_code);
 		}
 
@@ -233,13 +233,13 @@ static int sec_therm_get_adc_data_flash_led(struct sec_therm_info *info)
 		rc = qpnp_vadc_read(NULL, FLASH_THERM_CH, &results);
 
 		if (rc) {
-			pr_err("error reading AMUX %d, rc = %d\n",
+			pr_debug("error reading AMUX %d, rc = %d\n",
 						LR_MUX9_PU2_AMUX_THM5, rc);
 			goto err;
 		}
 		adc_data = results.adc_code;
 
-		pr_err("reading LR_MUX9_PU2_AMUX_THM5 [rc = %d] [adc_code = %d]\n",
+		pr_debug("reading LR_MUX9_PU2_AMUX_THM5 [rc = %d] [adc_code = %d]\n",
 									rc,results.adc_code);
 		if (i != 0) {
 			if (adc_data > adc_max)
@@ -399,15 +399,15 @@ static void notify_change_of_temperature(struct sec_therm_info *info)
 		snprintf(siop_buf, sizeof(siop_buf), "SIOP_LEVEL=%d",
 			 siop_level);
 		envp[env_offset++] = siop_buf;
-		dev_info(info->dev, "%s: uevent: %s\n", __func__, siop_buf);
+		dev_dbg(info->dev, "%s: uevent: %s\n", __func__, siop_buf);
 	} else {
 		envp[env_offset++] = NULL;
 	}
 
 	envp[env_offset] = NULL;
 
-	dev_info(info->dev, "%s: siop_level=%d\n", __func__, siop_level);
-	dev_info(info->dev, "%s: uevent: %s\n", __func__, temp_buf);
+	dev_dbg(info->dev, "%s: siop_level=%d\n", __func__, siop_level);
+	dev_dbg(info->dev, "%s: uevent: %s\n", __func__, temp_buf);
 	kobject_uevent_env(&info->dev->kobj, KOBJ_CHANGE, envp);
 }
 
@@ -423,17 +423,17 @@ static void sec_therm_polling_work(struct work_struct *work)
 #endif
 
 	adc = sec_therm_get_adc_data(info);
-	dev_info(info->dev, "%s: adc=%d\n", __func__, adc);
+	dev_dbg(info->dev, "%s: adc=%d\n", __func__, adc);
 
 	if (adc < 0)
 		goto out;
 
 	temper = convert_adc_to_temper(info, adc);
-	dev_info(info->dev, "%s: temper=%d\n", __func__, temper);
+	dev_dbg(info->dev, "%s: temper=%d\n", __func__, temper);
 
 #if defined(CONFIG_MACH_HLTEDCM) || defined(CONFIG_MACH_HLTEKDI) || defined(CONFIG_MACH_JS01LTEDCM) || defined(CONFIG_MACH_KLTE_JPN)
 	adc_flash = sec_therm_get_adc_data_flash_led(info);
-	dev_info(info->dev, "%s: adc_flash=%d\n", __func__, adc_flash);
+	dev_dbg(info->dev, "%s: adc_flash=%d\n", __func__, adc_flash);
 
 	if (adc_flash < 0)
 		goto out;
@@ -443,7 +443,7 @@ static void sec_therm_polling_work(struct work_struct *work)
 	#else
 	temper_flash= convert_adc_to_temper(info, adc_flash);
 	#endif
-	dev_info(info->dev, "%s: temper_flash=%d\n", __func__, temper_flash);
+	dev_dbg(info->dev, "%s: temper_flash=%d\n", __func__, temper_flash);
 
 	/* if temperature was changed, notify to framework */
 	if (info->curr_temperature != temper || info->curr_temperature_flash_led!= temper_flash) {
@@ -474,7 +474,7 @@ static __devinit int sec_therm_probe(struct platform_device *pdev)
 	struct sec_therm_info *info;
 	int ret = 0;
 
-	dev_info(&pdev->dev, "%s: SEC Thermistor Driver Loading\n", __func__);
+	dev_dbg(&pdev->dev, "%s: SEC Thermistor Driver Loading\n", __func__);
 
 	info = kzalloc(sizeof(*info), GFP_KERNEL);
 	if (!info)
@@ -488,7 +488,7 @@ static __devinit int sec_therm_probe(struct platform_device *pdev)
 	ret = sysfs_create_group(&info->dev->kobj, &sec_therm_group);
 
 	if (ret) {
-		dev_err(info->dev,
+		dev_dbg(info->dev,
 			"failed to create sysfs attribute group\n");
 
 		kfree(info);
@@ -563,7 +563,7 @@ static struct platform_driver sec_thermistor_driver = {
 
 static int __init sec_therm_init(void)
 {
-	pr_info("func:%s\n", __func__);
+	pr_debug("func:%s\n", __func__);
 	#if defined (SSRM_TEST)
 	tempTest=333;
 	#endif

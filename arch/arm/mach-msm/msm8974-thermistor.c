@@ -943,13 +943,12 @@ static struct sec_therm_adc_table temper_table_flash[] = {
 };
 #endif
 
+static int prev_temp;
+static int prev_level;
+
 static int get_msm8974_siop_level(int temp)
 {
-	static int prev_temp = 400;
-	static int prev_level;
 	int level = -1;
-
-
 #if defined(CONFIG_MACH_HLTEDCM) || defined(CONFIG_MACH_HLTEKDI) || defined(CONFIG_MACH_JS01LTEDCM)
 	 /* This is only for JPN JF-DCM model, currently the SIOP is not using this function.
 		 However, the JPN vendor(DoCoMo) wants to implement the Camera APP shutdown
