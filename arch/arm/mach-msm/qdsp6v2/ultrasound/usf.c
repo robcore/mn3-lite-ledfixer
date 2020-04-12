@@ -1348,8 +1348,21 @@ static int usf_get_stream_param(struct usf_xx_type *usf_xx,
 {
 	struct us_stream_param_type get_stream_param;
 	struct us_client *usc = usf_xx->usc;
-	struct us_port_data *port = &usc->port[dir];
+	struct us_port_data *port;
 	int rc = 0;
+
+	if (usc == NULL) {
+		pr_err("%s: usc is null\n",
+			__func__);
+		return -EFAULT;
+	}
+
+	port = &usc->port[dir];
+	if (port == NULL) {
+		pr_err("%s: port is null\n",
+			__func__);
+		return -EFAULT;
+	}
 
 	if (port->param_buf == NULL) {
 		pr_err("%s: parameter buffer is null\n",
