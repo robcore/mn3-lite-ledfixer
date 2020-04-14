@@ -272,8 +272,9 @@ static void max77803_check_slow_charging(struct max77803_charger_data *charger, 
 {
 	/* under 500mA, slow rate */
 	if (set_current_reg <= (SLOW_CHARGING_CURRENT_STANDARD / charger->input_curr_limit_step) &&
-			(charger->cable_type != POWER_SUPPLY_TYPE_BATTERY) || (!ignore_siop)) {
-		charger->aicl_on = true;
+			(charger->cable_type != POWER_SUPPLY_TYPE_BATTERY)) {
+		if (!ignore_siop)
+			charger->aicl_on = true;
 		pr_debug("%s: slow charging on : set_current_reg(0x%02x), cable type(%d)\n", __func__, set_current_reg, charger->cable_type);
 	}
 	else
