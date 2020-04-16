@@ -1063,6 +1063,7 @@ void mdss_fb_set_backlight(struct msm_fb_data_type *mfd, u32 bkl_lvl)
 
 	if ((previous_bklvl == 255) && (bkl_lvl == 219))
 		return;
+	
 	if (bkl_lvl > 0)
 		previous_bklvl = bkl_lvl;
 
