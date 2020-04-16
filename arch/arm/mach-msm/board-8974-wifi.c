@@ -62,7 +62,7 @@ void *wlan_static_dhd_info_buf;
 #if defined(CONFIG_BCM4339) || defined(CONFIG_BCM4339_MODULE)
 #ifdef CONFIG_SEC_H_PROJECT
 #define ENABLE_4339BT_WAR
-bool b0rev = 1;    
+bool b0rev = 1;
 #endif
 #endif
 
