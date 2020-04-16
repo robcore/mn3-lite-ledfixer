@@ -662,13 +662,11 @@ static void cpufreq_interactive_timer(unsigned long data)
 #ifdef CONFIG_RETENTION_CHANGE
 			++mode_count;
 #endif
-			pr_info("Governor: enter mode 0x%x\n", mode);
 			enter_mode();
 		} else {
 #ifdef CONFIG_RETENTION_CHANGE
 			mode_count=0;
 #endif
-			pr_info("Governor: exit mode 0x%x\n", mode);
 			exit_mode();
 		}
 	}
