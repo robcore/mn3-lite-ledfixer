@@ -29,9 +29,6 @@
 #define SIOP_CHARGING_LIMIT_CURRENT 1200
 #define SLOW_CHARGING_CURRENT_STANDARD 460
 
-static unsigned int ignore_siop = 1;
-module_param(ignore_siop, uint, 0644);
-
 struct max77803_charger_data {
 	struct max77803_dev	*max77803;
 
@@ -273,12 +270,10 @@ static void max77803_check_slow_charging(struct max77803_charger_data *charger, 
 	/* under 500mA, slow rate */
 	if (set_current_reg <= (SLOW_CHARGING_CURRENT_STANDARD / charger->input_curr_limit_step) &&
 			(charger->cable_type != POWER_SUPPLY_TYPE_BATTERY)) {
-		if (!ignore_siop)
-			charger->aicl_on = true;
-		pr_debug("%s: slow charging on : set_current_reg(0x%02x), cable type(%d)\n", __func__, set_current_reg, charger->cable_type);
-	}
-	else
+			charger->aicl_on = false;
+	} else {
 		charger->aicl_on = false;
+	}
 }
 
 extern unsigned int system_rev;
@@ -568,17 +563,9 @@ static void max77803_recovery_work(struct work_struct *work)
 
 	if ((chg_data->soft_reg_recovery_cnt < RECOVERY_CNT) && (
 		(chgin_dtls == 0x3) && (chg_dtls != 0x8) && (byp_dtls == 0x0))) {
-		pr_debug("%s: try to recovery, cnt(%d)\n", __func__,
-				(chg_data->soft_reg_recovery_cnt + 1));
-		if (chg_data->siop_level < 100 &&
-			chg_data->cable_type == POWER_SUPPLY_TYPE_MAINS && !ignore_siop) {
-			pr_debug("%s : LCD on status and recover current\n", __func__);
-			max77803_set_input_current(chg_data,
-					SIOP_INPUT_LIMIT_CURRENT);
-		} else {
+		if (chg_data->cable_type == POWER_SUPPLY_TYPE_MAINS) {
 			max77803_set_input_current(chg_data,
 				chg_data->charging_current_max);
-		}
 	} else {
 		pr_debug("%s: fail to recovery, cnt(%d)\n", __func__,
 				(chg_data->soft_reg_recovery_cnt + 1));
@@ -608,28 +595,26 @@ static void reduce_input_current(struct max77803_charger_data *charger, int cur)
 	unsigned int min_input_current = 0;
 
 	if ((!charger->is_charging) || mutex_is_locked(&charger->ops_lock) ||
-		(charger->cable_type == POWER_SUPPLY_TYPE_WIRELESS) ||
-		(ignore_siop))
+		(charger->cable_type == POWER_SUPPLY_TYPE_WIRELESS))
 		return;
 	set_reg = MAX77803_CHG_REG_CHG_CNFG_09;
 	min_input_current = MINIMUM_INPUT_CURRENT;
-	if (charger->pmic_ver == 0x04)
-		charger->input_curr_limit_step = 25;
-	else
-		charger->input_curr_limit_step = 20;
+	//if (charger->pmic_ver == 0x04)
+		//charger->input_curr_limit_step = 25;
+	//else
+		//charger->input_curr_limit_step = 20;
 
 	if (!max77803_read_reg(charger->max77803->i2c,
 				set_reg, &set_value)) {
 		if ((set_value <= (min_input_current / charger->input_curr_limit_step)) ||
 		    (set_value <= (cur / charger->input_curr_limit_step)))
 			return;
-		set_value -= (cur / charger->input_curr_limit_step);
-		set_value = (set_value < (min_input_current / charger->input_curr_limit_step)) ?
-			(min_input_current / charger->input_curr_limit_step) : set_value;
+		set_value = set_value;
+		//set_value -= (cur / charger->input_curr_limit_step);
+		//set_value = (set_value < (min_input_current / charger->input_curr_limit_step)) ?
+			//(min_input_current / charger->input_curr_limit_step) : set_value;
 		max77803_write_reg(charger->max77803->i2c,
 				set_reg, set_value);
-		pr_debug("%s: set current: reg:(0x%x), val:(0x%x)\n",
-				__func__, set_reg, set_value);
 	}
 	if(charger->cable_type == POWER_SUPPLY_TYPE_MAINS) {
 		/* schedule softreg recovery wq */
@@ -874,10 +859,7 @@ static int sec_chg_get_property(struct power_supply *psy,
 	case POWER_SUPPLY_PROP_CHARGE_TYPE:
 		if (!charger->is_charging)
 			val->intval = POWER_SUPPLY_CHARGE_TYPE_NONE;
-		else if (charger->aicl_on && !ignore_siop) {
-			val->intval = POWER_SUPPLY_CHARGE_TYPE_SLOW;
-			pr_debug("%s: slow-charging mode\n", __func__);
-		} else
+		else
 			val->intval = POWER_SUPPLY_CHARGE_TYPE_FAST;
 		break;
 	case POWER_SUPPLY_PROP_PRESENT:
@@ -970,10 +952,7 @@ static int sec_chg_set_property(struct power_supply *psy,
 					break;
 			}
 			/* decrease the charging current according to siop level */
-			if (!ignore_siop)
-				set_charging_current = charger->charging_current * charger->siop_level / 100;
-			else
-				set_charging_current = 2100;
+			set_charging_current = 2100;
 
 			if (set_charging_current > 0 &&
 					set_charging_current < usb_charging_current)
@@ -988,14 +967,8 @@ static int sec_chg_set_property(struct power_supply *psy,
 				max77803_check_cvprm(charger, 0x1D);
 #endif
 			if (val->intval == POWER_SUPPLY_TYPE_MAINS) {
-				if (charger->siop_level < 100 && !ignore_siop) {
-					set_charging_current_max = SIOP_INPUT_LIMIT_CURRENT;
-					if (set_charging_current > SIOP_CHARGING_LIMIT_CURRENT)
-						set_charging_current = SIOP_CHARGING_LIMIT_CURRENT;
-				} else {
-					set_charging_current_max = 2100;
-					set_charging_current = 2100;
-				}
+				set_charging_current_max = 2100;
+				set_charging_current = 2100;
 			}
 		}
 		max77803_set_charger_state(charger, charger->is_charging);
@@ -1039,29 +1012,18 @@ static int sec_chg_set_property(struct power_supply *psy,
 		if (charger->is_charging) {
 			/* decrease the charging current according to siop level */
 			int current_now;
-			if (!ignore_siop)
-				current_now = charger->charging_current * val->intval / 100;
-			else
-				current_now = charger->charging_current;
+			current_now = charger->charging_current;
 			/* do forced set charging current */
 			if (current_now > 0 &&
 					current_now < usb_charging_current)
 				current_now = usb_charging_current;
 
 			if (charger->cable_type == POWER_SUPPLY_TYPE_MAINS) {
-				if (charger->siop_level < 100) {
-					set_charging_current_max = SIOP_INPUT_LIMIT_CURRENT;
-				} else {
 					set_charging_current_max =
 						charger->charging_current_max;
-				}
-
-				if (charger->siop_level < 100 &&
-						current_now > SIOP_CHARGING_LIMIT_CURRENT) {
-					current_now = SIOP_CHARGING_LIMIT_CURRENT;
+					current_now = 2100;
 					max77803_set_input_current(charger,
 						set_charging_current_max);
-				}
 			}
 
 			max77803_set_charge_current(charger, current_now);
@@ -1091,9 +1053,6 @@ static int sec_chg_set_property(struct power_supply *psy,
 				CTRL3_JIGSET_MASK);
 		max77803_update_reg(charger->max77803->i2c, MAX77803_CHG_REG_CHG_CNFG_12, cnfg12,
 				CHG_CNFG_12_CHGINSEL_MASK);
-
-		pr_debug("%s: ctrl3 : (0x%02x)\n", __func__, ctrl3);
-		pr_debug("%s: set CNFG_12: 0x%x\n", __func__, cnfg12);
 		break;
 	}
 #endif

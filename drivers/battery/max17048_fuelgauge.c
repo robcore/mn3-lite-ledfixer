@@ -143,12 +143,8 @@ static bool max17048_set_modeldata(struct i2c_client *client)
 		config[1] = temp & 0xff;
 		config[0] = (temp & 0xff00) >> 8;
 
-		pr_info("%s : fuelguage : OriginalRCOMP = 0x%x, OriginalAlert = 0x%x\n",
-			__func__, config[1], config[0]);
-
 		addr = 0x0E;
 		read_ocv = max17048_read_word(client, addr);
-		pr_info("%s : fuelguage : OCV_DATA = 0x%4x\n", __func__,  read_ocv);
 		/* 2-5. Verify Model Access unlocked */
 	} while((read_ocv == 0xFFFF) && (i++ < 10));
 
