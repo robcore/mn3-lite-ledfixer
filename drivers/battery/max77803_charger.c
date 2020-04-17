@@ -566,6 +566,7 @@ static void max77803_recovery_work(struct work_struct *work)
 		if (chg_data->cable_type == POWER_SUPPLY_TYPE_MAINS) {
 			max77803_set_input_current(chg_data,
 				chg_data->charging_current_max);
+		}
 	} else {
 		pr_debug("%s: fail to recovery, cnt(%d)\n", __func__,
 				(chg_data->soft_reg_recovery_cnt + 1));
