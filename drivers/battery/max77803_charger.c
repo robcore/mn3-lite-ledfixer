@@ -23,7 +23,7 @@
 
 #define RECOVERY_DELAY		3000
 #define RECOVERY_CNT		5
-#define REDUCE_CURRENT_STEP	100
+#define REDUCE_CURRENT_STEP	1
 #define MINIMUM_INPUT_CURRENT	300
 #define SIOP_INPUT_LIMIT_CURRENT 2100
 #define SIOP_CHARGING_LIMIT_CURRENT 1200
@@ -421,7 +421,7 @@ exit:
 	/* slow charging check */
 	max77803_read_reg(charger->max77803->i2c,
 		set_reg, &reg_data);
-	max77803_check_slow_charging(charger, reg_data);
+	//max77803_check_slow_charging(charger, reg_data);
 
 	reg_data = (0 << CHGIN_SHIFT);
 	max77803_update_reg(charger->max77803->i2c, MAX77803_CHG_REG_CHG_INT_MASK, reg_data,
