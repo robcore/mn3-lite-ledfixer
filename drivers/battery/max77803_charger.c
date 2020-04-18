@@ -301,7 +301,7 @@ static void max77803_change_charge_path(struct max77803_charger_data *charger,
 }
 
 static void max77803_set_input_current(struct max77803_charger_data *charger,
-		int cur)
+		int cur_level)
 {
 	int set_current_reg, now_current_reg;
 	int vbus_state, curr_step, delay;
@@ -324,7 +324,7 @@ static void max77803_set_input_current(struct max77803_charger_data *charger,
 			charger->input_curr_limit_step = 20;
 	}
 
-	if (cur <= 0) {
+	if (cur_level <= 0) {
 		/* disable only buck because power onoff test issue */
 		max77803_write_reg(charger->max77803->i2c,
 			set_reg, 0x19);
@@ -335,7 +335,7 @@ static void max77803_set_input_current(struct max77803_charger_data *charger,
 		max77803_set_buck(charger, ENABLE);
 	}
 
-	set_current_reg = cur / charger->input_curr_limit_step;
+	set_current_reg = cur_level / charger->input_curr_limit_step;
 	if (charger->cable_type == POWER_SUPPLY_TYPE_BATTERY)
 		goto set_input_current;
 
@@ -353,7 +353,6 @@ static void max77803_set_input_current(struct max77803_charger_data *charger,
 					set_current_reg = (MINIMUM_INPUT_CURRENT / charger->input_curr_limit_step);
 				max77803_write_reg(charger->max77803->i2c,
 						set_reg, set_current_reg);
-				pr_debug("%s: set_current_reg(0x%02x)\n", __func__, set_current_reg);
 				chg_state = max77803_get_charger_state(charger);
 				if ((chg_state != POWER_SUPPLY_STATUS_CHARGING) &&
 						(chg_state != POWER_SUPPLY_STATUS_FULL))
@@ -373,7 +372,7 @@ static void max77803_set_input_current(struct max77803_charger_data *charger,
 	} else
 		now_current_reg = reg_data;
 
-	if (cur <= 1000) {
+	if (cur_level <= 1000) {
 		curr_step = 1;
 		delay = 50;
 	} else {
@@ -416,8 +415,6 @@ static void max77803_set_input_current(struct max77803_charger_data *charger,
 	}
 
 set_input_current:
-	pr_debug("%s: reg_data(0x%02x), input(%d)\n",
-		__func__, set_current_reg, cur);
 	max77803_write_reg(charger->max77803->i2c,
 		set_reg, set_current_reg);
 exit:
@@ -1405,10 +1402,11 @@ static irqreturn_t max77803_bypass_irq(int irq, void *data)
 					MAX77803_CHG_REG_CHG_CNFG_00,
 					chg_cnfg_00);
 	}
+/*
 	if ((byp_dtls & 0x8) && (vbus_state < 0x03)) {
 		reduce_input_current(chg_data, REDUCE_CURRENT_STEP);
 	}
-
+*/
 	return IRQ_HANDLED;
 }
 
@@ -1491,13 +1489,13 @@ static void max77803_chgin_isr_work(struct work_struct *work)
 			}
 			break;
 		}
-
+			/* reduce only at CC MODE
 		if (charger->is_charging) {
-			/* reduce only at CC MODE */
 			if (((chgin_dtls == 0x0) || (chgin_dtls == 0x01)) &&
 					(chg_dtls == 0x01) && (stable_count > 2))
 				reduce_input_current(charger, REDUCE_CURRENT_STEP);
 		}
+*/
 		prev_chgin_dtls = chgin_dtls;
 		msleep(100);
 	}
