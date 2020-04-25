@@ -1051,7 +1051,6 @@ static void mdss_fb_scale_bl(struct msm_fb_data_type *mfd, u32 *bl_lvl)
 	(*bl_lvl) = temp;
 }
 
-static u32 previous_bklvl;
 /* must call this function from within mfd->bl_lock */
 void mdss_fb_set_backlight(struct msm_fb_data_type *mfd, u32 bkl_lvl)
 {
@@ -1060,12 +1059,6 @@ void mdss_fb_set_backlight(struct msm_fb_data_type *mfd, u32 bkl_lvl)
 	u32 temp = bkl_lvl;
 	int ret = -EINVAL;
 	bool is_bl_changed = (bkl_lvl != mfd->bl_level);
-
-	if ((previous_bklvl == 255) && (bkl_lvl == 219))
-		return;
-	
-	if (bkl_lvl > 0)
-		previous_bklvl = bkl_lvl;
 
 	if (((!mfd->panel_power_on && mfd->dcm_state != DCM_ENTER)
 		|| !mfd->bl_updated) && !IS_CALIB_MODE_BL(mfd)) {
