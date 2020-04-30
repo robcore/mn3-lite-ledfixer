@@ -188,11 +188,11 @@ static char STANDARD_UI_2[] = {
 	0x00, //scr Yb Cr
 	0xff, //scr Bb Rr
 	0xff, //scr Wr Wb
-	0x0f, //scr Kr Kb
+	0x14, //scr Kr Kb
 	0xff, //scr Wg Wg
-	0x0f, //scr Kg Kg
+	0x14, //scr Kg Kg
 	0xff, //scr Wb Wr
-	0x0f, //scr Kb Kr
+	0x14, //scr Kb Kr
 	0x00, //curve 1 b
 	0x20, //curve 1 a
 	0x00, //curve 2 b
@@ -307,11 +307,11 @@ static char NATURAL_UI_2[] = {
 	0x24, //34 scr Yb Cr YELLOW B
 	0xf2, //35 scr Bb Rr BLUE B
 	0xff, //36 scr Wr Wb WHITE R
-	0x0f, //37 scr Kr Kb BLACK R
+	0x14, //37 scr Kr Kb BLACK R
 	0xf7, //38 scr Wg Wg WHITE G
-	0x0f, //39 scr Kg Kg BLACK G
+	0x14, //39 scr Kg Kg BLACK G
 	0xee, //40 scr Wb Wr WHITE B
-	0x0f, //41 scr Kb Kr BLACK B
+	0x14, //41 scr Kb Kr BLACK B
 	0x00, //42 curve 1 b
 	0x20, //43 curve 1 a
 	0x00, //44 curve 2 b
