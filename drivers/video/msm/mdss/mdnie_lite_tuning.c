@@ -100,8 +100,6 @@ static struct mipi_samsung_driver_data *mdnie_msd;
 #define DPRINT(x...)
 #endif
 
-#define MAX_LUT_SIZE	256
-
 /*#define MDNIE_LITE_TUN_DATA_DEBUG*/
 
 #if defined(CONFIG_FB_MSM_MIPI_VIDEO_WVGA_NT35502_PT_PANEL)
@@ -161,7 +159,7 @@ int get_lcd_panel_res(void);
 struct mdnie_lite_tun_type mdnie_tun_state = {
 	.mdnie_enable = false,
 	.scenario = mDNIe_UI_MODE,
-	.background = 2,
+	.background = 1,
 	.outdoor = OUTDOOR_OFF_MODE,
 	.accessibility = ACCESSIBILITY_OFF,
 };
