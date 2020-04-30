@@ -120,11 +120,11 @@ static int char_to_int_v255(char data1, char data2)
 }
 
 static bool first_adj_complete = false;
-static unsigned int gcontrol_enabled = 0;
-static unsigned int gcontrol_gradient_enabled = 1;
+static unsigned int gcontrol_enabled = 1;
+static unsigned int gcontrol_gradient_enabled = 0;
 static unsigned int gcontrol_offset_mode = 1;
-static int gcontrol_red = 0;
-static int gcontrol_green = 0;
+static int gcontrol_red = 4;
+static int gcontrol_green = 2;
 static int gcontrol_blue = 0;
 
 #ifdef SMART_DIMMING_DEBUG
