@@ -133,6 +133,7 @@ static int override_color[24];
 static int offset_color[24];
 static int custom_curve[48];
 static int chroma_correction[18];
+static int bypass = 0;
 
 static unsigned int offset_mode = 1;
 static unsigned int sharpen_dark = 0;
@@ -351,6 +352,9 @@ static void update_mdnie_mode(void)
 {
 	char *source_1, *source_2;
 	int result, i = 0;
+
+	if (mdnie_msd == NULL)
+		return;
 
 	switch (mdnie_tun_state.scenario) {
 	case mDNIe_UI_MODE:
@@ -713,6 +717,11 @@ static void update_mdnie_mode(void)
 			if (result & 1)
 				LITE_CONTROL_1[4] &= ~(1 << gamma_bit);
 		}
+
+		if (bypass)
+			LITE_CONTROL_1[1] = 0x00;
+		else
+			LITE_CONTROL_1[1] = 0x01;
 	} else {
 		for (i = 0; i < 24; i++) {
 			if (i == 24)
@@ -753,6 +762,12 @@ static void update_mdnie_mode(void)
 
 		result = (LITE_CONTROL_1[4] >> (gamma_bit));
 		gamma = result & 1;
+
+		LITE_CONTROL_1[1] = source_1[1];
+		if (LITE_CONTROL_1[1] == 0x00)
+			bypass = 1;
+		else if (LITE_CONTROL_1[1] == 0x01)
+			bypass = 0;
 	}
 }
 
@@ -763,6 +778,7 @@ static void update_mdnie_mode(void)
 void mDNIe_Set_Mode(void)
 {
 	struct msm_fb_data_type *mfd;
+
 	if (mdnie_msd == NULL)
 		return;
 
@@ -1311,8 +1327,39 @@ static ssize_t gamma_store(struct kobject *kobj,
 	return count;
 }
 
-/* Custom Curve */
+/* bypass */
+static ssize_t bypass_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", bypass);
+}
 
+static ssize_t bypass_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
+	int newval;
+	sscanf(buf, "%d", &newval);
+	if (newval < 0)
+		newval = 0;
+	if (newval > 1)
+		newval = 1;
+	bypass = newval;
+	mDNIe_Set_Mode();
+	return count;
+}
+
+/* mode_value */
+static ssize_t mode_value_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", mdnie_tun_state.background);
+}
+
+/* scenario_value */
+static ssize_t scenario_value_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", mdnie_tun_state.scenario);
+}
+
+/* Custom Curve */
 #define show_one_curve(_name, bval, aval)			\
 static ssize_t _name##_show					\
 (struct kobject *kobj, struct kobj_attribute *attr, char *buf)	\
@@ -2004,6 +2051,9 @@ MX_ATTR_RW(sharpen_dark);
 MX_ATTR_RW(sharpen_light);
 MX_ATTR_RW(chroma);
 MX_ATTR_RW(gamma);
+MX_ATTR_RW(bypass);
+MX_ATTR_RO(mode_value);
+MX_ATTR_RO(scenario_value);
 
 static struct attribute *mdnie_control_attrs[] = {
 	&hijack_attr.attr,
@@ -2013,6 +2063,9 @@ static struct attribute *mdnie_control_attrs[] = {
 	&sharpen_light_attr.attr,
 	&chroma_attr.attr,
 	&gamma_attr.attr,
+	&bypass_attr.attr,
+	&mode_value_attr.attr,
+	&scenario_value_attr.attr,
 	NULL,
 };
 

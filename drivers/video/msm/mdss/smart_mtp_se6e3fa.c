@@ -1833,8 +1833,6 @@ static void gamma_init_H_revJ(struct SMART_DIM *pSmart, char *str, int size)
 			if (gcontrol_gradient_enabled)
 				bl_index[S6E3FA_TABLE_MAX - cnt] +=
 					gradation_offset_H_revJ[table_index][cnt - 1];
-			else
-				bl_index[S6E3FA_TABLE_MAX - cnt] += 0;
 		} else {
 			bl_index[S6E3FA_TABLE_MAX - cnt] +=
 				gradation_offset_H_revJ[table_index][cnt - 1];
