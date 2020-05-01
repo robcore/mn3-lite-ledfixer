@@ -161,7 +161,7 @@ int get_lcd_panel_res(void);
 struct mdnie_lite_tun_type mdnie_tun_state = {
 	.mdnie_enable = false,
 	.scenario = mDNIe_UI_MODE,
-	.background = 2,
+	.background = STANDARD_MODE,
 	.outdoor = OUTDOOR_OFF_MODE,
 	.accessibility = ACCESSIBILITY_OFF,
 };
