@@ -100,6 +100,8 @@ static struct mipi_samsung_driver_data *mdnie_msd;
 #define DPRINT(x...)
 #endif
 
+#define MAX_LUT_SIZE	256
+
 /*#define MDNIE_LITE_TUN_DATA_DEBUG*/
 
 #if defined(CONFIG_FB_MSM_MIPI_VIDEO_WVGA_NT35502_PT_PANEL)
@@ -126,17 +128,17 @@ static struct mipi_samsung_driver_data *mdnie_msd;
 static char LITE_CONTROL_1[5];
 static char LITE_CONTROL_2[108];
 
-static int hijack = 1;
+static int hijack = 0;
 static int override_color[24];
 static int offset_color[24];
 static int custom_curve[48];
 static int chroma_correction[18];
 
 static unsigned int offset_mode = 1;
-static unsigned int sharpen_dark = 1;
-static unsigned int sharpen_light = 1;
+static unsigned int sharpen_dark = 0;
+static unsigned int sharpen_light = 0;
 static unsigned int chroma = 0;
-static unsigned int gamma = 1;
+static unsigned int gamma = 0;
 static int sharpen_light_bit = 3;
 static int sharpen_dark_bit = 2;
 static int chroma_bit = 1;
@@ -159,7 +161,7 @@ int get_lcd_panel_res(void);
 struct mdnie_lite_tun_type mdnie_tun_state = {
 	.mdnie_enable = false,
 	.scenario = mDNIe_UI_MODE,
-	.background = 1,
+	.background = 2,
 	.outdoor = OUTDOOR_OFF_MODE,
 	.accessibility = ACCESSIBILITY_OFF,
 };
