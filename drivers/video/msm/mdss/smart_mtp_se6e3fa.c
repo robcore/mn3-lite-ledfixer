@@ -193,11 +193,7 @@ static int v255_adjustment(struct SMART_DIM *pSmart)
 	do_div(result_2, v255_denominator);
 	result_3 = (VREG0_REF_6P2 * result_2) >> BIT_SHIFT;
 	pSmart->RGB_OUTPUT.R_VOLTAGE.level_255 = VREG0_REF_6P2 - result_3;
-
-	if (gcontrol_enabled)
-		pSmart->RGB_OUTPUT.R_VOLTAGE.level_0 = (VREG0_REF_6P2 - gcontrol_black_level);
-	else
-		pSmart->RGB_OUTPUT.R_VOLTAGE.level_0 = VREG0_REF_6P2;
+	pSmart->RGB_OUTPUT.R_VOLTAGE.level_0 = VREG0_REF_6P2;
 
 	v255_value = (V255_300CD_G_MSB << 8) | (V255_300CD_G_LSB);
 	LSB = char_to_int_v255(pSmart->MTP.G_OFFSET.OFFSET_255_MSB,
@@ -207,11 +203,7 @@ static int v255_adjustment(struct SMART_DIM *pSmart)
 	do_div(result_2, v255_denominator);
 	result_3 = (VREG0_REF_6P2 * result_2) >> BIT_SHIFT;
 	pSmart->RGB_OUTPUT.G_VOLTAGE.level_255 = VREG0_REF_6P2 - result_3;
-
-	if (gcontrol_enabled)
-		pSmart->RGB_OUTPUT.G_VOLTAGE.level_0 = (VREG0_REF_6P2 - gcontrol_black_level);
-	else
-		pSmart->RGB_OUTPUT.G_VOLTAGE.level_0 = VREG0_REF_6P2;
+	pSmart->RGB_OUTPUT.G_VOLTAGE.level_0 = VREG0_REF_6P2;
 
 	v255_value = (V255_300CD_B_MSB << 8) | (V255_300CD_B_LSB);
 	LSB = char_to_int_v255(pSmart->MTP.B_OFFSET.OFFSET_255_MSB,
@@ -221,11 +213,7 @@ static int v255_adjustment(struct SMART_DIM *pSmart)
 	do_div(result_2, v255_denominator);
 	result_3 = (VREG0_REF_6P2 * result_2) >> BIT_SHIFT;
 	pSmart->RGB_OUTPUT.B_VOLTAGE.level_255 = VREG0_REF_6P2 - result_3;
-
-	if (gcontrol_enabled)
-		pSmart->RGB_OUTPUT.B_VOLTAGE.level_0 = (VREG0_REF_6P2 - gcontrol_black_level);
-	else
-		pSmart->RGB_OUTPUT.B_VOLTAGE.level_0 = VREG0_REF_6P2;
+	pSmart->RGB_OUTPUT.B_VOLTAGE.level_0 = VREG0_REF_6P2;
 
 	return 0;
 }
