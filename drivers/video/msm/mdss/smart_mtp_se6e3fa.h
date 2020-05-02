@@ -81,6 +81,7 @@ Copyright (C) 2012, Samsung Electronics. All rights reserved.
 #define GAMMA_CURVE_2P1 4
 #define GAMMA_CURVE_2P0 5
 #define GAMMA_CURVE_1P9 6
+#define GAMMA_CURVE_1P8 7
 
 
 #define MTP_START_ADDR 0xC8
@@ -94,8 +95,8 @@ Copyright (C) 2012, Samsung Electronics. All rights reserved.
 #define VT_GAMMA_OFFSET	GAMMA_SET_MAX - VT_GAMMA_SET_MAX
 enum {
 	VT_GAMMA_OFFSET_R = 0,
-	VT_GAMMA_OFFSET_G = 0,
-	VT_GAMMA_OFFSET_B = 1,
+	VT_GAMMA_OFFSET_G = 1,
+	VT_GAMMA_OFFSET_B = 0,
 };
 enum {
 	VT_GAMMA_BIT_SHIFT_R = 0,
@@ -124,7 +125,7 @@ enum {
 
 /* PANEL DEPENDENT THINGS */
 #define MAX_CANDELA 350
-#define MIN_CANDELA	5
+#define MIN_CANDELA	10
 
 /*
 *	ID 0x20

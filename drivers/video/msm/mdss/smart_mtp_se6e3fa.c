@@ -126,6 +126,8 @@ static unsigned int gcontrol_offset_mode = 1;
 static int gcontrol_red = 0;
 static int gcontrol_green = 0;
 static int gcontrol_blue = 0;
+static int gcontrol_black_calc = S6E3FA_VREG0_REF;
+static int gcontrol_black_level = 0;
 
 #ifdef SMART_DIMMING_DEBUG
 static void print_RGB_offset(struct SMART_DIM *pSmart)
@@ -191,9 +193,13 @@ static int v255_adjustment(struct SMART_DIM *pSmart)
 	add_mtp = LSB + v255_value;
 	result_2 = (v255_coefficient+add_mtp) << BIT_SHIFT;
 	do_div(result_2, v255_denominator);
-	result_3 = (S6E3FA_VREG0_REF * result_2) >> BIT_SHIFT;
-	pSmart->RGB_OUTPUT.R_VOLTAGE.level_255 = S6E3FA_VREG0_REF - result_3;
-	pSmart->RGB_OUTPUT.R_VOLTAGE.level_0 = S6E3FA_VREG0_REF;
+	result_3 = (gcontrol_black_calc * result_2) >> BIT_SHIFT;
+	pSmart->RGB_OUTPUT.R_VOLTAGE.level_255 = gcontrol_black_calc - result_3;
+
+	if (gcontrol_enabled)
+		pSmart->RGB_OUTPUT.R_VOLTAGE.level_0 = (gcontrol_black_calc - gcontrol_black_level);
+	else
+		pSmart->RGB_OUTPUT.R_VOLTAGE.level_0 = gcontrol_black_calc;
 
 	v255_value = (V255_300CD_G_MSB << 8) | (V255_300CD_G_LSB);
 	LSB = char_to_int_v255(pSmart->MTP.G_OFFSET.OFFSET_255_MSB,
@@ -201,9 +207,13 @@ static int v255_adjustment(struct SMART_DIM *pSmart)
 	add_mtp = LSB + v255_value;
 	result_2 = (v255_coefficient+add_mtp) << BIT_SHIFT;
 	do_div(result_2, v255_denominator);
-	result_3 = (S6E3FA_VREG0_REF * result_2) >> BIT_SHIFT;
-	pSmart->RGB_OUTPUT.G_VOLTAGE.level_255 = S6E3FA_VREG0_REF - result_3;
-	pSmart->RGB_OUTPUT.G_VOLTAGE.level_0 = S6E3FA_VREG0_REF;
+	result_3 = (gcontrol_black_calc * result_2) >> BIT_SHIFT;
+	pSmart->RGB_OUTPUT.G_VOLTAGE.level_255 = gcontrol_black_calc - result_3;
+
+	if (gcontrol_enabled)
+		pSmart->RGB_OUTPUT.G_VOLTAGE.level_0 = (gcontrol_black_calc - gcontrol_black_level);
+	else
+		pSmart->RGB_OUTPUT.G_VOLTAGE.level_0 = gcontrol_black_calc;
 
 	v255_value = (V255_300CD_B_MSB << 8) | (V255_300CD_B_LSB);
 	LSB = char_to_int_v255(pSmart->MTP.B_OFFSET.OFFSET_255_MSB,
@@ -211,9 +221,13 @@ static int v255_adjustment(struct SMART_DIM *pSmart)
 	add_mtp = LSB + v255_value;
 	result_2 = (v255_coefficient+add_mtp) << BIT_SHIFT;
 	do_div(result_2, v255_denominator);
-	result_3 = (S6E3FA_VREG0_REF * result_2) >> BIT_SHIFT;
-	pSmart->RGB_OUTPUT.B_VOLTAGE.level_255 = S6E3FA_VREG0_REF - result_3;
-	pSmart->RGB_OUTPUT.B_VOLTAGE.level_0 = S6E3FA_VREG0_REF;
+	result_3 = (gcontrol_black_calc * result_2) >> BIT_SHIFT;
+	pSmart->RGB_OUTPUT.B_VOLTAGE.level_255 = gcontrol_black_calc - result_3;
+
+	if (gcontrol_enabled)
+		pSmart->RGB_OUTPUT.B_VOLTAGE.level_0 = (gcontrol_black_calc - gcontrol_black_level);
+	else
+		pSmart->RGB_OUTPUT.B_VOLTAGE.level_0 = gcontrol_black_calc;
 
 	return 0;
 }
@@ -222,26 +236,26 @@ static void v255_hexa(int *index, struct SMART_DIM *pSmart, char *str)
 {
 	unsigned long long result_1, result_2, result_3;
 
-	result_1 = S6E3FA_VREG0_REF -
+	result_1 = gcontrol_black_calc -
 	(pSmart->GRAY.TABLE[index[V255_INDEX]].R_Gray);
 	result_2 = result_1 * v255_denominator;
-	do_div(result_2, S6E3FA_VREG0_REF);
+	do_div(result_2, gcontrol_black_calc);
 	result_3 = result_2 - v255_coefficient;
 	str[0] = (result_3 & 0xff00) >> 8;
 	str[1] = result_3 & 0xff;
 
-	result_1 = S6E3FA_VREG0_REF -
+	result_1 = gcontrol_black_calc -
 	(pSmart->GRAY.TABLE[index[V255_INDEX]].G_Gray);
 	result_2 = result_1 * v255_denominator;
-	do_div(result_2, S6E3FA_VREG0_REF);
+	do_div(result_2, gcontrol_black_calc);
 	result_3 = result_2 - v255_coefficient;
 	str[2] = (result_3 & 0xff00) >> 8;
 	str[3] = result_3 & 0xff;
 
-	result_1 = S6E3FA_VREG0_REF -
+	result_1 = gcontrol_black_calc -
 		(pSmart->GRAY.TABLE[index[V255_INDEX]].B_Gray);
 	result_2 = result_1 * v255_denominator;
-	do_div(result_2, S6E3FA_VREG0_REF);
+	do_div(result_2, gcontrol_black_calc);
 	result_3 = result_2 - v255_coefficient;
 	str[4] = (result_3 & 0xff00) >> 8;
 	str[5] = result_3 & 0xff;
@@ -271,22 +285,22 @@ static int vt_adjustment(struct SMART_DIM *pSmart)
 	add_mtp = LSB + VT_300CD_R;
 	result_2 = (vt_coefficient[LSB] + add_mtp) << BIT_SHIFT;
 	do_div(result_2, vt_denominator);
-	result_3 = (S6E3FA_VREG0_REF * result_2) >> BIT_SHIFT;
-	pSmart->GRAY.VT_TABLE.R_Gray = S6E3FA_VREG0_REF - result_3;
+	result_3 = (gcontrol_black_calc * result_2) >> BIT_SHIFT;
+	pSmart->GRAY.VT_TABLE.R_Gray = gcontrol_black_calc - result_3;
 
 	LSB = char_to_int(pSmart->MTP.G_OFFSET.OFFSET_1);
 	add_mtp = LSB + VT_300CD_G;
 	result_2 = (vt_coefficient[LSB] + add_mtp) << BIT_SHIFT;
 	do_div(result_2, vt_denominator);
-	result_3 = (S6E3FA_VREG0_REF * result_2) >> BIT_SHIFT;
-	pSmart->GRAY.VT_TABLE.G_Gray = S6E3FA_VREG0_REF - result_3;
+	result_3 = (gcontrol_black_calc * result_2) >> BIT_SHIFT;
+	pSmart->GRAY.VT_TABLE.G_Gray = gcontrol_black_calc - result_3;
 
 	LSB = char_to_int(pSmart->MTP.B_OFFSET.OFFSET_1);
 	add_mtp = LSB + VT_300CD_B;
 	result_2 = (vt_coefficient[LSB] + add_mtp) << BIT_SHIFT;
 	do_div(result_2, vt_denominator);
-	result_3 = (S6E3FA_VREG0_REF * result_2) >> BIT_SHIFT;
-	pSmart->GRAY.VT_TABLE.B_Gray = S6E3FA_VREG0_REF - result_3;
+	result_3 = (gcontrol_black_calc * result_2) >> BIT_SHIFT;
+	pSmart->GRAY.VT_TABLE.B_Gray = gcontrol_black_calc - result_3;
 
 	return 0;
 
@@ -785,30 +799,30 @@ static int v3_adjustment(struct SMART_DIM *pSmart)
 
 	LSB = char_to_int(pSmart->MTP.R_OFFSET.OFFSET_3);
 	add_mtp = LSB + V3_300CD_R;
-	result_1 = (S6E3FA_VREG0_REF)
+	result_1 = (gcontrol_black_calc)
 		- (pSmart->RGB_OUTPUT.R_VOLTAGE.level_11);
 	result_2 = (v3_coefficient + add_mtp) << BIT_SHIFT;
 	do_div(result_2, v3_denominator);
 	result_3 = (result_1 * result_2) >> BIT_SHIFT;
-	pSmart->RGB_OUTPUT.R_VOLTAGE.level_3 = (S6E3FA_VREG0_REF) - result_3;
+	pSmart->RGB_OUTPUT.R_VOLTAGE.level_3 = (gcontrol_black_calc) - result_3;
 
 	LSB = char_to_int(pSmart->MTP.G_OFFSET.OFFSET_3);
 	add_mtp = LSB + V3_300CD_G;
-	result_1 = (S6E3FA_VREG0_REF)
+	result_1 = (gcontrol_black_calc)
 		- (pSmart->RGB_OUTPUT.G_VOLTAGE.level_11);
 	result_2 = (v3_coefficient + add_mtp) << BIT_SHIFT;
 	do_div(result_2, v3_denominator);
 	result_3 = (result_1 * result_2) >> BIT_SHIFT;
-	pSmart->RGB_OUTPUT.G_VOLTAGE.level_3 = (S6E3FA_VREG0_REF) - result_3;
+	pSmart->RGB_OUTPUT.G_VOLTAGE.level_3 = (gcontrol_black_calc) - result_3;
 
 	LSB = char_to_int(pSmart->MTP.B_OFFSET.OFFSET_3);
 	add_mtp = LSB + V3_300CD_B;
-	result_1 = (S6E3FA_VREG0_REF)
+	result_1 = (gcontrol_black_calc)
 		- (pSmart->RGB_OUTPUT.B_VOLTAGE.level_11);
 	result_2 = (v3_coefficient + add_mtp) << BIT_SHIFT;
 	do_div(result_2, v3_denominator);
 	result_3 = (result_1 * result_2) >> BIT_SHIFT;
-	pSmart->RGB_OUTPUT.B_VOLTAGE.level_3 = (S6E3FA_VREG0_REF) - result_3;
+	pSmart->RGB_OUTPUT.B_VOLTAGE.level_3 = (gcontrol_black_calc) - result_3;
 
 	return 0;
 
@@ -818,29 +832,29 @@ static void v3_hexa(int *index, struct SMART_DIM *pSmart, char *str)
 {
 	unsigned long long result_1, result_2, result_3;
 
-	result_1 = (S6E3FA_VREG0_REF)
+	result_1 = (gcontrol_black_calc)
 			- (pSmart->GRAY.TABLE[index[V3_INDEX]].R_Gray);
 	result_2 = result_1 * v3_denominator;
-	result_3 = (S6E3FA_VREG0_REF)
+	result_3 = (gcontrol_black_calc)
 			- (pSmart->GRAY.TABLE[index[V11_INDEX]].R_Gray);
 	do_div(result_2, result_3);
 	str[27] = (result_2  - v3_coefficient) & 0xff;
 
-	result_1 = (S6E3FA_VREG0_REF)
+	result_1 = (gcontrol_black_calc)
 			- (pSmart->GRAY.TABLE[index[V3_INDEX]].G_Gray);
 	result_2 = result_1 * v3_denominator;
-	result_3 = (S6E3FA_VREG0_REF)
+	result_3 = (gcontrol_black_calc)
 			- (pSmart->GRAY.TABLE[index[V11_INDEX]].G_Gray);
 	do_div(result_2, result_3);
 	str[28] = (result_2  - v3_coefficient) & 0xff;
 
-	result_1 = (S6E3FA_VREG0_REF)
+	result_1 = (gcontrol_black_calc)
 			- (pSmart->GRAY.TABLE[index[V3_INDEX]].B_Gray);
 	result_2 = result_1 * v3_denominator;
-	result_3 = (S6E3FA_VREG0_REF)
+	result_3 = (gcontrol_black_calc)
 			- (pSmart->GRAY.TABLE[index[V11_INDEX]].B_Gray);
 	do_div(result_2, result_3);
-	str[29] = (result_2  - v3_coefficient) & 0xff;
+	str[29] = (result_2 - v3_coefficient) & 0xff;
 
 }
 
@@ -1284,6 +1298,9 @@ static int searching_function(long long candela, int *index, int gamma_curve)
 		if (gamma_curve == GAMMA_CURVE_1P9) {
 			delta_1 = candela - curve_1p9_350[cnt];
 			delta_2 = candela - curve_1p9_350[cnt+1];
+		} else if (gamma_curve == GAMMA_CURVE_1P) {
+			delta_1 = candela - curve_1p8_350[cnt];
+			delta_2 = candela - curve_1p8_350[cnt+1];
 		} else {
 			delta_1 = candela - curve_2p2_350[cnt];
 			delta_2 = candela - curve_2p2_350[cnt+1];
@@ -1769,23 +1786,23 @@ static void gamma_init_H_revJ(struct SMART_DIM *pSmart, char *str, int size)
 {282, 57},
 */
 		if (pSmart->brightness_level == 111)
-			bl_level = 183;
+			bl_level = 119;
 		else if (pSmart->brightness_level == 119)
-			bl_level = 183;
+			bl_level = 119;
 		else if (pSmart->brightness_level == 126)
-			bl_level = 183;
+			bl_level = 207;
 		else if (pSmart->brightness_level == 134)
-			bl_level = 183;
+			bl_level = 207;
 		else if (pSmart->brightness_level == 143)
-			bl_level = 183;
+			bl_level = 207;
 		else if (pSmart->brightness_level == 152)
-			bl_level = 183;
+			bl_level = 207;
 		else if (pSmart->brightness_level == 162)
-			bl_level = 183;
+			bl_level = 207;
 		else if (pSmart->brightness_level == 172)
-			bl_level = 183;
+			bl_level = 207;
 		else if (pSmart->brightness_level == 183)
-			bl_level = 183;
+			bl_level = 207;
 		else if (pSmart->brightness_level == 195)
 			bl_level = 207;
 		else if (pSmart->brightness_level == 207)
@@ -2131,6 +2148,38 @@ static ssize_t gcontrol_offset_mode_store(struct kobject *kobj,
 	return count;
 }
 
+static ssize_t gcontrol_black_calc_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%d\n", gcontrol_black_calc);
+}
+
+static ssize_t gcontrol_black_calc_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
+	int newval;
+	sscanf(buf, "%d", &newval);
+	gcontrol_black_calc = newval;
+	if (gcontrol_black_calc < 0)
+		gcontrol_black_calc = 0;
+	wrap_smart_dimming_init();
+	return count;
+}
+
+static ssize_t gcontrol_black_level_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%d\n", gcontrol_black_level);
+}
+
+static ssize_t gcontrol_black_level_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
+	int newval;
+	sscanf(buf, "%d", &newval);
+	gcontrol_black_level = newval;
+	wrap_smart_dimming_init();
+	return count;
+}
+
 static struct kobj_attribute gcontrol_enabled_attribute =
 	__ATTR(gcontrol_enabled, 0644,
 		gcontrol_enabled_show,
@@ -2162,6 +2211,16 @@ static struct kobj_attribute gcontrol_blue_attribute =
 		gcontrol_blue_show,
 		gcontrol_blue_store);
 
+static struct kobj_attribute gcontrol_black_calc_attribute =
+	__ATTR(gcontrol_black_calc, 0644,
+		gcontrol_black_calc_show,
+		gcontrol_black_calc_store);
+
+static struct kobj_attribute gcontrol_black_level_attribute =
+	__ATTR(gcontrol_black_level, 0644,
+		gcontrol_black_level_show,
+		gcontrol_black_level_store);
+
 static struct attribute *gamma_control_attrs[] =
 {
 	&gcontrol_enabled_attribute.attr,
@@ -2170,6 +2229,8 @@ static struct attribute *gamma_control_attrs[] =
 	&gcontrol_red_attribute.attr,
 	&gcontrol_green_attribute.attr,
 	&gcontrol_blue_attribute.attr,
+	&gcontrol_black_calc_attribute.attr,
+	&gcontrol_black_level_attribute.attr,
 	NULL
 };
 
