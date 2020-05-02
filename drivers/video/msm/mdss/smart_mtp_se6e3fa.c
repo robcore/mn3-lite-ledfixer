@@ -1298,7 +1298,7 @@ static int searching_function(long long candela, int *index, int gamma_curve)
 		if (gamma_curve == GAMMA_CURVE_1P9) {
 			delta_1 = candela - curve_1p9_350[cnt];
 			delta_2 = candela - curve_1p9_350[cnt+1];
-		} else if (gamma_curve == GAMMA_CURVE_1P) {
+		} else if (gamma_curve == GAMMA_CURVE_1P8) {
 			delta_1 = candela - curve_1p8_350[cnt];
 			delta_2 = candela - curve_1p8_350[cnt+1];
 		} else {
@@ -1835,7 +1835,7 @@ static void gamma_init_H_revJ(struct SMART_DIM *pSmart, char *str, int size)
 
 	for (cnt = 0; cnt < S6E3FA_TABLE_MAX; cnt++) {
 		if (searching_function(candela_level[cnt],
-			&(bl_index[cnt]), GAMMA_CURVE_1P9)) {
+			&(bl_index[cnt]), GAMMA_CURVE_1P8)) {
 			pr_debug("%s searching function error cnt:%d\n",
 			__func__, cnt);
 		}
