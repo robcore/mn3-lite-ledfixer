@@ -897,6 +897,7 @@ int mul, int deno, int cnt)
 	return (int)(low + result_3);
 }
 
+static bool gray_scale_init = true;
 static int generate_gray_scale(struct SMART_DIM *pSmart)
 {
 	int cnt = 0, cal_cnt = 0;
@@ -1177,13 +1178,15 @@ static int generate_gray_scale(struct SMART_DIM *pSmart)
 
 	}
 
-	for (cnt = 0; cnt < S6E3FA_GRAY_SCALE_MAX; cnt++) {
-		pr_info("%s: Count: %d Red: %d Green: %d Blue: %d\n", __func__, cnt,
-			pSmart->GRAY.TABLE[cnt].R_Gray,
-			pSmart->GRAY.TABLE[cnt].G_Gray,
-			pSmart->GRAY.TABLE[cnt].B_Gray);
+	if (gray_scale_init) {
+		for (cnt = 0; cnt < S6E3FA_GRAY_SCALE_MAX; cnt++) {
+			pr_info("%s: Count: %d Red: %d Green: %d Blue: %d\n", __func__, cnt,
+				pSmart->GRAY.TABLE[cnt].R_Gray,
+				pSmart->GRAY.TABLE[cnt].G_Gray,
+				pSmart->GRAY.TABLE[cnt].B_Gray);
+		}
+		gray_scale_init = false;
 	}
-
 	return 0;
 }
 
