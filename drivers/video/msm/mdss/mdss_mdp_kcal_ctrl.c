@@ -474,4 +474,12 @@ static int __init kcal_ctrl_init(void)
 	return 0;
 }
 
-late_init(kcal_ctrl_init);
+static void __exit kcal_ctrl_exit(void)
+{
+	platform_device_unregister(&kcal_ctrl_device);
+	platform_driver_unregister(&kcal_ctrl_driver);
+}
+
+module_init(kcal_ctrl_init);
+module_exit(kcal_ctrl_exit);
+
