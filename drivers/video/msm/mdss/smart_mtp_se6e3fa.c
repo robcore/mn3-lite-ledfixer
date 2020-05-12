@@ -1499,7 +1499,7 @@ static int gradation_offset_H_revJ[][9] = {
 	{0, 1, 3, 6, 7, 8, 10, 12, 13},
 	{0, 1, 3, 5, 7, 7, 10, 12, 13},
 	{0, 1, 3, 5, 6, 7, 9, 11, 12},
-	{0, 1, 3, 5, 6, 7, 9, 11, 12},generate_gamma
+	{0, 1, 3, 5, 6, 7, 9, 11, 12},
 	{0, 1, 2, 4, 5, 6, 8, 10, 11},
 	{0, 1, 2, 4, 5, 6, 8, 10, 11},
 	{0, 1, 2, 4, 5, 6, 8, 10, 11},
@@ -1700,7 +1700,7 @@ static int gcontrol_rgb_offset(int input_color)
 		return ret;
 
 	switch (input_color) {
-		case 0:generate_gamma
+		case 0://R
 		case 3:
 		case 6:
 		case 9:
@@ -2008,9 +2008,12 @@ static void mtp_sorting(struct SMART_DIM *psmart)
 	pfrom = (char *)&(psmart->MTP_ORIGN);
 	pdest = (char *)&(psmart->MTP);
 
-	for (loop = 0; loop < GAMMA_SET_MAX; loop++)
+	for (loop = 0; loop < GAMMA_SET_MAX; loop++) {
 		pdest[loop] = pfrom[sorting[loop]];
-
+		if (!initial_prints_complete)
+			pr_info("%s: loopcnt = %d -- pdest(MTP): %d -- pfrom(MTP_ORIGN): %d",
+					__func__, loop, pdest[loop], pfrom[sorting[loop]]);
+	}
 }
 
 static void wrap_smart_dimming_init(void);
