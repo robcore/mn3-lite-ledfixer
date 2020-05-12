@@ -91,8 +91,7 @@ Copyright (C) 2012, Samsung Electronics. All rights reserved.
  * Each of R, G, B have 1 count so the offset of VT is
  * GAMMA_SET_MAX -3
  */
-#define VT_GAMMA_SET_MAX 3
-#define VT_GAMMA_OFFSET	GAMMA_SET_MAX - VT_GAMMA_SET_MAX
+#define VT_GAMMA_OFFSET	30
 enum {
 	VT_GAMMA_OFFSET_R = 0,
 	VT_GAMMA_OFFSET_G = 1,
