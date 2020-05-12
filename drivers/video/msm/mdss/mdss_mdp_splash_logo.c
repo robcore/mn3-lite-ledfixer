@@ -502,7 +502,7 @@ static int mdss_mdp_splash_thread(void *data)
 
 	mutex_lock(&mfd->bl_lock);
 	mfd->bl_updated = true;
-	mdss_fb_set_backlight(mfd, mfd->panel_info->bl_max >> 1);
+	mdss_fb_set_backlight(mfd, 255);
 	mutex_unlock(&mfd->bl_lock);
 
 	init_completion(&mfd->splash_info.frame_done);

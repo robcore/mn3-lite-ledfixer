@@ -1056,27 +1056,30 @@ void mdss_fb_set_backlight(struct msm_fb_data_type *mfd, u32 bkl_lvl)
 {
 	struct mdss_panel_data *pdata;
 	int (*update_ad_input)(struct msm_fb_data_type *mfd);
-	u32 temp = bkl_lvl;
+	u32 local_bkl_lvl = bkl_lvl;
+	if (local_bkl_lvl => 219)
+		local_bkl_lvl = 255;
+	u32 temp = local_bkl_lvl;
 	int ret = -EINVAL;
-	bool is_bl_changed = (bkl_lvl != mfd->bl_level);
+	bool is_bl_changed = (local_bkl_lvl != mfd->bl_level);
 
 	if (((!mfd->panel_power_on && mfd->dcm_state != DCM_ENTER)
 		|| !mfd->bl_updated) && !IS_CALIB_MODE_BL(mfd)) {
-		mfd->unset_bl_level = bkl_lvl;
-		pr_info("[BL1] bkl_lvl (%d), bl_updated(%d), power(%d)\n",
-			bkl_lvl, mfd->bl_updated, mfd->panel_power_on);
+		mfd->unset_bl_level = local_bkl_lvl;
+		pr_info("[BL1] local_bkl_lvl (%d), bl_updated(%d), power(%d)\n",
+			local_bkl_lvl, mfd->bl_updated, mfd->panel_power_on);
 		return;
 	} else {
 		mfd->unset_bl_level = 0;
-		pr_info("[BL2] bkl_lvl (%d), bl_updated(%d)\n",
-			bkl_lvl, mfd->bl_updated);
+		pr_info("[BL2] local_bkl_lvl (%d), bl_updated(%d)\n",
+			local_bkl_lvl, mfd->bl_updated);
 	}
 
 	pdata = dev_get_platdata(&mfd->pdev->dev);
 
 	if ((pdata) && (pdata->set_backlight)) {
 		if (mfd->mdp.ad_attenuate_bl) {
-			ret = (*mfd->mdp.ad_attenuate_bl)(bkl_lvl, &temp, mfd);
+			ret = (*mfd->mdp.ad_attenuate_bl)(local_bkl_lvl, &temp, mfd);
 			if (ret)
 				pr_err("Failed to attenuate BL\n");
 		}
@@ -1086,19 +1089,19 @@ void mdss_fb_set_backlight(struct msm_fb_data_type *mfd, u32 bkl_lvl)
 			mdss_fb_scale_bl(mfd, &temp);
 		/*
 		 * Even though backlight has been scaled, want to show that
-		 * backlight has been set to bkl_lvl to those that read from
+		 * backlight has been set to local_bkl_lvl to those that read from
 		 * sysfs node. Thus, need to set bl_level even if it appears
 		 * the backlight has already been set to the level it is at,
-		 * as well as setting bl_level to bkl_lvl even though the
+		 * as well as setting bl_level to local_bkl_lvl even though the
 		 * backlight has been set to the scaled value.
 		 */
 		if (mfd->bl_level_scaled == temp) {
-			mfd->bl_level = bkl_lvl;
+			mfd->bl_level = local_bkl_lvl;
 			return;
 		}
 		if(mfd->panel_power_on == true)
 		   pdata->set_backlight(pdata, temp);
-		mfd->bl_level = bkl_lvl;
+		mfd->bl_level = local_bkl_lvl;
 		mfd->bl_level_scaled = temp;
 
 		if (mfd->mdp.update_ad_input && is_bl_changed) {
