@@ -1057,7 +1057,7 @@ void mdss_fb_set_backlight(struct msm_fb_data_type *mfd, u32 bkl_lvl)
 	struct mdss_panel_data *pdata;
 	int (*update_ad_input)(struct msm_fb_data_type *mfd);
 	u32 local_bkl_lvl = bkl_lvl;
-	if (local_bkl_lvl => 219)
+	if (local_bkl_lvl >= 219)
 		local_bkl_lvl = 255;
 	u32 temp = local_bkl_lvl;
 	int ret = -EINVAL;
