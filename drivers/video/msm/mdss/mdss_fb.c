@@ -1056,12 +1056,16 @@ void mdss_fb_set_backlight(struct msm_fb_data_type *mfd, u32 bkl_lvl)
 {
 	struct mdss_panel_data *pdata;
 	int (*update_ad_input)(struct msm_fb_data_type *mfd);
-	u32 local_bkl_lvl = bkl_lvl;
+	u32 local_bkl_lvl;
+	u32 temp;
+	int ret = -EINVAL;
+	bool is_bl_changed;
+
+	local_bkl_lvl = bkl_lvl;
 	if (local_bkl_lvl >= 219)
 		local_bkl_lvl = 255;
-	u32 temp = local_bkl_lvl;
-	int ret = -EINVAL;
-	bool is_bl_changed = (local_bkl_lvl != mfd->bl_level);
+	temp = local_bkl_lvl;
+	is_bl_changed = (local_bkl_lvl != mfd->bl_level);
 
 	if (((!mfd->panel_power_on && mfd->dcm_state != DCM_ENTER)
 		|| !mfd->bl_updated) && !IS_CALIB_MODE_BL(mfd)) {
