@@ -120,6 +120,7 @@ static int char_to_int_v255(char data1, char data2)
 }
 
 static bool first_adj_complete = false;
+static bool initial_prints_complete = false;
 static unsigned int gcontrol_enabled = 0;
 static unsigned int gcontrol_gradient_enabled = 1;
 static unsigned int gcontrol_offset_mode = 1;
@@ -127,7 +128,6 @@ static int gcontrol_red = 0;
 static int gcontrol_green = 0;
 static int gcontrol_blue = 0;
 
-#ifdef SMART_DIMMING_DEBUG
 static void print_RGB_offset(struct SMART_DIM *pSmart)
 {
 	pr_info("%s MTP Offset VT R:%d G:%d B:%d\n", __func__,
@@ -174,7 +174,6 @@ static void print_RGB_offset(struct SMART_DIM *pSmart)
 			char_to_int_v255(pSmart->MTP.B_OFFSET.OFFSET_255_MSB,
 				pSmart->MTP.B_OFFSET.OFFSET_255_LSB));
 }
-#endif
 
 #define v255_coefficient 129
 #define v255_denominator 860
@@ -897,7 +896,6 @@ int mul, int deno, int cnt)
 	return (int)(low + result_3);
 }
 
-static bool gray_scale_init = true;
 static int generate_gray_scale(struct SMART_DIM *pSmart)
 {
 	int cnt = 0, cal_cnt = 0;
@@ -1178,14 +1176,13 @@ static int generate_gray_scale(struct SMART_DIM *pSmart)
 
 	}
 
-	if (gray_scale_init) {
+	if (!initial_prints_complete) {
 		for (cnt = 0; cnt < S6E3FA_GRAY_SCALE_MAX; cnt++) {
 			pr_info("%s: Count: %d Red: %d Green: %d Blue: %d\n", __func__, cnt,
 				pSmart->GRAY.TABLE[cnt].R_Gray,
 				pSmart->GRAY.TABLE[cnt].G_Gray,
 				pSmart->GRAY.TABLE[cnt].B_Gray);
 		}
-		gray_scale_init = false;
 	}
 	return 0;
 }
@@ -1502,7 +1499,7 @@ static int gradation_offset_H_revJ[][9] = {
 	{0, 1, 3, 6, 7, 8, 10, 12, 13},
 	{0, 1, 3, 5, 7, 7, 10, 12, 13},
 	{0, 1, 3, 5, 6, 7, 9, 11, 12},
-	{0, 1, 3, 5, 6, 7, 9, 11, 12},
+	{0, 1, 3, 5, 6, 7, 9, 11, 12},generate_gamma
 	{0, 1, 2, 4, 5, 6, 8, 10, 11},
 	{0, 1, 2, 4, 5, 6, 8, 10, 11},
 	{0, 1, 2, 4, 5, 6, 8, 10, 11},
@@ -1703,7 +1700,7 @@ static int gcontrol_rgb_offset(int input_color)
 		return ret;
 
 	switch (input_color) {
-		case 0:
+		case 0:generate_gamma
 		case 3:
 		case 6:
 		case 9:
@@ -1942,11 +1939,11 @@ static void generate_gamma(struct SMART_DIM *psmart, char *str, int size)
 		memcpy(str, max_lux_table, size);
 	}
 
-#ifdef SMART_DIMMING_DEBUG
-	if (lux_loop != psmart->lux_table_max)
-		pr_info("%s searching ok index : %d lux : %d", __func__,
-			lux_loop, ptable[lux_loop].lux);
-#endif
+	if (!initial_prints_complete) {
+		if (lux_loop != psmart->lux_table_max)
+			pr_info("%s searching ok index : %d lux : %d", __func__,
+				lux_loop, ptable[lux_loop].lux);
+	}
 }
 static void gamma_cell_determine(int ldi_revision)
 {
@@ -2181,7 +2178,7 @@ static int smart_dimming_init(struct SMART_DIM *psmart)
 	v23_adjustment(psmart);
 	v11_adjustment(psmart);
 	v3_adjustment(psmart);
-	//print_RGB_offset(psmart);
+	print_RGB_offset(psmart);
 
 	if (generate_gray_scale(psmart)) {
 		pr_info(KERN_ERR "lcd smart dimming fail generate_gray_scale\n");
@@ -2222,26 +2219,27 @@ static int smart_dimming_init(struct SMART_DIM *psmart)
 		first_adj_complete = true;
 	}
 
-#ifdef SMART_DIMMING_DEBUG
-	for (lux_loop = 0; lux_loop < psmart->lux_table_max; lux_loop++) {
-		for (cnt = 0; cnt < GAMMA_SET_MAX; cnt++)
-			snprintf(pBuffer + strnlen(pBuffer, 256), 256, " %d",
-				psmart->gen_table[lux_loop].gamma_setting[cnt]);
+	if (!initial_prints_complete) {
+		for (lux_loop = 0; lux_loop < psmart->lux_table_max; lux_loop++) {
+			for (cnt = 0; cnt < GAMMA_SET_MAX; cnt++)
+				snprintf(pBuffer + strnlen(pBuffer, 256), 256, " %d",
+					psmart->gen_table[lux_loop].gamma_setting[cnt]);
+	
+			pr_info("lux : %d  %s", psmart->plux_table[lux_loop], pBuffer);
+			memset(pBuffer, 0x00, 256);
+		}
 
-		pr_info("lux : %d  %s", psmart->plux_table[lux_loop], pBuffer);
-		memset(pBuffer, 0x00, 256);
+		for (lux_loop = 0; lux_loop < psmart->lux_table_max; lux_loop++) {
+			for (cnt = 0; cnt < GAMMA_SET_MAX; cnt++)
+				snprintf(pBuffer + strnlen(pBuffer, 256), 256,
+					" %02X",
+					psmart->gen_table[lux_loop].gamma_setting[cnt]);
+	
+			pr_info("lux : %d  %s", psmart->plux_table[lux_loop], pBuffer);
+			memset(pBuffer, 0x00, 256);
+		}
+		initial_prints_complete = true;
 	}
-
-	for (lux_loop = 0; lux_loop < psmart->lux_table_max; lux_loop++) {
-		for (cnt = 0; cnt < GAMMA_SET_MAX; cnt++)
-			snprintf(pBuffer + strnlen(pBuffer, 256), 256,
-				" %02X",
-				psmart->gen_table[lux_loop].gamma_setting[cnt]);
-
-		pr_info("lux : %d  %s", psmart->plux_table[lux_loop], pBuffer);
-		memset(pBuffer, 0x00, 256);
-	}
-#endif
 	return 0;
 }
 

@@ -133,7 +133,7 @@ int load_565rle_image(char *filename)
 	ptr = data;
 	if ((info->node == 1 || info->node == 2)) {
 		err = -EPERM;
-		pr_err("%s:%d no info->creen_base on fb%d!\n",
+		pr_err("%s:%d no info->screen_base on fb%d!\n",
 		       __func__, __LINE__, info->node);
 		goto err_logo_free_data;
 	}
@@ -385,8 +385,8 @@ static int __init boot_logo_init(void) {
 	}
 
 	pr_info("%s:+\n",__func__);
-	wq_bootlogo =	create_singlethread_workqueue("bootlogo");
-	if(wq_bootlogo==NULL)
+	wq_bootlogo = create_singlethread_workqueue("bootlogo");
+	if(wq_bootlogo == NULL)
 		return -ENOMEM;
 
 	INIT_DELAYED_WORK(&w_bootlogo, bootlogo_work);
