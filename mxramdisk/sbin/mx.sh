@@ -74,6 +74,11 @@ then
 	chmod 755 "/sbin/zip"
 fi
 
+echo '1267200' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
+echo '1267200' > /sys/devices/system/cpu/cpu1/cpufreq/scaling_min_freq
+echo '1267200' > /sys/devices/system/cpu/cpu2/cpufreq/scaling_min_freq
+echo '1267200' > /sys/devices/system/cpu/cpu3/cpufreq/scaling_min_freq
+
 #busybox ln -sf $(pwd)/sbin/uci $(pwd)/res/synapse/uci
 
 #if [ -e /system/robcore ]; then
@@ -259,6 +264,7 @@ chmod 755 /sys
 supolicy --live "permissive audioserver"
 supolicy --live "permissive default_prop"
 supolicy --live "permissive *"
+
 #chmod 0771 /data/dalvik-cache
 #chown 0:0 /data/dalvik-cache
 #chmod 0711 /data/dalvik-cache/profiles
@@ -284,4 +290,4 @@ supolicy --live "permissive *"
 
 #supolicy --live "allow s_untrusted_app default_prop property_service { set }"
 #/system/xbin/busybox run-parts /system/etc/init.d/
-#echo "[MACHINEX] INIT.D EXECUTED" | tee /dev/kmsg
+echo "[MACHIN3X] INIT.D EXECUTED" | tee /dev/kmsg
