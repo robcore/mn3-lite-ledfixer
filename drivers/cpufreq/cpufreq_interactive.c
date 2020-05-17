@@ -72,15 +72,13 @@ static struct mutex gov_lock;
 static unsigned int hispeed_freq;
 
 /* Go to hi speed when CPU load at or above this value. */
-#define DEFAULT_GO_HISPEED_LOAD 99
-static unsigned long go_hispeed_load = DEFAULT_GO_HISPEED_LOAD;
+static unsigned long go_hispeed_load = 95;
 
 /* Sampling down factor to be applied to min_sample_time at max freq */
 static unsigned int sampling_down_factor;
 
 /* Target load.  Lower values result in higher CPU speeds. */
-#define DEFAULT_TARGET_LOAD 90
-static unsigned int default_target_loads[] = {DEFAULT_TARGET_LOAD};
+static unsigned int default_target_loads[] = {90};
 static spinlock_t target_loads_lock;
 static unsigned int *target_loads = default_target_loads;
 static int ntarget_loads = ARRAY_SIZE(default_target_loads);
@@ -94,8 +92,7 @@ static unsigned long min_sample_time = DEFAULT_MIN_SAMPLE_TIME;
 /*
  * The sample rate of the timer used to increase frequency
  */
-#define DEFAULT_TIMER_RATE (20 * USEC_PER_MSEC)
-static unsigned long timer_rate = DEFAULT_TIMER_RATE;
+static unsigned long timer_rate = (20 * USEC_PER_MSEC);
 
 /* Busy SDF parameters*/
 #define MIN_BUSY_TIME (100 * USEC_PER_MSEC)
@@ -104,9 +101,9 @@ static unsigned long timer_rate = DEFAULT_TIMER_RATE;
  * Wait this long before raising speed above hispeed, by default a single
  * timer interval.
  */
-#define DEFAULT_ABOVE_HISPEED_DELAY DEFAULT_TIMER_RATE
+#define DEFAULT_ABOVE_HISPEED_DELAY (20 * USEC_PER_MSEC)
 static unsigned int default_above_hispeed_delay[] = {
-	DEFAULT_ABOVE_HISPEED_DELAY };
+	(20 * USEC_PER_MSEC) };
 static spinlock_t above_hispeed_delay_lock;
 static unsigned int *above_hispeed_delay = default_above_hispeed_delay;
 static int nabove_hispeed_delay = ARRAY_SIZE(default_above_hispeed_delay);
@@ -122,8 +119,8 @@ static u64 boostpulse_endtime;
  * Max additional time to wait in idle, beyond timer_rate, at speeds above
  * minimum before wakeup to reduce speed, or -1 if unnecessary.
  */
-#define DEFAULT_TIMER_SLACK (4 * DEFAULT_TIMER_RATE)
-static int timer_slack_val = DEFAULT_TIMER_SLACK;
+#define DEFAULT_TIMER_SLACK (80 * USEC_PER_MSEC)
+static int timer_slack_val = (80 * USEC_PER_MSEC);
 
 static bool io_is_busy;
 
@@ -146,39 +143,39 @@ static unsigned int mode = 0;
 static unsigned int enforced_mode = 0;
 static u64 mode_check_timestamp = 0;
 
-#define DEFAULT_MULTI_ENTER_TIME (4 * DEFAULT_TIMER_RATE)
-static unsigned long multi_enter_time = DEFAULT_MULTI_ENTER_TIME;
+#define DEFAULT_MULTI_ENTER_TIME (80 * USEC_PER_MSEC)
+static unsigned long multi_enter_time = (80 * USEC_PER_MSEC);
 static unsigned long time_in_multi_enter = 0;
-static unsigned int multi_enter_load = 4 * DEFAULT_TARGET_LOAD;
+static unsigned int multi_enter_load = 4 * 90;
 
-#define DEFAULT_MULTI_EXIT_TIME (16 * DEFAULT_TIMER_RATE)
-static unsigned long multi_exit_time = DEFAULT_MULTI_EXIT_TIME;
+#define DEFAULT_MULTI_EXIT_TIME (320 * USEC_PER_MSEC)
+static unsigned long multi_exit_time = (320 * USEC_PER_MSEC);
 static unsigned long time_in_multi_exit = 0;
-static unsigned int multi_exit_load = 4 * DEFAULT_TARGET_LOAD;
+static unsigned int multi_exit_load = 4 * 90;
 
-#define DEFAULT_SINGLE_ENTER_TIME (8 * DEFAULT_TIMER_RATE)
-static unsigned long single_enter_time = DEFAULT_SINGLE_ENTER_TIME;
+#define DEFAULT_SINGLE_ENTER_TIME (160 * USEC_PER_MSEC)
+static unsigned long single_enter_time = (160 * USEC_PER_MSEC);
 static unsigned long time_in_single_enter = 0;
-static unsigned int single_enter_load = DEFAULT_TARGET_LOAD;
+static unsigned int single_enter_load = 90;
 
-#define DEFAULT_SINGLE_EXIT_TIME (4 * DEFAULT_TIMER_RATE)
-static unsigned long single_exit_time = DEFAULT_SINGLE_EXIT_TIME;
+#define DEFAULT_SINGLE_EXIT_TIME (80 * USEC_PER_MSEC)
+static unsigned long single_exit_time = (80 * USEC_PER_MSEC);
 static unsigned long time_in_single_exit = 0;
-static unsigned int single_exit_load = DEFAULT_TARGET_LOAD;
+static unsigned int single_exit_load = 90;
 
 static unsigned int param_index = 0;
 static unsigned int cur_param_index = 0;
 
-#define MAX_PARAM_SET 4 /* ((MULTI_MODE | SINGLE_MODE | NO_MODE) + 1) */
-static unsigned int hispeed_freq_set[MAX_PARAM_SET];
-static unsigned long go_hispeed_load_set[MAX_PARAM_SET];
-static unsigned int *target_loads_set[MAX_PARAM_SET];
-static int ntarget_loads_set[MAX_PARAM_SET];
-static unsigned long min_sample_time_set[MAX_PARAM_SET];
-static unsigned long timer_rate_set[MAX_PARAM_SET];
-static unsigned int *above_hispeed_delay_set[MAX_PARAM_SET];
-static int nabove_hispeed_delay_set[MAX_PARAM_SET];
-static unsigned int sampling_down_factor_set[MAX_PARAM_SET];
+/* ((MULTI_MODE | SINGLE_MODE | NO_MODE) + 1) */
+static unsigned int hispeed_freq_set[4];
+static unsigned long go_hispeed_load_set[4];
+static unsigned int *target_loads_set[4];
+static int ntarget_loads_set[4];
+static unsigned long min_sample_time_set[4];
+static unsigned long timer_rate_set[4];
+static unsigned int *above_hispeed_delay_set[4];
+static int nabove_hispeed_delay_set[4];
+static unsigned int sampling_down_factor_set[4];
 #endif /* CONFIG_MODE_AUTO_CHANGE */
 #ifdef CONFIG_RETENTION_CHANGE
 static void do_toggle_retention(struct work_struct *work);
@@ -193,9 +190,9 @@ static int mode_count = 0;
  * up_threshold_any_cpu_freq then do not let the frequency to drop below
  * sync_freq
  */
-static unsigned int up_threshold_any_cpu_load;
-static unsigned int sync_freq;
-static unsigned int up_threshold_any_cpu_freq;
+static unsigned int up_threshold_any_cpu_load = 80;
+static unsigned int sync_freq = 1497600;
+static unsigned int up_threshold_any_cpu_freq = 1036800;
 
 static int cpufreq_governor_interactive(struct cpufreq_policy *policy,
 		unsigned int event);
@@ -235,7 +232,6 @@ static inline cputime64_t get_cpu_idle_time_jiffy(unsigned int cpu,
 	return jiffies_to_usecs(idle_time);
 }
 
-#ifdef DYN_DEFER
 static inline void timer_set_nondeferrable(struct timer_list *timer)
 {
        timer->base =
@@ -249,7 +245,6 @@ static inline void timer_set_deferrable(struct timer_list *timer)
                ((struct tvec_base *)((unsigned long)timer->base |
                        TBASE_DEFERRABLE_FLAG));
 }
-#endif
 
 static inline cputime64_t get_cpu_idle_time(unsigned int cpu,
 					    cputime64_t *wall)
@@ -278,12 +273,10 @@ static void cpufreq_interactive_timer_resched(
 	pcpu->cputime_speedadj_timestamp = pcpu->time_in_idle_timestamp;
 	expires = jiffies + usecs_to_jiffies(timer_rate);
 	
-#ifdef DYN_DEFER
-       if (pcpu->target_freq > pcpu->policy->min)
-               timer_set_nondeferrable(&pcpu->cpu_timer);
-       else
-               timer_set_deferrable(&pcpu->cpu_timer);
-#endif
+	if (pcpu->target_freq > pcpu->policy->min)
+		timer_set_nondeferrable(&pcpu->cpu_timer);
+	else
+		timer_set_deferrable(&pcpu->cpu_timer);
 
 	mod_timer_pinned(&pcpu->cpu_timer, expires);
 
@@ -1727,10 +1720,10 @@ static void cpufreq_param_set_init(void)
 	unsigned int i;
 	unsigned long flags;
 
-	multi_enter_load = DEFAULT_TARGET_LOAD * num_possible_cpus();
+	multi_enter_load = 360;
 
 	spin_lock_irqsave(&mode_lock, flags);
-	for (i=0 ; i<MAX_PARAM_SET; i++) {
+	for (i = 0 ; i < 4; i++) {
 		hispeed_freq_set[i] = 0;
 		go_hispeed_load_set[i] = go_hispeed_load;
 		target_loads_set[i] = target_loads;
@@ -1765,7 +1758,7 @@ static int cpufreq_governor_interactive(struct cpufreq_policy *policy,
 		if (!hispeed_freq)
 			hispeed_freq = policy->max;
 #ifdef CONFIG_MODE_AUTO_CHANGE
-	        for (j=0 ; j<MAX_PARAM_SET ; j++)
+	        for (j = 0 ; j < 4; j++)
 			if (!hispeed_freq_set[j])
 				hispeed_freq_set[j] = policy->max;
 #endif
