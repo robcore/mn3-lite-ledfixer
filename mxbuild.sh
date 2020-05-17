@@ -101,18 +101,18 @@ clean_build() {
 	if [ "$1" = "standalone" ]
 	then
 		echo -ne "Cleaning build         \r"; \
-		make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -j12 clean
+		make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -j16 clean
 		echo -ne "Cleaning build.        \r"; \
-		make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -j12 distclean
+		make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -j16 distclean
 		echo -ne "Cleaning build..       \r"; \
-		make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -j12 mrproper
+		make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -j16 mrproper
 	else
 		echo -ne "Cleaning build         \r"; \
-		make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -j12 clean &>/dev/null
+		make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -j16 clean &>/dev/null
 		echo -ne "Cleaning build.        \r"; \
-		make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -j12 distclean &>/dev/null
+		make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -j16 distclean &>/dev/null
 		echo -ne "Cleaning build..       \r"; \
-		make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -j12 mrproper &>/dev/null
+		make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -j16 mrproper &>/dev/null
 	fi
 	echo -ne "Cleaning build...      \r"; \
 	takeouttrash &>/dev/null
@@ -360,14 +360,14 @@ build_single_config() {
 	MX_KERNEL_VERSION="buildingsingledriver"
 	mkdir -p "$BUILDIR" || warnandfail "Failed to make $BUILDIR directory!"
 	cp "$MXCONFIG" "$BUILDIR/.config" || warnandfail "Config Copy Error!"
-	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -C "$RDIR" O="$BUILDIR" -j12 oldconfig || warnandfail "make oldconfig Failed!"
+	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -C "$RDIR" O="$BUILDIR" -j16 oldconfig || warnandfail "make oldconfig Failed!"
 
 }
 
 build_single_driver() {
 
 	echo "Building Single Driver..."
-	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -C "$RDIR" -S -s -j12 O="$BUILDIR/" "$1"
+	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -C "$RDIR" -S -s -j16 O="$BUILDIR/" "$1"
 
 }
 
@@ -377,7 +377,7 @@ build_kernel_config() {
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
 	mkdir -p "$BUILDIR" || warnandfail "Failed to make $BUILDIR directory!"
 	cp "$MXCONFIG" "$BUILDIR/.config" || warnandfail "Config Copy Error!"
-	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -C "$RDIR" O="$BUILDIR" -j12 oldconfig || warnandfail "make oldconfig Failed!"
+	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -C "$RDIR" O="$BUILDIR" -j16 oldconfig || warnandfail "make oldconfig Failed!"
 
 }
 
@@ -388,7 +388,7 @@ build_kernel() {
 	echo "Snapshot of current environment variables:"
 	env
 	echo "Starting build..."
-	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -S -s -C "$RDIR" O="$BUILDIR" -j12 || warnandfail "Kernel Build failed!"
+	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -S -s -C "$RDIR" O="$BUILDIR" -j16 || warnandfail "Kernel Build failed!"
 
 }
 
