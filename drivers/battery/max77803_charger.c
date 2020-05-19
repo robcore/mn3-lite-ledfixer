@@ -1010,6 +1010,24 @@ static int sec_chg_set_property(struct power_supply *psy,
 		if (charger->is_charging) {
 			/* decrease the charging current according to siop level */
 			int current_now;
+			switch(charger->cable_type) {
+				case POWER_SUPPLY_TYPE_USB:
+				case POWER_SUPPLY_TYPE_USB_DCP:
+				case POWER_SUPPLY_TYPE_USB_CDP:
+				case POWER_SUPPLY_TYPE_USB_ACA:
+				case POWER_SUPPLY_TYPE_CARDOCK:
+				case POWER_SUPPLY_TYPE_OTG:
+					current_now = 1200;
+					goto set_current;
+				case POWER_SUPPLY_TYPE_WIRELESS:
+					current_now = 1200;
+					goto set_current;
+				case POWER_SUPPLY_TYPE_MAINS:
+					current_now = 2100;
+					goto set_current;
+				default:
+					break;
+			}
 			current_now = charger->charging_current;
 			/* do forced set charging current */
 			if (current_now > 0 &&
@@ -1023,7 +1041,7 @@ static int sec_chg_set_property(struct power_supply *psy,
 					max77803_set_input_current(charger,
 						set_charging_current_max);
 			}
-
+set_current:
 			max77803_set_charge_current(charger, current_now);
 		}
 		break;
