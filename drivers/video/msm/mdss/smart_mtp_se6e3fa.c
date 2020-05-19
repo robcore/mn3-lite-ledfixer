@@ -1772,8 +1772,11 @@ static void gamma_init_H_revJ(struct SMART_DIM *pSmart, char *str, int size)
 				(pSmart->brightness_level < 207)) {
 		bl_level = 183;
 		/* 180CD ~ 110CD */
+	} else if (pSmart->brightness_level >= 219 && pSmart->brightness_level <= 255) {
+		bl_level = 255;
+	} else if (pSmart->brightness_level >= 333) {
+		bl_level = 350;
 	} else {
-		/* 350CD ~ 282CD */
 		bl_level = pSmart->brightness_level;
 	}
 
