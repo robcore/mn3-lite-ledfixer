@@ -116,7 +116,7 @@ enum {
 	HPUPDATE_IN_PROGRESS = 2, /* we are in the process of hotplugging */
 };
 
-static int msm_mpd_enabled = 1;
+static unsigned int msm_mpd_enabled = 0;
 module_param_named(enabled, msm_mpd_enabled, int, S_IRUGO | S_IWUSR | S_IWGRP);
 
 static struct dentry *debugfs_base;
@@ -138,6 +138,9 @@ static bool ok_to_update_tz(int nr, int last_nr)
 	 * the count requested by TZ and we are not in the process of bringing
 	 * cpus online as indicated by a HPUPDATE_IN_PROGRESS in msm_mpd.hpdata
 	 */
+	if (!msm_mpd_enabled)
+		return false;
+
 	return
 	(((nr / msm_mpd.rq_avg_divide)
 				!= (last_nr / msm_mpd.rq_avg_divide))
@@ -153,7 +156,8 @@ static enum hrtimer_restart msm_mpd_rq_avg_poll_timer(struct hrtimer *timer)
 	unsigned long flags;
 	int cpu = smp_processor_id();
 	enum hrtimer_restart restart = HRTIMER_RESTART;
-
+	if (!msm_mpd_enabled)
+		return HRTIMER_NORESTART;
 	spin_lock_irqsave(&rq_avg_lock, flags);
 	/* If running on the wrong cpu, don't restart */
 	if (&per_cpu(rq_avg_poll_timer, cpu) != timer)
@@ -196,6 +200,9 @@ static void bring_up_cpu(int cpu)
 	int time_taken_ms;
 	int ret, ret1, ret2;
 
+	if (!msm_mpd_enabled)
+		return;
+
 	cpu_action_time_ms = ktime_to_ms(ktime_get());
 	ret = cpu_up(cpu);
 	if (ret) {
@@ -223,6 +230,8 @@ static void bring_down_cpu(int cpu)
 	int time_taken_ms;
 	int ret, ret1, ret2;
 
+	if (!msm_mpd_enabled)
+		return;
 	BUG_ON(cpu == 0);
 	cpu_action_time_ms = ktime_to_ms(ktime_get());
 	ret = cpu_down(cpu);
@@ -251,6 +260,9 @@ static int __ref msm_mpd_update_scm(enum msm_dcvs_scm_event event, int nr)
 	uint32_t req_cpu_mask = 0;
 	uint32_t slack_us = 0;
 	uint32_t param0 = 0;
+
+	if (!msm_mpd_enabled)
+		return 0;
 
 	if (event == MSM_DCVS_SCM_RUNQ_UPDATE)
 		param0 = nr;
@@ -289,6 +301,9 @@ static enum hrtimer_restart msm_mpd_slack_timer(struct hrtimer *timer)
 {
 	unsigned long flags;
 
+	if (!msm_mpd_enabled)
+		return HRTIMER_NORESTART;
+
 	trace_printk("mpd:slack_timer_fired!\n");
 
 	spin_lock_irqsave(&rq_avg_lock, flags);
@@ -308,6 +323,9 @@ static int msm_mpd_idle_notifier(struct notifier_block *self,
 {
 	int cpu = smp_processor_id();
 	unsigned long flags;
+
+	if (!msm_mpd_enabled)
+		return NOTIFY_OK;
 
 	switch (cmd) {
 	case CPU_PM_EXIT:
@@ -332,6 +350,9 @@ static int msm_mpd_hotplug_notifier(struct notifier_block *self,
 {
 	int cpu = (int)hcpu;
 	unsigned long flags;
+
+	if (!msm_mpd_enabled)
+		return NOTIFY_OK;
 
 	switch (action & (~CPU_TASKS_FROZEN)) {
 	case CPU_STARTING:
@@ -360,6 +381,9 @@ static int __cpuinit msm_mpd_do_hotplug(void *data)
 {
 	int *event = (int *)data;
 	int cpu;
+
+	if (!msm_mpd_enabled)
+		return 0;
 
 	while (1) {
 		msm_dcvs_update_algo_params();
@@ -407,6 +431,9 @@ static int msm_mpd_do_update_scm(void *data)
 	enum msm_dcvs_scm_event event;
 	int nr;
 
+	if (!msm_mpd_enabled)
+		return 0;
+
 	while (1) {
 		wait_event(msm_mpd.wait_q,
 			msm_mpd.data.event == MSM_DCVS_SCM_MPD_QOS_TIMER_EXPIRED
@@ -435,6 +462,9 @@ static int __ref msm_mpd_set_enabled(uint32_t enable)
 	int ret1 = 0;
 	int cpu;
 	static uint32_t last_enable;
+
+	if (!msm_mpd_enabled)
+		return 0;
 
 	enable = (enable > 0) ? 1 : 0;
 	if (last_enable == enable)
@@ -493,6 +523,8 @@ static int __ref msm_mpd_set_enabled(uint32_t enable)
 
 static int msm_mpd_set_rq_avg_poll_ms(uint32_t val)
 {
+	if (!msm_mpd_enabled)
+		return -EINVAL;
 	/*
 	 * No need to do anything. Just let the timer set its own next poll
 	 * interval when it next fires.
@@ -503,6 +535,8 @@ static int msm_mpd_set_rq_avg_poll_ms(uint32_t val)
 
 static int msm_mpd_set_iowait_threshold_pct(uint32_t val)
 {
+	if (!msm_mpd_enabled)
+		return -EINVAL;
 	/*
 	 * No need to do anything. Just let the timer set its own next poll
 	 * interval when it next fires.
@@ -517,6 +551,9 @@ static int msm_mpd_set_rq_avg_divide(uint32_t val)
 	 * No need to do anything. New value will be used next time
 	 * the decision is made as to whether to update tz.
 	 */
+
+	if (!msm_mpd_enabled)
+		return -EINVAL;
 
 	if (val == 0)
 		return -EINVAL;
