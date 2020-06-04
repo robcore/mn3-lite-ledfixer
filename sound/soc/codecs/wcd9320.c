@@ -840,7 +840,7 @@ static int taiko_get_iir_band_audio_mixer(
 	ucontrol->value.integer.value[4] =
 		get_iir_band_coeff(codec, iir_idx, band_idx, 4);
 
-	pr_debug("%s: IIR #%d band #%d b0 = 0x%x\n"
+	pr_info("%s: IIR #%d band #%d b0 = 0x%x\n"
 		"%s: IIR #%d band #%d b1 = 0x%x\n"
 		"%s: IIR #%d band #%d b2 = 0x%x\n"
 		"%s: IIR #%d band #%d a1 = 0x%x\n"
@@ -907,7 +907,7 @@ static int taiko_put_iir_band_audio_mixer(
 	set_iir_band_coeff(codec, iir_idx, band_idx,
 				ucontrol->value.integer.value[4]);
 
-	pr_debug("%s: IIR #%d band #%d b0 = 0x%x\n"
+	pr_info("%s: IIR #%d band #%d b0 = 0x%x\n"
 		"%s: IIR #%d band #%d b1 = 0x%x\n"
 		"%s: IIR #%d band #%d b2 = 0x%x\n"
 		"%s: IIR #%d band #%d a1 = 0x%x\n"
