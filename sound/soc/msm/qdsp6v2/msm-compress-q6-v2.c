@@ -267,11 +267,13 @@ static int msm_compr_send_buffer(struct msm_compr_audio *prtd)
 		pr_debug("wrap around situation, send partial data %d now", buffer_length);
 	}
 
-	if (buffer_length)
+	if (buffer_length) {
 		param.paddr	= prtd->buffer_paddr + prtd->byte_offset;
+		WARN(prtd->byte_offset % 32 != 0, "offset %x not multiple of 32",
+		prtd->byte_offset);
+	}
 	else
 		param.paddr	= prtd->buffer_paddr;
-	WARN(param.paddr % 32 != 0, "param.paddr %lx not multiple of 32", param.paddr);
 
 	param.len	= buffer_length;
 	param.msw_ts	= 0;
@@ -304,11 +306,12 @@ static void compr_event_handler(uint32_t opcode,
 	uint32_t sample_rate = 0;
 	int bytes_available, stream_id;
 	uint32_t stream_index;
+	unsigned long flags;
 
 	pr_debug("%s opcode =%08x\n", __func__, opcode);
 	switch (opcode) {
 	case ASM_DATA_EVENT_WRITE_DONE_V2:
-		spin_lock(&prtd->lock);
+		spin_lock_irqsave(&prtd->lock, flags);
 
 		if (payload[3]) {
 			pr_err("WRITE FAILED w/ err 0x%x !, paddr 0x%x"
@@ -333,7 +336,7 @@ static void compr_event_handler(uint32_t opcode,
 			/* Writes must be restarted from _copy() */
 			pr_debug("write_done received while not started, treat as xrun");
 			atomic_set(&prtd->xrun, 1);
-			spin_unlock(&prtd->lock);
+			spin_unlock_irqrestore(&prtd->lock, flags);
 			break;
 		}
 
@@ -358,10 +361,10 @@ static void compr_event_handler(uint32_t opcode,
 		} else
 			msm_compr_send_buffer(prtd);
 
-		spin_unlock(&prtd->lock);
+		spin_unlock_irqrestore(&prtd->lock, flags);
 		break;
 	case ASM_DATA_EVENT_RENDERED_EOS:
-		spin_lock(&prtd->lock);
+		spin_lock_irqsave(&prtd->lock, flags);
 		pr_debug("%s: ASM_DATA_CMDRSP_EOS token 0x%x,stream id %d\n",
 			  __func__, token, STREAM_ID_FROM_TOKEN(token));
 		stream_id = STREAM_ID_FROM_TOKEN(token);
@@ -377,7 +380,7 @@ static void compr_event_handler(uint32_t opcode,
 		    stream_index < 0) {
 			pr_err("%s: Invalid stream index %d", __func__,
 				stream_index);
-			spin_unlock(&prtd->lock);
+			spin_unlock_irqrestore(&prtd->lock, flags);
 			break;
 		}
 
@@ -392,7 +395,7 @@ static void compr_event_handler(uint32_t opcode,
 		}
 		if (prtd->gapless_state.gapless_transition)
 			prtd->gapless_state.gapless_transition = 0;
-		spin_unlock(&prtd->lock);
+		spin_unlock_irqrestore(&prtd->lock, flags);
 		break;
 	case ASM_DATA_EVENT_SR_CM_CHANGE_NOTIFY:
 	case ASM_DATA_EVENT_ENC_SR_CM_CHANGE_NOTIFY: {
@@ -411,9 +414,9 @@ static void compr_event_handler(uint32_t opcode,
 			/* check if the first buffer need to be sent to DSP */
 			pr_debug("ASM_SESSION_CMD_RUN_V2\n");
 
-			spin_lock(&prtd->lock);
 			/* FIXME: A state is a much better way of dealing with this */
-			if (prtd->bytes_sent == 0) {
+			spin_lock_irqsave(&prtd->lock, flags);
+			if (!prtd->bytes_sent) {
 				bytes_available = prtd->bytes_received - prtd->copied_total;
 				if (bytes_available < cstream->runtime->fragment_size) {
 					pr_debug("CMD_RUN_V2 Insufficient data to send. break out\n");
@@ -421,7 +424,29 @@ static void compr_event_handler(uint32_t opcode,
 				} else
 					msm_compr_send_buffer(prtd);
 			}
-			spin_unlock(&prtd->lock);
+
+			/*
+			 * The condition below ensures playback finishes in the
+			 * follow cornercase
+			 * WRITE(last buffer)
+			 * WAIT_FOR_DRAIN
+			 * PAUSE
+			 * WRITE_DONE(X)
+			 * RESUME
+			 */
+			if ((prtd->copied_total == prtd->bytes_sent) &&
+			    atomic_read(&prtd->drain)) {
+				pr_debug("RUN ack, wake up & continue pending drain\n");
+
+				if (prtd->last_buffer)
+					prtd->last_buffer = 0;
+
+				prtd->drain_ready = 1;
+				wake_up(&prtd->drain_wait);
+				atomic_set(&prtd->drain, 0);
+			}
+
+			spin_unlock_irqrestore(&prtd->lock, flags);
 			break;
 		case ASM_STREAM_CMD_FLUSH:
 			pr_debug("%s: ASM_STREAM_CMD_FLUSH:", __func__);
@@ -476,11 +501,11 @@ static void compr_event_handler(uint32_t opcode,
 	case RESET_EVENTS:
 		pr_err("%s: Received reset events CB, move to error state",
 			__func__);
-		spin_lock(&prtd->lock);
+		spin_lock_irqsave(&prtd->lock, flags);
 		snd_compr_fragment_elapsed(cstream);
 		prtd->copied_total = prtd->bytes_received;
 		atomic_set(&prtd->error, 1);
-		spin_unlock(&prtd->lock);
+		spin_unlock_irqrestore(&prtd->lock, flags);
 		break;
 	default:
 		pr_debug("%s: Not Supported Event opcode[0x%x]\n",
@@ -674,6 +699,7 @@ static int msm_compr_open(struct snd_compr_stream *cstream)
 		return -ENOMEM;
 	}
 
+	runtime->private_data = NULL;
 	prtd->cstream = cstream;
 	pdata->cstream[rtd->dai_link->be_id] = cstream;
 	pdata->audio_effects[rtd->dai_link->be_id] =
@@ -727,7 +753,7 @@ static int msm_compr_open(struct snd_compr_stream *cstream)
 	 */
 	prtd->gapless_state.use_dsp_gapless_mode = pdata->use_dsp_gapless_mode;
 
-	pr_debug("%s: gapless mode %d", __func__, pdata->use_dsp_gapless_mode);
+	pr_debug("%s: gapless mode %d\n", __func__, pdata->use_dsp_gapless_mode);
 
 	spin_lock_init(&prtd->lock);
 
@@ -756,7 +782,7 @@ static int msm_compr_open(struct snd_compr_stream *cstream)
 		pr_debug("%s: ocmem_req: %d\n", __func__,
 				atomic_read(&pdata->audio_ocmem_req));
 	} else {
-		pr_err("%s: Unsupported stream type", __func__);
+		pr_debug("%s: Unsupported stream type\n", __func__);
 	}
 
 	return 0;
@@ -764,23 +790,46 @@ static int msm_compr_open(struct snd_compr_stream *cstream)
 
 static int msm_compr_free(struct snd_compr_stream *cstream)
 {
-	struct snd_compr_runtime *runtime = cstream->runtime;
-	struct msm_compr_audio *prtd = runtime->private_data;
-	struct snd_soc_pcm_runtime *soc_prtd = cstream->private_data;
-	struct msm_compr_pdata *pdata =
-			snd_soc_platform_get_drvdata(soc_prtd->platform);
-	struct audio_client *ac = prtd->audio_client;
+	struct snd_compr_runtime *runtime;
+	struct msm_compr_audio *prtd;
+	struct snd_soc_pcm_runtime *soc_prtd;
+	struct msm_compr_pdata *pdata;
+	struct audio_client *ac;
+
 	int dir = IN, ret = 0, stream_id;
 	unsigned long flags;
 	uint32_t stream_index;
 
-	pr_debug("%s\n", __func__);
+	pr_info("%s\n", __func__);
+
+	if (!cstream) {
+		pr_debug("%s cstream is null\n", __func__);
+		return 0;
+	}
+	runtime = cstream->runtime;
+	soc_prtd = cstream->private_data;
+	if (!runtime || !soc_prtd || !(soc_prtd->platform)) {
+		pr_debug("%s runtime or soc_prtd or platform is null\n",
+			__func__);
+		return 0;
+	}
+	prtd = runtime->private_data;
+	if (!prtd) {
+		pr_debug("%s prtd is null\n", __func__);
+		return 0;
+	}
+	pdata = snd_soc_platform_get_drvdata(soc_prtd->platform);
+	ac = prtd->audio_client;
+	if (!pdata || !ac) {
+		pr_debug("%s pdata or ac is null\n", __func__);
+		return 0;
+	}
 
 	if (atomic_read(&prtd->eos)) {
 		ret = wait_event_timeout(prtd->eos_wait,
 					 prtd->cmd_ack, 5 * HZ);
 		if (!ret)
-			pr_err("%s: CMD_EOS failed\n", __func__);
+			pr_debug("%s: CMD_EOS failed\n", __func__);
 	}
 	if (atomic_read(&prtd->close)) {
 		prtd->cmd_ack = 0;
@@ -788,7 +837,7 @@ static int msm_compr_free(struct snd_compr_stream *cstream)
 		ret = wait_event_timeout(prtd->close_wait,
 					prtd->cmd_ack, 5 * HZ);
 		if (!ret)
-			pr_err("%s: CMD_CLOSE failed\n", __func__);
+			pr_debug("%s: CMD_CLOSE failed\n", __func__);
 	}
 
 	spin_lock_irqsave(&prtd->lock, flags);
@@ -799,7 +848,7 @@ static int msm_compr_free(struct snd_compr_stream *cstream)
 	    (prtd->gapless_state.stream_opened[stream_index])) {
 		prtd->gapless_state.stream_opened[stream_index] = 0;
 		spin_unlock_irqrestore(&prtd->lock, flags);
-		pr_debug(" close stream %d", NEXT_STREAM_ID(stream_id));
+		pr_debug(" close stream %d\n", NEXT_STREAM_ID(stream_id));
 		q6asm_stream_cmd(ac, CMD_CLOSE, NEXT_STREAM_ID(stream_id));
 		spin_lock_irqsave(&prtd->lock, flags);
 	}
@@ -834,6 +883,7 @@ static int msm_compr_free(struct snd_compr_stream *cstream)
 	kfree(pdata->audio_effects[soc_prtd->dai_link->be_id]);
 	kfree(pdata->dec_params[soc_prtd->dai_link->be_id]);
 	kfree(prtd);
+	runtime->private_data = NULL;
 
 	return 0;
 }
@@ -936,6 +986,7 @@ static int msm_compr_drain_buffer(struct msm_compr_audio *prtd,
 
 	atomic_set(&prtd->drain, 1);
 	prtd->drain_ready = 0;
+	prtd->cmd_interrupt = 0;
 	spin_unlock_irqrestore(&prtd->lock, *flags);
 	pr_debug("%s: wait for buffer to be drained\n",  __func__);
 	rc = wait_event_interruptible(prtd->drain_wait,
@@ -1024,6 +1075,11 @@ static int msm_compr_trigger(struct snd_compr_stream *cstream, int cmd)
 		pr_debug("%s: SNDRV_PCM_TRIGGER_START\n", __func__);
 		atomic_set(&prtd->start, 1);
 		q6asm_run_nowait(prtd->audio_client, 0, 0, 0);
+
+		msm_compr_set_volume(cstream, 0, 0);
+		if (rc)
+			pr_err("%s : Set Volume (0,0) failed : %d\n",
+				__func__, rc);
 
 		msm_compr_set_volume(cstream, volume[0], volume[1]);
 		if (rc)
@@ -1132,7 +1188,8 @@ static int msm_compr_trigger(struct snd_compr_stream *cstream, int cmd)
 				__func__);
 			rc = msm_compr_drain_buffer(prtd, &flags);
 			if (rc || !atomic_read(&prtd->start)) {
-				rc = -EINTR;
+				if (rc != -ENETRESET)
+					rc = -EINTR;
 				spin_unlock_irqrestore(&prtd->lock, flags);
 				break;
 			}
@@ -1166,11 +1223,11 @@ static int msm_compr_trigger(struct snd_compr_stream *cstream, int cmd)
 				pr_debug("%s: last buffer drain\n", __func__);
 				rc = msm_compr_drain_buffer(prtd, &flags);
 				if (rc) {
-					spin_unlock_irqrestore(&prtd->lock, flags);
+					spin_unlock_irqrestore(&prtd->lock,
+									flags);
 					break;
 				}
 			}
-
 			/* send EOS */
 			prtd->cmd_ack = 0;
 			pr_debug("issue CMD_EOS stream_id %d\n", ac->stream_id);
@@ -1247,7 +1304,7 @@ static int msm_compr_trigger(struct snd_compr_stream *cstream, int cmd)
 		prtd->cmd_ack = 0;
 		atomic_set(&prtd->eos, 1);
 		q6asm_stream_cmd_nowait(ac, CMD_EOS, ac->stream_id);
-
+		prtd->cmd_interrupt = 0;
 		spin_unlock_irqrestore(&prtd->lock, flags);
 
 
@@ -1569,11 +1626,15 @@ static int msm_compr_get_caps(struct snd_compr_stream *cstream,
 {
 	struct snd_compr_runtime *runtime = cstream->runtime;
 	struct msm_compr_audio *prtd = runtime->private_data;
+	int ret = 0;
 
 	pr_debug("%s\n", __func__);
-	memcpy(arg, &prtd->compr_cap, sizeof(struct snd_compr_caps));
-
-	return 0;
+	if ((arg != NULL) && (prtd != NULL)) {
+		memcpy(arg, &prtd->compr_cap, sizeof(struct snd_compr_caps));
+	} else {
+		ret = -EINVAL;
+	}
+	return ret;
 }
 
 static int msm_compr_get_codec_caps(struct snd_compr_stream *cstream,
@@ -1630,7 +1691,7 @@ static int msm_compr_set_metadata(struct snd_compr_stream *cstream,
 		return -EINVAL;
 
 	prtd = cstream->runtime->private_data;
-	if (!prtd->audio_client && !prtd)
+	if (!prtd && !prtd->audio_client)
 		return -EINVAL;
 	ac = prtd->audio_client;
 	if (metadata->key == SNDRV_COMPRESS_ENCODER_PADDING) {
