@@ -27,12 +27,13 @@
 #define ADM_CMD_SHARED_MEM_UNMAP_REGIONS 0x00010324
 
 #define ADM_CMD_MATRIX_MAP_ROUTINGS_V5 0x00010325
-
+#define ADM_CMD_STREAM_DEVICE_MAP_ROUTINGS_V5 0x0001033D
 /* Enumeration for an audio Rx matrix ID.*/
 #define ADM_MATRIX_ID_AUDIO_RX              0
 
 #define ADM_MATRIX_ID_AUDIO_TX              1
 
+#define ADM_MATRIX_ID_COMPRESSED_AUDIO_RX   2
 /* Enumeration for an audio Tx matrix ID.*/
 #define ADM_MATRIX_ID_AUDIOX              1
 
@@ -770,6 +771,7 @@ struct adm_cmd_connect_afe_port_v5 {
 #define AFE_PORT_ID_SECONDARY_PCM_RX        0x100C
 #define AFE_PORT_ID_SECONDARY_PCM_TX        0x100D
 #define AFE_PORT_ID_MULTICHAN_HDMI_RX       0x100E
+#define AFE_PORT_ID_SPDIF_RX                0x5000
 #define  AFE_PORT_ID_RT_PROXY_PORT_001_RX   0x2000
 #define  AFE_PORT_ID_RT_PROXY_PORT_001_TX   0x2001
 #define AFE_PORT_ID_INTERNAL_BT_SCO_RX      0x3000
@@ -2265,6 +2267,7 @@ struct afe_port_cmdrsp_get_param_v2 {
 #define NULL_COPP_TOPOLOGY				0x00010312
 #define DEFAULT_COPP_TOPOLOGY				0x00010be3
 #define DEFAULT_POPP_TOPOLOGY				0x00010be4
+#define COMPRESSED_PASSTHROUGH_DEFAULT_TOPOLOGY         0x0001076B
 #define VPM_TX_SM_ECNS_COPP_TOPOLOGY			0x00010F71
 #define VPM_TX_DM_FLUENCE_COPP_TOPOLOGY			0x00010F72
 #define VPM_TX_QMIC_FLUENCE_COPP_TOPOLOGY		0x00010F75
@@ -3186,6 +3189,8 @@ struct asm_amrwbplus_fmt_blk_v2 {
 #define ASM_MEDIA_FMT_AC3_DEC                   0x00010BF6
 #define ASM_MEDIA_FMT_EAC3_DEC                   0x00010C3C
 #define ASM_MEDIA_FMT_DTS                    0x00010D88
+#define ASM_MEDIA_FMT_MP2                    0x00010DE9
+#define ASM_MEDIA_FMT_FLAC                   0x00010C16
 
 /* Media format ID for adaptive transform acoustic coding. This
  * ID is used by the #ASM_STREAM_CMD_OPEN_WRITE_COMPRESSED command
@@ -7366,11 +7371,23 @@ struct afe_port_cmd_set_aanc_acdb_table {
 
 /* Dolby DAP topology */
 #define DOLBY_ADM_COPP_TOPOLOGY_ID	0x0001033B
+#define DS2_ADM_COPP_TOPOLOGY_ID	0x1001033B
 
 /* RMS value from DSP */
 #define RMS_MODULEID_APPI_PASSTHRU  0x10009011
 #define RMS_PARAM_FIRST_SAMPLE 0x10009012
 #define RMS_PAYLOAD_LEN 4
+
+/* Customized mixing in matix mixer */
+#define MTMX_MODULE_ID_DEFAULT_CHMIXER  0x00010341
+#define DEFAULT_CHMIXER_PARAM_ID_COEFF  0x00010342
+#define CUSTOM_STEREO_PAYLOAD_SIZE	9
+#define CUSTOM_STEREO_CMD_PARAM_SIZE	24
+#define CUSTOM_STEREO_NUM_OUT_CH	0x0002
+#define CUSTOM_STEREO_NUM_IN_CH		0x0002
+#define CUSTOM_STEREO_INDEX_PARAM	0x0002
+#define Q14_GAIN_ZERO_POINT_FIVE	0x2000
+#define Q14_GAIN_UNITY			0x4000
 
 struct afe_svc_cmd_set_clip_bank_selection {
 	struct apr_hdr hdr;
