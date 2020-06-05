@@ -105,6 +105,7 @@ int q6audio_get_port_id_from_index(u16 port_idx)
 	case IDX_MI2S_RX: return MI2S_RX;
 	case IDX_MI2S_TX: return MI2S_TX;
 	case IDX_HDMI_RX: return HDMI_RX;
+	case IDX_SPDIF_RX: return AFE_PORT_ID_SPDIF_RX;
 	case IDX_RSVD_2: return RSVD_2;
 	case IDX_RSVD_3: return RSVD_3;
 	case IDX_DIGI_MIC_TX: return DIGI_MIC_TX;
@@ -118,8 +119,13 @@ int q6audio_get_port_id_from_index(u16 port_idx)
 	case IDX_SLIMBUS_1_TX: return SLIMBUS_1_TX;
 	case IDX_SLIMBUS_2_RX: return SLIMBUS_2_RX;
 	case IDX_SLIMBUS_2_TX: return SLIMBUS_2_TX;
+	case IDX_SLIMBUS_3_RX: return SLIMBUS_3_RX;
+	case IDX_SLIMBUS_3_TX: return SLIMBUS_3_TX;
+	case IDX_SLIMBUS_4_RX: return SLIMBUS_4_RX;
 	case IDX_SLIMBUS_4_TX: return SLIMBUS_4_TX;
 	case IDX_SLIMBUS_5_TX: return SLIMBUS_5_TX;
+	case IDX_SLIMBUS_6_RX: return SLIMBUS_6_RX;
+	case IDX_SLIMBUS_6_TX: return SLIMBUS_6_TX;
 	case IDX_INT_BT_SCO_RX: return INT_BT_SCO_RX;
 	case IDX_INT_BT_SCO_TX: return INT_BT_SCO_TX;
 	case IDX_INT_BT_A2DP_RX: return INT_BT_A2DP_RX;
@@ -143,7 +149,8 @@ int q6audio_get_port_id_from_index(u16 port_idx)
 		return AFE_PORT_ID_TERTIARY_MI2S_RX;
 	case IDX_AFE_PORT_ID_TERTIARY_MI2S_TX:
 		return AFE_PORT_ID_TERTIARY_MI2S_TX;
-
+	case IDX_AUDIO_PORT_ID_I2S_RX:
+		return AUDIO_PORT_ID_I2S_RX;
 	default: return -EINVAL;
 	}
 }
