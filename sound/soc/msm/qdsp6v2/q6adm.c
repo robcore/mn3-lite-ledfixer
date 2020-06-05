@@ -26,13 +26,6 @@
 
 #include "audio_acdb.h"
 
-#if defined(CONFIG_SEC_MILLETWIFI_COMMON) || defined(CONFIG_SEC_MATISSEWIFI_COMMON)
-#ifdef pr_debug
-#undef pr_debug
-#define pr_debug pr_err
-#endif
-#endif
-
 #define TIMEOUT_MS 1000
 
 #define RESET_COPP_ID 99
