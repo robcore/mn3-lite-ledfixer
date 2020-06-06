@@ -115,10 +115,8 @@ static int snd_pcm_control_ioctl(struct snd_card *card,
 			int err;
 
 			info = (struct snd_pcm_info __user *)arg;
-			if (!info || info == NULL) {
-				err = -EFAULT;
-				goto _error;
-			}
+			if (!info || info == NULL)
+				return -EFAULT;
 
 			if (get_user(device, &info->device))
 				return -EFAULT;
