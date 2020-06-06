@@ -22,7 +22,7 @@ int msm_audio_effects_virtualizer_handler(struct audio_client *ac,
 {
 	int devices = *values++;
 	int num_commands = *values++;
-	char *params;
+	char *params = NULL;
 	int *updt_params, i, prev_enable_flag;
 	uint32_t params_length = (MAX_INBAND_PARAM_SZ);
 	int rc = 0;
@@ -139,7 +139,7 @@ int msm_audio_effects_reverb_handler(struct audio_client *ac,
 {
 	int devices = *values++;
 	int num_commands = *values++;
-	char *params;
+	char *params = NULL;
 	int *updt_params, i, prev_enable_flag;
 	uint32_t params_length = (MAX_INBAND_PARAM_SZ);
 	int rc = 0;
@@ -450,7 +450,7 @@ int msm_audio_effects_bass_boost_handler(struct audio_client *ac,
 {
 	int devices = *values++;
 	int num_commands = *values++;
-	char *params;
+	char *params = NULL;
 	int *updt_params, i, prev_enable_flag;
 	uint32_t params_length = (MAX_INBAND_PARAM_SZ);
 	int rc = 0;
@@ -548,7 +548,7 @@ int msm_audio_effects_popless_eq_handler(struct audio_client *ac,
 {
 	int devices = *values++;
 	int num_commands = *values++;
-	char *params;
+	char *params = NULL;
 	int *updt_params, i, prev_enable_flag;
 	uint32_t params_length = (MAX_INBAND_PARAM_SZ);
 	int rc = 0;

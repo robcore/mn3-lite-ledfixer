@@ -145,6 +145,7 @@ static void compr_event_handler(uint32_t opcode,
 	struct audio_aio_write_param param;
 	struct audio_aio_read_param read_param;
 	struct audio_buffer *buf = NULL;
+	unsigned long temp;
 	struct output_meta_data_st output_meta_data;
 	uint32_t *ptrmem = (uint32_t *)payload;
 	int i = 0;
@@ -190,10 +191,9 @@ static void compr_event_handler(uint32_t opcode,
 		buf = prtd->audio_client->port[IN].buf;
 		pr_debug("%s:writing %d bytes of buffer[%d] to dsp 2\n",
 				__func__, prtd->pcm_count, prtd->out_head);
-		pr_debug("%s:writing buffer[%d] from 0x%08x\n",
-				__func__, prtd->out_head,
-				((unsigned int)buf[0].phys
-				+ (prtd->out_head * prtd->pcm_count)));
+		temp = buf[0].phys + (prtd->out_head * prtd->pcm_count);
+		pr_debug("%s:writing buffer[%d] from 0x%pa\n",
+			__func__, prtd->out_head, &temp);
 
 		if (runtime->tstamp_mode == SNDRV_PCM_TSTAMP_ENABLE)
 			time_stamp_flag = SET_TIMESTAMP;
@@ -214,16 +214,12 @@ static void compr_event_handler(uint32_t opcode,
 			pr_debug("Recieved a zero length buffer-break out");
 			break;
 		}
-		param.paddr = (unsigned long)buf[0].phys
-				+ (prtd->out_head * prtd->pcm_count)
-				+ output_meta_data.meta_data_length;
+		param.paddr = temp + output_meta_data.meta_data_length;
 		param.len = buffer_length;
 		param.msw_ts = output_meta_data.timestamp_msw;
 		param.lsw_ts = output_meta_data.timestamp_lsw;
 		param.flags = time_stamp_flag;
-		param.uid =  (unsigned long)buf[0].phys
-				+ (prtd->out_head * prtd->pcm_count
-				+ output_meta_data.meta_data_length);
+		param.uid =  temp + output_meta_data.meta_data_length;
 		for (i = 0; i < sizeof(struct audio_aio_write_param)/4;
 					i++, ++ptrmem)
 			pr_debug("cmd[%d]=0x%08x\n", i, *ptrmem);
@@ -433,6 +429,7 @@ static int msm_compr_playback_prepare(struct snd_pcm_substream *substream)
 		pr_err("%s: Set IO mode failed\n", __func__);
 		return -ENOMEM;
 	}
+
 	prtd->pcm_size = snd_pcm_lib_buffer_bytes(substream);
 	prtd->pcm_count = snd_pcm_lib_period_bytes(substream);
 	prtd->pcm_irq_pos = 0;
@@ -502,6 +499,7 @@ static int msm_compr_capture_prepare(struct snd_pcm_substream *substream)
 	uint16_t bits_per_sample = 16;
 	int ret = 0;
 	int i;
+
 	prtd->pcm_size = snd_pcm_lib_buffer_bytes(substream);
 	prtd->pcm_count = snd_pcm_lib_period_bytes(substream);
 	prtd->pcm_irq_pos = 0;
@@ -559,8 +557,10 @@ static int msm_compr_capture_prepare(struct snd_pcm_substream *substream)
 		}
 
 	if (!msm_compr_capture_codecs(codec->id)) {
-		/*request codec invalid or not supported,
-		use default compress format*/
+		/*
+		 * request codec invalid or not supported,
+		 * use default compress format
+		 */
 		codec->id = SND_AUDIOCODEC_AMRWB;
 	}
 	/* rate and channels are sent to audio driver */
@@ -576,9 +576,10 @@ static int msm_compr_capture_prepare(struct snd_pcm_substream *substream)
 		pr_debug("SND_AUDIOCODEC_AMRWB\n");
 		ret = q6asm_enc_cfg_blk_amrwb(prtd->audio_client,
 			MAX_NUM_FRAMES_PER_BUFFER,
-			/* use fixed band mode and dtx mode
-			 *  band mode - 23.85 kbps
-                         */
+			/*
+			 * use fixed band mode and dtx mode
+			 * band mode - 23.85 kbps
+			 */
 			AMR_WB_BAND_MODE,
 			/* dtx mode - disable */
 			AMR_WB_DTX_MODE);
@@ -641,8 +642,10 @@ static int msm_compr_trigger(struct snd_pcm_substream *substream, int cmd)
 		if (substream->stream == SNDRV_PCM_STREAM_CAPTURE) {
 			if (!msm_compr_capture_codecs(
 				compr->info.codec_param.codec.id)) {
-				/*request codec invalid or not supported,
-				use default compress format*/
+				/*
+				 * request codec invalid or not supported,
+				 * use default compress format
+				 */
 				compr->info.codec_param.codec.id =
 				SND_AUDIOCODEC_AMRWB;
 			}
@@ -866,6 +869,7 @@ static int msm_compr_close(struct snd_pcm_substream *substream)
 		ret = msm_compr_capture_close(substream);
 	return ret;
 }
+
 static int msm_compr_prepare(struct snd_pcm_substream *substream)
 {
 	int ret = 0;
@@ -929,7 +933,6 @@ static int msm_compr_hw_params(struct snd_pcm_substream *substream,
 		dir = IN;
 	else
 		dir = OUT;
-
 	/* Modifying kernel hardware params based on userspace config */
 	if (params_periods(params) > 0 &&
 		(params_periods(params) != runtime->hw.periods_max)) {
