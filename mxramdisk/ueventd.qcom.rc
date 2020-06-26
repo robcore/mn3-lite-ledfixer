@@ -25,9 +25,8 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-# the DIAG device node is not world writable/readable.
+# The DIAG device node is not world writable/readable.
 /dev/diag                 0660   system     qcom_diag
-
 /dev/genlock              0666   system     system
 /dev/kgsl                 0666   system     system
 /dev/kgsl-3d0             0666   system     system
@@ -42,10 +41,7 @@
 /dev/smd6                 0660   system     system
 /dev/smd7                 0660   bluetooth  bluetooth
 /dev/ccid_bridge          0660   system     system
-
-#permissions for CSVT
 /dev/smd11                0660   radio      radio
-
 /dev/radio0               0640   system     system
 /dev/rfcomm0              0660   bluetooth  bluetooth
 /dev/smdcntl0             0640   radio      radio
