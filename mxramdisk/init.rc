@@ -38,7 +38,7 @@ on early-init
 on init
     sysclktz 0
 
-    loglevel 2
+    loglevel 3
 
     ffu
 
@@ -262,7 +262,7 @@ on post-fs
 
 on post-fs-data
     # Reload SE Android Policy
-    setprop selinux.reload_policy 1
+    #setprop selinux.reload_policy 1
 
     # sec_efs_file
     mkdir /efs/sec_efs 0775 radio system
@@ -272,8 +272,6 @@ on post-fs-data
     chmod 0771 /data
     # We restorecon /data in case the userdata partition has been reset.
     restorecon /data
-	restorecon_recursive /data/system/container
-	restorecon_recursive /data/media
     restorecon_msc
 
     # Avoid predictable entropy pool. Carry over entropy from previous boot.
@@ -433,9 +431,6 @@ on post-fs-data
 
     restorecon -R /efs
     restorecon -R /carrier
-	restorecon -R /data/misc/keystore
-	restorecon -R /data/property
-	restorecon -R /data/security
 # ]
 
 # DRK permission
@@ -1149,9 +1144,9 @@ service vold /system/bin/vold
     class core
     socket vold stream 0660 root mount
     ioprio be 2
-## Samsung ODE
+## Samsung ODE >>>
     socket dir_enc_report stream 0660 root mount
-## Samsung ODE
+## Samsung ODE <<<
 
 service epmd /system/bin/epmd
     class main
@@ -1430,10 +1425,10 @@ on property:sys.qseecomd.enable=true
 # ccm
   service ccm /system/bin/tlc_server
   user system
-  group system
+  group system 
   disabled
 
-on property:persist.security.tlc.ccm=1
+on property:persist.security.tlc.ccm=1  
   start ccm
   setprop persist.security.tlc.ccm 0
 

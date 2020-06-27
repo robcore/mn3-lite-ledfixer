@@ -44,7 +44,7 @@ on init
     mkdir /mnt/media_rw/UsbDriveD 0700 media_rw media_rw
     mkdir /mnt/media_rw/UsbDriveE 0700 media_rw media_rw
     mkdir /mnt/media_rw/UsbDriveF 0700 media_rw media_rw
-
+    
     # Set permissions for persist partition
     mkdir /persist 0771 system system
     # See storage config details at http://source.android.com/tech/storage/
@@ -62,7 +62,7 @@ on init
     symlink /storage/emulated/legacy /mnt/sdcard
     symlink /storage/emulated/legacy /storage/sdcard0
     symlink /mnt/shell/emulated/0 /storage/emulated/legacy
-
+		
     # map "real" external storages paths also in same way. backwards compatibility.
     symlink /storage/extSdCard /mnt/extSdCard
     symlink /storage/UsbDriveA /mnt/UsbDriveA
@@ -71,7 +71,7 @@ on init
     symlink /storage/UsbDriveD /mnt/UsbDriveD
     symlink /storage/UsbDriveE /mnt/UsbDriveE
     symlink /storage/UsbDriveF /mnt/UsbDriveF
-    symlink /storage/extSdCard /external_sd
+    #symlink /storage/extSdCard /external_sd
 
     mkdir /storage/extSdCard 0700 root root
     mkdir /storage/UsbDriveA 0700 root root
@@ -154,6 +154,7 @@ on boot
     #Remove SUID bit for iproute2 ip tool
     chmod 0755 /system/bin/ip
 
+
     chmod 0444 /sys/devices/platform/msm_hsusb/gadget/usb_state
 
     #For bridgemgr daemon to inform the USB driver of the correct transport
@@ -176,15 +177,13 @@ on boot
     setprop net.tcp.buffersize.gprs    4092,8760,11680,4096,8760,11680
     setprop net.tcp.buffersize.evdo    4094,87380,262144,4096,16384,262144
 
-# Define TCP delayed ack settings for WiFi and LTE
+# Define TCP delayed ack settings for WiFi & LTE
     setprop net.tcp.delack.default     1
     setprop net.tcp.delack.wifi        20
     setprop net.tcp.delack.lte         8
     setprop net.tcp.usercfg.default    0
     setprop net.tcp.usercfg.wifi       1
     setprop net.tcp.usercfg.lte        1
-
-#setprop persist.tcp.delack.enable  true
 
 #   Assign TCP buffer thresholds to be ceiling value of technology maximums
 #   Increased technology maximums should be reflected here.
@@ -225,11 +224,15 @@ on boot
     mkdir /data/nfc 0770 nfc nfc
     mkdir /data/nfc/param 0770 nfc nfc
 
-# msm specific files that need to be created on /data
-# we will remap camera as /mnt/sdcard with the sdcard fuse tool
-on post-fs-data
+    # Set the console loglevel to < KERN_INFO
+    # Set the default message loglevel to KERN_INFO
+    #write /proc/sys/kernel/printk "6 6 1 7"
 
-	mkdir /data/misc/camera 0770 camera camera
+# msm specific files that need to be created on /data
+on post-fs-data
+    # we will remap this as /mnt/sdcard with the sdcard fuse tool
+    mkdir /data/misc/camera 0770 camera camera
+
     mkdir /data/media 0770 media_rw media_rw
     chown media_rw media_rw /data/media
 
@@ -846,7 +849,7 @@ service profiler_daemon /system/bin/profiler_daemon
     disabled
 
 # virtual sdcard daemon running as media_rw (1023)
-service sdcard /system/bin/sdcard -u 1023 -g 1023 -w 1023 -l -r /data/media /mnt/shell/emulated
+service sdcard /system/bin/sdcard -u 1023 -g 1023 -l -r /data/media /mnt/shell/emulated
     class late_start
     oneshot
     
@@ -885,10 +888,6 @@ service fuse_UsbDriveF /system/bin/sdcard -u 1023 -g 1023 -d -f /mnt/media_rw/Us
     class late_start
     disabled
     oneshot
-
-on property:ro.fuse_sdcard=true
-    start sdcard
-    start fuse_sdcard
 
 # Binding fuse mount point to /storage/emulated/legacy
 #on property:init.svc.sdcard=running

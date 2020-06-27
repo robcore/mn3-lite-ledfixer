@@ -30,7 +30,7 @@ target="$1"
 serial="$2"
 
 # No path is set up at this point so we have to do it here.
-PATH=$PATH:/sbin:/system/xbin:/system/bin:/system/xbin
+PATH=/sbin:/system/sbin:/system/bin:/system/xbin
 export PATH
 
 mount_needed=false;
