@@ -1052,8 +1052,8 @@ service lpm /system/bin/lpm
 
 #start SEC_PRODUCT_FEATURE_COMMON_SUPPORT_SE_FOR_ANDROID
 # Reload SE Android Policy for MDM
-on property:persist.security.mdm.policy=1
-	setprop selinux.reload_policy 1
+#on property:persist.security.mdm.policy=1
+#	setprop selinux.reload_policy 1
 #end SEC_PRODUCT_FEATURE_COMMON_SUPPORT_SE_FOR_ANDROID
 
 service console /system/bin/sh
@@ -1073,9 +1073,9 @@ service prepare_param /system/bin/prepare_param.sh /dev/block/platform/msm_sdcc.
 
 ## WTL_EDM_START
 ## EDM AuditLog
-service edmaudit /system/bin/edmaudit
-    class main
-    user root
+#service edmaudit /system/bin/edmaudit
+#    class main
+#    user root
 
 ## WTL_EDM_END
 
@@ -1339,13 +1339,13 @@ service bugreport /system/bin/dumpstate -d -p -B \
     keycodes 114 115 116
 
 
-service mdnsd /system/bin/mdnsd
-    class main
-    user mdnsr
-    group inet net_raw
-    socket mdnsd stream 0660 mdnsr inet
-    disabled
-    oneshot
+#service mdnsd /system/bin/mdnsd
+#    class main
+#    user mdnsr
+#    group inet net_raw
+#    socket mdnsd stream 0660 mdnsr inet
+#    disabled
+#    oneshot
 
 # Vibetonz
 service immvibed /system/bin/immvibed
