@@ -234,6 +234,7 @@ on post-fs-data
     mkdir /data/misc/camera 0770 camera camera
 
     mkdir /data/media 0770 media_rw media_rw
+	chmod 0770 /data/media
     chown media_rw media_rw /data/media
 
     mkdir /data/misc/bluetooth 0770 bluetooth bluetooth
@@ -310,22 +311,32 @@ on post-fs-data
 
     #Create directory from IMS services
     mkdir /data/shared 0755
+	chmod 0755 /data/shared
     chown system system /data/shared
 
     #Create directory for FOTA
     mkdir /data/fota 0771
+	chmod 0771 /data/fota
     chown system system /data/fota
 
     #Create directory for hostapd
     mkdir /data/hostapd 0770 system wifi
+	chmod 0770 /data/hostapd
+	chown system wifi /data/hostapd
 
     # Create /data/time folder for time-services
-    mkdir /data/time/ 0700 system system
+    mkdir /data/time 0700 system system
+    chmod 0700 /data/time
+    chown system system /data/time
 
-    mkdir /data/audio/ 0770 media audio
+    mkdir /data/audio 0770 media audio
+    chmod 0770 /data/audio
+    chown media audio /data/audio
 
     #Create a folder for SRS to be able to create a usercfg file
     mkdir /data/data/media 0770 media media
+    chmod 0770 /data/data/media
+    chown media media /data/data/media
 	chmod 0755 /sys
 
     setprop vold.post_fs_data_done 1
@@ -852,7 +863,6 @@ service profiler_daemon /system/bin/profiler_daemon
 service sdcard /system/bin/sdcard -u 1023 -g 1023 -l -r /data/media /mnt/shell/emulated
     class late_start
     oneshot
-    
 
 service fuse_extSdCard /system/bin/sdcard -u 1023 -g 1023 -w 1023 -d -f /mnt/media_rw/extSdCard /storage/extSdCard
     class late_start
