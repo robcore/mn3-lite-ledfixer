@@ -381,11 +381,10 @@ static int max17048_get_soc(struct i2c_client *client)
 		data[1] = (temp & 0xff00) >> 8;
 
 		soc = (data[0] * 100) + (data[1] * 100 / 256);
-	}
 
-	dev_info(&client->dev,
-		"%s : raw capacity (%d), data(0x%04x)\n",
-		__func__, soc, (data[0]<<8) | data[1]);
+		pr_info("%s : raw capacity (%d), data(0x%04x)\n",
+			__func__, soc, (data[0]<<8) | data[1]);
+	}
 
 	return soc;
 }
