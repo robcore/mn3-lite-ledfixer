@@ -119,7 +119,7 @@ clean_build() {
 	echo -ne "Cleaning build....     \r"; \
 	rm -rf "$BUILDIR" &>/dev/null
 	echo -ne "Cleaning build.....    \r"; \
-	rm "$ZIPFOLDER/boot.img" &>/dev/null
+	rm "$ZIPFOLDER/mxtemp/boot.img" &>/dev/null
 	echo -ne "Cleaning build......   \r"; \
 	make -C "$RDIR/scripts/mkqcdtbootimg" clean &>/dev/null
 	echo -ne "Cleaning build.......  \r"; \
@@ -416,7 +416,7 @@ build_ramdisk() {
 build_boot_img() {
 
 	echo "Generating boot.img..."
-	rm -f "$ZIPFOLDER/boot.img"
+	rm -f "$ZIPFOLDER/mxtemp/boot.img"
 	if [ ! -f "$RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg" ]
 	then
 		make -C "$RDIR/scripts/mkqcdtbootimg" || warnandfail "Failed to make dtb tool!"
@@ -430,15 +430,15 @@ build_boot_img() {
 		--pagesize "2048" \
 		--ramdisk_offset "0x02000000" \
 		--tags_offset "0x01e00000" \
-		--output "$ZIPFOLDER/boot.img"
+		--output "$ZIPFOLDER/mxtemp/boot.img"
 	if [ "$?" -eq 0 ]
 	then
 		echo "mkqcdtbootimg appears to have succeeded in building an image"
 	else
 		warnandfail "mkqcdtbootimg appears to have failed in building an image!"
 	fi
-	[ -f "$ZIPFOLDER/boot.img" ] || warnandfail "$ZIPFOLDER/boot.img does not exist!"
-	#echo -n "SEANDROIDENFORCE" >> "$ZIPFOLDER/boot.img"
+	[ -f "$ZIPFOLDER/mxtemp/boot.img" ] || warnandfail "$ZIPFOLDER/mxtemp/boot.img does not exist!"
+	#echo -n "SEANDROIDENFORCE" >> "$ZIPFOLDER/mxtemp/boot.img"
 
 }
 
@@ -542,7 +542,7 @@ show_help() {
 Machinexlite kernel by robcore
 Script written by jcadduono, frequentc & robcore
 
-usage: ./mx-build.sh [OPTION]
+usage: ./mxbuild.sh [OPTION]
 Common options:
  -a|--all            Do a complete build (starting at the beginning)
  -d|--debug          Same as --all but skips final cleanup
