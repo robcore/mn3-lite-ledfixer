@@ -80,10 +80,6 @@ case $? in
   1 )
     abort "! Unsupported/Unknown image format"
     ;;
-  2 )
-    ui_print "- ChromeOS boot image detected"
-    CHROMEOS=true
-    ;;
 esac
 
 ###################
@@ -175,7 +171,7 @@ fi
 #################
 
 ui_print "- Repacking boot image"
-./magiskboot repack "$BOOTIMAGE" "mxpboot.img" || abort "! Unable to repack boot image!"
+./magiskboot repack "$BOOTIMAGE" "/tmp/mx3/mxpboot.img" || abort "! Unable to repack boot image!"
 
 # Sign chromeos boot
 $CHROMEOS && sign_chromeos

@@ -2,21 +2,33 @@
 # Shell Script EDIFY Replacement: Recovery Flashable Zip
 # osm0sis @ xda-developers
 
-OUTFD=/proc/self/fd/$2;
-ZIPFILE="$3";
-DIR=$(dirname "$ZIPFILE");
+#!/sbin/sh
+# Busybox Installer Script: Recovery Flashable Zip
+# osm0sis @ xda-developers
 
-# ui_print "<message>" ["<message 2>" ...]
-ui_print() {
-  while [ "$1" ]; do
-    echo -e "ui_print $1
-      ui_print" >> $OUTFD;
-    shift;
+OUTFD=/proc/self/fd/$2;
+ZIP="$3";
+
+# embedded mode support
+readlink /proc/$$/fd/$2 2>/dev/null | grep /tmp >/dev/null;
+if [ "$?" -eq "0" ]; then
+  # rerouted to log file, so suppress recovery ui commands
+  OUTFD=/proc/self/fd/0;
+  # try to find the actual fd (pipe with parent updater likely started as 'update-binary 3 fd zipfile')
+  for FD in `ls /proc/$$/fd`; do
+    readlink /proc/$$/fd/$FD 2>/dev/null | grep pipe >/dev/null;
+    if [ "$?" -eq "0" ]; then
+      ps | grep " 3 $FD " | grep -v grep >/dev/null;
+      if [ "$?" -eq "0" ]; then
+        OUTFD=/proc/self/fd/$FD;
+        break;
+      fi;
+    fi;
   done;
-}
-# show_progress <amount> <time>
+fi;
+
+ui_print() { echo -e "ui_print $1\nui_print" >> $OUTFD; }
 show_progress() { echo "progress $1 $2" >> $OUTFD; }
-# set_progress <amount>
 set_progress() { echo "set_progress $1" >> $OUTFD; }
 
 # sleep <seconds> exists in shell
@@ -229,31 +241,80 @@ restore_files() {
   done;
 }
 
-ui_print "MACHINEX"
-ui_print "Adjusting jiggawattage in flux capacitor"
-ui_print " "
-ui_print "Mounting Filesystems"
-mount /system
-mount /data
-mount /cache
-ui_print " "
-ui_print "Extracting System"
-package_extract_dir system /system
-set_perm 0 2000 755 /system/etc/permissions
-set_perm 0 0 644 /system/etc/permissions/platform.xml
-set_perm_recursive 0 2000 0755 0755 /system/etc/init.d
-set_perm 0 0 0644 /system/build.prop
-ui_print "Removing Previous Magisk boot.img Backup"
-rm -rf /data/magisk_backup*
-ui_print " "
-ui_print "Extracting Boot"
-ui_print "And Re-Installing Magisk"
-# package_extract_file boot.img /dev/block/platform/msm_sdcc.1/by-name/boot
-package_extract_dir mxtemp /mxtemp
-/system/bin/sh /mxtemp/mxpatch.sh
-ui_print " "
-ui_print "Unmounting Filesystems"
-umount /system
-umount /data
-umount /cache
-ui_print " "
+ui_print " ";
+ui_print "MACHINEX";
+ui_print "Adjusting jiggawattage in flux capacitor";
+show_progress 1.34 0;
+
+ui_print " ";
+ui_print "Mounting Filesystems";
+mount -o remount,rw /system;
+mount -o remount,rw /data;
+mount /cache;
+set_progress 0.1;
+
+ui_print " ";
+ui_print "Extracting Contents";
+mkdir -p /tmp/mx3;
+cd /tmp/mx3;
+unzip -o "$ZIP";
+set_progress 0.2;
+
+ui_print " ";
+ui_print "Replacing build.prop";
+rm /system/build.prop;
+cp -f /tmp/mx3/system/build.prop /system/build.prop;
+chmod 644 /system/build.prop;
+chown 0:0 /system/build.prop;
+set_progress 0.4;
+
+ui_print " ";
+ui_print "Installing init.d and fixing its permissions";
+[ ! -d /system/etc/init.d ] && mkdir /system/etc/init.d;
+chmod 755 -R /system/etc/init.d;
+set_progress 0.6;
+
+ui_print " ";
+ui_print "Replacing platform.xml";
+rm -f /system/etc/permissions/platform.xml;
+cp -f /tmp/mx3/system/etc/permissions/platform.xml /system/etc/permissions/platform.xml;
+chmod 644 /system/etc/permissions/platform.xml;
+chown 0:0 /system/etc/permissions/platform.xml;
+rm -rf /tmp/mx3/system;
+set_progress 0.8;
+
+ui_print " ";
+ui_print "Preparing Script Environment";
+chmod 755 /tmp/mx3/boot_patch.sh;
+chmod 755 /tmp/mx3/magiskboot;
+chmod 755 /tmp/mx3/magiskinit;
+chmod 755 /tmp/mx3/mxpatch.sh;
+chmod 755 /tmp/mx3/util_functions.sh;
+set_progress 0.9;
+
+ui_print " ";
+ui_print "Removing Previous Magisk boot.img Backup";
+rm -rf /data/magisk_backup*;
+set_progress 1.0;
+
+ui_print " ";
+ui_print "Extracting Boot";
+ui_print "And Re-Installing Magisk";
+cd /tmp/mx3;
+./boot_patch.sh boot.img;
+cd /tmp/mx3;
+dd if=/tmp/mx3/mxpboot.img of=/dev/block/platform/msm_sdcc.1/by-name/boot;
+set_progress 1.1;
+
+ui_print " ";
+ui_print "Unmounting Filesystems";
+umount /system;
+umount /data;
+umount /cache;
+set_progress 1.2;
+
+ui_print " ";
+ui_print "Done!";
+set_progress 1.34;
+exit 0;
+
