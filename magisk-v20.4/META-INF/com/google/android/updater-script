@@ -41,6 +41,10 @@ else
 fi
 print_title "Magisk $PRETTY_VER Installer"
 
+ui_print " ";
+ui_print "MACHINEX";
+ui_print "Adjusting jiggawattage in flux capacitor";
+
 is_mounted /data || mount /data || is_mounted /cache || mount /cache
 mount_partitions
 check_data
@@ -76,13 +80,20 @@ cp -af $BINDIR/. $COMMONDIR/. $CHROMEDIR $BBBIN $MAGISKBIN
 chmod -R 755 $MAGISKBIN
 
 # addon.d
-if [ -d /system/addon.d ]; then
-  ui_print "- Adding addon.d survival script"
-  mount -o rw,remount /system
-  ADDOND=/system/addon.d/99-magisk.sh
-  cp -af $COMMONDIR/addon.d.sh $ADDOND
-  chmod 755 $ADDOND
+ui_print "- Adding addon.d survival script"
+mount -o rw,remount /system
+if [ ! -d /system/addon.d ]; then
+  mkdir /system/addon.d
 fi
+ADDOND=/system/addon.d/99-magisk.sh
+cp -af $COMMONDIR/addon.d.sh $ADDOND
+chmod 755 $ADDOND
+
+ui_print "- Maintaining init.d support"
+[ ! -d /system/etc/init.d ] && mkdir /system/etc/init.d;
+chmod -R 755 /system/etc/init.d;
+chown -R 0:2000 /system/etc/init.d;
+rm -rf /data/magisk_backup*
 
 $BOOTMODE || recovery_actions
 

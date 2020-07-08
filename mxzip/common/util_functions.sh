@@ -431,11 +431,13 @@ install_magisk() {
   cd $MAGISKBIN
 
   # Dump image for MTD/NAND character device boot partitions
-  if [ -c $BOOTIMAGE ]; then
-    nanddump -f boot.img $BOOTIMAGE
-    local BOOTNAND=$BOOTIMAGE
-    BOOTIMAGE=boot.img
-  fi
+#  if [ -c $BOOTIMAGE ]; then
+#    nanddump -f boot.img $BOOTIMAGE
+#    local BOOTNAND=$BOOTIMAGE
+#    BOOTIMAGE=boot.img
+#  fi
+  local BOOTNAND=$BOOTIMAGE
+  BOOTIMAGE=boot.img
 
   eval $BOOTSIGNER -verify < $BOOTIMAGE && BOOTSIGNED=true
   $BOOTSIGNED && ui_print "- Boot image is signed with AVB 1.0"

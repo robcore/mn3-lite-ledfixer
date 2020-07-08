@@ -119,7 +119,7 @@ clean_build() {
 	echo -ne "Cleaning build....     \r"; \
 	rm -rf "$BUILDIR" &>/dev/null
 	echo -ne "Cleaning build.....    \r"; \
-	rm "$ZIPFOLDER/boot.img" &>/dev/null
+	rm "$ZIPFOLDER/common/boot.img" &>/dev/null
 	echo -ne "Cleaning build......   \r"; \
 	make -C "$RDIR/scripts/mkqcdtbootimg" clean &>/dev/null
 	echo -ne "Cleaning build.......  \r"; \
@@ -416,7 +416,7 @@ build_ramdisk() {
 build_boot_img() {
 
 	echo "Generating boot.img..."
-	rm -f "$ZIPFOLDER/boot.img"
+	rm -f "$ZIPFOLDER/common/boot.img"
 	if [ ! -f "$RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg" ]
 	then
 		make -C "$RDIR/scripts/mkqcdtbootimg" || warnandfail "Failed to make dtb tool!"
@@ -430,15 +430,15 @@ build_boot_img() {
 		--pagesize "2048" \
 		--ramdisk_offset "0x02000000" \
 		--tags_offset "0x01e00000" \
-		--output "$ZIPFOLDER/boot.img"
+		--output "$ZIPFOLDER/common/boot.img"
 	if [ "$?" -eq 0 ]
 	then
 		echo "mkqcdtbootimg appears to have succeeded in building an image"
 	else
 		warnandfail "mkqcdtbootimg appears to have failed in building an image!"
 	fi
-	[ -f "$ZIPFOLDER/boot.img" ] || warnandfail "$ZIPFOLDER/boot.img does not exist!"
-	#echo -n "SEANDROIDENFORCE" >> "$ZIPFOLDER/boot.img"
+	[ -f "$ZIPFOLDER/common/boot.img" ] || warnandfail "$ZIPFOLDER/common/boot.img does not exist!"
+	#echo -n "SEANDROIDENFORCE" >> "$ZIPFOLDER/common/boot.img"
 
 }
 
@@ -529,7 +529,7 @@ create_zip() {
 #
 #	echo "Compressing to Odin flashable tar.md5 file..."
 #	cd $RDIR/$ZIPFOLDER
-#	tar -H ustar -c boot.img > $RDIR/$MX_KERNEL_VERSION.tar
+#	tar -H ustar -c common/boot.img > $RDIR/$MX_KERNEL_VERSION.tar
 #	cd $RDIR
 #	md5sum -t $MX_KERNEL_VERSION.tar >> $MX_KERNEL_VERSION.tar
 #	mv $MX_KERNEL_VERSION.tar $MX_KERNEL_VERSION.tar.md5

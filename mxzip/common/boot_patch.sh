@@ -55,10 +55,6 @@ BOOTIMAGE="$1"
 [ -z $KEEPVERITY ] && KEEPVERITY=false
 [ -z $KEEPFORCEENCRYPT ] && KEEPFORCEENCRYPT=false
 [ -z $RECOVERYMODE ] && RECOVERYMODE=false
-KEEPVERITY=false
-KEEPFORCEENCRYPT=false
-RECOVERYMODE=false
-
 export KEEPVERITY
 export KEEPFORCEENCRYPT
 
@@ -80,7 +76,13 @@ case $? in
   1 )
     abort "! Unsupported/Unknown image format"
     ;;
+  2 )
+    ui_print "- ChromeOS boot image detected"
+    CHROMEOS=true
+    ;;
 esac
+
+[ -f recovery_dtbo ] && RECOVERYMODE=true
 
 ###################
 # Ramdisk Restores
@@ -114,6 +116,11 @@ case $((STATUS & 3)) in
     abort "! Please restore back to stock boot image"
     ;;
 esac
+
+if [ $((STATUS & 8)) -ne 0 ]; then
+  # Possibly using 2SI, export env var
+  export TWOSTAGEINIT=true
+fi
 
 ##################
 # Ramdisk Patches
@@ -171,7 +178,7 @@ fi
 #################
 
 ui_print "- Repacking boot image"
-./magiskboot repack "$BOOTIMAGE" "/tmp/mx3/mxpboot.img" || abort "! Unable to repack boot image!"
+./magiskboot repack "$BOOTIMAGE" || abort "! Unable to repack boot image!"
 
 # Sign chromeos boot
 $CHROMEOS && sign_chromeos
