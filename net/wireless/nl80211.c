@@ -5501,8 +5501,6 @@ void __cfg80211_send_event_skb(struct sk_buff *skb, gfp_t gfp)
 }
 EXPORT_SYMBOL(__cfg80211_send_event_skb);
 
-<<<<<<< HEAD
-=======
 void cfg80211_testmode_event(struct sk_buff *skb, gfp_t gfp)
 {
 	struct cfg80211_registered_device *rdev = ((void **)skb->cb)[0];
@@ -5516,7 +5514,6 @@ void cfg80211_testmode_event(struct sk_buff *skb, gfp_t gfp)
 }
 EXPORT_SYMBOL(cfg80211_testmode_event);
 #endif
->>>>>>> 2c31f30... Linux 3.4.51 - 3.4.60
 
 static int nl80211_connect(struct sk_buff *skb, struct genl_info *info)
 {

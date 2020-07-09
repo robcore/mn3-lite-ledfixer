@@ -1240,11 +1240,7 @@ void get_monotonic_boottime(struct timespec *ts)
 	} while (read_seqretry(&timekeeper.lock, seq));
 
 	set_normalized_timespec(ts, ts->tv_sec + tomono.tv_sec + sleep.tv_sec,
-<<<<<<< HEAD
-			(s64)ts->tv_nsec + tomono.tv_nsec + sleep.tv_nsec + nsecs);
-=======
 		(s64)ts->tv_nsec + tomono.tv_nsec + sleep.tv_nsec + nsecs);
->>>>>>> d20824f... Linux 3.4.80
 }
 EXPORT_SYMBOL_GPL(get_monotonic_boottime);
 

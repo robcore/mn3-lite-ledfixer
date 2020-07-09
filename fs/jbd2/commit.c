@@ -1044,10 +1044,6 @@ restart_loop:
 				commit_transaction;
 	}
 	spin_unlock(&journal->j_list_lock);
-<<<<<<< HEAD
-=======
-
->>>>>>> 351e694... Linux 3.4.41 - 3.4.50
 	/* Drop all spin_locks because commit_callback may be block.
 	 * __journal_remove_checkpoint() can not destroy transaction
 	 * under us because it is not marked as T_FINISHED yet */

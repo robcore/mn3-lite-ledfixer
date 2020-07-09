@@ -3009,7 +3009,8 @@ static void put_event(struct perf_event *event)
 {
 	struct task_struct *owner;
 
-<<<<<<< HEAD
+	if (!atomic_long_dec_and_test(&event->refcount))
+		return;
 	/*
 	 * Event can be in state OFF because of a constraint check.
 	 * Change to ACTIVE so that it gets cleaned up correctly.
@@ -3019,10 +3020,6 @@ static void put_event(struct perf_event *event)
 		event->state = PERF_EVENT_STATE_ACTIVE;
 
 	file->private_data = NULL;
-=======
-	if (!atomic_long_dec_and_test(&event->refcount))
-		return;
->>>>>>> 30257f9... Linux 3.4.11 - 3.4.20
 
 	rcu_read_lock();
 	owner = ACCESS_ONCE(event->owner);

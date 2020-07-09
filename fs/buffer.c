@@ -1001,10 +1001,6 @@ grow_dev_page(struct block_device *bdev, sector_t block,
 	spin_unlock(&inode->i_mapping->private_lock);
 done:
 	ret = (block < end_block) ? 1 : -ENXIO;
-<<<<<<< HEAD
-
-=======
->>>>>>> 30257f9... Linux 3.4.11 - 3.4.20
 failed:
 	unlock_page(page);
 	page_cache_release(page);

@@ -241,16 +241,11 @@ unsigned long global_dirtyable_memory(void)
 {
 	unsigned long x;
 
-<<<<<<< HEAD
-	x = global_page_state(NR_FREE_PAGES);
+	x = global_page_state(NR_FREE_PAGES) + global_reclaimable_pages();
 	x -= min(x, dirty_balance_reserve);
 
 	x += global_page_state(NR_INACTIVE_FILE);
 	x += global_page_state(NR_ACTIVE_FILE);
-=======
-	x = global_page_state(NR_FREE_PAGES) + global_reclaimable_pages();
-	x -= min(x, dirty_balance_reserve);
->>>>>>> 442ee87... Linux 3.4.21 - 3.4.30
 
 	if (!vm_highmem_is_dirtyable)
 		x -= highmem_dirtyable_memory(x);

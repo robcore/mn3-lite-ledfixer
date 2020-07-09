@@ -670,9 +670,5 @@ source "drivers/input/keyboard/cypress_touchkey_h/Kconfig"
 source "drivers/input/keyboard/cypress_touchkey_he/Kconfig"
 source "drivers/input/keyboard/cypress_touchkey_c/Kconfig"
 source "drivers/input/keyboard/cypress_touchkey_ks01/Kconfig"
-<<<<<<< HEAD
 source "drivers/input/keyboard/cypress_touchkey_hl/Kconfig"
 source "drivers/input/keyboard/cypress_touchkey_s3/Kconfig"
-=======
-source "drivers/input/keyboard/melfas_touchkey/Kconfig"
->>>>>>> e3ed129... Linux 3.4.74
