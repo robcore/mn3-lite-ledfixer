@@ -15,6 +15,7 @@ LASTZIP="$(cat $LASTZIPFILE)"
 RAMDISKFOLDER="$RDIR/mxramdisk"
 ZIPFOLDER="$RDIR/mxzip"
 MXCONFIG="$RDIR/arch/arm/configs/mxconfig"
+MXRECENT="$MXCONFIG.recent"
 QUICKMONTHDAY="$(date | awk '{print $2$3}')"
 QUICKHOUR="$(date +%l | cut -d " " -f2)"
 QUICKMIN="$(date +%S)"
@@ -98,6 +99,11 @@ takeouttrash() {
 clean_build() {
 
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
+	if [ -f "$BUILDIR/.config" ]
+	then
+		[ -f "$MXRECENT" ] && rm "$MXRECENT"
+		cp "$BUILDIR/.config" "$MXRECENT"
+	fi
 	if [ "$1" = "standalone" ]
 	then
 		echo -ne "Cleaning build         \r"; \
