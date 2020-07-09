@@ -76,7 +76,163 @@ static int ax88772b_set_csums(struct usbnet *dev);
 
 /* ASIX AX8817X based USB 2.0 Ethernet Devices */
 
+<<<<<<< HEAD
 static int ax8817x_read_cmd(struct usbnet *dev, u8 cmd, u16 value, u16 index,
+=======
+#define AX_CMD_SET_SW_MII		0x06
+#define AX_CMD_READ_MII_REG		0x07
+#define AX_CMD_WRITE_MII_REG		0x08
+#define AX_CMD_SET_HW_MII		0x0a
+#define AX_CMD_READ_EEPROM		0x0b
+#define AX_CMD_WRITE_EEPROM		0x0c
+#define AX_CMD_WRITE_ENABLE		0x0d
+#define AX_CMD_WRITE_DISABLE		0x0e
+#define AX_CMD_READ_RX_CTL		0x0f
+#define AX_CMD_WRITE_RX_CTL		0x10
+#define AX_CMD_READ_IPG012		0x11
+#define AX_CMD_WRITE_IPG0		0x12
+#define AX_CMD_WRITE_IPG1		0x13
+#define AX_CMD_READ_NODE_ID		0x13
+#define AX_CMD_WRITE_NODE_ID		0x14
+#define AX_CMD_WRITE_IPG2		0x14
+#define AX_CMD_WRITE_MULTI_FILTER	0x16
+#define AX88172_CMD_READ_NODE_ID	0x17
+#define AX_CMD_READ_PHY_ID		0x19
+#define AX_CMD_READ_MEDIUM_STATUS	0x1a
+#define AX_CMD_WRITE_MEDIUM_MODE	0x1b
+#define AX_CMD_READ_MONITOR_MODE	0x1c
+#define AX_CMD_WRITE_MONITOR_MODE	0x1d
+#define AX_CMD_READ_GPIOS		0x1e
+#define AX_CMD_WRITE_GPIOS		0x1f
+#define AX_CMD_SW_RESET			0x20
+#define AX_CMD_SW_PHY_STATUS		0x21
+#define AX_CMD_SW_PHY_SELECT		0x22
+
+#define AX_MONITOR_MODE			0x01
+#define AX_MONITOR_LINK			0x02
+#define AX_MONITOR_MAGIC		0x04
+#define AX_MONITOR_HSFS			0x10
+
+/* AX88172 Medium Status Register values */
+#define AX88172_MEDIUM_FD		0x02
+#define AX88172_MEDIUM_TX		0x04
+#define AX88172_MEDIUM_FC		0x10
+#define AX88172_MEDIUM_DEFAULT \
+		( AX88172_MEDIUM_FD | AX88172_MEDIUM_TX | AX88172_MEDIUM_FC )
+
+#define AX_MCAST_FILTER_SIZE		8
+#define AX_MAX_MCAST			64
+
+#define AX_SWRESET_CLEAR		0x00
+#define AX_SWRESET_RR			0x01
+#define AX_SWRESET_RT			0x02
+#define AX_SWRESET_PRTE			0x04
+#define AX_SWRESET_PRL			0x08
+#define AX_SWRESET_BZ			0x10
+#define AX_SWRESET_IPRL			0x20
+#define AX_SWRESET_IPPD			0x40
+
+#define AX88772_IPG0_DEFAULT		0x15
+#define AX88772_IPG1_DEFAULT		0x0c
+#define AX88772_IPG2_DEFAULT		0x12
+
+/* AX88772 & AX88178 Medium Mode Register */
+#define AX_MEDIUM_PF		0x0080
+#define AX_MEDIUM_JFE		0x0040
+#define AX_MEDIUM_TFC		0x0020
+#define AX_MEDIUM_RFC		0x0010
+#define AX_MEDIUM_ENCK		0x0008
+#define AX_MEDIUM_AC		0x0004
+#define AX_MEDIUM_FD		0x0002
+#define AX_MEDIUM_GM		0x0001
+#define AX_MEDIUM_SM		0x1000
+#define AX_MEDIUM_SBP		0x0800
+#define AX_MEDIUM_PS		0x0200
+#define AX_MEDIUM_RE		0x0100
+
+#define AX88178_MEDIUM_DEFAULT	\
+	(AX_MEDIUM_PS | AX_MEDIUM_FD | AX_MEDIUM_AC | \
+	 AX_MEDIUM_RFC | AX_MEDIUM_TFC | AX_MEDIUM_JFE | \
+	 AX_MEDIUM_RE)
+
+#define AX88772_MEDIUM_DEFAULT	\
+	(AX_MEDIUM_FD | AX_MEDIUM_RFC | \
+	 AX_MEDIUM_TFC | AX_MEDIUM_PS | \
+	 AX_MEDIUM_AC | AX_MEDIUM_RE)
+
+/* AX88772 & AX88178 RX_CTL values */
+#define AX_RX_CTL_SO		0x0080
+#define AX_RX_CTL_AP		0x0020
+#define AX_RX_CTL_AM		0x0010
+#define AX_RX_CTL_AB		0x0008
+#define AX_RX_CTL_SEP		0x0004
+#define AX_RX_CTL_AMALL		0x0002
+#define AX_RX_CTL_PRO		0x0001
+#define AX_RX_CTL_MFB_2048	0x0000
+#define AX_RX_CTL_MFB_4096	0x0100
+#define AX_RX_CTL_MFB_8192	0x0200
+#define AX_RX_CTL_MFB_16384	0x0300
+
+#define AX_DEFAULT_RX_CTL	(AX_RX_CTL_SO | AX_RX_CTL_AB)
+
+/* GPIO 0 .. 2 toggles */
+#define AX_GPIO_GPO0EN		0x01	/* GPIO0 Output enable */
+#define AX_GPIO_GPO_0		0x02	/* GPIO0 Output value */
+#define AX_GPIO_GPO1EN		0x04	/* GPIO1 Output enable */
+#define AX_GPIO_GPO_1		0x08	/* GPIO1 Output value */
+#define AX_GPIO_GPO2EN		0x10	/* GPIO2 Output enable */
+#define AX_GPIO_GPO_2		0x20	/* GPIO2 Output value */
+#define AX_GPIO_RESERVED	0x40	/* Reserved */
+#define AX_GPIO_RSE		0x80	/* Reload serial EEPROM */
+
+#define AX_EEPROM_MAGIC		0xdeadbeef
+#define AX88172_EEPROM_LEN	0x40
+#define AX88772_EEPROM_LEN	0xff
+
+#define PHY_MODE_MARVELL	0x0000
+#define MII_MARVELL_LED_CTRL	0x0018
+#define MII_MARVELL_STATUS	0x001b
+#define MII_MARVELL_CTRL	0x0014
+
+#define MARVELL_LED_MANUAL	0x0019
+
+#define MARVELL_STATUS_HWCFG	0x0004
+
+#define MARVELL_CTRL_TXDELAY	0x0002
+#define MARVELL_CTRL_RXDELAY	0x0080
+
+#define	PHY_MODE_RTL8211CL	0x000C
+
+/* This structure cannot exceed sizeof(unsigned long [5]) AKA 20 bytes */
+struct asix_data {
+	u8 multi_filter[AX_MCAST_FILTER_SIZE];
+	u8 mac_addr[ETH_ALEN];
+	u8 phymode;
+	u8 ledmode;
+	u8 eeprom_len;
+};
+
+struct ax88172_int_data {
+	__le16 res1;
+	u8 link;
+	__le16 res2;
+	u8 status;
+	__le16 res3;
+} __packed;
+
+struct asix_rx_fixup_info {
+	struct sk_buff *ax_skb;
+	u32 header;
+	u16 size;
+	bool split_head;
+};
+
+struct asix_common_private {
+	struct asix_rx_fixup_info rx_fixup_info;
+};
+
+static int asix_read_cmd(struct usbnet *dev, u8 cmd, u16 value, u16 index,
+>>>>>>> 5c02dbe... Linux 3.4.83
 			    u16 size, void *data)
 {
 	return usb_control_msg(
@@ -135,6 +291,7 @@ static int ax8817x_set_mac_addr(struct net_device *net, void *p)
 
 }
 
+<<<<<<< HEAD
 static void ax88178_status(struct usbnet *dev, struct urb *urb)
 {
 	struct ax88172_int_data *event;
@@ -162,10 +319,60 @@ static void ax88178_status(struct usbnet *dev, struct urb *urb)
 =======
 		if ((size > dev->net->mtu + ETH_HLEN + VLAN_HLEN) ||
 		    (size + offset > skb->len)) {
+=======
+static int asix_rx_fixup_internal(struct usbnet *dev, struct sk_buff *skb,
+				  struct asix_rx_fixup_info *rx)
+{
+	int offset = 0;
+
+	while (offset + sizeof(u16) <= skb->len) {
+		u16 remaining = 0;
+		unsigned char *data;
+
+		if (!rx->size) {
+			if ((skb->len - offset == sizeof(u16)) ||
+			    rx->split_head) {
+				if (!rx->split_head) {
+					rx->header = get_unaligned_le16(
+							skb->data + offset);
+					rx->split_head = true;
+					offset += sizeof(u16);
+					break;
+				} else {
+					rx->header |= (get_unaligned_le16(
+							skb->data + offset)
+							<< 16);
+					rx->split_head = false;
+					offset += sizeof(u16);
+				}
+			} else {
+				rx->header = get_unaligned_le32(skb->data +
+								offset);
+				offset += sizeof(u32);
+			}
+
+			/* get the packet length */
+			rx->size = (u16) (rx->header & 0x7ff);
+			if (rx->size != ((~rx->header >> 16) & 0x7ff)) {
+				netdev_err(dev->net, "asix_rx_fixup() Bad Header Length 0x%x, offset %d\n",
+					   rx->header, offset);
+				rx->size = 0;
+				return 0;
+			}
+			rx->ax_skb = netdev_alloc_skb_ip_align(dev->net,
+							       rx->size);
+			if (!rx->ax_skb)
+				return 0;
+		}
+
+		if (rx->size > dev->net->mtu + ETH_HLEN + VLAN_HLEN) {
+>>>>>>> 5c02dbe... Linux 3.4.83
 			netdev_err(dev->net, "asix_rx_fixup() Bad RX Length %d\n",
-				   size);
+				   rx->size);
+			kfree_skb(rx->ax_skb);
 			return 0;
 		}
+<<<<<<< HEAD
 		ax_skb = netdev_alloc_skb_ip_align(dev->net, size);
 		if (!ax_skb)
 			return 0;
@@ -192,6 +399,42 @@ static void ax8817x_status(struct usbnet *dev, struct urb *urb)
 }
 
 static void ax88772_status(struct usbnet *dev, struct urb *urb)
+=======
+
+		if (rx->size > skb->len - offset) {
+			remaining = rx->size - (skb->len - offset);
+			rx->size = skb->len - offset;
+		}
+
+		data = skb_put(rx->ax_skb, rx->size);
+		memcpy(data, skb->data + offset, rx->size);
+		if (!remaining)
+			usbnet_skb_return(dev, rx->ax_skb);
+
+		offset += (rx->size + 1) & 0xfffe;
+		rx->size = remaining;
+	}
+
+	if (skb->len != offset) {
+		netdev_err(dev->net, "asix_rx_fixup() Bad SKB Length %d, %d\n",
+			   skb->len, offset);
+		return 0;
+	}
+
+	return 1;
+}
+
+static int asix_rx_fixup_common(struct usbnet *dev, struct sk_buff *skb)
+{
+	struct asix_common_private *dp = dev->driver_priv;
+	struct asix_rx_fixup_info *rx = &dp->rx_fixup_info;
+
+	return asix_rx_fixup_internal(dev, skb, rx);
+}
+
+static struct sk_buff *asix_tx_fixup(struct usbnet *dev, struct sk_buff *skb,
+					gfp_t flags)
+>>>>>>> 5c02dbe... Linux 3.4.83
 {
 	struct ax88172_int_data *event;
 	struct ax88772_data *ax772_data = (struct ax88772_data *)dev->priv;
@@ -2984,6 +3227,7 @@ static int ax88178_bind(struct usbnet *dev, struct usb_interface *intf)
 		goto error_out;
 	}
 
+<<<<<<< HEAD
 	kfree(buf);
 	printk(version);
 	return ret;
@@ -2993,6 +3237,34 @@ error_out:
 	kfree(buf);
 	return ret;
 }
+=======
+	dev->driver_priv = kzalloc(sizeof(struct asix_common_private),
+				   GFP_KERNEL);
+	if (!dev->driver_priv)
+		return -ENOMEM;
+
+	return 0;
+}
+
+static void ax88772_unbind(struct usbnet *dev, struct usb_interface *intf)
+{
+	kfree(dev->driver_priv);
+}
+
+static const struct ethtool_ops ax88178_ethtool_ops = {
+	.get_drvinfo		= asix_get_drvinfo,
+	.get_link		= asix_get_link,
+	.get_msglevel		= usbnet_get_msglevel,
+	.set_msglevel		= usbnet_set_msglevel,
+	.get_wol		= asix_get_wol,
+	.set_wol		= asix_set_wol,
+	.get_eeprom_len		= asix_get_eeprom_len,
+	.get_eeprom		= asix_get_eeprom,
+	.get_settings		= usbnet_get_settings,
+	.set_settings		= usbnet_set_settings,
+	.nway_reset		= usbnet_nway_reset,
+};
+>>>>>>> 5c02dbe... Linux 3.4.83
 
 static void ax88178_unbind(struct usbnet *dev, struct usb_interface *intf)
 {
@@ -3635,6 +3907,7 @@ static int ax_suspend(struct usb_interface *intf,
 }
 
 
+<<<<<<< HEAD
 
 static int ax_resume(struct usb_interface *intf)
 {
@@ -3643,6 +3916,14 @@ static int ax_resume(struct usb_interface *intf)
         printk(KERN_DEBUG "function %s line %d ",__FUNCTION__,__LINE__);
 
 	return data->resume(intf);
+=======
+	dev->driver_priv = kzalloc(sizeof(struct asix_common_private),
+				   GFP_KERNEL);
+	if (!dev->driver_priv)
+		return -ENOMEM;
+
+	return 0;
+>>>>>>> 5c02dbe... Linux 3.4.83
 }
 
 static const struct driver_info ax88178_info = {
@@ -3709,6 +3990,7 @@ static const struct driver_info ax88772_info = {
 	.description = "ASIX AX88772 USB 2.0 Ethernet",
 	.bind = ax88772_bind,
 	.unbind = ax88772_unbind,
+<<<<<<< HEAD
 	.status = ax88772_status,
 	.flags = FLAG_ETHER | FLAG_FRAMING_AX,
 	.rx_fixup = ax88772_rx_fixup,
@@ -3763,6 +4045,28 @@ static const struct driver_info ax88772c_info = {
 	.tx_fixup = ax88772b_tx_fixup,
 	.stop = ax88772b_stop,
 	.reset =  ax88772b_reset,
+=======
+	.status = asix_status,
+	.link_reset = ax88772_link_reset,
+	.reset = ax88772_reset,
+	.flags = FLAG_ETHER | FLAG_FRAMING_AX | FLAG_LINK_INTR |
+		 FLAG_MULTI_PACKET,
+	.rx_fixup = asix_rx_fixup_common,
+	.tx_fixup = asix_tx_fixup,
+};
+
+static const struct driver_info ax88178_info = {
+	.description = "ASIX AX88178 USB 2.0 Ethernet",
+	.bind = ax88178_bind,
+	.unbind = ax88772_unbind,
+	.status = asix_status,
+	.link_reset = ax88178_link_reset,
+	.reset = ax88178_reset,
+	.flags = FLAG_ETHER | FLAG_FRAMING_AX | FLAG_LINK_INTR |
+		 FLAG_MULTI_PACKET,
+	.rx_fixup = asix_rx_fixup_common,
+	.tx_fixup = asix_tx_fixup,
+>>>>>>> 5c02dbe... Linux 3.4.83
 };
 
 static const struct usb_device_id products[] = {
