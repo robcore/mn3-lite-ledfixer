@@ -768,7 +768,10 @@ static void reparent_leader(struct task_struct *father, struct task_struct *p,
 				struct list_head *dead)
 {
 	list_move_tail(&p->sibling, &p->real_parent->children);
+<<<<<<< HEAD
 
+=======
+>>>>>>> ee3b262... Linux 3.4.88
 	/*
 	 * If this is a threaded reparent there is no need to
 	 * notify anyone anything has happened.
