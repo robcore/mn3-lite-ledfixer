@@ -638,8 +638,6 @@ static int hci_dev_do_close(struct hci_dev *hdev, u8 is_process)
 
 	BT_DBG("%s %p", hdev->name, hdev);
 
-	cancel_work_sync(&hdev->le_scan);
-
 	cancel_delayed_work(&hdev->power_off);
 
 	hci_req_cancel(hdev, ENODEV);
