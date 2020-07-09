@@ -920,6 +920,10 @@ static void handle_channel(struct wiphy *wiphy,
 		if (initiator == NL80211_REGDOM_SET_BY_COUNTRY_IE &&
 		    wiphy->country_ie_pref & NL80211_COUNTRY_IE_FOLLOW_POWER)
 			chan->max_power = chan->max_reg_power;
+		else if (NL80211_REGDOM_SET_BY_COUNTRY_IE &&
+		    wiphy->flags & WIPHY_FLAG_CUSTOM_REGULATORY &&
+		    wiphy->flags & WIPHY_FLAG_STRICT_REGULATORY)
+			chan->max_power = chan->max_reg_power;
 		else
 			chan->max_power = min(chan->orig_mpwr,
 					      chan->max_reg_power);
