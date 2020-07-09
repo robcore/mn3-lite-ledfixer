@@ -1062,12 +1062,11 @@ clean:
 static void l2cap_conn_ready(struct l2cap_conn *conn)
 {
 	struct l2cap_chan_list *l = &conn->chan_list;
-	struct hci_conn *hcon = conn->hcon;
 	struct sock *sk;
 
 	BT_DBG("conn %p", conn);
 
-	if (!hcon->out && hcon->type == LE_LINK)
+	if (!conn->hcon->out && conn->hcon->type == LE_LINK)
 		l2cap_le_conn_ready(conn);
 
 	read_lock(&l->lock);
@@ -1082,11 +1081,12 @@ static void l2cap_conn_ready(struct l2cap_conn *conn)
 
 				if (pending_sec > sec_level)
 					sec_level = pending_sec;
-			} else if (hcon->type == LE_LINK) {
-				if (smp_conn_security(hcon, chan->sec_level))
+
+				if (smp_conn_security(conn, sec_level))
 					l2cap_chan_ready(sk);
 
 				hci_conn_put(conn->hcon);
+
 			} else if (sk->sk_type != SOCK_SEQPACKET &&
 					sk->sk_type != SOCK_STREAM) {
 				l2cap_sock_clear_timer(sk);
@@ -1098,7 +1098,7 @@ static void l2cap_conn_ready(struct l2cap_conn *conn)
 			bh_unlock_sock(sk);
 		}
 	} else if (conn->hcon->type == LE_LINK) {
-		smp_conn_security(conn->hcon, sec.level);
+		smp_conn_security(conn, BT_SECURITY_HIGH);
 	}
 
 	read_unlock(&l->lock);
