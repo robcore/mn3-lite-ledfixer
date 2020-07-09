@@ -37,6 +37,12 @@
 #include <linux/mii.h>
 #include <linux/usb.h>
 #include <linux/crc32.h>
+<<<<<<< HEAD
+=======
+#include <linux/usb/usbnet.h>
+#include <linux/slab.h>
+#include <linux/if_vlan.h>
+>>>>>>> b6c2c8c6... Linux 3.4.2
 
 #include "axusbnet.c"
 #include "asix.h"
@@ -141,6 +147,7 @@ static void ax88178_status(struct usbnet *dev, struct urb *urb)
 	if (ax178dataptr->EepromData == PHY_MODE_MAC_TO_MAC_GMII)
 		return;
 
+<<<<<<< HEAD
 	event = urb->transfer_buffer;
 	link = event->link & 0x01;
 	if (netif_carrier_ok(dev->net) != link) {
@@ -152,6 +159,17 @@ static void ax88178_status(struct usbnet *dev, struct urb *urb)
 		devwarn(dev, "ax88178 - Link status is: %d", link);
 	}
 }
+=======
+		if ((size > dev->net->mtu + ETH_HLEN + VLAN_HLEN) ||
+		    (size + offset > skb->len)) {
+			netdev_err(dev->net, "asix_rx_fixup() Bad RX Length %d\n",
+				   size);
+			return 0;
+		}
+		ax_skb = netdev_alloc_skb_ip_align(dev->net, size);
+		if (!ax_skb)
+			return 0;
+>>>>>>> b6c2c8c6... Linux 3.4.2
 
 static void ax8817x_status(struct usbnet *dev, struct urb *urb)
 {
@@ -3837,9 +3855,19 @@ static const struct usb_device_id products[] = {
 	USB_DEVICE(0x0b95, 0x772A),
 	.driver_info = (unsigned long) &ax88772a_info,
 }, {
+<<<<<<< HEAD
 	/* ASIX AX88772A 10/100 */
 	USB_DEVICE(0x0db0, 0xA877),
 	.driver_info = (unsigned long) &ax88772a_info,
+=======
+       // DLink DUB-E100 H/W Ver C1
+       USB_DEVICE (0x2001, 0x1a02),
+       .driver_info = (unsigned long) &ax88772_info,
+}, {
+	// Linksys USB1000
+	USB_DEVICE (0x1737, 0x0039),
+	.driver_info = (unsigned long) &ax88178_info,
+>>>>>>> 30257f9... Linux 3.4.11 - 3.4.20
 }, {
 	/* ASIX AX88772A 10/100 */
 	USB_DEVICE(0x0421, 0x772A),

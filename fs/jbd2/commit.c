@@ -329,7 +329,7 @@ void jbd2_journal_commit_transaction(journal_t *journal)
 	int space_left = 0;
 	int first_tag = 0;
 	int tag_flag;
-	int i;
+	int i, to_free = 0;
 	int tag_bytes = journal_tag_bytes(journal);
 	struct buffer_head *cbh = NULL; /* For transactional checksums */
 	__u32 crc32_sum = ~0;
@@ -1044,6 +1044,10 @@ restart_loop:
 				commit_transaction;
 	}
 	spin_unlock(&journal->j_list_lock);
+<<<<<<< HEAD
+=======
+
+>>>>>>> 351e694... Linux 3.4.41 - 3.4.50
 	/* Drop all spin_locks because commit_callback may be block.
 	 * __journal_remove_checkpoint() can not destroy transaction
 	 * under us because it is not marked as T_FINISHED yet */
