@@ -472,7 +472,7 @@ static void close_files(struct files_struct * files)
 	rcu_read_unlock();
 	for (;;) {
 		unsigned long set;
-		i = j * BITS_PER_LONG;
+		i = j * __NFDBITS;
 		if (i >= fdt->max_fds)
 			break;
 		set = fdt->open_fds[j++];
@@ -647,7 +647,6 @@ static void exit_mm(struct task_struct * tsk)
 	mm_release(tsk, mm);
 	if (!mm)
 		return;
-	sync_mm_rss(mm);
 	/*
 	 * Serialize with any possible pending coredump.
 	 * We must hold mmap_sem around checking core_state
@@ -768,10 +767,7 @@ static void reparent_leader(struct task_struct *father, struct task_struct *p,
 				struct list_head *dead)
 {
 	list_move_tail(&p->sibling, &p->real_parent->children);
-<<<<<<< HEAD
 
-=======
->>>>>>> ee3b262... Linux 3.4.88
 	/*
 	 * If this is a threaded reparent there is no need to
 	 * notify anyone anything has happened.

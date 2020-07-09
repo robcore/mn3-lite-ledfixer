@@ -1683,21 +1683,14 @@ static void sdhci_request(struct mmc_host *mmc, struct mmc_request *mrq)
 		    (mrq->cmd->opcode != MMC_SEND_TUNING_BLOCK_HS200) &&
 		    (host->flags & SDHCI_NEEDS_RETUNING) &&
 		    !(present_state & (SDHCI_DOING_WRITE | SDHCI_DOING_READ))) {
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 30257f9... Linux 3.4.11 - 3.4.20
 			if (mmc->card) {
 				/* eMMC uses cmd21 but sd and sdio use cmd19 */
 				tuning_opcode =
 					mmc->card->type == MMC_TYPE_MMC ?
 					MMC_SEND_TUNING_BLOCK_HS200 :
 					MMC_SEND_TUNING_BLOCK;
-<<<<<<< HEAD
 				host->mrq = NULL;
 				host->flags &= ~SDHCI_NEEDS_RETUNING;
-=======
->>>>>>> 30257f9... Linux 3.4.11 - 3.4.20
 				spin_unlock_irqrestore(&host->lock, flags);
 				sdhci_execute_tuning(mmc, tuning_opcode);
 				spin_lock_irqsave(&host->lock, flags);
@@ -1705,21 +1698,6 @@ static void sdhci_request(struct mmc_host *mmc, struct mmc_request *mrq)
 				/* Restore original mmc_request structure */
 				host->mrq = mrq;
 			}
-<<<<<<< HEAD
-=======
-			/* eMMC uses cmd21 while sd and sdio use cmd19 */
-			tuning_opcode = mmc->card->type == MMC_TYPE_MMC ?
-				MMC_SEND_TUNING_BLOCK_HS200 :
-				MMC_SEND_TUNING_BLOCK;
-			spin_unlock_irqrestore(&host->lock, flags);
-			sdhci_execute_tuning(mmc, tuning_opcode);
-			spin_lock_irqsave(&host->lock, flags);
-
-			/* Restore original mmc_request structure */
-			host->mrq = mrq;
->>>>>>> 5f95f18... Linux 3.4.6 - 3.4.10
-=======
->>>>>>> 30257f9... Linux 3.4.11 - 3.4.20
 		}
 
 		if (mrq->sbc && !(host->flags & SDHCI_AUTO_CMD23))
