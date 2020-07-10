@@ -23,6 +23,8 @@
 #ifndef __SMP_H
 #define __SMP_H
 
+#include <net/bluetooth/l2cap.h>
+
 struct smp_command_hdr {
 	__u8	code;
 } __packed;
