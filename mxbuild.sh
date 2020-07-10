@@ -85,6 +85,7 @@ cleanupfail() {
 }
 
 takeouttrash() {
+
 	rm $RDIR/.starttime &> /dev/null
 	rm $RDIR/.endtime &> /dev/null
 
@@ -96,14 +97,19 @@ takeouttrash() {
 
 }
 
-clean_build() {
+getmxrecent() {
 
-	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
 	if [ -f "$BUILDIR/.config" ]
 	then
 		[ -f "$MXRECENT" ] && rm "$MXRECENT"
 		cp "$BUILDIR/.config" "$MXRECENT"
 	fi
+}
+
+clean_build() {
+
+	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
+	getmxrecent
 	if [ "$1" = "standalone" ]
 	then
 		echo -ne "Cleaning build         \r"; \
@@ -161,11 +167,13 @@ _quote() {
 # This function looks for a string, and inserts a specified string after it inside a given file
 # $1: the line to locate, $2: the line to insert, $3: Config file where to insert
 pc_insert() {
+
 	local PATTERN;
 	local CONTENT;
 	PATTERN=$(_quote "$1")
 	CONTENT=$(_quote "$2")
 	sed -i "/$PATTERN/a$CONTENT" $3
+
 }
 
 # This function looks for a string, and replace it with a different string inside a given file
@@ -370,13 +378,6 @@ build_single_config() {
 
 }
 
-build_single_driver() {
-
-	echo "Building Single Driver..."
-	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -C "$RDIR" -S -s -j16 O="$BUILDIR/" "$1"
-
-}
-
 build_kernel_config() {
 
 	echo "Creating kernel config..."
@@ -384,6 +385,14 @@ build_kernel_config() {
 	mkdir -p "$BUILDIR" || warnandfail "Failed to make $BUILDIR directory!"
 	cp "$MXCONFIG" "$BUILDIR/.config" || warnandfail "Config Copy Error!"
 	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -C "$RDIR" O="$BUILDIR" -j16 oldconfig || warnandfail "make oldconfig Failed!"
+	getmxrecent
+
+}
+
+build_single_driver() {
+
+	echo "Building Single Driver..."
+	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -C "$RDIR" -S -s -j16 O="$BUILDIR/" "$1"
 
 }
 
@@ -567,27 +576,27 @@ EOF
 
 }
 
-build_ramdisk_continue() {
+package_ramdisk_and_zip() {
 
 	build_ramdisk && build_boot_img && create_zip
 
 }
 
-build_kernel_continue() {
+build_kernel_and_package() {
 
-	build_kernel && build_ramdisk_continue
+	build_kernel && package_ramdisk_and_zip
 
 }
 
 build_all() {
 
-	clean_build && build_kernel_config && build_kernel_continue && clean_build
+	clean_build && build_kernel_config && build_kernel_and_package && clean_build
 
 }
 
 build_debug() {
 
-	clean_build && build_kernel_config && build_kernel_continue
+	clean_build && build_kernel_config && build_kernel_and_package
 
 }
 
@@ -663,7 +672,7 @@ do
 
 	     -k|--kernel)
 			handle_existing
-	    	build_kernel_continue
+	    	build_kernel_and_package
 	    	break
 	    	;;
 
@@ -675,7 +684,7 @@ do
 
 	     -rd|--ramdisk)
 			handle_existing
-	     	build_ramdisk_continue
+	     	package_ramdisk_and_zip
 	    	break
 	    	;;
 
