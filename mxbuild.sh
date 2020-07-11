@@ -113,8 +113,11 @@ getmxrecent() {
 		mv "$MXNEWCFG" "$MXRECENT"
 		if [ "$NEEDCOMMIT" = "true" ]
 		then
+			rm "$MXCONFIG"
+			cp "$MXRECENT" "$MXCONFIG"
 			git add "$MXRECENT"
-			git commit -a -m 'mxrecent update'
+			git add "$MXCONFIG"
+			git commit -a -m 'mxconfig updated from build'
 		fi
 	fi
 }
