@@ -1833,6 +1833,7 @@ do_it_again:
 				retval = -ERESTARTSYS;
 				break;
 			}
+			/* FIXME: does n_tty_set_room need locking ? */
 			n_tty_set_room(tty);
 			timeout = schedule_timeout(timeout);
 			BUG_ON(!tty->read_buf);
@@ -2007,7 +2008,6 @@ static ssize_t n_tty_write(struct tty_struct *tty, struct file *file,
 			if (tty->ops->flush_chars)
 				tty->ops->flush_chars(tty);
 		} else {
-
 			while (nr > 0) {
 				mutex_lock(&tty->output_lock);
 				c = tty->ops->write(tty, b, nr);
