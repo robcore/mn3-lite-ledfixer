@@ -1209,7 +1209,6 @@ asmlinkage int vprintk(const char *fmt, va_list args)
 	printed_len += vscnprintf(printk_buf + printed_len,
 				  sizeof(printk_buf) - printed_len, fmt, args);
 
-
 	p = printk_buf;
 
 	/* Read log level and handle special printk prefix */
@@ -1526,7 +1525,6 @@ static int __cpuinit console_cpu_notify(struct notifier_block *self,
 		console_unlock();
 		break;
 	case CPU_ONLINE:
-	case CPU_DYING:
 		/* invoked with preemption disabled, so defer */
 		if (!console_trylock())
 			schedule_work(&console_cpu_notify_work);
