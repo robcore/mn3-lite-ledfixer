@@ -47,7 +47,8 @@ static const char *handler[]= {
 	"prefetch abort",
 	"data abort",
 	"address exception",
-	"interrupt"
+	"interrupt",
+	"undefined instruction",
 };
 
 void *vectors_page;
