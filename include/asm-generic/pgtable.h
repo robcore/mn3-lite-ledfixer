@@ -6,6 +6,7 @@
 
 #include <linux/mm_types.h>
 #include <linux/bug.h>
+#include <linux/slab.h>
 
 /*
  * On almost all architectures and configurations, 0 can be used as the
