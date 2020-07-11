@@ -16,6 +16,7 @@ RAMDISKFOLDER="$RDIR/mxramdisk"
 ZIPFOLDER="$RDIR/mxzip"
 MXCONFIG="$RDIR/arch/arm/configs/mxconfig"
 MXRECENT="$MXCONFIG.recent"
+MXNEWCFG="$MXCONFIG.new"
 QUICKMONTHDAY="$(date | awk '{print $2$3}')"
 QUICKHOUR="$(date +%l | cut -d " " -f2)"
 QUICKMIN="$(date +%S)"
@@ -99,10 +100,22 @@ takeouttrash() {
 
 getmxrecent() {
 
+	local NEEDCOMMIT;
 	if [ -f "$BUILDIR/.config" ]
 	then
+		cp "$BUILDIR/.config" "$MXNEWCFG"
+		diff "$MXRECENT" "$MXNEWCFG"
+		if [ "$?" -eq "0" ]
+		then
+			NEEDCOMMIT="true"
+		fi
 		[ -f "$MXRECENT" ] && rm "$MXRECENT"
-		cp "$BUILDIR/.config" "$MXRECENT"
+		mv "$MXNEWCFG" "$MXRECENT"
+		if [ "$NEEDCOMMIT" = "true" ]
+		then
+			git add "$MXRECENT"
+			git commit -a -m 'mxrecent update'
+		fi
 	fi
 }
 
