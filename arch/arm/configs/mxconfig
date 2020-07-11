@@ -1,6 +1,6 @@
 #
 # Automatically generated file; DO NOT EDIT.
-# Linux/arm 3.4.40 Kernel Configuration
+# Linux/arm 3.4.49 Kernel Configuration
 #
 CONFIG_ARM=y
 CONFIG_ARM_HAS_SG_CHAIN=y
@@ -4357,7 +4357,6 @@ CONFIG_SEC_LOG_LAST_KMSG=y
 CONFIG_SEC_PM=y
 # CONFIG_SEC_PM_DEBUG is not set
 # CONFIG_PID_IN_CONTEXTIDR is not set
-
 # CONFIG_RESTART_REASON_DDR is not set
 
 #
