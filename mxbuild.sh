@@ -105,7 +105,7 @@ getmxrecent() {
 	then
 		cp "$BUILDIR/.config" "$MXNEWCFG"
 		diff "$MXRECENT" "$MXNEWCFG"
-		if [ "$?" -eq "0" ]
+		if [ "$?" -eq "1" ]
 		then
 			NEEDCOMMIT="true"
 		fi
