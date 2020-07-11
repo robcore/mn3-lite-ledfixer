@@ -1816,6 +1816,7 @@ free_interfaces:
 	}
 	kfree(new_interfaces);
 
+	usb_notify_config_device(dev);
 	ret = usb_control_msg(dev, usb_sndctrlpipe(dev, 0),
 			      USB_REQ_SET_CONFIGURATION, 0, configuration, 0,
 			      NULL, 0, USB_CTRL_SET_TIMEOUT);
@@ -1834,7 +1835,6 @@ free_interfaces:
 	}
 
 	dev->actconfig = cp;
-	usb_notify_config_device(dev);
 	mutex_unlock(hcd->bandwidth_mutex);
 
 	if (!cp) {
