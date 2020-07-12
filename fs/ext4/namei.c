@@ -2648,7 +2648,6 @@ static int ext4_rename(struct inode *old_dir, struct dentry *old_dentry,
 		if (IS_ERR(old_bh2)) {
 			retval = PTR_ERR(old_bh2);
 		} else if (old_bh2) {
-		if (old_bh2) {
 			retval = ext4_delete_entry(handle, old_dir,
 						   old_de2, old_bh2);
 			brelse(old_bh2);
