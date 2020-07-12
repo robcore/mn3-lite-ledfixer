@@ -1,6 +1,6 @@
 #
 # Automatically generated file; DO NOT EDIT.
-# Linux/arm 3.4.94 Kernel Configuration
+# Linux/arm 3.4.105 Kernel Configuration
 #
 CONFIG_ARM=y
 CONFIG_ARM_HAS_SG_CHAIN=y
@@ -1460,7 +1460,7 @@ CONFIG_WIRELESS=y
 CONFIG_WEXT_CORE=y
 CONFIG_WEXT_PROC=y
 CONFIG_CFG80211=y
-CONFIG_NL80211_TESTMODE=y
+# CONFIG_NL80211_TESTMODE is not set
 # CONFIG_CFG80211_DEVELOPER_WARNINGS is not set
 # CONFIG_CFG80211_REG_DEBUG is not set
 CONFIG_CFG80211_DEFAULT_PS=y
@@ -2253,11 +2253,7 @@ CONFIG_PPS=y
 #
 # PTP clock support
 #
-CONFIG_PTP_1588_CLOCK=y
-
-#
-# Enable PHYLIB and NETWORK_PHY_TIMESTAMPING to see the additional clocks.
-#
+# CONFIG_PTP_1588_CLOCK is not set
 CONFIG_ARCH_REQUIRE_GPIOLIB=y
 CONFIG_GPIOLIB=y
 # CONFIG_DEBUG_GPIO is not set
