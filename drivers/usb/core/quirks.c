@@ -152,9 +152,9 @@ static const struct usb_device_id usb_quirk_list[] = {
 	/* SKYMEDI USB_DRIVE */
 	{ USB_DEVICE(0x1516, 0x8628), .driver_info = USB_QUIRK_RESET_RESUME },
 
-	/* Razer - Razer Blade Keyboard */
-	{ USB_DEVICE(0x1532, 0x0116), .driver_info =
-			USB_QUIRK_LINEAR_UFRAME_INTR_BINTERVAL },
+//	/* Razer - Razer Blade Keyboard */
+//	{ USB_DEVICE(0x1532, 0x0116), .driver_info =
+//			USB_QUIRK_LINEAR_UFRAME_INTR_BINTERVAL },
 
 	/* BUILDWIN Photo Frame */
 	{ USB_DEVICE(0x1908, 0x1315), .driver_info =
@@ -179,8 +179,8 @@ static const struct usb_device_id usb_interface_quirk_list[] = {
 			USB_QUIRK_IGNORE_REMOTE_WAKEUP },
 
 	/* Protocol and OTG Electrical Test Device */
-	{ USB_DEVICE(0x1a0a, 0x0200), .driver_info =
-			USB_QUIRK_LINEAR_UFRAME_INTR_BINTERVAL },
+//	{ USB_DEVICE(0x1a0a, 0x0200), .driver_info =
+//			USB_QUIRK_LINEAR_UFRAME_INTR_BINTERVAL },
 
 	{ }  /* terminating entry must be last */
 };
