@@ -115,7 +115,7 @@ struct percpu_counter vm_committed_as ____cacheline_aligned_in_smp;
  */
 int __vm_enough_memory(struct mm_struct *mm, long pages, int cap_sys_admin)
 {
-	long free, allowed;
+	unsigned long free, allowed;
 
 	vm_acct_memory(pages);
 
@@ -570,12 +570,9 @@ again:			remove_next = 1 + (end > next->vm_end);
 		 * shrinking vma had, to cover any anon pages imported.
 		 */
 		if (exporter && exporter->anon_vma && !importer->anon_vma) {
-			int error;
-
+			if (anon_vma_clone(importer, exporter))
+				return -ENOMEM;
 			importer->anon_vma = exporter->anon_vma;
-			error = anon_vma_clone(importer, exporter);
-			if (error)
-				return error;
 		}
 	}
 
@@ -1782,17 +1779,14 @@ static int acct_stack_growth(struct vm_area_struct *vma, unsigned long size, uns
 {
 	struct mm_struct *mm = vma->vm_mm;
 	struct rlimit *rlim = current->signal->rlim;
-	unsigned long new_start, actual_size;
+	unsigned long new_start;
 
 	/* address space limit tests */
 	if (!may_expand_vm(mm, grow))
 		return -ENOMEM;
 
 	/* Stack limit test */
-	actual_size = size;
-	if (size && (vma->vm_flags & (VM_GROWSUP | VM_GROWSDOWN)))
-		actual_size -= PAGE_SIZE;
-	if (actual_size > ACCESS_ONCE(rlim[RLIMIT_STACK].rlim_cur))
+	if (size > ACCESS_ONCE(rlim[RLIMIT_STACK].rlim_cur))
 		return -ENOMEM;
 
 	/* mlock limit tests */
