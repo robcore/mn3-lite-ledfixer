@@ -15,7 +15,6 @@ LASTZIP="$(cat $LASTZIPFILE)"
 RAMDISKFOLDER="$RDIR/mxramdisk"
 ZIPFOLDER="$RDIR/mxzip"
 MXCONFIG="$RDIR/arch/arm/configs/mxconfig"
-MXRECENT="$MXCONFIG.recent"
 MXNEWCFG="$MXCONFIG.new"
 QUICKMONTHDAY="$(date | awk '{print $2$3}')"
 QUICKHOUR="$(date +%l | cut -d " " -f2)"
@@ -104,18 +103,15 @@ getmxrecent() {
 	if [ -f "$BUILDIR/.config" ]
 	then
 		cp "$BUILDIR/.config" "$MXNEWCFG"
-		diff "$MXRECENT" "$MXNEWCFG"
+		diff "$MXCONFIG" "$MXNEWCFG"
 		if [ "$?" -eq "1" ]
 		then
 			NEEDCOMMIT="true"
 		fi
-		[ -f "$MXRECENT" ] && rm "$MXRECENT"
-		mv "$MXNEWCFG" "$MXRECENT"
+		[ -f "$MXCONFIG" ] && rm "$MXCONFIG"
+		mv "$MXNEWCFG" "$MXCONFIG"
 		if [ "$NEEDCOMMIT" = "true" ]
 		then
-			rm "$MXCONFIG"
-			cp "$MXRECENT" "$MXCONFIG"
-			git add "$MXRECENT"
 			git add "$MXCONFIG"
 			git commit -a -m 'mxconfig updated from build'
 		fi
