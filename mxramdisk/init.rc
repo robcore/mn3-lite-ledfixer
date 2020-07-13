@@ -1346,7 +1346,7 @@ service bugreport /system/bin/dumpstate -d -p -B \
 service immvibed /system/bin/immvibed
     class core
     user vibe
-    group vibe root
+    group vibe
     oneshot
 
 service pre-recovery /system/bin/uncrypt
