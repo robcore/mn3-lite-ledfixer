@@ -543,7 +543,7 @@ create_zip() {
 			if [ "$ORSINSTALL" = "y" ]
 			then
 				echo "Installing $ADBPUSHLOCATION/$MX_KERNEL_VERSION.zip via open recovery script"
-				adb shell twrp install $ADBPUSHLOCATION/$MX_KERNEL_VERSION.zip
+				adb shell twrp install "$ADBPUSHLOCATION/$MX_KERNEL_VERSION.zip"
 			fi
 			adb kill-server || echo "Failed to kill ADB server!"
 		else
