@@ -1,6 +1,6 @@
 VERSION = 3
 PATCHLEVEL = 4
-SUBLEVEL = 113
+SUBLEVEL = 108
 EXTRAVERSION =
 NAME = Saber-toothed Squirrel
 
@@ -245,8 +245,8 @@ CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
 
 HOSTCC       = gcc
 HOSTCXX      = g++
-HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -O2
-HOSTCXXFLAGS = -O2
+HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes
+HOSTCXXFLAGS = 
 
 # Decide whether to build built-in, modular, or both.
 # Normally, just do built-in.
@@ -387,7 +387,7 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fno-delete-null-pointer-checks -Wno-pointer-compare \
 		   -Wno-switch-unreachable -Wno-stringop-overflow
 KBUILD_AFLAGS_KERNEL :=
-KBUILD_CFLAGS_KERNEL := $(KBUILD_CFLAGS)
+KBUILD_CFLAGS_KERNEL :=
 KBUILD_AFLAGS   := -D__ASSEMBLY__
 KBUILD_AFLAGS_MODULE  := -DMODULE
 KBUILD_CFLAGS_MODULE  := -DMODULE
