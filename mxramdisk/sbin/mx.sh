@@ -306,25 +306,25 @@ chmod 666 /sys/block/mmcblk1/queue/scheduler
 #echo "conservative" > /sys/devices/system/cpu/cpu1/cpufreq/scaling_governor
 #echo "conservative" > /sys/devices/system/cpu/cpu2/cpufreq/scaling_governor
 #echo "conservative" > /sys/devices/system/cpu/cpu3/cpufreq/scaling_governor
-echo 0 > /sys/module/cpu_boost/parameters/input_boost_ms
-echo 0 > /sys/module/cpu_boost/parameters/input_boost_freq
-echo 0 > /sys/module/cpu_boost/parameters/sync_threshold
-echo 0 > /sys/module/cpu_boost/parameters/boost_ms
+#echo 0 > /sys/module/cpu_boost/parameters/input_boost_ms
+#echo 0 > /sys/module/cpu_boost/parameters/input_boost_freq
+#echo 0 > /sys/module/cpu_boost/parameters/sync_threshold
+#echo 0 > /sys/module/cpu_boost/parameters/boost_ms
 #echo 0 > /sys/class/power_supply/battery/wc_enable
 #echo 16384 > /proc/sys/net/netfilter/nf_conntrack_expect_max
 for MYBLOCK in mmcblk0 mmcblk0rpmb mmcblk1
 do
 echo 0 > "/sys/block/$MYBLOCK/queue/add_random"
 echo 0 > "/sys/block/$MYBLOCK/queue/iostats"
-echo 0 > "/sys/block/$MYBLOCK/queue/iosched/slice_idle"
 done
+#echo 0 > "/sys/block/$MYBLOCK/queue/iosched/slice_idle"
 echo 1 > /proc/sys/vm/panic_on_oom
-echo 0 > /proc/sys/kernel/randomize_va_space
-echo 0 > /proc/sys/kernel/sched_tunable_scaling
+#echo 0 > /proc/sys/kernel/randomize_va_space
+#echo 0 > /proc/sys/kernel/sched_tunable_scaling
 echo 1 > /proc/sys/kernel/ftrace_dump_on_oops
-echo 0 > /proc/sys/net/bridge/bridge-nf-call-arptables
-echo 0 > /proc/sys/net/bridge/bridge-nf-call-ip6tables
-echo 0 > /proc/sys/net/bridge/bridge-nf-call-iptables
+#echo 0 > /proc/sys/net/bridge/bridge-nf-call-arptables
+#echo 0 > /proc/sys/net/bridge/bridge-nf-call-ip6tables
+#echo 0 > /proc/sys/net/bridge/bridge-nf-call-iptables
 #echo 6 > /sys/kernel/sound_control_3/gpl_headphone_gain
 #echo 6 > /sys/kernel/sound_control_3/gpl_speaker_gain
 echo 0 > /sys/kernel/debug/tracing/tracing_on
@@ -375,8 +375,8 @@ chmod 400 /sys/devices/virtual/graphics/fb0/csc_cfg
 #echo '7' > /sys/kernel/sound_control/headphone_gain
 #echo '1' > /sys/kernel/sound_control/high_perf_mode
 #echo '1' > /sys/kernel/sound_control/uhqa_mode
-echo 'row' > /sys/block/mmcblk0/queue/scheduler
-echo 'row' > /sys/block/mmcblk1/queue/scheduler
+echo 'deadline' > /sys/block/mmcblk0/queue/scheduler
+echo 'deadline' > /sys/block/mmcblk1/queue/scheduler
 echo '0' > /sys/devices/virtual/lcd/panel/temperature
 echo '1' > /sys/kernel/mdnie_control/bypass
 echo 'y' > /sys/module/mdss_hdmi_tx/parameters/hdcp
