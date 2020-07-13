@@ -1211,7 +1211,7 @@ service diag_uart_log /system/bin/diag_uart_log
 service surfaceflinger /system/bin/surfaceflinger
     class core
     user system
-    group graphics drmrpc root
+    group graphics drmrpc
     onrestart restart zygote
 
 service SIDESYNC_service /system/bin/ss_conn_daemon
@@ -1233,7 +1233,7 @@ service drm /system/bin/drmserver
 service media /system/bin/mediaserver
     class main
     user media
-    group system audio camera inet net_bt net_bt_admin net_raw net_bw_acct drmrpc sdcard_r shell mediadrm qcom_diag media_rw radio lgt_gid root
+    group system audio camera inet net_bt net_bt_admin net_raw net_bw_acct drmrpc sdcard_r shell mediadrm qcom_diag media_rw radio lgt_gid
     ioprio rt 4
 
 service apaservice /system/bin/apaservice
@@ -1270,7 +1270,7 @@ service powersnd /system/bin/samsungpowersoundplay
 service bootanim /system/bin/bootanimation
     class main
     user graphics
-    group graphics system root
+    group graphics system
     disabled
     oneshot
 
@@ -1447,7 +1447,7 @@ service mxinit /system/bin/sh /sbin/mx.sh
 # Call init.d script
 service initscripts /system/xbin/busybox run-parts /system/etc/init.d
 	user root
-    group shell
+    group root shell
     oneshot
 
 on property:init.svc.bootanim=stopped
