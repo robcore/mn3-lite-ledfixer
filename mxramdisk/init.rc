@@ -10,7 +10,6 @@ import /init.${ro.hardware}.rc
 import /init.${ro.zygote}.rc
 import /init.trace.rc
 import /init.carrier.rc
-import /init.container.rc
 
 on early-init
     # Set the security context for the init process.
@@ -430,7 +429,7 @@ on post-fs-data
     chmod 0775 /system/lib/drm
 
     restorecon -R /efs
-    restorecon -R /carrier
+#    restorecon -R /carrier
 # ]
 
 # DRK permission
