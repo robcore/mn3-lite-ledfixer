@@ -676,6 +676,3 @@ asmlinkage int stlog(const char *fmt, ...)
 	return r;
 }
 EXPORT_SYMBOL(stlog);
-
-
-
