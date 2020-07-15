@@ -407,7 +407,7 @@ static int scfs_create(struct inode *parent_inode, struct dentry *scfs_dentry,
 	int ret;
 
 	scfs_inode = scfs_do_create(parent_inode, scfs_dentry, mode);
-	
+
 	if (IS_ERR(scfs_inode)) {
 		SCFS_PRINT_ERROR("file %s error in do_create\n",
 			scfs_dentry->d_name.name);
@@ -466,7 +466,7 @@ int scfs_footer_read(struct inode *inode, struct file *lower_file)
 		lower_dentry->d_name.name, cf.magic, cf.cluster_size,
 		cf.comp_type, cf.footer_size, cf.original_file_size,
 		lower_file_size, CF_SIZE, offset);
-		
+
 		return SCFS_MISSING_META;
 	}
 	sii->cinfo_array_size = cf.footer_size - CF_SIZE;
@@ -528,7 +528,7 @@ static int scfs_lookup_interpose(struct dentry *dentry, struct dentry *lower_den
 	i_size_write(inode, i_size_read(lower_inode));
 
 	if (S_ISREG(inode->i_mode)) {
-		ret = scfs_initialize_lower_file(dentry, &lower_file, O_RDONLY); 
+		ret = scfs_initialize_lower_file(dentry, &lower_file, O_RDONLY);
 		if (ret) {
 			SCFS_PRINT_ERROR("err in get_lower_file %s\n",
 				dentry->d_name.name);
@@ -564,7 +564,7 @@ static int scfs_lookup_interpose(struct dentry *dentry, struct dentry *lower_den
 
 /*
  * scfs_lookup
- *  
+ *
  */
 static struct dentry * scfs_lookup(struct inode *dir, struct dentry *dentry,
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(3,10,0)
@@ -838,7 +838,7 @@ static int scfs_readlink(struct dentry *dentry, char __user *buf, int bufsiz)
 
 	lower_dentry = scfs_lower_dentry(dentry);
 	kbuf = kmalloc(kbufsiz, GFP_KERNEL);
-	if (!kbuf) 
+	if (!kbuf)
 		return -ENOMEM;
 
 	profile_add_kmalloced(PATH_MAX, SCFS_S(dentry->d_sb));

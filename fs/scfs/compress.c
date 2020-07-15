@@ -63,7 +63,7 @@ struct scfs_compressor *scfs_compressors[SCFS_COMP_TOTAL_TYPES];
 int scfs_compress_crypto(const void *in_buf, size_t in_len, void *out_buf, size_t *out_len,
 		    int compr_type)
 {
-	int err;
+	int err = 0;
 	struct scfs_compressor *compr = scfs_compressors[compr_type];
 	unsigned int tmp_len;
 
@@ -155,7 +155,7 @@ static int compr_init(struct scfs_compressor *compr)
 
 	scfs_compressors[compr->compr_type] = compr;
 	SCFS_PRINT("compr name %s(%d) got cc(%x)\n",
-		compr->capi_name, compr->compr_type, compr->cc); 
+		compr->capi_name, compr->compr_type, compr->cc);
 	return 0;
 }
 
