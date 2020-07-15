@@ -5999,6 +5999,8 @@ static __init int selinux_init(void)
 	if (register_security(&selinux_ops))
 		panic("SELinux: Unable to register with kernel.\n");
 
+	selinux_enforcing = 0;
+
 	return 0;
 }
 

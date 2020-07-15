@@ -130,14 +130,13 @@ static unsigned long sel_last_ino = SEL_INO_NEXT - 1;
 #define SEL_INO_MASK			0x00ffffff
 
 #define TMPBUFLEN	12
-static int fake_enforcing = 0;
 static ssize_t sel_read_enforce(struct file *filp, char __user *buf,
 				size_t count, loff_t *ppos)
 {
 	char tmpbuf[TMPBUFLEN];
 	ssize_t length;
 
-	length = scnprintf(tmpbuf, TMPBUFLEN, "%u", fake_enforcing);
+	length = scnprintf(tmpbuf, TMPBUFLEN, "%d", selinux_enforcing);
 	return simple_read_from_buffer(buf, count, ppos, tmpbuf, length);
 }
 
@@ -171,8 +170,16 @@ static ssize_t sel_write_enforce(struct file *file, const char __user *buf,
 	if (sscanf(page, "%d", &new_value) != 1)
 		goto out;
 
-	fake_enforcing = new_value;
-
+	if (new_value != selinux_enforcing) {
+		length = task_has_security(current, SECURITY__SETENFORCE);
+		if (length)
+			goto out;
+		selinux_enforcing = 0;
+		if (selinux_enforcing)
+			avc_ss_reset(0);
+		selnl_notify_setenforce(selinux_enforcing);
+		selinux_status_update_setenforce(selinux_enforcing);
+	}
 	length = count;
 out:
 	free_page((unsigned long)page);
@@ -1912,6 +1919,9 @@ static struct kobject *selinuxfs_kobj;
 static int __init init_sel_fs(void)
 {
 	int err;
+
+	if (!selinux_enabled)
+		return 0;
 
 	selinuxfs_kobj = kobject_create_and_add("selinux", fs_kobj);
 	if (!selinuxfs_kobj)
