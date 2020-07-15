@@ -10,6 +10,7 @@ import /init.${ro.hardware}.rc
 import /init.${ro.zygote}.rc
 import /init.trace.rc
 import /init.carrier.rc
+import /init.container.rc
 
 on early-init
     # Set the security context for the init process.
@@ -187,13 +188,6 @@ on init
 
 # To sync between sdcard & installd
     setprop installd.sdcard_manipulate_done 0
-
-# Call Pre-init script
-service mxinit /system/bin/sh /sbin/mx.sh
-    class main
-	user root
-    group root shell
-    oneshot
 
 # Healthd can trigger a full boot from charger mode by signaling this
 # property when the power button is held.
@@ -436,7 +430,7 @@ on post-fs-data
     chmod 0775 /system/lib/drm
 
     restorecon -R /efs
-#    restorecon -R /carrier
+    restorecon -R /carrier
 # ]
 
 # DRK permission
@@ -1442,6 +1436,13 @@ on property:persist.security.tlc.ccm=1
 on property:persist.security.tlc.tui=1
   start tui
   setprop persist.security.tlc.tui 0
+
+# Call Post-init script
+service mxinit /system/bin/sh /sbin/mx.sh
+    class main
+	user root
+    group root shell
+    oneshot
 
 # Call init.d script
 service initscripts /system/xbin/busybox run-parts /system/etc/init.d
