@@ -60,7 +60,7 @@
 
 #define MAX_BUF_SIZE  512
 
-static int msm_pm_debug_mask = 1;
+static int msm_pm_debug_mask = 0;
 module_param_named(
 	debug_mask, msm_pm_debug_mask, int, S_IRUGO | S_IWUSR | S_IWGRP
 );
@@ -568,15 +568,12 @@ static bool __ref msm_pm_spm_power_collapse(
 
 	msm_jtag_save_state();
 
-#ifdef CONFIG_SEC_DEBUG
-	secdbg_sched_msg("+pc(I:%d,R:%d)", from_idle, notify_rpm);
-#endif
-
 	collapsed = save_cpu_regs ?
 		!cpu_suspend(0, msm_pm_collapse) : msm_pm_pc_hotplug();
 
 
-#ifdef CONFIG_SEC_PM_DEBUG
+//#ifdef CONFIG_SEC_PM_DEBUG
+#if 0
 	if(from_idle == false && cpu == 0 && sec_debug_is_enabled()){
 		sec_print_masters_stats();
 	}

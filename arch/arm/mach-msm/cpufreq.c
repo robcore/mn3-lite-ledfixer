@@ -204,7 +204,8 @@ static int set_cpu_freq(struct cpufreq_policy *policy, unsigned int new_freq,
 	trace_cpu_frequency_switch_start(freqs.old, freqs.new, policy->cpu);
 	if (is_clk) {
 		unsigned long rate = new_freq * 1000;
-#ifdef CONFIG_SEC_PM
+//#ifdef CONFIG_SEC_PM
+#if 0
 		extern int jig_boot_clk_limit;
 
 		if (jig_boot_clk_limit == 1) { //limit 1.5Ghz to block whitescreen during 50 secs on JIG
