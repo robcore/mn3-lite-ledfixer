@@ -34,7 +34,8 @@ on early-init
 
     # create mountpoints
     mkdir /mnt 0775 root system
-
+	chmod 755 /mnt
+	chown root system /mnt
 on init
     sysclktz 0
 
@@ -50,6 +51,8 @@ on init
     # Vibetonz
     export VIBE_PIPE_PATH /dev/pipes
     mkdir /dev/pipes 0771 vibe vibe
+	chmod 771 /dev/pipes
+	chown vibe vibe /dev/pipes
     restorecon /dev/pipes
 
     # Backward compatibility
@@ -80,44 +83,70 @@ on init
 
     mkdir /system
     mkdir /data 0771 system system
+	chmod 771 /data
+	chown system system /data
     mkdir /cache 0770 system cache
+	chmod 770 /cache
+	chown system cache /cache
     mkdir /config 0500 root root
+	chmod 500 /config
+	chown root root /config
     mkdir /efs 0771 system radio
+	chmod 771 /efs
+	chown system radio /efs
 
     # See storage config details at http://source.android.com/tech/storage/
 # [ S Professional Audio
     mkdir /mnt/shell 0750 shell shell
+	chmod 750 /mnt/shell
+	chown shell shell /mnt/shell
 # ]
     mkdir /mnt/media_rw 0700 media_rw media_rw
+	chmod 700 /mnt/media_rw
+	chown media_rw media_rw /mnt/media_rw
     mkdir /storage 0751 root sdcard_r
+	chmod 751 /storage
+	chown root sdcard_r /storage
 
     # Directory for putting things only root should see.
     mkdir /mnt/secure 0700 root root
+	chmod 700 /mnt/secure
+	chown root root /mnt/secure
 
     # Create private mountpoint so we can MS_MOVE from staging
     mount tmpfs tmpfs /mnt/secure mode=0700,uid=0,gid=0
 
     # Directory for staging bindmounts
     mkdir /mnt/secure/staging 0700 root root
+	chmod 700 /mnt/secure/staging
+	chmod root root /mnt/secure/staging
     restorecon_recursive /mnt/secure/staging
 
     # Directory-target for where the secure container
     # imagefile directory will be bind-mounted
-    mkdir /mnt/secure/asec  0700 root root
+    mkdir /mnt/secure/asec 0700 root root
+	chmod 700 /mnt/secure/asec
+	chown root root /mnt/secure/asec
     restorecon_recursive /mnt/secure/asec
 
     # Secure container public mount points.
-    mkdir /mnt/asec  0700 root system
+    mkdir /mnt/asec 0700 root system
+	chmod 700 /mnt/asec
+	chown root system /mnt/asec
     mount tmpfs tmpfs /mnt/asec mode=0755,gid=1000
     restorecon_recursive /mnt/asec
 
     # Filesystem image public mount points.
     mkdir /mnt/obb 0700 root system
+	chmod 700 /mnt/obb
+	chown root system /mnt/obb
     mount tmpfs tmpfs /mnt/obb mode=0755,gid=1000
     restorecon_recursive /mnt/obb
 
     # memory control cgroup
     mkdir /dev/memcg 0700 root system
+	chmod 700 /dev/memcg
+	chown root system /dev/memcg
     mount cgroup none /dev/memcg memory
 
     write /proc/sys/kernel/panic_on_oops 1
@@ -127,7 +156,7 @@ on init
     write /proc/sys/kernel/sched_wakeup_granularity_ns 2000000
     write /proc/sys/kernel/sched_compat_yield 1
     write /proc/sys/kernel/sched_child_runs_first 0
-    #write /proc/sys/kernel/randomize_va_space 2
+    write /proc/sys/kernel/randomize_va_space 2
     write /proc/sys/kernel/kptr_restrict 2
     write /proc/sys/vm/mmap_min_addr 32768
     write /proc/sys/net/ipv4/ping_group_range "0 2147483647"
@@ -180,6 +209,8 @@ on init
     # Create location for fs_mgr to store abbreviated output from filesystem
     # checker programs.
     mkdir /dev/fscklogs 0770 root system
+	chmod 770 /dev/fscklogs
+	chown root system /dev/fscklogs
 
     # pstore/ramoops previous console log
     mount pstore pstore /sys/fs/pstore
@@ -430,7 +461,7 @@ on post-fs-data
     chmod 0775 /system/lib/drm
 
     restorecon -R /efs
-    restorecon -R /carrier
+#    restorecon -R /carrier
 # ]
 
 # DRK permission

@@ -1,0 +1,87 @@
+/root/mn3lite/mxramdisk/init.carrier.rc
+/root/mn3lite/mxramdisk/init.container.rc
+/root/mn3lite/mxramdisk/init.qcom.factory.sh
+/root/mn3lite/mxramdisk/init.qcom.rc
+/root/mn3lite/mxramdisk/init.qcom.sh
+/root/mn3lite/mxramdisk/init.qcom.usb.rc
+
+/root/mn3lite/mxramdisk/init.target.rc
+/mnt 0775 root system
+/dev/pipes 0771 vibe vibe
+/sys/fs/cgroup/memory 0750 root system
+/sys/fs/cgroup/memory/sw 0750 root system
+/data 0771 system system
+/cache 0770 system cache
+/config 0500 root root
+/efs 0771 system radio
+/mnt/shell 0750 shell shell
+/mnt/media_rw 0700 media_rw media_rw
+/storage 0751 root sdcard_r
+/mnt/secure 0700 root root
+/mnt/secure/staging 0700 root root
+/mnt/secure/asec 0700 root root
+/mnt/asec 0700 root system
+/mnt/obb 0700 root system
+/dev/memcg 0700 root system
+/dev/fscklogs 0770 root system
+/cache/lost+found 0770 root root
+/efs/sec_efs 0775 radio system
+/data/dontpanic 0750 root log
+/data/misc 01771 system misc
+/data/misc/adb 02750 system shell
+/data/misc/audit 02775 audit system
+/data/misc/bluedroid 0770 bluetooth net_bt_stack
+/data/misc/bluedroiddump 0770 system system
+/data/misc/bluetooth 0770 system system
+/data/misc/keystore 0700 keystore keystore
+/data/misc/keychain 0771 system system
+/data/misc/net 0750 root shell
+/data/misc/radio 0771 system radio
+/data/misc/sms 0770 system radio
+/data/misc/zoneinfo 0775 system system
+/data/misc/vpn 0770 system vpn
+/data/misc/shared_relro 0771 shared_relro shared_relro
+/data/misc/systemkeys 0700 system system
+/data/misc/wifi 0770 wifi wifi
+/data/misc/wifi/sockets 0770 wifi wifi
+/data/misc/wifi/wpa_supplicant 0770 wifi wifi
+/data/misc/wifi_share_profile 0771 wifi system
+/data/misc/ethernet 0770 system system
+/data/misc/dhcp 0770 dhcp dhcp
+/data/misc/user 0771 root root
+/data/misc/jack 0770 jack system
+/data/local 0751 root root
+/data/misc/media 0700 media media
+/data/misc/radio/hatp 0755 radio system
+/data/local/tmp 0771 shell shell
+/data/data 0771 system system
+/data/app-private 0771 system system
+/data/app-asec 0700 root root
+/data/app-lib 0771 system system
+/data/app 0771 system system
+/data/property 0700 root root
+/data/log 0775 system log
+/data/anr 0775 system system
+/data/dalvik-cache 0771 root root
+/data/dalvik-cache/profiles 0711 system system
+/data/resource-cache 0771 system system
+/data/lost+found 0770 root root
+/data/drm 0770 drm drm
+/data/mediadrm 0770 mediadrm mediadrm
+/data/system/databases 0775
+/system/etc/security/.drm 0775
+/data/data/.drm 0775
+/data/data/.drm/.playready 0775
+/system/lib/drm 0775
+/efs/prov 0770 radio system
+/dev/socket/cs_socket 0770 system system
+/data/security 0700 system system
+/data/DownFilters 0775 system system
+/data/DownFilters/Lib 0775 system system
+/data/DownFilters/Lib64 0775 system system
+/data/app/mcRegistry 0775 system system
+/data/bcmnfc 0700 nfc nfc
+/data/bcmnfc/param 0700 nfc nfc
+/data/nfc 0700 nfc nfc
+/data/nfc/param 0700 nfc nfc
+/dev/socket/mtp 0770 system mtp
