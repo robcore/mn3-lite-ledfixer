@@ -29,7 +29,11 @@
 
 on early-init
     mkdir /firmware 0771 system system
+    chmod 0771 /firmware
+    chown system system /firmware
     mkdir /firmware-modem 0771 system system
+    chmod 0771 /firmware-modem
+    chown system system /firmware-modem
     symlink /data/tombstones /tombstones
 
 on init
@@ -53,6 +57,8 @@ on fs
     check_fs /dev/block/platform/msm_sdcc.1/by-name/persist ext4
     mount ext4 /dev/block/platform/msm_sdcc.1/by-name/persist /persist nosuid nodev noatime noauto_da_alloc,discard,journal_async_commit,errors=panic
     mkdir /persist/data 0700 system system
+    chmod 0700 /persist/data
+    chown system system /persist/data
 
     wait /dev/block/platform/msm_sdcc.1/by-name/efs
     check_fs /dev/block/platform/msm_sdcc.1/by-name/efs ext4
@@ -79,10 +85,20 @@ on fs_selinux
 
 on post-fs-data
     mkdir /data/tombstones 0771 system system
+    chmod 0771 /data/tombstones
+    chown system system /data/tombstones
     mkdir /tombstones/modem 0771 system system
+    chmod 0771 /tombstones/modem
+    chown system system /tombstones/modem
     mkdir /tombstones/lpass 0771 system system
+    chmod 0771 /tombstones/lpass
+    chown system system /tombstones/lpass
     mkdir /tombstones/wcnss 0771 system system
+    chmod 0771 /tombstones/wcnss
+    chown system system /tombstones/wcnss
     mkdir /tombstones/dsps 0771 system system
+    chmod 0771 /tombstones/dsps
+    chown system system /tombstones/dsps
 
 # Mobicore
     export MC_AUTH_TOKEN_PATH /efs
@@ -310,11 +326,13 @@ service ml_daemon /system/bin/ml_daemon
     class core
     user root
     group root
+
 # SecEDS
 service TvoutService_C /system/bin/bintvoutservice
      class main
      user system
      group graphics
+
 on property:ro.SecEDS.enable=false
     stop TvoutService_C
 
