@@ -122,7 +122,7 @@ int32_t g_nforce_32;
 	#define GP_CLK_M_DEFAULT                        3
 	#define GP_CLK_N_DEFAULT                        138
 	#define GP_CLK_D_DEFAULT                        69  /* 50% duty cycle	*/
-	#define IMM_PWM_MULTIPLIER			137
+	#define IMM_PWM_MULTIPLIER			138
 #elif defined (CONFIG_MACH_HLTEDCM) || defined (CONFIG_MACH_HLTEKDI) || defined (CONFIG_MACH_JS01LTEDCM) || defined (CONFIG_MACH_JS01LTESBM)
 	#define GP_CLK_M_DEFAULT			2
 	#define GP_CLK_N_DEFAULT			92
