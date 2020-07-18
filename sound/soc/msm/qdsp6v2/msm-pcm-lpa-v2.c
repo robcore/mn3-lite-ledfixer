@@ -438,6 +438,7 @@ static int lpa_set_volume(struct msm_audio *prtd, uint32_t volume)
 						__func__, rc);
 		} else {
 			prtd->volume = volume;
+			pr_info("%s: %d\n", __func__, prtd->volume);
 		}
 	}
 	return rc;

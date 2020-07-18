@@ -130,7 +130,7 @@ static void wcd9xxx_disable_bg(struct wcd9xxx_resmgr *resmgr)
 	/* Disable bg */
 	snd_soc_update_bits(resmgr->codec, WCD9XXX_A_BIAS_CENTRAL_BG_CTL,
 			    0x03, 0x00);
-	usleep_range(100, 100);
+	usleep_range(100, 110);
 	/* Notify bg mode change */
 	wcd9xxx_resmgr_notifier_call(resmgr, WCD9XXX_EVENT_POST_BG_OFF);
 }
@@ -148,7 +148,7 @@ static void wcd9xxx_enable_bg(struct wcd9xxx_resmgr *resmgr)
 	snd_soc_update_bits(codec, WCD9XXX_A_BIAS_CENTRAL_BG_CTL, 0x80, 0x80);
 	snd_soc_update_bits(codec, WCD9XXX_A_BIAS_CENTRAL_BG_CTL, 0x04, 0x04);
 	snd_soc_update_bits(codec, WCD9XXX_A_BIAS_CENTRAL_BG_CTL, 0x01, 0x01);
-	usleep_range(1000, 1000);
+	usleep_range(1000, 1100);
 	snd_soc_update_bits(codec, WCD9XXX_A_BIAS_CENTRAL_BG_CTL, 0x80, 0x00);
 }
 
@@ -196,10 +196,10 @@ static void wcd9xxx_disable_clock_block(struct wcd9xxx_resmgr *resmgr)
 	/* Disable clock */
 	if (resmgr->codec_type != WCD9XXX_CDC_TYPE_HELICON) {
 		snd_soc_update_bits(codec, WCD9XXX_A_CLK_BUFF_EN2, 0x04, 0x00);
-		usleep_range(50, 50);
+		usleep_range(50, 55);
 		snd_soc_update_bits(codec, WCD9XXX_A_CLK_BUFF_EN2, 0x02, 0x02);
 		snd_soc_update_bits(codec, WCD9XXX_A_CLK_BUFF_EN1, 0x05, 0x00);
-		usleep_range(50, 50);
+		usleep_range(50, 55);
 	}
 	/* Notify */
 	if (resmgr->clk_type == WCD9XXX_CLK_RCO) {
@@ -397,12 +397,12 @@ int wcd9xxx_resmgr_enable_config_mode(struct wcd9xxx_resmgr *resmgr, int enable)
 		snd_soc_update_bits(codec, WCD9XXX_A_RC_OSC_FREQ, 0x10, 0);
 		/* bandgap mode to fast */
 		snd_soc_write(codec, WCD9XXX_A_BIAS_OSC_BG_CTL, 0x17);
-		usleep_range(5, 5);
+		usleep_range(5, 10);
 		snd_soc_update_bits(codec, WCD9XXX_A_RC_OSC_FREQ, 0x80, 0x80);
 		snd_soc_update_bits(codec, WCD9XXX_A_RC_OSC_TEST, 0x80, 0x80);
-		usleep_range(10, 10);
+		usleep_range(10, 20);
 		snd_soc_update_bits(codec, WCD9XXX_A_RC_OSC_TEST, 0x80, 0);
-		usleep_range(10000, 10000);
+		usleep_range(10000, 10100);
 		if (resmgr->codec_type != WCD9XXX_CDC_TYPE_HELICON)
 			snd_soc_update_bits(codec, WCD9XXX_A_CLK_BUFF_EN1,
 					0x08, 0x08);
@@ -440,7 +440,7 @@ static void wcd9xxx_enable_clock_block(struct wcd9xxx_resmgr *resmgr,
 		wcd9xxx_resmgr_enable_config_mode(resmgr, 1);
 		if (resmgr->codec_type != WCD9XXX_CDC_TYPE_HELICON)
 			snd_soc_write(codec, WCD9XXX_A_CLK_BUFF_EN2, 0x02);
-		usleep_range(1000, 1000);
+		usleep_range(1000, 1100);
 	} else {
 		/* Notify */
 		wcd9xxx_resmgr_notifier_call(resmgr, WCD9XXX_EVENT_PRE_MCLK_ON);
@@ -482,7 +482,7 @@ static void wcd9xxx_enable_clock_block(struct wcd9xxx_resmgr *resmgr,
 		snd_soc_update_bits(codec, MSM8X10_WCD_A_CDC_CLK_MCLK_CTL,
 				0x01, 0x01);
 	}
-	usleep_range(50, 50);
+	usleep_range(50, 55);
 
 	/* Notify */
 	if (config_mode)
