@@ -535,15 +535,12 @@ create_zip() {
 			if [ "$?" -eq "0" ]
 			then
 				echo "Successfully pushed $RDIR/$MX_KERNEL_VERSION.zip to $ADBPUSHLOCATION/$MX_KERNEL_VERSION.zip over ADB!"
-			else
-				echo "FAILED to push $RDIR/$MX_KERNEL_VERSION.zip to $ADBPUSHLOCATION/$MX_KERNEL_VERSION.zip over ADB!"
-			fi
-			echo -n "Install automatically? [y|n]: "
-			read -r ORSINSTALL
-			if [ "$ORSINSTALL" = "y" ]
-			then
 				echo "Installing $ADBPUSHLOCATION/$MX_KERNEL_VERSION.zip via open recovery script"
 				adb shell twrp install "$ADBPUSHLOCATION/$MX_KERNEL_VERSION.zip"
+				echo "Rebooting Device"
+				adb reboot
+			else
+				echo "FAILED to push $RDIR/$MX_KERNEL_VERSION.zip to $ADBPUSHLOCATION/$MX_KERNEL_VERSION.zip over ADB!"
 			fi
 			adb kill-server || echo "Failed to kill ADB server!"
 		else
