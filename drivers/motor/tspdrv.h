@@ -90,33 +90,12 @@ typedef struct {
 	void _RecorderReset(int nActuator);
 	void _Record(int actuatorIndex, const char *format, ...);
 #endif
-#define VIBRATION_ON            1
-#define VIBRATION_OFF           0
+#define VIBRATION_ON 1
+#define VIBRATION_OFF 0
 
 int32_t g_nforce_32;
 
-
-#if defined(CONFIG_MACH_KS01SKT) \
-	   || defined(CONFIG_MACH_KS01KTT) || defined(CONFIG_MACH_KS01LGT) \
-	   || defined(CONFIG_MACH_JACTIVESKT) || defined(CONFIG_MACH_HLTEDCM) \
-	   || defined(CONFIG_MACH_HLTEKDI)
-#define MOTOR_STRENGTH			94/*MOTOR_STRENGTH 94 %*/
-#elif defined(CONFIG_MACH_LT03EUR) || defined(CONFIG_MACH_LT03SKT)\
-	|| defined(CONFIG_MACH_LT03KTT)	|| defined(CONFIG_MACH_LT03LGT)
-#define MOTOR_STRENGTH			98/*MOTOR_STRENGTH 98 %*/
-#elif defined(CONFIG_MACH_PICASSO_LTE)
-#define MOTOR_STRENGTH			91
-#elif defined(CONFIG_MACH_HLTEUSC) || defined(CONFIG_MACH_HLTEVZW)
-#define MOTOR_STRENGTH			99/*MOTOR_STRENGTH 99 %*/
-#elif defined(CONFIG_SEC_K_PROJECT) || defined(CONFIG_SEC_KACTIVE_PROJECT) || defined(CONFIG_SEC_KSPORTS_PROJECT) \
-	|| defined(CONFIG_SEC_PATEK_PROJECT)
-#define MOTOR_STRENGTH			98/*MOTOR_STRENGTH 98 %*/
-#elif defined(CONFIG_SEC_S_PROJECT)
-#define MOTOR_STRENGTH			87/*MOTOR_STRENGTH 87 %*/
-#else
-#define MOTOR_STRENGTH			98/*MOTOR_STRENGTH 98 %*/
-#endif
-
+#define MOTOR_STRENGTH 100
 
 #if defined (CONFIG_MACH_HLTESPR) || defined (CONFIG_MACH_HLTEEUR) || defined(CONFIG_SEC_LOCALE_KOR_H) || defined (CONFIG_MACH_HLTETMO) || defined(CONFIG_MACH_H3GDUOS) || defined(CONFIG_MACH_HLTEATT)
 	#define GP_CLK_M_DEFAULT                        3
