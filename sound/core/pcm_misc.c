@@ -215,7 +215,7 @@ static struct pcm_format_data pcm_formats[(INT)SNDRV_PCM_FORMAT_LAST+1] = {
  * snd_pcm_format_signed - Check the PCM format is signed linear
  * @format: the format to check
  *
- * Returns 1 if the given PCM format is signed linear, 0 if unsigned
+ * Return: 1 if the given PCM format is signed linear, 0 if unsigned
  * linear, and a negative error code for non-linear formats.
  */
 int snd_pcm_format_signed(snd_pcm_format_t format)
@@ -234,7 +234,7 @@ EXPORT_SYMBOL(snd_pcm_format_signed);
  * snd_pcm_format_unsigned - Check the PCM format is unsigned linear
  * @format: the format to check
  *
- * Returns 1 if the given PCM format is unsigned linear, 0 if signed
+ * Return: 1 if the given PCM format is unsigned linear, 0 if signed
  * linear, and a negative error code for non-linear formats.
  */
 int snd_pcm_format_unsigned(snd_pcm_format_t format)
@@ -253,7 +253,7 @@ EXPORT_SYMBOL(snd_pcm_format_unsigned);
  * snd_pcm_format_linear - Check the PCM format is linear
  * @format: the format to check
  *
- * Returns 1 if the given PCM format is linear, 0 if not.
+ * Return: 1 if the given PCM format is linear, 0 if not.
  */
 int snd_pcm_format_linear(snd_pcm_format_t format)
 {
@@ -266,7 +266,7 @@ EXPORT_SYMBOL(snd_pcm_format_linear);
  * snd_pcm_format_little_endian - Check the PCM format is little-endian
  * @format: the format to check
  *
- * Returns 1 if the given PCM format is little-endian, 0 if
+ * Return: 1 if the given PCM format is little-endian, 0 if
  * big-endian, or a negative error code if endian not specified.
  */
 int snd_pcm_format_little_endian(snd_pcm_format_t format)
@@ -285,7 +285,7 @@ EXPORT_SYMBOL(snd_pcm_format_little_endian);
  * snd_pcm_format_big_endian - Check the PCM format is big-endian
  * @format: the format to check
  *
- * Returns 1 if the given PCM format is big-endian, 0 if
+ * Return: 1 if the given PCM format is big-endian, 0 if
  * little-endian, or a negative error code if endian not specified.
  */
 int snd_pcm_format_big_endian(snd_pcm_format_t format)
@@ -304,7 +304,7 @@ EXPORT_SYMBOL(snd_pcm_format_big_endian);
  * snd_pcm_format_width - return the bit-width of the format
  * @format: the format to check
  *
- * Returns the bit-width of the format, or a negative error code
+ * Return: The bit-width of the format, or a negative error code
  * if unknown format.
  */
 int snd_pcm_format_width(snd_pcm_format_t format)
@@ -323,7 +323,7 @@ EXPORT_SYMBOL(snd_pcm_format_width);
  * snd_pcm_format_physical_width - return the physical bit-width of the format
  * @format: the format to check
  *
- * Returns the physical bit-width of the format, or a negative error code
+ * Return: The physical bit-width of the format, or a negative error code
  * if unknown format.
  */
 int snd_pcm_format_physical_width(snd_pcm_format_t format)
@@ -343,7 +343,7 @@ EXPORT_SYMBOL(snd_pcm_format_physical_width);
  * @format: the format to check
  * @samples: sampling rate
  *
- * Returns the byte size of the given samples for the format, or a
+ * Return: The byte size of the given samples for the format, or a
  * negative error code if unknown format.
  */
 ssize_t snd_pcm_format_size(snd_pcm_format_t format, size_t samples)
@@ -360,7 +360,7 @@ EXPORT_SYMBOL(snd_pcm_format_size);
  * snd_pcm_format_silence_64 - return the silent data in 8 bytes array
  * @format: the format to check
  *
- * Returns the format pattern to fill or NULL if error.
+ * Return: The format pattern to fill or %NULL if error.
  */
 const unsigned char *snd_pcm_format_silence_64(snd_pcm_format_t format)
 {
@@ -381,7 +381,7 @@ EXPORT_SYMBOL(snd_pcm_format_silence_64);
  *
  * Sets the silence data on the buffer for the given samples.
  *
- * Returns zero if successful, or a negative error code on failure.
+ * Return: Zero if successful, or a negative error code on failure.
  */
 int snd_pcm_format_set_silence(snd_pcm_format_t format, void *data, unsigned int samples)
 {
@@ -451,7 +451,7 @@ EXPORT_SYMBOL(snd_pcm_format_set_silence);
  * Determines the rate_min and rate_max fields from the rates bits of
  * the given runtime->hw.
  *
- * Returns zero if successful.
+ * Return: Zero if successful.
  */
 int snd_pcm_limit_hw_rates(struct snd_pcm_runtime *runtime)
 {
@@ -477,7 +477,7 @@ EXPORT_SYMBOL(snd_pcm_limit_hw_rates);
  * snd_pcm_rate_to_rate_bit - converts sample rate to SNDRV_PCM_RATE_xxx bit
  * @rate: the sample rate to convert
  *
- * Returns the SNDRV_PCM_RATE_xxx flag that corresponds to the given rate, or
+ * Return: The SNDRV_PCM_RATE_xxx flag that corresponds to the given rate, or
  * SNDRV_PCM_RATE_KNOT for an unknown rate.
  */
 unsigned int snd_pcm_rate_to_rate_bit(unsigned int rate)
