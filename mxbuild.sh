@@ -485,24 +485,28 @@ create_zip() {
 	#	fi
 	#done
 	zip -r -9 - * > "$RDIR/$MX_KERNEL_VERSION.zip"
-	echo "Kernel $MX_KERNEL_VERSION.zip finished"
-	echo "Filepath: "
-	echo "$RDIR/$MX_KERNEL_VERSION.zip"
 	if [ ! -f "$RDIR/$MX_KERNEL_VERSION.zip" ]
 	then
 		warnandfail "$RDIR/$MX_KERNEL_VERSION.zip does not exist!"
 	fi
+	echo "Kernel $MX_KERNEL_VERSION.zip finished"
+	echo "Filepath: "
+	echo "$RDIR/$MX_KERNEL_VERSION.zip"
+	timerdiff
 	if [ -s "$RDIR/$MX_KERNEL_VERSION.zip" ]
 	then
-		echo "Uploading $MX_KERNEL_VERSION.zip to Google Drive"
-		/bin/bash /root/google-drive-upload/upload.sh "$RDIR/$MX_KERNEL_VERSION.zip"
-		if [ "$?" -eq "0" ]
-		then
-			echo "$RDIR/$MX_KERNEL_VERSION.zip upload SUCCESS!"
-		else
-			echo "$RDIR/$MX_KERNEL_VERSION.zip upload FAILED!"
-		fi
+#		echo "Uploading $MX_KERNEL_VERSION.zip to Google Drive"
+#		/bin/bash /root/google-drive-upload/upload.sh "$RDIR/$MX_KERNEL_VERSION.zip"
+#		if [ "$?" -eq "0" ]
+#		then
+#			echo "$RDIR/$MX_KERNEL_VERSION.zip upload SUCCESS!"
+#		else
+#			echo "$RDIR/$MX_KERNEL_VERSION.zip upload FAILED!"
+#		fi
 		echo -n "$MX_KERNEL_VERSION.zip" > "$RDIR/.lastzip"
+		echo "Starting ADB as root."
+		adb start-server
+		adb root
 		echo "Checking if Device is Connected..."
 		local SAMSTRING
 		SAMSTRING="$(lsusb | grep '04e8:6860')"
@@ -523,7 +527,6 @@ create_zip() {
 			else
 				echo "Failed to push $RDIR/$MX_KERNEL_VERSION.zip to $ADBPUSHLOCATION over ADB!"
 			fi
-			adb kill-server || echo "Failed to kill ADB server!"
 		elif [ -n "$RECOVSTRING" ]
 		then
 			echo "Device is Connected via Usb in Recovery Mode!"
@@ -542,14 +545,13 @@ create_zip() {
 			else
 				echo "FAILED to push $RDIR/$MX_KERNEL_VERSION.zip to $ADBPUSHLOCATION/$MX_KERNEL_VERSION.zip over ADB!"
 			fi
-			adb kill-server || echo "Failed to kill ADB server!"
 		else
 			echo "Device not Connected.  Skipping adb transfer."
 		fi
-		timerdiff
 	else
 		warnandfail "$RDIR/$MX_KERNEL_VERSION.zip is 0 bytes, something is wrong!"
 	fi
+	adb kill-server || echo "Failed to kill ADB server!"
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR"
 
 }
