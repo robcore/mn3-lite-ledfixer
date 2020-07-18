@@ -533,6 +533,8 @@ create_zip() {
 			echo "$RECOVSTRING"
 			#adb shell input keyevent KEYCODE_WAKEUP
 			#adb shell input touchscreen swipe 930 880 930 380
+			echo "Ensuring Recovery is ready for operations"
+			adb "wait-for-recovery";
 			echo "Transferring via adb to $ADBPUSHLOCATION/$MX_KERNEL_VERSION.zip"
 			adb push "$RDIR/$MX_KERNEL_VERSION.zip" "$ADBPUSHLOCATION"
 			if [ "$?" -eq "0" ]
