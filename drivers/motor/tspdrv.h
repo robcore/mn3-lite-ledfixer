@@ -101,7 +101,7 @@ int32_t g_nforce_32;
 	#define GP_CLK_M_DEFAULT                        3
 	#define GP_CLK_N_DEFAULT                        138
 	#define GP_CLK_D_DEFAULT                        69  /* 50% duty cycle	*/
-	#define IMM_PWM_MULTIPLIER			138
+	#define IMM_PWM_MULTIPLIER			137
 #elif defined (CONFIG_MACH_HLTEDCM) || defined (CONFIG_MACH_HLTEKDI) || defined (CONFIG_MACH_JS01LTEDCM) || defined (CONFIG_MACH_JS01LTESBM)
 	#define GP_CLK_M_DEFAULT			2
 	#define GP_CLK_N_DEFAULT			92
@@ -158,7 +158,7 @@ int32_t g_nforce_32;
 #endif
 
 
-#define MOTOR_MIN_STRENGTH			54/*IMMERSION VALUE*/
+#define MOTOR_MIN_STRENGTH			80/*IMMERSION VALUE*/
 /*
  * ** Global variables for LRA PWM M,N and D values.
  * */
@@ -277,23 +277,11 @@ int32_t vibe_set_pwm_freq(int nForce);
 #endif
 /* Kernel Debug Macros */
 #ifdef __KERNEL__
-	#ifdef VIBE_DEBUG
-		#define DbgOut(_x_)
-	#else   /* VIBE_DEBUG */
-		#define DbgOut(_x_)
-	#endif  /* VIBE_DEBUG */
-
-	#if defined(VIBE_RECORD) && defined(VIBE_DEBUG)
-		#define DbgRecorderInit(_x_) _RecorderInit _x_
-		#define DbgRecorderTerminate(_x_) _RecorderTerminate _x_
-		#define DbgRecorderReset(_x_) _RecorderReset _x_
-		#define DbgRecord(_x_) _Record _x_
-	#else /* defined(VIBE_RECORD) && defined(VIBE_DEBUG) */
-		#define DbgRecorderInit(_x_)
-		#define DbgRecorderTerminate(_x_)
-		#define DbgRecorderReset(_x_)
-		#define DbgRecord(_x_)
-	#endif /* defined(VIBE_RECORD) && defined(VIBE_DEBUG) */
+	#define DbgOut(_x_)
+	#define DbgRecorderInit(_x_)
+	#define DbgRecorderTerminate(_x_)
+	#define DbgRecorderReset(_x_)
+	#define DbgRecord(_x_)
 #endif  /* __KERNEL__ */
 
 #if defined(CONFIG_MOTOR_DRV_MAX77803)
