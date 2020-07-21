@@ -1,12 +1,3 @@
-static ssize_t headphone_gain_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
-{
-	int leftval;
-	int rightval;
-	leftval = show_sound_value(TAIKO_A_CDC_RX1_VOL_CTL_B2_CTL);
-	rightval = show_sound_value(TAIKO_A_CDC_RX2_VOL_CTL_B2_CTL);
-	return sprintf(buf, "%d %d\n", leftval, rightval);
-}
-
 TAIKO_A_CHIP_CTL
 TAIKO_A_CHIP_STATUS
 TAIKO_A_CHIP_ID_BYTE_0

@@ -840,7 +840,7 @@ static int taiko_get_iir_band_audio_mixer(
 	ucontrol->value.integer.value[4] =
 		get_iir_band_coeff(codec, iir_idx, band_idx, 4);
 /*
-	pr_info("%s: IIR #%d band #%d b0 = 0x%x\n"
+	pr_debug("%s: IIR #%d band #%d b0 = 0x%x\n"
 		"%s: IIR #%d band #%d b1 = 0x%x\n"
 		"%s: IIR #%d band #%d b2 = 0x%x\n"
 		"%s: IIR #%d band #%d a1 = 0x%x\n"
@@ -908,7 +908,7 @@ static int taiko_put_iir_band_audio_mixer(
 	set_iir_band_coeff(codec, iir_idx, band_idx,
 				ucontrol->value.integer.value[4]);
 
-	pr_info("%s: IIR #%d band #%d b0 = 0x%x\n"
+	pr_debug("%s: IIR #%d band #%d b0 = 0x%x\n"
 		"%s: IIR #%d band #%d b1 = 0x%x\n"
 		"%s: IIR #%d band #%d b2 = 0x%x\n"
 		"%s: IIR #%d band #%d a1 = 0x%x\n"
@@ -1148,17 +1148,17 @@ static int taiko_config_compander(struct snd_soc_dapm_widget *w,
 
 
 
-static const char *const taiko_anc_func_text[] = {"OFF", "ON"};
+static const char *taiko_anc_func_text[] = {"OFF", "ON"};
 static const struct soc_enum taiko_anc_func_enum =
 		SOC_ENUM_SINGLE_EXT(2, taiko_anc_func_text);
 
-static const char *const tabla_ear_pa_gain_text[] = {"POS_6_DB", "POS_2_DB"};
+static const char *tabla_ear_pa_gain_text[] = {"POS_6_DB", "POS_2_DB"};
 static const struct soc_enum tabla_ear_pa_gain_enum[] = {
 		SOC_ENUM_SINGLE_EXT(2, tabla_ear_pa_gain_text),
 };
 
 /*cut of frequency for high pass filter*/
-static const char * const cf_text[] = {
+static const char *cf_text[] = {
 	"MIN_3DB_4Hz", "MIN_3DB_75Hz", "MIN_3DB_150Hz"
 };
 
@@ -1223,7 +1223,7 @@ static const struct soc_enum class_h_dsm_enum =
 static const struct snd_kcontrol_new class_h_dsm_mux =
 	SOC_DAPM_ENUM("CLASS_H_DSM MUX Mux", class_h_dsm_enum);
 
-static const char *const taiko_conn_mad_text[] = {
+static const char *taiko_conn_mad_text[] = {
 	"ADC_MB", "ADC1", "ADC2", "ADC3", "ADC4", "ADC5", "ADC6", "NOTUSED1",
 	"DMIC1", "DMIC2", "DMIC3", "DMIC4", "DMIC5", "DMIC6", "NOTUSED2",
 	"NOTUSED3"};
@@ -1273,7 +1273,7 @@ static int taiko_mad_input_put(struct snd_kcontrol *kcontrol,
 		!strcmp(taiko_conn_mad_text[taiko_mad_input], "NOTUSED2") ||
 		!strcmp(taiko_conn_mad_text[taiko_mad_input], "NOTUSED3") ||
 		!strcmp(taiko_conn_mad_text[taiko_mad_input], "ADC_MB")) {
-		pr_info("%s: taiko mad input is set to unsupported input = %s\n",
+		pr_debug("%s: taiko mad input is set to unsupported input = %s\n",
 				__func__, taiko_conn_mad_text[taiko_mad_input]);
 		return -EINVAL;
 	}
@@ -1283,7 +1283,7 @@ static int taiko_mad_input_put(struct snd_kcontrol *kcontrol,
 		ret = kstrtouint(strpbrk(taiko_conn_mad_text[taiko_mad_input]
 					, "123456"), 10, &adc);
 		if ((ret < 0) || (adc > 6)) {
-			pr_err("%s: Invalid ADC = %s\n", __func__,
+			pr_debug("%s: Invalid ADC = %s\n", __func__,
 				taiko_conn_mad_text[taiko_mad_input]);
 			ret =  -EINVAL;
 		}
@@ -1336,7 +1336,7 @@ static int taiko_mad_input_put(struct snd_kcontrol *kcontrol,
 					0x07, mic_bias_found);
 		return 0;
 	} else {
-		pr_err("%s: mic bias source not found for input = %s\n",
+		pr_debug("%s: mic bias source not found for input = %s\n",
 				__func__, mad_input_widget);
 		return -EINVAL;
 	}
@@ -1507,7 +1507,7 @@ static int taiko_pa_gain_get(struct snd_kcontrol *kcontrol,
 
 	ucontrol->value.integer.value[0] = ear_pa_gain;
 
-	pr_info("%s: ear_pa_gain: hex:0x%x dec:%u\n", __func__, ear_pa_gain, ear_pa_gain);
+	pr_debug("%s: ear_pa_gain: hex:0x%x dec:%u\n", __func__, ear_pa_gain, ear_pa_gain);
 
 	return 0;
 }
@@ -2023,14 +2023,14 @@ static int wcd9320_put_dec_enum(struct snd_kcontrol *kcontrol,
 	dec_name = strsep(&widget_name, " ");
 	widget_name = temp;
 	if (!dec_name) {
-		pr_err("%s: Invalid decimator = %s\n", __func__, w->name);
+		pr_debug("%s: Invalid decimator = %s\n", __func__, w->name);
 		ret =  -EINVAL;
 		goto out;
 	}
 
 	ret = kstrtouint(strpbrk(dec_name, "123456789"), 10, &decimator);
 	if (ret < 0) {
-		pr_err("%s: Invalid decimator = %s\n", __func__, dec_name);
+		pr_debug("%s: Invalid decimator = %s\n", __func__, dec_name);
 		ret =  -EINVAL;
 		goto out;
 	}
@@ -2061,7 +2061,7 @@ static int wcd9320_put_dec_enum(struct snd_kcontrol *kcontrol,
 			adc_dmic_sel = 0x0;
 		break;
 	default:
-		pr_err("%s: Invalid Decimator = %u\n", __func__, decimator);
+		pr_debug("%s: Invalid Decimator = %u\n", __func__, decimator);
 		ret = -EINVAL;
 		goto out;
 	}
@@ -2216,7 +2216,7 @@ static int slim_tx_mixer_put(struct snd_kcontrol *kcontrol,
 
 	if (taiko_p->intf_type != WCD9XXX_INTERFACE_TYPE_SLIMBUS) {
 		if (dai_id != AIF1_CAP) {
-			dev_err(codec->dev, "%s: invalid AIF for I2C mode\n",
+			dev_dbg(codec->dev, "%s: invalid AIF for I2C mode\n",
 				__func__);
 			mutex_unlock(&codec->mutex);
 			return -EINVAL;
@@ -2268,7 +2268,7 @@ static int slim_tx_mixer_put(struct snd_kcontrol *kcontrol,
 			}
 			break;
 		default:
-			pr_err("Unknown AIF %d\n", dai_id);
+			pr_debug("Unknown AIF %d\n", dai_id);
 			mutex_unlock(&codec->mutex);
 			return -EINVAL;
 		}
@@ -2291,7 +2291,7 @@ static int slim_rx_mux_get(struct snd_kcontrol *kcontrol,
 	return 0;
 }
 
-static const char *const slim_rx_mux_text[] = {
+static const char *slim_rx_mux_text[] = {
 	"ZERO", "AIF1_PB", "AIF2_PB", "AIF3_PB"
 };
 
@@ -2316,7 +2316,7 @@ static int slim_rx_mux_put(struct snd_kcontrol *kcontrol,
 
 	if (taiko_p->intf_type != WCD9XXX_INTERFACE_TYPE_SLIMBUS) {
 		if (widget->value > 2) {
-			dev_err(codec->dev, "%s: invalid AIF for I2C mode\n",
+			dev_dbg(codec->dev, "%s: invalid AIF for I2C mode\n",
 				__func__);
 			goto err;
 		}
@@ -2361,7 +2361,7 @@ static int slim_rx_mux_put(struct snd_kcontrol *kcontrol,
 			      &taiko_p->dai[AIF3_PB].wcd9xxx_ch_list);
 	break;
 	default:
-		pr_err("Unknown AIF %d\n", widget->value);
+		pr_debug("Unknown AIF %d\n", widget->value);
 		goto err;
 	}
 rtn:
@@ -2453,7 +2453,7 @@ static int taiko_codec_enable_adc(struct snd_soc_dapm_widget *w,
 		} else if (w->reg == TAIKO_A_TX_5_6_EN) {
 			adc_reg = TAIKO_A_TX_5_6_TEST_CTL;
 		} else {
-			pr_err("%s: Error, invalid adc register\n", __func__);
+			pr_debug("%s: Error, invalid adc register\n", __func__);
 			return -EINVAL;
 		}
 
@@ -2462,7 +2462,7 @@ static int taiko_codec_enable_adc(struct snd_soc_dapm_widget *w,
 		} else if  (w->shift == 7) {
 			init_bit_shift = 7;
 		} else {
-			pr_err("%s: Error, invalid init bit postion adc register\n",
+			pr_debug("%s: Error, invalid init bit postion adc register\n",
 			       __func__);
 			return -EINVAL;
 		}
@@ -2493,7 +2493,7 @@ static int taiko_codec_enable_adc(struct snd_soc_dapm_widget *w,
 			init_bit_shift = 6;
 			break;
 		default:
-			pr_err("%s: Error, invalid adc register\n", __func__);
+			pr_debug("%s: Error, invalid adc register\n", __func__);
 			return -EINVAL;
 		}
 	}
@@ -2568,7 +2568,7 @@ static int taiko_codec_enable_lineout(struct snd_soc_dapm_widget *w,
 		lineout_gain_reg = TAIKO_A_RX_LINE_4_GAIN;
 		break;
 	default:
-		pr_err("%s: Error, incorrect lineout register value\n",
+		pr_debug("%s: Error, incorrect lineout register value\n",
 			__func__);
 		return -EINVAL;
 	}
@@ -2638,7 +2638,7 @@ static int taiko_codec_enable_dmic(struct snd_soc_dapm_widget *w,
 
 	ret = kstrtouint(strpbrk(w->name, "123456"), 10, &dmic);
 	if (ret < 0) {
-		pr_err("%s: Invalid DMIC line on the codec\n", __func__);
+		pr_debug("%s: Invalid DMIC line on the codec\n", __func__);
 		return -EINVAL;
 	}
 
@@ -2675,7 +2675,7 @@ static int taiko_codec_enable_dmic(struct snd_soc_dapm_widget *w,
 		break;
 
 	default:
-		pr_err("%s: Invalid DMIC Selection\n", __func__);
+		pr_debug("%s: Invalid DMIC Selection\n", __func__);
 		return -EINVAL;
 	}
 
@@ -2716,20 +2716,20 @@ static int taiko_codec_config_mad(struct snd_soc_codec *codec)
 			      msm_cpuidle_get_deep_idle_latency());
 	ret = request_firmware(&fw, filename, codec->dev);
 	if (ret != 0) {
-		pr_err("Failed to acquire MAD firwmare data %s: %d\n", filename,
+		pr_debug("Failed to acquire MAD firwmare data %s: %d\n", filename,
 		       ret);
 		return -ENODEV;
 	}
 
 	if (fw->size < sizeof(struct mad_audio_cal)) {
-		pr_err("%s: incorrect firmware size %u\n", __func__, fw->size);
+		pr_debug("%s: incorrect firmware size %u\n", __func__, fw->size);
 		release_firmware(fw);
 		return -ENOMEM;
 	}
 
 	mad_cal = (struct mad_audio_cal *)(fw->data);
 	if (!mad_cal) {
-		pr_err("%s: Invalid calibration data\n", __func__);
+		pr_debug("%s: Invalid calibration data\n", __func__);
 		release_firmware(fw);
 		return -EINVAL;
 	}
@@ -2800,7 +2800,7 @@ static int taiko_codec_enable_mad(struct snd_soc_dapm_widget *w,
 	case SND_SOC_DAPM_PRE_PMU:
 		ret = taiko_codec_config_mad(codec);
 		if (ret) {
-			pr_err("%s: Failed to config MAD\n", __func__);
+			pr_debug("%s: Failed to config MAD\n", __func__);
 			break;
 		}
 		break;
@@ -2850,7 +2850,7 @@ static int taiko_codec_enable_micbias(struct snd_soc_dapm_widget *w,
 		e_post_on = WCD9XXX_EVENT_POST_MICBIAS_4_ON;
 		e_post_off = WCD9XXX_EVENT_POST_MICBIAS_4_OFF;
 	} else {
-		pr_err("%s: Error, invalid micbias %s\n", __func__, w->name);
+		pr_debug("%s: Error, invalid micbias %s\n", __func__, w->name);
 		return -EINVAL;
 	}
 
@@ -3016,14 +3016,14 @@ static int taiko_codec_enable_dec(struct snd_soc_dapm_widget *w,
 	dec_name = strsep(&widget_name, " ");
 	widget_name = temp;
 	if (!dec_name) {
-		pr_err("%s: Invalid decimator = %s\n", __func__, w->name);
+		pr_debug("%s: Invalid decimator = %s\n", __func__, w->name);
 		ret =  -EINVAL;
 		goto out;
 	}
 
 	ret = kstrtouint(strpbrk(dec_name, "123456789"), 10, &decimator);
 	if (ret < 0) {
-		pr_err("%s: Invalid decimator = %s\n", __func__, dec_name);
+		pr_debug("%s: Invalid decimator = %s\n", __func__, dec_name);
 		ret =  -EINVAL;
 		goto out;
 	}
@@ -3038,7 +3038,7 @@ static int taiko_codec_enable_dec(struct snd_soc_dapm_widget *w,
 		dec_reset_reg = TAIKO_A_CDC_CLK_TX_RESET_B2_CTL;
 		offset = 8;
 	} else {
-		pr_err("%s: Error, incorrect dec\n", __func__);
+		pr_debug("%s: Error, incorrect dec\n", __func__);
 		return -EINVAL;
 	}
 
@@ -3131,7 +3131,7 @@ static int taiko_codec_enable_vdd_spkr(struct snd_soc_dapm_widget *w,
 		if (priv->spkdrv_reg) {
 			ret = regulator_enable(priv->spkdrv_reg);
 			if (ret)
-				pr_err("%s: Failed to enable spkdrv_reg %s\n",
+				pr_debug("%s: Failed to enable spkdrv_reg %s\n",
 				       __func__, WCD9XXX_VDD_SPKDRV_NAME);
 		}
 		if (spkr_drv_wrnd > 0) {
@@ -3157,7 +3157,7 @@ static int taiko_codec_enable_vdd_spkr(struct snd_soc_dapm_widget *w,
 		if (priv->spkdrv_reg) {
 			ret = regulator_disable(priv->spkdrv_reg);
 			if (ret)
-				pr_err("%s: Failed to disable spkdrv_reg %s\n",
+				pr_debug("%s: Failed to disable spkdrv_reg %s\n",
 				       __func__, WCD9XXX_VDD_SPKDRV_NAME);
 		}
 		break;
@@ -3298,7 +3298,7 @@ static int taiko_hphl_dac_event(struct snd_soc_dapm_widget *w,
 		if (!ret) */
 		wcd9xxx_clsh_imped_config(codec, 0);
 		/* else
-			dev_err(codec->dev, "Failed to get mbhc impedance %d\n",
+			dev_dbg(codec->dev, "Failed to get mbhc impedance %d\n",
 						ret); */
 		break;
 	case SND_SOC_DAPM_POST_PMD:
@@ -3362,13 +3362,13 @@ static int taiko_codec_enable_anc(struct snd_soc_dapm_widget *w,
 
 		ret = request_firmware(&fw, filename, codec->dev);
 		if (ret != 0) {
-			dev_err(codec->dev, "Failed to acquire ANC data: %d\n",
+			dev_dbg(codec->dev, "Failed to acquire ANC data: %d\n",
 				ret);
 			return -ENODEV;
 		}
 
 		if (fw->size < sizeof(struct wcd9xxx_anc_header)) {
-			dev_err(codec->dev, "Not enough data\n");
+			dev_dbg(codec->dev, "Not enough data\n");
 			release_firmware(fw);
 			return -ENOMEM;
 		}
@@ -3382,13 +3382,13 @@ static int taiko_codec_enable_anc(struct snd_soc_dapm_widget *w,
 		num_anc_slots = anc_head->num_anc_slots;
 
 		if (taiko->anc_slot >= num_anc_slots) {
-			dev_err(codec->dev, "Invalid ANC slot selected\n");
+			dev_dbg(codec->dev, "Invalid ANC slot selected\n");
 			release_firmware(fw);
 			return -EINVAL;
 		}
 		for (i = 0; i < num_anc_slots; i++) {
 			if (anc_size_remaining < TAIKO_PACKED_REG_SIZE) {
-				dev_err(codec->dev, "Invalid register format\n");
+				dev_dbg(codec->dev, "Invalid register format\n");
 				release_firmware(fw);
 				return -EINVAL;
 			}
@@ -3398,7 +3398,7 @@ static int taiko_codec_enable_anc(struct snd_soc_dapm_widget *w,
 
 			if (anc_writes_size * TAIKO_PACKED_REG_SIZE
 				> anc_size_remaining) {
-				dev_err(codec->dev, "Invalid register format\n");
+				dev_dbg(codec->dev, "Invalid register format\n");
 				release_firmware(fw);
 				return -ENOMEM;
 			}
@@ -3411,7 +3411,7 @@ static int taiko_codec_enable_anc(struct snd_soc_dapm_widget *w,
 			anc_ptr += anc_writes_size;
 		}
 		if (i == num_anc_slots) {
-			dev_err(codec->dev, "Selected ANC slot not present\n");
+			dev_dbg(codec->dev, "Selected ANC slot not present\n");
 			release_firmware(fw);
 			return -ENOMEM;
 		}
@@ -3456,7 +3456,7 @@ static int taiko_hph_pa_event(struct snd_soc_dapm_widget *w,
 		e_post_off = WCD9XXX_EVENT_POST_HPHR_PA_OFF;
 		req_clsh_state = WCD9XXX_CLSH_STATE_HPHR;
 	} else {
-		pr_err("%s: Invalid w->shift %d\n", __func__, w->shift);
+		pr_debug("%s: Invalid w->shift %d\n", __func__, w->shift);
 		return -EINVAL;
 	}
 
@@ -4267,7 +4267,7 @@ static int taiko_write(struct snd_soc_codec *codec, unsigned int reg,
 	if (!taiko_volatile(codec, reg)) {
 		ret = snd_soc_cache_write(codec, reg, value);
 		if (ret != 0)
-			pr_err("%s: Cache write to %x failed: %d\n",
+			pr_debug("%s: Cache write to %x failed: %d\n",
 				__func__, reg, ret);
 	}
 
@@ -4299,7 +4299,7 @@ static unsigned int taiko_read(struct snd_soc_codec *codec,
 		if (ret >= 0) {
 			return val;
 		}
-	pr_err("%s: snd_soc_cache_read from %x failed: %d\n",
+	pr_debug("%s: snd_soc_cache_read from %x failed: %d\n",
 				__func__, reg, ret);
 	}
 
@@ -4485,7 +4485,7 @@ static int taiko_set_channel_map(struct snd_soc_dai *dai,
 	struct taiko_priv *taiko = snd_soc_codec_get_drvdata(dai->codec);
 	struct wcd9xxx *core = dev_get_drvdata(dai->codec->dev->parent);
 	if (!tx_slot && !rx_slot) {
-		pr_err("%s: Invalid\n", __func__);
+		pr_debug("%s: Invalid\n", __func__);
 		return -EINVAL;
 	}
 	pr_debug("%s(): dai_name = %s DAI-ID %x tx_ch %d rx_ch %d\n"
@@ -4522,7 +4522,7 @@ static int taiko_get_channel_map(struct snd_soc_dai *dai,
 	case AIF2_PB:
 	case AIF3_PB:
 		if (!rx_slot || !rx_num) {
-			pr_err("%s: Invalid rx_slot %d or rx_num %d\n",
+			pr_debug("%s: Invalid rx_slot %d or rx_num %d\n",
 				 __func__, (u32) rx_slot, (u32) rx_num);
 			return -EINVAL;
 		}
@@ -4541,7 +4541,7 @@ static int taiko_get_channel_map(struct snd_soc_dai *dai,
 	case AIF4_VIFEED:
 	case AIF4_MAD_TX:
 		if (!tx_slot || !tx_num) {
-			pr_err("%s: Invalid tx_slot %d or tx_num %d\n",
+			pr_debug("%s: Invalid tx_slot %d or tx_num %d\n",
 				 __func__, (u32) tx_slot, (u32) tx_num);
 			return -EINVAL;
 		}
@@ -4556,7 +4556,7 @@ static int taiko_get_channel_map(struct snd_soc_dai *dai,
 		break;
 
 	default:
-		pr_err("%s: Invalid DAI ID %x\n", __func__, dai->id);
+		pr_debug("%s: Invalid DAI ID %x\n", __func__, dai->id);
 		break;
 	}
 
@@ -4581,7 +4581,7 @@ static int taiko_set_interpolator_rate(struct snd_soc_dai *dai,
 			      TAIKO_TX_PORT_NUMBER;
 		if ((rx_mix1_inp < RX_MIX1_INP_SEL_RX1) ||
 			(rx_mix1_inp > RX_MIX1_INP_SEL_RX7)) {
-			pr_err("%s: Invalid TAIKO_RX%u port. Dai ID is %d\n",
+			pr_debug("%s: Invalid TAIKO_RX%u port. Dai ID is %d\n",
 				__func__,  rx_mix1_inp - 5 , dai->id);
 			return -EINVAL;
 		}
@@ -4643,7 +4643,7 @@ static int taiko_set_decimator_rate(struct snd_soc_dai *dai,
 			__func__, dai->id, tx_port);
 
 		if ((tx_port < 1) || (tx_port > NUM_DECIMATORS)) {
-			pr_err("%s: Invalid SLIM TX%u port. DAI ID is %d\n",
+			pr_debug("%s: Invalid SLIM TX%u port. DAI ID is %d\n",
 				__func__, tx_port, dai->id);
 			return -EINVAL;
 		}
@@ -4691,9 +4691,9 @@ static int taiko_set_decimator_rate(struct snd_soc_dai *dai,
 			} else if  ((tx_port_reg_val >= 0x8) &&
 				    (tx_port_reg_val <= 0x11)) {
 
-				pr_err("%s: ERROR: Should not be here\n",
+				pr_debug("%s: ERROR: Should not be here\n",
 				       __func__);
-				pr_err("%s: ERROR: DEC connected to SLIM TX%u\n",
+				pr_debug("%s: ERROR: DEC connected to SLIM TX%u\n",
 					__func__, tx_port);
 				return -EINVAL;
 
@@ -4701,9 +4701,9 @@ static int taiko_set_decimator_rate(struct snd_soc_dai *dai,
 				pr_debug("%s: no signal to SLIM TX%u\n",
 					__func__, tx_port);
 			} else {
-				pr_err("%s: ERROR: wrong signal to SLIM TX%u\n",
+				pr_debug("%s: ERROR: wrong signal to SLIM TX%u\n",
 					__func__, tx_port);
-				pr_err("%s: ERROR: wrong signal = %u\n",
+				pr_debug("%s: ERROR: wrong signal = %u\n",
 					__func__, tx_port_reg_val);
 				return -EINVAL;
 			}
@@ -4733,7 +4733,7 @@ static void taiko_set_rxsb_port_format(struct snd_pcm_hw_params *params,
 		taiko_p->dai[dai->id].bit_width = 24;
 		break;
 	default:
-		dev_err(codec->dev, "Invalid format\n");
+		dev_dbg(codec->dev, "Invalid format\n");
 		return;
 	}
 
@@ -4744,7 +4744,7 @@ static void taiko_set_rxsb_port_format(struct snd_pcm_hw_params *params,
 
 		if (IS_ERR_VALUE(port) ||
 		    !TAIKO_VALIDATE_RX_SBPORT_RANGE(port)) {
-			dev_warn(codec->dev,
+			dev_dbg(codec->dev,
 				 "%s: invalid port ID %d returned for RX DAI\n",
 				 __func__, port);
 			return;
@@ -4759,7 +4759,7 @@ static void taiko_set_rxsb_port_format(struct snd_pcm_hw_params *params,
 			sb_ctl_reg = TAIKO_A_CDC_CONN_RX_SB_B2_CTL;
 			field_shift = (port - 4) << 1;
 		} else { /* should not happen */
-			dev_warn(codec->dev,
+			dev_dbg(codec->dev,
 				 "%s: bad port ID %d\n", __func__, port);
 			return;
 		}
@@ -4781,7 +4781,7 @@ static int taiko_hw_params(struct snd_pcm_substream *substream,
 	u32 compander_fs;
 	int ret;
 
-	pr_info("%s: dai_name = %s DAI-ID %x rate %d num_ch %d\n", __func__,
+	pr_debug("%s: dai_name = %s DAI-ID %x rate %d num_ch %d\n", __func__,
 		 dai->name, dai->id, params_rate(params),
 		 params_channels(params));
 
@@ -4817,7 +4817,7 @@ static int taiko_hw_params(struct snd_pcm_substream *substream,
 		compander_fs = COMPANDER_FS_192KHZ;
 		break;
 	default:
-		pr_err("%s: Invalid sampling rate %d\n", __func__,
+		pr_debug("%s: Invalid sampling rate %d\n", __func__,
 			params_rate(params));
 		return -EINVAL;
 	}
@@ -4828,7 +4828,7 @@ static int taiko_hw_params(struct snd_pcm_substream *substream,
 			ret = taiko_set_decimator_rate(dai, tx_fs_rate,
 							   params_rate(params));
 			if (ret < 0) {
-				pr_err("%s: set decimator rate failed %d\n",
+				pr_debug("%s: set decimator rate failed %d\n",
 					__func__, ret);
 				return ret;
 			}
@@ -4847,7 +4847,7 @@ static int taiko_hw_params(struct snd_pcm_substream *substream,
 					0x20, 0x00);
 				break;
 			default:
-				pr_err("invalid format\n");
+				pr_debug("invalid format\n");
 				break;
 			}
 			snd_soc_update_bits(codec, TAIKO_A_CDC_CLK_TX_I2S_CTL,
@@ -4862,7 +4862,7 @@ static int taiko_hw_params(struct snd_pcm_substream *substream,
 						  compander_fs,
 						  params_rate(params));
 		if (ret < 0) {
-			pr_err("%s: set decimator rate failed %d\n", __func__,
+			pr_debug("%s: set decimator rate failed %d\n", __func__,
 				ret);
 			return ret;
 		}
@@ -4879,7 +4879,7 @@ static int taiko_hw_params(struct snd_pcm_substream *substream,
 					0x20, 0x00);
 				break;
 			default:
-				pr_err("invalid format\n");
+				pr_debug("invalid format\n");
 				break;
 			}
 			snd_soc_update_bits(codec, TAIKO_A_CDC_CLK_RX_I2S_CTL,
@@ -4890,7 +4890,7 @@ static int taiko_hw_params(struct snd_pcm_substream *substream,
 		}
 		break;
 	default:
-		pr_err("%s: Invalid stream type %d\n", __func__,
+		pr_debug("%s: Invalid stream type %d\n", __func__,
 			substream->stream);
 		return -EINVAL;
 	}
@@ -4947,7 +4947,7 @@ static int taiko_esxxx_hw_params(struct snd_pcm_substream *substream,
 		struct snd_soc_dai *dai)
 {
 	int rc = 0;
-	pr_info("%s: dai_name = %s DAI-ID %x rate %d num_ch %d\n", __func__,
+	pr_debug("%s: dai_name = %s DAI-ID %x rate %d num_ch %d\n", __func__,
 			dai->name, dai->id, params_rate(params),
 			params_channels(params));
 
@@ -4968,7 +4968,7 @@ static int taiko_esxxx_set_channel_map(struct snd_soc_dai *dai,
 	unsigned int taiko_rx_num = 0;
 	unsigned int taiko_rx_slot[6];
 	int rc = 0;
-	pr_info("%s(): dai_name = %s DAI-ID %x tx_ch %d rx_ch %d\n",
+	pr_debug("%s(): dai_name = %s DAI-ID %x tx_ch %d rx_ch %d\n",
 			__func__, dai->name, dai->id, tx_num, rx_num);
 
 	if (remote_route_enable(dai)) {
@@ -4992,7 +4992,7 @@ static int taiko_esxxx_get_channel_map(struct snd_soc_dai *dai,
 {
 	int rc = 0;
 
-	pr_info("%s(): dai_name = %s DAI-ID %d tx_ch %d rx_ch %d\n",
+	pr_debug("%s(): dai_name = %s DAI-ID %d tx_ch %d rx_ch %d\n",
 			__func__, dai->name, dai->id, *tx_num, *rx_num);
 
 	if (remote_route_enable(dai))
@@ -5021,7 +5021,7 @@ static int taiko_es325_hw_params(struct snd_pcm_substream *substream,
 		struct snd_soc_dai *dai)
 {
 	int rc = 0;
-	dev_info(dai->dev,"%s: dai_name = %s DAI-ID %x rate %d num_ch %d\n", __func__,
+	dev_dbg(dai->dev,"%s: dai_name = %s DAI-ID %x rate %d num_ch %d\n", __func__,
 			dai->name, dai->id, params_rate(params),
 			params_channels(params));
 
@@ -5344,7 +5344,7 @@ static int taiko_codec_enable_slim_chmask(struct wcd9xxx_codec_dai_data *dai,
 		list_for_each_entry(ch, &dai->wcd9xxx_ch_list, list) {
 			ret = wcd9xxx_get_slave_port(ch->ch_num);
 			if (ret < 0) {
-				pr_err("%s: Invalid slave port ID: %d\n",
+				pr_debug("%s: Invalid slave port ID: %d\n",
 				       __func__, ret);
 				ret = -EINVAL;
 			} else {
@@ -5356,7 +5356,7 @@ static int taiko_codec_enable_slim_chmask(struct wcd9xxx_codec_dai_data *dai,
 					 msecs_to_jiffies(
 						     TAIKO_SLIM_CLOSE_TIMEOUT));
 		if (!ret) {
-			pr_err("%s: Slim close tx/rx wait timeout\n", __func__);
+			pr_debug("%s: Slim close tx/rx wait timeout\n", __func__);
 			ret = -ETIMEDOUT;
 		} else {
 			ret = 0;
@@ -5373,7 +5373,7 @@ static void taiko_codec_enable_int_port(struct wcd9xxx_codec_dai_data *dai,
 	unsigned short reg = 0;
 	u8 val = 0;
 	if (!dai || !codec) {
-		pr_err("%s: Invalid params\n", __func__);
+		pr_debug("%s: Invalid params\n", __func__);
 		return;
 	}
 	list_for_each_entry(ch, &dai->wcd9xxx_ch_list, list) {
@@ -5478,7 +5478,7 @@ static int taiko_codec_enable_slimvi_feedback(struct snd_soc_dapm_widget *w,
 	struct wcd9xxx_codec_dai_data *dai = NULL;
 
 	if (!w || !w->codec) {
-		pr_err("%s invalid params\n", __func__);
+		pr_debug("%s invalid params\n", __func__);
 		return -EINVAL;
 	}
 	codec = w->codec;
@@ -5490,14 +5490,14 @@ static int taiko_codec_enable_slimvi_feedback(struct snd_soc_dapm_widget *w,
 
 	/* Execute the callback only if interface type is slimbus */
 	if (taiko_p->intf_type != WCD9XXX_INTERFACE_TYPE_SLIMBUS) {
-		pr_err("%s Interface is not correct", __func__);
+		pr_debug("%s Interface is not correct", __func__);
 		return 0;
 	}
 
 	pr_debug("%s(): w->name %s event %d w->shift %d\n",
 		__func__, w->name, event, w->shift);
 	if (w->shift != AIF4_VIFEED) {
-		pr_err("%s Error in enabling the tx path\n", __func__);
+		pr_debug("%s Error in enabling the tx path\n", __func__);
 		ret = -EINVAL;
 		goto out_vi;
 	}
@@ -5521,7 +5521,7 @@ static int taiko_codec_enable_slimvi_feedback(struct snd_soc_dapm_widget *w,
 		ret = wcd9xxx_close_slim_sch_tx(core, &dai->wcd9xxx_ch_list,
 						dai->grph);
 		if (ret)
-			pr_err("%s error in close_slim_sch_tx %d\n",
+			pr_debug("%s error in close_slim_sch_tx %d\n",
 				__func__, ret);
 		ret = taiko_codec_enable_slim_chmask(dai, false);
 		if (ret < 0) {
@@ -6230,11 +6230,11 @@ static irqreturn_t taiko_slimbus_irq(int irq, void *data)
 		val = wcd9xxx_interface_reg_read(codec->control_data,
 					TAIKO_SLIM_PGD_PORT_INT_RX_SOURCE0 + j);
 		if (val & TAIKO_SLIM_IRQ_OVERFLOW)
-			pr_err_ratelimited(
+			pr_debug_ratelimited(
 			   "%s: overflow error on %s port %d, value %x\n",
 			   __func__, (tx ? "TX" : "RX"), port_id, val);
 		if (val & TAIKO_SLIM_IRQ_UNDERFLOW)
-			pr_err_ratelimited(
+			pr_debug_ratelimited(
 			   "%s: underflow error on %s port %d, value %x\n",
 			   __func__, (tx ? "TX" : "RX"), port_id, val);
 		if ((val & TAIKO_SLIM_IRQ_OVERFLOW) ||
@@ -6303,7 +6303,7 @@ static int taiko_handle_pdata(struct taiko_priv *taiko)
 	u8 anc_ctl_value = 0;
 
 	if (!pdata) {
-		pr_err("%s: NULL pdata\n", __func__);
+		pr_debug("%s: NULL pdata\n", __func__);
 		rc = -ENODEV;
 		goto done;
 	}
@@ -6408,7 +6408,7 @@ static int taiko_handle_pdata(struct taiko_priv *taiko)
 				snd_soc_write(codec, TAIKO_A_BIAS_REF_CTL,
 					      0x1E);
 			} else {
-				pr_err("%s: unsupported CDC_VDDA_RX voltage\n"
+				pr_debug("%s: unsupported CDC_VDDA_RX voltage\n"
 				       "min %d, max %d\n", __func__,
 				       pdata->regulator[i].min_uV,
 				       pdata->regulator[i].max_uV);
@@ -6455,7 +6455,7 @@ static int taiko_handle_pdata(struct taiko_priv *taiko)
 			anc_ctl_value = WCD9XXX_ANC_DMIC_X2_OFF;
 			break;
 		default:
-			pr_err("%s Invalid sample rate %d for mclk %d\n",
+			pr_debug("%s Invalid sample rate %d for mclk %d\n",
 			__func__, pdata->dmic_sample_rate, pdata->mclk_rate);
 			rc = -EINVAL;
 			goto done;
@@ -6483,14 +6483,14 @@ static int taiko_handle_pdata(struct taiko_priv *taiko)
 			anc_ctl_value = WCD9XXX_ANC_DMIC_X2_OFF;
 			break;
 		default:
-			pr_err("%s Invalid sample rate %d for mclk %d\n",
+			pr_debug("%s Invalid sample rate %d for mclk %d\n",
 			__func__, pdata->dmic_sample_rate, pdata->mclk_rate);
 			rc = -EINVAL;
 			goto done;
 			break;
 		}
 	} else {
-		pr_err("%s MCLK is not set!\n", __func__);
+		pr_debug("%s MCLK is not set!\n", __func__);
 		rc = -EINVAL;
 		goto done;
 	}
@@ -6791,7 +6791,7 @@ static void taiko_codec_init_reg(struct snd_soc_codec *codec)
 
 	for (i = 0; i < ARRAY_SIZE(taiko_codec_reg_init_val); i++) {
 #if 0
-		 pr_info("Taiko Init: Reg: %u Mask: %u Val: %u ",
+		 pr_debug("Taiko Init: Reg: %u Mask: %u Val: %u ",
 		 taiko_codec_reg_init_val[i].reg,
 		 taiko_codec_reg_init_val[i].mask,
 		 taiko_codec_reg_init_val[i].val);
@@ -6823,7 +6823,7 @@ static int taiko_setup_irqs(struct taiko_priv *taiko)
 	ret = wcd9xxx_request_irq(core_res, WCD9XXX_IRQ_SLIMBUS,
 				  taiko_slimbus_irq, "SLIMBUS Slave", taiko);
 	if (ret)
-		pr_err("%s: Failed to request irq %d\n", __func__,
+		pr_debug("%s: Failed to request irq %d\n", __func__,
 		       WCD9XXX_IRQ_SLIMBUS);
 	else
 		taiko_slim_interface_init_reg(codec);
@@ -7139,7 +7139,7 @@ static int taiko_post_reset_cb(struct wcd9xxx *wcd9xxx)
             codec->reg_cache = kmemdup(codec->reg_def_copy,
                                             codec->reg_size, GFP_KERNEL);
             if (!codec->reg_cache) {
-                pr_err("%s: Cache update failed!\n", __func__);
+                pr_debug("%s: Cache update failed!\n", __func__);
                 mutex_unlock(&codec->mutex);
                 return -ENOMEM;
             }
@@ -7161,7 +7161,7 @@ static int taiko_post_reset_cb(struct wcd9xxx *wcd9xxx)
 
 	ret = taiko_handle_pdata(taiko);
 	if (IS_ERR_VALUE(ret))
-		pr_err("%s: bad pdata\n", __func__);
+		pr_debug("%s: bad pdata\n", __func__);
 
 	taiko_init_slim_slave_cfg(codec);
 	taiko_slim_interface_init_reg(codec);
@@ -7182,7 +7182,7 @@ static int taiko_post_reset_cb(struct wcd9xxx *wcd9xxx)
 					&mbhc_cb, &cdc_intr_ids,
 					rco_clk_rate, false);
 		if (ret)
-			pr_err("%s: mbhc init failed %d\n", __func__, ret);
+			pr_debug("%s: mbhc init failed %d\n", __func__, ret);
 		else
 			taiko_hs_detect(codec, taiko->mbhc.mbhc_cfg);
 	}
@@ -7194,7 +7194,7 @@ static int taiko_post_reset_cb(struct wcd9xxx *wcd9xxx)
 	taiko_cleanup_irqs(taiko);
 	ret = taiko_setup_irqs(taiko);
 	if (ret)
-		pr_err("%s: Failed to setup irq: %d\n", __func__, ret);
+		pr_debug("%s: Failed to setup irq: %d\n", __func__, ret);
 
 	for (count = 0; count < NUM_CODEC_DAIS; count++)
 		taiko->dai[count].bus_down_in_recovery = true;
@@ -7229,7 +7229,7 @@ void *taiko_get_afe_config(struct snd_soc_codec *codec,
 		else
 			return NULL;
 	default:
-		pr_err("%s: Unknown config_type 0x%x\n", __func__, config_type);
+		pr_debug("%s: Unknown config_type 0x%x\n", __func__, config_type);
 		return NULL;
 	}
 }
@@ -7563,11 +7563,11 @@ static int taiko_codec_probe(struct snd_soc_codec *codec)
 	wcd9xxx_ssr_register(control, taiko_device_down,
 			     taiko_post_reset_cb, (void *)codec);
 
-	dev_info(codec->dev, "%s()\n", __func__);
+	dev_dbg(codec->dev, "%s()\n", __func__);
 
 	taiko = kzalloc(sizeof(struct taiko_priv), GFP_KERNEL);
 	if (!taiko) {
-		dev_err(codec->dev, "Failed to allocate private data\n");
+		dev_dbg(codec->dev, "Failed to allocate private data\n");
 		return -ENOMEM;
 	}
 	for (i = 0 ; i < NUM_DECIMATORS; i++) {
@@ -7587,7 +7587,7 @@ static int taiko_codec_probe(struct snd_soc_codec *codec)
 				  &pdata->micbias, &taiko_reg_address,
 				  WCD9XXX_CDC_TYPE_TAIKO);
 	if (ret) {
-		pr_err("%s: wcd9xxx init failed %d\n", __func__, ret);
+		pr_debug("%s: wcd9xxx init failed %d\n", __func__, ret);
 		goto err_init;
 	}
 
@@ -7610,7 +7610,7 @@ static int taiko_codec_probe(struct snd_soc_codec *codec)
 				&mbhc_cb, &cdc_intr_ids,
 				rco_clk_rate, false);
 	if (ret) {
-		pr_err("%s: mbhc init failed %d\n", __func__, ret);
+		pr_debug("%s: mbhc init failed %d\n", __func__, ret);
 		goto err_init;
 	}
 #endif
@@ -7634,7 +7634,7 @@ static int taiko_codec_probe(struct snd_soc_codec *codec)
 	taiko_codec_init_reg(codec);
 	ret = taiko_handle_pdata(taiko);
 	if (IS_ERR_VALUE(ret)) {
-		pr_err("%s: bad pdata\n", __func__);
+		pr_debug("%s: bad pdata\n", __func__);
 		goto err_pdata;
 	}
 
@@ -7657,7 +7657,7 @@ static int taiko_codec_probe(struct snd_soc_codec *codec)
 	ptr = kmalloc((sizeof(taiko_rx_chs) +
 		       sizeof(taiko_tx_chs)), GFP_KERNEL);
 	if (!ptr) {
-		pr_err("%s: no mem for slim chan ctl data\n", __func__);
+		pr_debug("%s: no mem for slim chan ctl data\n", __func__);
 		ret = -ENOMEM;
 		goto err_nomem_slimch;
 	}
@@ -7718,7 +7718,7 @@ static int taiko_codec_probe(struct snd_soc_codec *codec)
 
 	ret = taiko_setup_irqs(taiko);
 	if (ret) {
-		pr_err("%s: taiko irq setup failed %d\n", __func__, ret);
+		pr_debug("%s: taiko irq setup failed %d\n", __func__, ret);
 		goto err_irq;
 	}
 
@@ -7743,9 +7743,9 @@ static int taiko_codec_probe(struct snd_soc_codec *codec)
 	hph_r_pa_ctl_default = wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_R_PA_CTL);
 	hph_bias_pa_default = wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_BIAS_PA);
 
-	pr_info("Sound Control: TAIKO_A_RX_HPH_L_PA_CTL default reg value: 0x%x\n", hph_l_pa_ctl_default);
-	pr_info("Sound Control: TAIKO_A_RX_HPH_R_PA_CTL default reg value: 0x%x\n", hph_r_pa_ctl_default);
-	pr_info("Sound Control: TAIKO_A_RX_HPH_BIAS_PA default reg value: 0x%x\n", hph_bias_pa_default);
+	pr_debug("Sound Control: TAIKO_A_RX_HPH_L_PA_CTL default reg value: 0x%x\n", hph_l_pa_ctl_default);
+	pr_debug("Sound Control: TAIKO_A_RX_HPH_R_PA_CTL default reg value: 0x%x\n", hph_r_pa_ctl_default);
+	pr_debug("Sound Control: TAIKO_A_RX_HPH_BIAS_PA default reg value: 0x%x\n", hph_bias_pa_default);
 
 	sound_control_kobj = kobject_create_and_add("sound_control", kernel_kobj);
 	if (sound_control_kobj) {
@@ -7828,7 +7828,7 @@ static int taiko_resume(struct device *dev)
 	struct taiko_priv *taiko = platform_get_drvdata(pdev);
 
 	if (!taiko) {
-		dev_err(dev, "%s: taiko private data is NULL\n", __func__);
+		dev_dbg(dev, "%s: taiko private data is NULL\n", __func__);
 		return -ENODEV;
 	}
 	dev_dbg(dev, "%s: system resume\n", __func__);
