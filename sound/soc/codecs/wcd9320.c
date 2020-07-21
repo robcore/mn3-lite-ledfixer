@@ -8783,7 +8783,7 @@ static ssize_t allregs_show(struct kobject *kobj, struct kobj_attribute *attr, c
 				   TAIKO_A_CDC_PA_RAMP_B1_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_PA_RAMP_B1_CTL),
 				   TAIKO_A_CDC_PA_RAMP_B2_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_PA_RAMP_B2_CTL),
 				   TAIKO_A_CDC_PA_RAMP_B3_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_PA_RAMP_B3_CTL),
-				   TAIKO_A_CDC_PA_RAMP_B4_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_PA_RAMP_B4_CTL);
+				   TAIKO_A_CDC_PA_RAMP_B4_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_PA_RAMP_B4_CTL));
 }
 
 #if 0
