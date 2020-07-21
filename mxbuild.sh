@@ -66,7 +66,6 @@ timerdiff() {
 	printf "%s" "$(date +%s)" > "$RDIR/.endtime"
 	ENDTIME="$(cat $RDIR/.endtime)"
 	DIFFTIME=$(( ENDTIME - STARTTIME ))
-	timerprint "$DIFFTIME"
 
 }
 
@@ -555,7 +554,7 @@ create_zip() {
 	fi
 	adb kill-server || echo "Failed to kill ADB server!"
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR"
-
+	timerprint "$DIFFTIME"
 }
 
 #CREATE_TAR()
