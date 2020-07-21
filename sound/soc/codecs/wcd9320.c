@@ -1026,7 +1026,7 @@ static void taiko_discharge_comp(struct snd_soc_codec *codec, int comp)
 	snd_soc_write(codec, TAIKO_A_CDC_COMP0_B3_CTL + (comp * 8), 0x01);
 
 	/* Worst case timeout for compander CnP sleep timeout */
-	usleep_range(3000, 3000);
+	usleep_range(3000, 3100);
 }
 
 static enum wcd9xxx_buck_volt taiko_codec_get_buck_mv(
@@ -3516,6 +3516,9 @@ static int taiko_hph_pa_event(struct snd_soc_dapm_widget *w,
 			set_high_perf_mode(1);
 		break;
 	case SND_SOC_DAPM_POST_PMD:
+		hpwidget = false;
+		set_uhqa_mode(0);
+		set_high_perf_mode(0);
 		usleep_range(pa_settle_time, pa_settle_time + 1000);
 		pr_debug("%s: sleep %d us after %s PA disable\n", __func__,
 				pa_settle_time, w->name);
@@ -3527,9 +3530,7 @@ static int taiko_hph_pa_event(struct snd_soc_dapm_widget *w,
 						 req_clsh_state,
 						 WCD9XXX_CLSH_REQ_DISABLE,
 						 WCD9XXX_CLSH_EVENT_POST_PA);
-		hpwidget = false;
-		set_uhqa_mode(0);
-		set_high_perf_mode(0);
+
 		break;
 	}
 	return 0;
@@ -6642,7 +6643,7 @@ static const struct wcd9xxx_reg_mask_val taiko_1_0_reg_defaults[] = {
 	/* Reduce LINE DAC bias to 70% */
 	TAIKO_REG_VAL(TAIKO_A_RX_LINE_BIAS_PA, 0x7A),
 	/* Reduce HPH DAC bias to 70% */
-	TAIKO_REG_VAL(TAIKO_A_RX_HPH_BIAS_PA, 0xAA),
+	TAIKO_REG_VAL(TAIKO_A_RX_HPH_BIAS_PA, 0x7A),
 
 	/*
 	 * There is a diode to pull down the micbias while doing
@@ -6680,7 +6681,7 @@ static const struct wcd9xxx_reg_mask_val taiko_2_0_reg_defaults[] = {
 	TAIKO_REG_VAL(TAIKO_A_BUCK_CTRL_CCL_4, 0x51),
 	TAIKO_REG_VAL(TAIKO_A_NCP_DTEST, 0x10),
 	TAIKO_REG_VAL(TAIKO_A_RX_HPH_CHOP_CTL, 0xA4),
-	TAIKO_REG_VAL(TAIKO_A_RX_HPH_BIAS_PA, 0xAA),
+	TAIKO_REG_VAL(TAIKO_A_RX_HPH_BIAS_PA, 0x7A),
 	TAIKO_REG_VAL(TAIKO_A_RX_HPH_OCP_CTL, 0x6B),
 	TAIKO_REG_VAL(TAIKO_A_RX_HPH_CNP_WG_CTL, 0xDA),
 	TAIKO_REG_VAL(TAIKO_A_RX_HPH_CNP_WG_TIME, 0x15),
