@@ -32,7 +32,7 @@ do
 	echo -n "$VALLINE" >> "$CFILE"
 	if [ "$VALLINE" = "TAIKO_A_CDC_PA_RAMP_B4_CTL" ]
 	then
-		echo ");" >> "$CFILE"
+		echo "));" >> "$CFILE"
 		echo '}' >> "$CFILE"
 	else
 		echo '),' >> "$CFILE"
