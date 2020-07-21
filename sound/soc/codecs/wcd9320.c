@@ -1614,6 +1614,37 @@ static const struct snd_kcontrol_new taiko_2_x_analog_gain_controls[] = {
 static int taiko_hph_impedance_get(struct snd_kcontrol *kcontrol,
 				   struct snd_ctl_elem_value *ucontrol)
 {
+#if defined(CONFIG_MACH_KLTE_KOR)
+	if (system_rev >= 13) {
+		uint32_t zl, zr;
+		bool hphr;
+		struct soc_multi_mixer_control *mc;
+		struct snd_soc_codec *codec = snd_kcontrol_chip(kcontrol);
+		struct taiko_priv *priv = snd_soc_codec_get_drvdata(codec);
+
+		mc = (struct soc_multi_mixer_control *)(kcontrol->private_value);
+
+		hphr = mc->shift;
+		wcd9xxx_mbhc_get_impedance(&priv->mbhc, &zl, &zr);
+		pr_debug("%s: zl %u, zr %u\n", __func__, zl, zr);
+		ucontrol->value.integer.value[0] = hphr ? zr : zl;
+	}
+#elif defined(CONFIG_MACH_KLTE_JPN)
+	if (system_rev >= 11) {
+		uint32_t zl, zr;
+		bool hphr;
+		struct soc_multi_mixer_control *mc;
+		struct snd_soc_codec *codec = snd_kcontrol_chip(kcontrol);
+		struct taiko_priv *priv = snd_soc_codec_get_drvdata(codec);
+
+		mc = (struct soc_multi_mixer_control *)(kcontrol->private_value);
+
+		hphr = mc->shift;
+		wcd9xxx_mbhc_get_impedance(&priv->mbhc, &zl, &zr);
+		pr_debug("%s: zl %u, zr %u\n", __func__, zl, zr);
+		ucontrol->value.integer.value[0] = hphr ? zr : zl;
+	}
+#else
 #if !defined(CONFIG_SAMSUNG_JACK) && !defined(CONFIG_MUIC_DET_JACK)
 	uint32_t zl, zr;
 	bool hphr;
@@ -1627,6 +1658,7 @@ static int taiko_hph_impedance_get(struct snd_kcontrol *kcontrol,
 	wcd9xxx_mbhc_get_impedance(&priv->mbhc, &zl, &zr);
 	pr_debug("%s: zl %u, zr %u\n", __func__, zl, zr);
 	ucontrol->value.integer.value[0] = hphr ? zr : zl;
+#endif
 #endif
 	ucontrol->value.integer.value[0] = 0;
 	return 0;
@@ -6610,7 +6642,7 @@ static const struct wcd9xxx_reg_mask_val taiko_1_0_reg_defaults[] = {
 	/* Reduce LINE DAC bias to 70% */
 	TAIKO_REG_VAL(TAIKO_A_RX_LINE_BIAS_PA, 0x7A),
 	/* Reduce HPH DAC bias to 70% */
-	TAIKO_REG_VAL(TAIKO_A_RX_HPH_BIAS_PA, 0x7A),
+	TAIKO_REG_VAL(TAIKO_A_RX_HPH_BIAS_PA, 0xAA),
 
 	/*
 	 * There is a diode to pull down the micbias while doing
@@ -6648,7 +6680,7 @@ static const struct wcd9xxx_reg_mask_val taiko_2_0_reg_defaults[] = {
 	TAIKO_REG_VAL(TAIKO_A_BUCK_CTRL_CCL_4, 0x51),
 	TAIKO_REG_VAL(TAIKO_A_NCP_DTEST, 0x10),
 	TAIKO_REG_VAL(TAIKO_A_RX_HPH_CHOP_CTL, 0xA4),
-	TAIKO_REG_VAL(TAIKO_A_RX_HPH_BIAS_PA, 0x7A),
+	TAIKO_REG_VAL(TAIKO_A_RX_HPH_BIAS_PA, 0xAA),
 	TAIKO_REG_VAL(TAIKO_A_RX_HPH_OCP_CTL, 0x6B),
 	TAIKO_REG_VAL(TAIKO_A_RX_HPH_CNP_WG_CTL, 0xDA),
 	TAIKO_REG_VAL(TAIKO_A_RX_HPH_CNP_WG_TIME, 0x15),
@@ -7068,26 +7100,21 @@ static int taiko_setup_zdet(struct wcd9xxx_mbhc *mbhc,
 static void taiko_compute_impedance(s16 *l, s16 *r, uint32_t *zl, uint32_t *zr)
 {
 
-	int64_t rl = 0, rr = 0; /* milliohm */
-	int zld, zrd;
+	int64_t rl, rr = 0; /* milliohm */
 	const int alphal = 364; /* 0.005555 * 65536 = 364.05 */
 	const int alphar = 364; /* 0.005555 * 65536 = 364.05 */
 	const int beta = 3855; /* 0.011765 * 5 * 65536 = 3855.15 */
 	const int rref = 11333; /* not scaled up */
 	const int shift = 16;
 
-	zld = l[0] - l[2];
-	if (zld)
-		rl = (int)(l[0] - l[1]) * 1000 / zld;
+	rl = (int)(l[0] - l[1]) * 1000 / (l[0] - l[2]);
 	rl = rl * rref * alphal;
 	rl = rl >> shift;
 	rl = rl * beta;
 	rl = rl >> shift;
 	*zl = rl;
 
-	zrd = r[0] - r[2];
-	if (zrd)
-		rr = (int)(r[0] - r[1]) * 1000 / zrd;
+	rr = (int)(r[0] - r[1]) * 1000 / (r[0] - r[2]);
 	rr = rr * rref  * alphar;
 	rr = rr >> shift;
 	rr = rr * beta;
@@ -8957,6 +8984,31 @@ static int taiko_codec_probe(struct snd_soc_codec *codec)
 		rco_clk_rate = TAIKO_MCLK_CLK_9P6MHZ;
 		wcd9xxx_hw_revision = 2;
 	}
+#if defined(CONFIG_MACH_KLTE_KOR)
+	if (system_rev >= 13) {
+		/* init and start mbhc */
+		ret = wcd9xxx_mbhc_init(&taiko->mbhc, &taiko->resmgr, codec,
+					taiko_enable_mbhc_micbias,
+					&mbhc_cb, &cdc_intr_ids,
+					rco_clk_rate, false);
+		if (ret) {
+			pr_err("%s: mbhc init failed %d\n", __func__, ret);
+			goto err_init;
+		}
+	}
+#elif defined(CONFIG_MACH_KLTE_JPN)
+	if (system_rev >= 11) {
+		/* init and start mbhc */
+		ret = wcd9xxx_mbhc_init(&taiko->mbhc, &taiko->resmgr, codec,
+					taiko_enable_mbhc_micbias,
+					&mbhc_cb, &cdc_intr_ids,
+					rco_clk_rate, false);
+		if (ret) {
+			pr_err("%s: mbhc init failed %d\n", __func__, ret);
+			goto err_init;
+		}
+	}
+#else
 #if !defined(CONFIG_SAMSUNG_JACK) && !defined(CONFIG_MUIC_DET_JACK)
 	/* init and start mbhc */
 	ret = wcd9xxx_mbhc_init(&taiko->mbhc, &taiko->resmgr, codec,
@@ -8968,6 +9020,8 @@ static int taiko_codec_probe(struct snd_soc_codec *codec)
 		goto err_init;
 	}
 #endif
+#endif
+
 	taiko->codec = codec;
 	for (i = 0; i < COMPANDER_MAX; i++) {
 		taiko->comp_enabled[i] = 0;
@@ -9135,9 +9189,28 @@ static int taiko_codec_remove(struct snd_soc_codec *codec)
 	WCD9XXX_BG_CLK_UNLOCK(&taiko->resmgr);
 
 	taiko_cleanup_irqs(taiko);
+
+#if defined(CONFIG_MACH_KLTE_KOR)
+	if (system_rev >= 13) {
+		/* cleanup MBHC */
+		wcd9xxx_mbhc_deinit(&taiko->mbhc);
+	}
+#elif defined(CONFIG_MACH_KLTE_JPN)
+	if (system_rev >= 11) {
+		/* cleanup MBHC */
+		wcd9xxx_mbhc_deinit(&taiko->mbhc);
+	}
+#else
 #if !defined(CONFIG_SAMSUNG_JACK) && !defined(CONFIG_MUIC_DET_JACK)
 	/* cleanup MBHC */
 	wcd9xxx_mbhc_deinit(&taiko->mbhc);
+#elif defined(CONFIG_SEC_JACTIVE_PROJECT)
+	pr_info("taiko_codec_remove system_rev %d",system_rev);
+	if(system_rev < 3)
+	{
+		wcd9xxx_mbhc_deinit(&taiko->mbhc);
+	}
+#endif
 #endif
 	/* cleanup resmgr */
 	wcd9xxx_resmgr_deinit(&taiko->resmgr);
