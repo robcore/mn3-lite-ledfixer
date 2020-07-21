@@ -7441,6 +7441,7 @@ static ssize_t high_perf_mode_store(struct kobject *kobj,
 	return count;
 }
 
+#if 0
 static ssize_t allregs_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
 	return sprintf(buf,
@@ -8785,7 +8786,7 @@ static ssize_t allregs_show(struct kobject *kobj, struct kobj_attribute *attr, c
 				   TAIKO_A_CDC_PA_RAMP_B3_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_PA_RAMP_B3_CTL),
 				   TAIKO_A_CDC_PA_RAMP_B4_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_PA_RAMP_B4_CTL));
 }
-
+#endif
 #if 0
 static ssize_t headphone_pa_gain_raw_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf) {
@@ -8860,11 +8861,12 @@ static struct kobj_attribute high_perf_mode_attribute =
 		high_perf_mode_show,
 		high_perf_mode_store);
 
+#if 0
 static struct kobj_attribute allregs_attribute =
 	__ATTR(allregs, 0444,
 		allregs_show,
 		NULL);
-
+#endif
 #if 0
 static struct kobj_attribute headphone_pa_gain_attribute =
 	__ATTR(headphone_pa_gain, 0644,
@@ -8882,7 +8884,7 @@ static struct attribute *sound_control_attrs[] = {
 		&speaker_gain_attribute.attr,
 		&uhqa_mode_attribute.attr,
 		&high_perf_mode_attribute.attr,
-		&allregs_attribute.attr,
+//		&allregs_attribute.attr,
 #if 0
 		&headphone_pa_gain_attribute.attr,
 		&headphone_pa_gain_raw_attribute.attr,
