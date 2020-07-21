@@ -6,7 +6,8 @@ static ssize_t headphone_gain_show(struct kobject *kobj, struct kobj_attribute *
 	rightval = show_sound_value(TAIKO_A_CDC_RX2_VOL_CTL_B2_CTL);
 	return sprintf(buf, "%d %d\n", leftval, rightval);
 }
-
+#define TAIKO_MAD_AUDIO_FIRMWARE_PATH "wcd9320/wcd9320_mad_audio.bin"
+const char *filename = TAIKO_MAD_AUDIO_FIRMWARE_PATH;
 TAIKO_A_CHIP_CTL
 TAIKO_A_CHIP_STATUS
 TAIKO_A_CHIP_ID_BYTE_0
