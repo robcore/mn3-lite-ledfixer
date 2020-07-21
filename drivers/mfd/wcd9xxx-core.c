@@ -188,13 +188,22 @@ static int __wcd9xxx_reg_write(struct wcd9xxx *wcd9xxx,
 		mutex_lock(&wcd9xxx->io_lock);
 		switch (reg) {
 			case 0x2B7:
-				ret = wcd9xxx_write(wcd9xxx, reg, 1, &hphl_cached_gain, false);
+				if (val == 0)
+					ret = wcd9xxx_write(wcd9xxx, reg, 1, &val, false);
+				else
+					ret = wcd9xxx_write(wcd9xxx, reg, 1, &hphl_cached_gain, false);
 				break;
 			case 0x2BF:
-				ret = wcd9xxx_write(wcd9xxx, reg, 1, &hphr_cached_gain, false);
+				if (val == 0)
+					ret = wcd9xxx_write(wcd9xxx, reg, 1, &val, false);
+				else
+					ret = wcd9xxx_write(wcd9xxx, reg, 1, &hphr_cached_gain, false);
 				break;
 			case 0x2E7:
-				ret = wcd9xxx_write(wcd9xxx, reg, 1, &speaker_cached_gain, false);
+				if (val == 0)
+					ret = wcd9xxx_write(wcd9xxx, reg, 1, &val, false);
+				else
+					ret = wcd9xxx_write(wcd9xxx, reg, 1, &speaker_cached_gain, false);
 				break;
 			default:
 				break;
