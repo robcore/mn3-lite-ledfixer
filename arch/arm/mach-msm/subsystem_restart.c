@@ -843,7 +843,7 @@ int subsystem_restart_dev(struct subsys_device *dev)
 				name, restart_levels[dev->restart_level], enable_ramdumps);
 	}
 #endif
-
+	
 	pr_info("Restart sequence requested for %s, restart_level = %s.\n",
 		name, restart_levels[dev->restart_level]);
 
