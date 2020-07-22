@@ -270,9 +270,6 @@ u8 hphl_cached_gain = 0;
 u8 hphr_cached_gain = 0;
 u8 speaker_cached_gain = 0;
 static unsigned int high_perf_mode = 0;
-unsigned int hph_l_pa_ctl_default;
-unsigned int hph_r_pa_ctl_default;
-unsigned int hph_bias_pa_default;
 
 #if 0
 u32 hphl_pa_gain = 0x20;
@@ -295,38 +292,18 @@ static void update_headphone_gain(void) {
 }
 
 static void set_high_perf_mode(unsigned int enable) {
-	if (!hpwidget) {
-		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_BIAS_PA, hph_bias_pa_default);
-		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_L_PA_CTL, hph_r_pa_ctl_default);
-		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_R_PA_CTL, hph_l_pa_ctl_default);
+	if (!hpwidget || !enable)
 		return;
-	}
-
-	if (enable) {
-		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_L_PA_CTL, 0x48);
-		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_R_PA_CTL, 0x48);
-		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_BIAS_PA,  0xAA);
-	} else {
-/*
-		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_BIAS_PA, 0x55);
-		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_L_PA_CTL, 0x40);
-		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_R_PA_CTL, 0x40);
-*/
-		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_BIAS_PA, hph_bias_pa_default);
-		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_L_PA_CTL, hph_r_pa_ctl_default);
-		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_R_PA_CTL, hph_l_pa_ctl_default);
-	}
+	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_L_PA_CTL, 0x48);
+	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_R_PA_CTL, 0x48);
+	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_BIAS_PA,  0xAA);
 }
 
 static void set_uhqa_mode(unsigned int enable) {
-	if (!hpwidget) {
-		snd_soc_update_bits(direct_codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20);
-	}
+	if (!hpwidget || !enable)
+		return;
 
-	if (enable)
-		snd_soc_update_bits(direct_codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x00);
-	else
-		snd_soc_update_bits(direct_codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20);
+	snd_soc_update_bits(direct_codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x00);
 }
 
 #define WCD9320_RATES (SNDRV_PCM_RATE_8000 | SNDRV_PCM_RATE_16000 |\
@@ -349,7 +326,7 @@ static void set_uhqa_mode(unsigned int enable) {
 #define TAIKO_MCLK_CLK_9P6MHZ 9600000
 
 #define TAIKO_FORMATS_S16_S24_LE (SNDRV_PCM_FMTBIT_S16_LE | \
-			SNDRV_PCM_FORMAT_S24_LE)
+			SNDRV_PCM_FMTBIT_S24_LE)
 
 #define TAIKO_FORMATS (SNDRV_PCM_FMTBIT_S16_LE)
 
@@ -596,7 +573,7 @@ static const struct comp_sample_dependent_params comp_samp_params[] = {
 		/* 192 Khz */
 		.peak_det_timeout = 0x0B,
 		.rms_meter_div_fact = 0xC,
-		.rms_meter_resamp_fact = 0x50,
+		.rms_meter_resamp_fact = 0xA0,
 	},
 };
 
@@ -1026,7 +1003,7 @@ static void taiko_discharge_comp(struct snd_soc_codec *codec, int comp)
 	snd_soc_write(codec, TAIKO_A_CDC_COMP0_B3_CTL + (comp * 8), 0x01);
 
 	/* Worst case timeout for compander CnP sleep timeout */
-	usleep_range(3000, 3100);
+	usleep_range(3000, 3000);
 }
 
 static enum wcd9xxx_buck_volt taiko_codec_get_buck_mv(
@@ -1081,16 +1058,17 @@ static int taiko_config_compander(struct snd_soc_dapm_widget *w,
 		snd_soc_update_bits(codec,
 				    TAIKO_A_CDC_COMP0_FS_CFG + (comp * 8),
 				    0x07, rate);
-		/* Set the static gain offset */
-		if (comp == COMPANDER_1
-			&& buck_mv == WCD9XXX_CDC_BUCK_MV_1P8) {
-			snd_soc_update_bits(codec,
-					TAIKO_A_CDC_COMP0_B4_CTL + (comp * 8),
-					0x80, 0x80);
-		} else {
-			snd_soc_update_bits(codec,
+		/* Set the static gain offset for HPH Path */
+		if (comp == COMPANDER_1) {
+			if (buck_mv == WCD9XXX_CDC_BUCK_MV_2P15) {
+				snd_soc_update_bits(codec,
 					TAIKO_A_CDC_COMP0_B4_CTL + (comp * 8),
 					0x80, 0x00);
+			} else {
+				snd_soc_update_bits(codec,
+					TAIKO_A_CDC_COMP0_B4_CTL + (comp * 8),
+					0x80, 0x80);
+			}
 		}
 		/* Enable RX interpolation path compander clocks */
 		snd_soc_update_bits(codec, TAIKO_A_CDC_CLK_RX_B2_CTL,
@@ -1610,42 +1588,10 @@ static const struct snd_kcontrol_new taiko_2_x_analog_gain_controls[] = {
 	SOC_SINGLE_TLV("ADC6 Volume", TAIKO_A_CDC_TX_6_GAIN, 2, 19, 0,
 			analog_gain),
 };
-
+#if !defined(CONFIG_SAMSUNG_JACK) && !defined(CONFIG_MUIC_DET_JACK)
 static int taiko_hph_impedance_get(struct snd_kcontrol *kcontrol,
 				   struct snd_ctl_elem_value *ucontrol)
 {
-#if defined(CONFIG_MACH_KLTE_KOR)
-	if (system_rev >= 13) {
-		uint32_t zl, zr;
-		bool hphr;
-		struct soc_multi_mixer_control *mc;
-		struct snd_soc_codec *codec = snd_kcontrol_chip(kcontrol);
-		struct taiko_priv *priv = snd_soc_codec_get_drvdata(codec);
-
-		mc = (struct soc_multi_mixer_control *)(kcontrol->private_value);
-
-		hphr = mc->shift;
-		wcd9xxx_mbhc_get_impedance(&priv->mbhc, &zl, &zr);
-		pr_debug("%s: zl %u, zr %u\n", __func__, zl, zr);
-		ucontrol->value.integer.value[0] = hphr ? zr : zl;
-	}
-#elif defined(CONFIG_MACH_KLTE_JPN)
-	if (system_rev >= 11) {
-		uint32_t zl, zr;
-		bool hphr;
-		struct soc_multi_mixer_control *mc;
-		struct snd_soc_codec *codec = snd_kcontrol_chip(kcontrol);
-		struct taiko_priv *priv = snd_soc_codec_get_drvdata(codec);
-
-		mc = (struct soc_multi_mixer_control *)(kcontrol->private_value);
-
-		hphr = mc->shift;
-		wcd9xxx_mbhc_get_impedance(&priv->mbhc, &zl, &zr);
-		pr_debug("%s: zl %u, zr %u\n", __func__, zl, zr);
-		ucontrol->value.integer.value[0] = hphr ? zr : zl;
-	}
-#else
-#if !defined(CONFIG_SAMSUNG_JACK) && !defined(CONFIG_MUIC_DET_JACK)
 	uint32_t zl, zr;
 	bool hphr;
 	struct soc_multi_mixer_control *mc;
@@ -1658,7 +1604,6 @@ static int taiko_hph_impedance_get(struct snd_kcontrol *kcontrol,
 	wcd9xxx_mbhc_get_impedance(&priv->mbhc, &zl, &zr);
 	pr_debug("%s: zl %u, zr %u\n", __func__, zl, zr);
 	ucontrol->value.integer.value[0] = hphr ? zr : zl;
-#endif
 #endif
 	ucontrol->value.integer.value[0] = 0;
 	return 0;
@@ -6609,9 +6554,7 @@ static const struct wcd9xxx_reg_mask_val taiko_reg_defaults[] = {
 	TAIKO_REG_VAL(TAIKO_A_CDC_CONN_MAD, 0x01),
 
 	/* Set HPH Path to low power mode */
-#if 0
 	TAIKO_REG_VAL(TAIKO_A_RX_HPH_BIAS_PA, 0x55),
-#endif
 	/* BUCK default */
 	TAIKO_REG_VAL(WCD9XXX_A_BUCK_CTRL_CCL_4, 0x51),
 	TAIKO_REG_VAL(WCD9XXX_A_BUCK_CTRL_CCL_1, 0x5B),
@@ -7101,21 +7044,26 @@ static int taiko_setup_zdet(struct wcd9xxx_mbhc *mbhc,
 static void taiko_compute_impedance(s16 *l, s16 *r, uint32_t *zl, uint32_t *zr)
 {
 
-	int64_t rl, rr = 0; /* milliohm */
+	int64_t rl = 0, rr = 0; /* milliohm */
+	int zld, zrd;
 	const int alphal = 364; /* 0.005555 * 65536 = 364.05 */
 	const int alphar = 364; /* 0.005555 * 65536 = 364.05 */
 	const int beta = 3855; /* 0.011765 * 5 * 65536 = 3855.15 */
 	const int rref = 11333; /* not scaled up */
 	const int shift = 16;
 
-	rl = (int)(l[0] - l[1]) * 1000 / (l[0] - l[2]);
+	zld = l[0] - l[2];
+	if (zld)
+		rl = (int)(l[0] - l[1]) * 1000 / zld;
 	rl = rl * rref * alphal;
 	rl = rl >> shift;
 	rl = rl * beta;
 	rl = rl >> shift;
 	*zl = rl;
 
-	rr = (int)(r[0] - r[1]) * 1000 / (r[0] - r[2]);
+	zrd = r[0] - r[2];
+	if (zrd)
+		rr = (int)(r[0] - r[1]) * 1000 / zrd;
 	rr = rr * rref  * alphar;
 	rr = rr >> shift;
 	rr = rr * beta;
@@ -9147,14 +9095,6 @@ static int taiko_codec_probe(struct snd_soc_codec *codec)
 	direct_codec = codec;
 	if (codec->name)
 		pr_info("Sound Control: Probing Codec %s\n", codec->name);
-
-	hph_l_pa_ctl_default = wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_L_PA_CTL);
-	hph_r_pa_ctl_default = wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_R_PA_CTL);
-	hph_bias_pa_default = wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_BIAS_PA);
-
-	pr_debug("Sound Control: TAIKO_A_RX_HPH_L_PA_CTL default reg value: 0x%x\n", hph_l_pa_ctl_default);
-	pr_debug("Sound Control: TAIKO_A_RX_HPH_R_PA_CTL default reg value: 0x%x\n", hph_r_pa_ctl_default);
-	pr_debug("Sound Control: TAIKO_A_RX_HPH_BIAS_PA default reg value: 0x%x\n", hph_bias_pa_default);
 
 	sound_control_kobj = kobject_create_and_add("sound_control", kernel_kobj);
 	if (sound_control_kobj) {
