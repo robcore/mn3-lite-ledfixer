@@ -278,6 +278,16 @@ test_funcs() {
 
 }
 
+checkrecov() {
+	echo -n "Reboot into Recovery? [y|n]: "
+	read -r RECREBOOT
+	if [ "$RECREBOOT" = "y" ]
+	then
+		echo "Rebooting into TWRP Recovery"
+		adb reboot recovery
+	fi
+}
+
 handle_existing() {
 
 	if [ -z "$OLDVER" ]
@@ -654,18 +664,21 @@ do
 	extrargs="$2"
 	case "$1" in
 	     -a|--all)
+			checkrecov
 			handle_existing
 			build_all
 			break
 	    	;;
 
 	     -d|--debug)
+			checkrecov
 			handle_existing
 			build_debug
 			break
 	    	;;
 
 	     -r|--rebuildme)
+			checkrecov
 			rebuild
 			build_all
 			break
@@ -690,18 +703,21 @@ do
 			;;
 
 	     -k|--kernel)
+			checkrecov
 			handle_existing
 	    	build_kernel_and_package
 	    	break
 	    	;;
 
 	    -o|--kernel-only)
+			checkrecov
 			handle_existing
 	    	build_kernel
 	    	break
 	    	;;
 
 	     -rd|--ramdisk)
+			checkrecov
 			handle_existing
 	     	package_ramdisk_and_zip
 	    	break
