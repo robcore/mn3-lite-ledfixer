@@ -270,6 +270,9 @@ u8 hphl_cached_gain = 0;
 u8 hphr_cached_gain = 0;
 u8 speaker_cached_gain = 0;
 static unsigned int high_perf_mode = 0;
+unsigned int hph_l_pa_ctl_default;
+unsigned int hph_r_pa_ctl_default;
+unsigned int hph_bias_pa_default;
 
 #if 0
 u32 hphl_pa_gain = 0x20;
@@ -292,23 +295,38 @@ static void update_headphone_gain(void) {
 }
 
 static void set_high_perf_mode(unsigned int enable) {
-	if (!hpwidget || !enable) {
-		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_BIAS_PA,  0x7A);
-		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_L_PA_CTL, 0x40);
-		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_R_PA_CTL, 0x40);
+	if (!hpwidget) {
+		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_BIAS_PA, hph_bias_pa_default);
+		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_L_PA_CTL, hph_r_pa_ctl_default);
+		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_R_PA_CTL, hph_l_pa_ctl_default);
 		return;
 	}
-	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_L_PA_CTL, 0x48);
-	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_R_PA_CTL, 0x48);
-	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_BIAS_PA,  0xAA);
+
+	if (enable) {
+		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_L_PA_CTL, 0x48);
+		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_R_PA_CTL, 0x48);
+		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_BIAS_PA,  0xAA);
+	} else {
+/*
+		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_BIAS_PA, 0x55);
+		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_L_PA_CTL, 0x40);
+		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_R_PA_CTL, 0x40);
+*/
+		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_BIAS_PA, hph_bias_pa_default);
+		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_L_PA_CTL, hph_r_pa_ctl_default);
+		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_R_PA_CTL, hph_l_pa_ctl_default);
+	}
 }
 
 static void set_uhqa_mode(unsigned int enable) {
-	if (!hpwidget || !enable) {
+	if (!hpwidget) {
 		snd_soc_update_bits(direct_codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20);
-		return;
 	}
-	snd_soc_update_bits(direct_codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x00);
+
+	if (enable)
+		snd_soc_update_bits(direct_codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x00);
+	else
+		snd_soc_update_bits(direct_codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20);
 }
 
 #define WCD9320_RATES (SNDRV_PCM_RATE_8000 | SNDRV_PCM_RATE_16000 |\
@@ -822,7 +840,7 @@ static int taiko_get_iir_band_audio_mixer(
 	ucontrol->value.integer.value[4] =
 		get_iir_band_coeff(codec, iir_idx, band_idx, 4);
 /*
-	pr_debug("%s: IIR #%d band #%d b0 = 0x%x\n"
+	pr_info("%s: IIR #%d band #%d b0 = 0x%x\n"
 		"%s: IIR #%d band #%d b1 = 0x%x\n"
 		"%s: IIR #%d band #%d b2 = 0x%x\n"
 		"%s: IIR #%d band #%d a1 = 0x%x\n"
@@ -890,7 +908,7 @@ static int taiko_put_iir_band_audio_mixer(
 	set_iir_band_coeff(codec, iir_idx, band_idx,
 				ucontrol->value.integer.value[4]);
 
-	pr_debug("%s: IIR #%d band #%d b0 = 0x%x\n"
+	pr_info("%s: IIR #%d band #%d b0 = 0x%x\n"
 		"%s: IIR #%d band #%d b1 = 0x%x\n"
 		"%s: IIR #%d band #%d b2 = 0x%x\n"
 		"%s: IIR #%d band #%d a1 = 0x%x\n"
@@ -948,15 +966,12 @@ static int taiko_set_compander(struct snd_kcontrol *kcontrol,
 		snd_soc_write(codec, TAIKO_A_NCP_DTEST, 0x20);
 		pr_debug("%s: Enabled Chopper and set wavegen to 5 msec\n",
 				__func__);
-		set_uhqa_mode(1);
 	} else if (comp == COMPANDER_1 &&
 			taiko->comp_enabled[comp] == 0) {
 		/* Wavegen to 20 msec */
 		snd_soc_write(codec, TAIKO_A_RX_HPH_CNP_WG_CTL, 0xDB);
 		snd_soc_write(codec, TAIKO_A_RX_HPH_CNP_WG_TIME, 0x58);
 		snd_soc_write(codec, TAIKO_A_RX_HPH_BIAS_WG_OCP, 0x1A);
-
-		set_uhqa_mode(0);
 
 		/* Disable CHOPPER block */
 		snd_soc_update_bits(codec,
@@ -1133,17 +1148,17 @@ static int taiko_config_compander(struct snd_soc_dapm_widget *w,
 
 
 
-static const char *taiko_anc_func_text[] = {"OFF", "ON"};
+static const char *const taiko_anc_func_text[] = {"OFF", "ON"};
 static const struct soc_enum taiko_anc_func_enum =
 		SOC_ENUM_SINGLE_EXT(2, taiko_anc_func_text);
 
-static const char *tabla_ear_pa_gain_text[] = {"POS_6_DB", "POS_2_DB"};
+static const char *const tabla_ear_pa_gain_text[] = {"POS_6_DB", "POS_2_DB"};
 static const struct soc_enum tabla_ear_pa_gain_enum[] = {
 		SOC_ENUM_SINGLE_EXT(2, tabla_ear_pa_gain_text),
 };
 
 /*cut of frequency for high pass filter*/
-static const char *cf_text[] = {
+static const char * const cf_text[] = {
 	"MIN_3DB_4Hz", "MIN_3DB_75Hz", "MIN_3DB_150Hz"
 };
 
@@ -1208,7 +1223,7 @@ static const struct soc_enum class_h_dsm_enum =
 static const struct snd_kcontrol_new class_h_dsm_mux =
 	SOC_DAPM_ENUM("CLASS_H_DSM MUX Mux", class_h_dsm_enum);
 
-static const char *taiko_conn_mad_text[] = {
+static const char *const taiko_conn_mad_text[] = {
 	"ADC_MB", "ADC1", "ADC2", "ADC3", "ADC4", "ADC5", "ADC6", "NOTUSED1",
 	"DMIC1", "DMIC2", "DMIC3", "DMIC4", "DMIC5", "DMIC6", "NOTUSED2",
 	"NOTUSED3"};
@@ -1258,7 +1273,7 @@ static int taiko_mad_input_put(struct snd_kcontrol *kcontrol,
 		!strcmp(taiko_conn_mad_text[taiko_mad_input], "NOTUSED2") ||
 		!strcmp(taiko_conn_mad_text[taiko_mad_input], "NOTUSED3") ||
 		!strcmp(taiko_conn_mad_text[taiko_mad_input], "ADC_MB")) {
-		pr_debug("%s: taiko mad input is set to unsupported input = %s\n",
+		pr_info("%s: taiko mad input is set to unsupported input = %s\n",
 				__func__, taiko_conn_mad_text[taiko_mad_input]);
 		return -EINVAL;
 	}
@@ -1268,7 +1283,7 @@ static int taiko_mad_input_put(struct snd_kcontrol *kcontrol,
 		ret = kstrtouint(strpbrk(taiko_conn_mad_text[taiko_mad_input]
 					, "123456"), 10, &adc);
 		if ((ret < 0) || (adc > 6)) {
-			pr_debug("%s: Invalid ADC = %s\n", __func__,
+			pr_err("%s: Invalid ADC = %s\n", __func__,
 				taiko_conn_mad_text[taiko_mad_input]);
 			ret =  -EINVAL;
 		}
@@ -1321,7 +1336,7 @@ static int taiko_mad_input_put(struct snd_kcontrol *kcontrol,
 					0x07, mic_bias_found);
 		return 0;
 	} else {
-		pr_debug("%s: mic bias source not found for input = %s\n",
+		pr_err("%s: mic bias source not found for input = %s\n",
 				__func__, mad_input_widget);
 		return -EINVAL;
 	}
@@ -1492,7 +1507,7 @@ static int taiko_pa_gain_get(struct snd_kcontrol *kcontrol,
 
 	ucontrol->value.integer.value[0] = ear_pa_gain;
 
-	pr_debug("%s: ear_pa_gain: hex:0x%x dec:%u\n", __func__, ear_pa_gain, ear_pa_gain);
+	pr_info("%s: ear_pa_gain: hex:0x%x dec:%u\n", __func__, ear_pa_gain, ear_pa_gain);
 
 	return 0;
 }
@@ -2008,14 +2023,14 @@ static int wcd9320_put_dec_enum(struct snd_kcontrol *kcontrol,
 	dec_name = strsep(&widget_name, " ");
 	widget_name = temp;
 	if (!dec_name) {
-		pr_debug("%s: Invalid decimator = %s\n", __func__, w->name);
+		pr_err("%s: Invalid decimator = %s\n", __func__, w->name);
 		ret =  -EINVAL;
 		goto out;
 	}
 
 	ret = kstrtouint(strpbrk(dec_name, "123456789"), 10, &decimator);
 	if (ret < 0) {
-		pr_debug("%s: Invalid decimator = %s\n", __func__, dec_name);
+		pr_err("%s: Invalid decimator = %s\n", __func__, dec_name);
 		ret =  -EINVAL;
 		goto out;
 	}
@@ -2046,7 +2061,7 @@ static int wcd9320_put_dec_enum(struct snd_kcontrol *kcontrol,
 			adc_dmic_sel = 0x0;
 		break;
 	default:
-		pr_debug("%s: Invalid Decimator = %u\n", __func__, decimator);
+		pr_err("%s: Invalid Decimator = %u\n", __func__, decimator);
 		ret = -EINVAL;
 		goto out;
 	}
@@ -2201,7 +2216,7 @@ static int slim_tx_mixer_put(struct snd_kcontrol *kcontrol,
 
 	if (taiko_p->intf_type != WCD9XXX_INTERFACE_TYPE_SLIMBUS) {
 		if (dai_id != AIF1_CAP) {
-			dev_dbg(codec->dev, "%s: invalid AIF for I2C mode\n",
+			dev_err(codec->dev, "%s: invalid AIF for I2C mode\n",
 				__func__);
 			mutex_unlock(&codec->mutex);
 			return -EINVAL;
@@ -2253,7 +2268,7 @@ static int slim_tx_mixer_put(struct snd_kcontrol *kcontrol,
 			}
 			break;
 		default:
-			pr_debug("Unknown AIF %d\n", dai_id);
+			pr_err("Unknown AIF %d\n", dai_id);
 			mutex_unlock(&codec->mutex);
 			return -EINVAL;
 		}
@@ -2276,7 +2291,7 @@ static int slim_rx_mux_get(struct snd_kcontrol *kcontrol,
 	return 0;
 }
 
-static const char *slim_rx_mux_text[] = {
+static const char *const slim_rx_mux_text[] = {
 	"ZERO", "AIF1_PB", "AIF2_PB", "AIF3_PB"
 };
 
@@ -2301,7 +2316,7 @@ static int slim_rx_mux_put(struct snd_kcontrol *kcontrol,
 
 	if (taiko_p->intf_type != WCD9XXX_INTERFACE_TYPE_SLIMBUS) {
 		if (widget->value > 2) {
-			dev_dbg(codec->dev, "%s: invalid AIF for I2C mode\n",
+			dev_err(codec->dev, "%s: invalid AIF for I2C mode\n",
 				__func__);
 			goto err;
 		}
@@ -2346,7 +2361,7 @@ static int slim_rx_mux_put(struct snd_kcontrol *kcontrol,
 			      &taiko_p->dai[AIF3_PB].wcd9xxx_ch_list);
 	break;
 	default:
-		pr_debug("Unknown AIF %d\n", widget->value);
+		pr_err("Unknown AIF %d\n", widget->value);
 		goto err;
 	}
 rtn:
@@ -2438,7 +2453,7 @@ static int taiko_codec_enable_adc(struct snd_soc_dapm_widget *w,
 		} else if (w->reg == TAIKO_A_TX_5_6_EN) {
 			adc_reg = TAIKO_A_TX_5_6_TEST_CTL;
 		} else {
-			pr_debug("%s: Error, invalid adc register\n", __func__);
+			pr_err("%s: Error, invalid adc register\n", __func__);
 			return -EINVAL;
 		}
 
@@ -2447,7 +2462,7 @@ static int taiko_codec_enable_adc(struct snd_soc_dapm_widget *w,
 		} else if  (w->shift == 7) {
 			init_bit_shift = 7;
 		} else {
-			pr_debug("%s: Error, invalid init bit postion adc register\n",
+			pr_err("%s: Error, invalid init bit postion adc register\n",
 			       __func__);
 			return -EINVAL;
 		}
@@ -2478,7 +2493,7 @@ static int taiko_codec_enable_adc(struct snd_soc_dapm_widget *w,
 			init_bit_shift = 6;
 			break;
 		default:
-			pr_debug("%s: Error, invalid adc register\n", __func__);
+			pr_err("%s: Error, invalid adc register\n", __func__);
 			return -EINVAL;
 		}
 	}
@@ -2553,7 +2568,7 @@ static int taiko_codec_enable_lineout(struct snd_soc_dapm_widget *w,
 		lineout_gain_reg = TAIKO_A_RX_LINE_4_GAIN;
 		break;
 	default:
-		pr_debug("%s: Error, incorrect lineout register value\n",
+		pr_err("%s: Error, incorrect lineout register value\n",
 			__func__);
 		return -EINVAL;
 	}
@@ -2623,7 +2638,7 @@ static int taiko_codec_enable_dmic(struct snd_soc_dapm_widget *w,
 
 	ret = kstrtouint(strpbrk(w->name, "123456"), 10, &dmic);
 	if (ret < 0) {
-		pr_debug("%s: Invalid DMIC line on the codec\n", __func__);
+		pr_err("%s: Invalid DMIC line on the codec\n", __func__);
 		return -EINVAL;
 	}
 
@@ -2660,7 +2675,7 @@ static int taiko_codec_enable_dmic(struct snd_soc_dapm_widget *w,
 		break;
 
 	default:
-		pr_debug("%s: Invalid DMIC Selection\n", __func__);
+		pr_err("%s: Invalid DMIC Selection\n", __func__);
 		return -EINVAL;
 	}
 
@@ -2701,20 +2716,20 @@ static int taiko_codec_config_mad(struct snd_soc_codec *codec)
 			      msm_cpuidle_get_deep_idle_latency());
 	ret = request_firmware(&fw, filename, codec->dev);
 	if (ret != 0) {
-		pr_debug("Failed to acquire MAD firwmare data %s: %d\n", filename,
+		pr_err("Failed to acquire MAD firwmare data %s: %d\n", filename,
 		       ret);
 		return -ENODEV;
 	}
 
 	if (fw->size < sizeof(struct mad_audio_cal)) {
-		pr_debug("%s: incorrect firmware size %u\n", __func__, fw->size);
+		pr_err("%s: incorrect firmware size %u\n", __func__, fw->size);
 		release_firmware(fw);
 		return -ENOMEM;
 	}
 
 	mad_cal = (struct mad_audio_cal *)(fw->data);
 	if (!mad_cal) {
-		pr_debug("%s: Invalid calibration data\n", __func__);
+		pr_err("%s: Invalid calibration data\n", __func__);
 		release_firmware(fw);
 		return -EINVAL;
 	}
@@ -2785,7 +2800,7 @@ static int taiko_codec_enable_mad(struct snd_soc_dapm_widget *w,
 	case SND_SOC_DAPM_PRE_PMU:
 		ret = taiko_codec_config_mad(codec);
 		if (ret) {
-			pr_debug("%s: Failed to config MAD\n", __func__);
+			pr_err("%s: Failed to config MAD\n", __func__);
 			break;
 		}
 		break;
@@ -2835,7 +2850,7 @@ static int taiko_codec_enable_micbias(struct snd_soc_dapm_widget *w,
 		e_post_on = WCD9XXX_EVENT_POST_MICBIAS_4_ON;
 		e_post_off = WCD9XXX_EVENT_POST_MICBIAS_4_OFF;
 	} else {
-		pr_debug("%s: Error, invalid micbias %s\n", __func__, w->name);
+		pr_err("%s: Error, invalid micbias %s\n", __func__, w->name);
 		return -EINVAL;
 	}
 
@@ -3001,14 +3016,14 @@ static int taiko_codec_enable_dec(struct snd_soc_dapm_widget *w,
 	dec_name = strsep(&widget_name, " ");
 	widget_name = temp;
 	if (!dec_name) {
-		pr_debug("%s: Invalid decimator = %s\n", __func__, w->name);
+		pr_err("%s: Invalid decimator = %s\n", __func__, w->name);
 		ret =  -EINVAL;
 		goto out;
 	}
 
 	ret = kstrtouint(strpbrk(dec_name, "123456789"), 10, &decimator);
 	if (ret < 0) {
-		pr_debug("%s: Invalid decimator = %s\n", __func__, dec_name);
+		pr_err("%s: Invalid decimator = %s\n", __func__, dec_name);
 		ret =  -EINVAL;
 		goto out;
 	}
@@ -3023,7 +3038,7 @@ static int taiko_codec_enable_dec(struct snd_soc_dapm_widget *w,
 		dec_reset_reg = TAIKO_A_CDC_CLK_TX_RESET_B2_CTL;
 		offset = 8;
 	} else {
-		pr_debug("%s: Error, incorrect dec\n", __func__);
+		pr_err("%s: Error, incorrect dec\n", __func__);
 		return -EINVAL;
 	}
 
@@ -3116,7 +3131,7 @@ static int taiko_codec_enable_vdd_spkr(struct snd_soc_dapm_widget *w,
 		if (priv->spkdrv_reg) {
 			ret = regulator_enable(priv->spkdrv_reg);
 			if (ret)
-				pr_debug("%s: Failed to enable spkdrv_reg %s\n",
+				pr_err("%s: Failed to enable spkdrv_reg %s\n",
 				       __func__, WCD9XXX_VDD_SPKDRV_NAME);
 		}
 		if (spkr_drv_wrnd > 0) {
@@ -3142,7 +3157,7 @@ static int taiko_codec_enable_vdd_spkr(struct snd_soc_dapm_widget *w,
 		if (priv->spkdrv_reg) {
 			ret = regulator_disable(priv->spkdrv_reg);
 			if (ret)
-				pr_debug("%s: Failed to disable spkdrv_reg %s\n",
+				pr_err("%s: Failed to disable spkdrv_reg %s\n",
 				       __func__, WCD9XXX_VDD_SPKDRV_NAME);
 		}
 		break;
@@ -3283,7 +3298,7 @@ static int taiko_hphl_dac_event(struct snd_soc_dapm_widget *w,
 		if (!ret) */
 		wcd9xxx_clsh_imped_config(codec, 0);
 		/* else
-			dev_dbg(codec->dev, "Failed to get mbhc impedance %d\n",
+			dev_err(codec->dev, "Failed to get mbhc impedance %d\n",
 						ret); */
 		break;
 	case SND_SOC_DAPM_POST_PMD:
@@ -3347,13 +3362,13 @@ static int taiko_codec_enable_anc(struct snd_soc_dapm_widget *w,
 
 		ret = request_firmware(&fw, filename, codec->dev);
 		if (ret != 0) {
-			dev_dbg(codec->dev, "Failed to acquire ANC data: %d\n",
+			dev_err(codec->dev, "Failed to acquire ANC data: %d\n",
 				ret);
 			return -ENODEV;
 		}
 
 		if (fw->size < sizeof(struct wcd9xxx_anc_header)) {
-			dev_dbg(codec->dev, "Not enough data\n");
+			dev_err(codec->dev, "Not enough data\n");
 			release_firmware(fw);
 			return -ENOMEM;
 		}
@@ -3367,13 +3382,13 @@ static int taiko_codec_enable_anc(struct snd_soc_dapm_widget *w,
 		num_anc_slots = anc_head->num_anc_slots;
 
 		if (taiko->anc_slot >= num_anc_slots) {
-			dev_dbg(codec->dev, "Invalid ANC slot selected\n");
+			dev_err(codec->dev, "Invalid ANC slot selected\n");
 			release_firmware(fw);
 			return -EINVAL;
 		}
 		for (i = 0; i < num_anc_slots; i++) {
 			if (anc_size_remaining < TAIKO_PACKED_REG_SIZE) {
-				dev_dbg(codec->dev, "Invalid register format\n");
+				dev_err(codec->dev, "Invalid register format\n");
 				release_firmware(fw);
 				return -EINVAL;
 			}
@@ -3383,7 +3398,7 @@ static int taiko_codec_enable_anc(struct snd_soc_dapm_widget *w,
 
 			if (anc_writes_size * TAIKO_PACKED_REG_SIZE
 				> anc_size_remaining) {
-				dev_dbg(codec->dev, "Invalid register format\n");
+				dev_err(codec->dev, "Invalid register format\n");
 				release_firmware(fw);
 				return -ENOMEM;
 			}
@@ -3396,7 +3411,7 @@ static int taiko_codec_enable_anc(struct snd_soc_dapm_widget *w,
 			anc_ptr += anc_writes_size;
 		}
 		if (i == num_anc_slots) {
-			dev_dbg(codec->dev, "Selected ANC slot not present\n");
+			dev_err(codec->dev, "Selected ANC slot not present\n");
 			release_firmware(fw);
 			return -ENOMEM;
 		}
@@ -3441,7 +3456,7 @@ static int taiko_hph_pa_event(struct snd_soc_dapm_widget *w,
 		e_post_off = WCD9XXX_EVENT_POST_HPHR_PA_OFF;
 		req_clsh_state = WCD9XXX_CLSH_STATE_HPHR;
 	} else {
-		pr_debug("%s: Invalid w->shift %d\n", __func__, w->shift);
+		pr_err("%s: Invalid w->shift %d\n", __func__, w->shift);
 		return -EINVAL;
 	}
 
@@ -3469,9 +3484,6 @@ static int taiko_hph_pa_event(struct snd_soc_dapm_widget *w,
 			set_high_perf_mode(1);
 		break;
 	case SND_SOC_DAPM_POST_PMD:
-		hpwidget = false;
-		set_uhqa_mode(0);
-		set_high_perf_mode(0);
 		usleep_range(pa_settle_time, pa_settle_time + 1000);
 		pr_debug("%s: sleep %d us after %s PA disable\n", __func__,
 				pa_settle_time, w->name);
@@ -3483,7 +3495,9 @@ static int taiko_hph_pa_event(struct snd_soc_dapm_widget *w,
 						 req_clsh_state,
 						 WCD9XXX_CLSH_REQ_DISABLE,
 						 WCD9XXX_CLSH_EVENT_POST_PA);
-
+		hpwidget = false;
+		set_uhqa_mode(0);
+		set_high_perf_mode(0);
 		break;
 	}
 	return 0;
@@ -4253,7 +4267,7 @@ static int taiko_write(struct snd_soc_codec *codec, unsigned int reg,
 	if (!taiko_volatile(codec, reg)) {
 		ret = snd_soc_cache_write(codec, reg, value);
 		if (ret != 0)
-			pr_debug("%s: Cache write to %x failed: %d\n",
+			pr_err("%s: Cache write to %x failed: %d\n",
 				__func__, reg, ret);
 	}
 
@@ -4285,7 +4299,7 @@ static unsigned int taiko_read(struct snd_soc_codec *codec,
 		if (ret >= 0) {
 			return val;
 		}
-	pr_debug("%s: snd_soc_cache_read from %x failed: %d\n",
+	pr_err("%s: snd_soc_cache_read from %x failed: %d\n",
 				__func__, reg, ret);
 	}
 
@@ -4376,15 +4390,14 @@ static int taiko_prepare(struct snd_pcm_substream *substream,
 		if ((taiko_p->dai[dai->id].rate == 192000) ||
 			(taiko_p->dai[dai->id].rate == 96000 &&
 		    taiko_p->dai[dai->id].bit_width == 24) ||
-			(high_perf_mode)) {
+			(uhqa_mode)) {
 				is_hpm_condition = true;
 		}
 	}
 
 	if (is_hpm_condition) {
 		taiko_p->clsh_d.hs_perf_mode_enabled = true;
-		if (uhqa_mode)
-			set_uhqa_mode(1);
+		set_uhqa_mode(1);
 		if (high_perf_mode)
 			set_high_perf_mode(1);
 	} else {
@@ -4472,7 +4485,7 @@ static int taiko_set_channel_map(struct snd_soc_dai *dai,
 	struct taiko_priv *taiko = snd_soc_codec_get_drvdata(dai->codec);
 	struct wcd9xxx *core = dev_get_drvdata(dai->codec->dev->parent);
 	if (!tx_slot && !rx_slot) {
-		pr_debug("%s: Invalid\n", __func__);
+		pr_err("%s: Invalid\n", __func__);
 		return -EINVAL;
 	}
 	pr_debug("%s(): dai_name = %s DAI-ID %x tx_ch %d rx_ch %d\n"
@@ -4509,7 +4522,7 @@ static int taiko_get_channel_map(struct snd_soc_dai *dai,
 	case AIF2_PB:
 	case AIF3_PB:
 		if (!rx_slot || !rx_num) {
-			pr_debug("%s: Invalid rx_slot %d or rx_num %d\n",
+			pr_err("%s: Invalid rx_slot %d or rx_num %d\n",
 				 __func__, (u32) rx_slot, (u32) rx_num);
 			return -EINVAL;
 		}
@@ -4528,7 +4541,7 @@ static int taiko_get_channel_map(struct snd_soc_dai *dai,
 	case AIF4_VIFEED:
 	case AIF4_MAD_TX:
 		if (!tx_slot || !tx_num) {
-			pr_debug("%s: Invalid tx_slot %d or tx_num %d\n",
+			pr_err("%s: Invalid tx_slot %d or tx_num %d\n",
 				 __func__, (u32) tx_slot, (u32) tx_num);
 			return -EINVAL;
 		}
@@ -4543,7 +4556,7 @@ static int taiko_get_channel_map(struct snd_soc_dai *dai,
 		break;
 
 	default:
-		pr_debug("%s: Invalid DAI ID %x\n", __func__, dai->id);
+		pr_err("%s: Invalid DAI ID %x\n", __func__, dai->id);
 		break;
 	}
 
@@ -4568,7 +4581,7 @@ static int taiko_set_interpolator_rate(struct snd_soc_dai *dai,
 			      TAIKO_TX_PORT_NUMBER;
 		if ((rx_mix1_inp < RX_MIX1_INP_SEL_RX1) ||
 			(rx_mix1_inp > RX_MIX1_INP_SEL_RX7)) {
-			pr_debug("%s: Invalid TAIKO_RX%u port. Dai ID is %d\n",
+			pr_err("%s: Invalid TAIKO_RX%u port. Dai ID is %d\n",
 				__func__,  rx_mix1_inp - 5 , dai->id);
 			return -EINVAL;
 		}
@@ -4630,7 +4643,7 @@ static int taiko_set_decimator_rate(struct snd_soc_dai *dai,
 			__func__, dai->id, tx_port);
 
 		if ((tx_port < 1) || (tx_port > NUM_DECIMATORS)) {
-			pr_debug("%s: Invalid SLIM TX%u port. DAI ID is %d\n",
+			pr_err("%s: Invalid SLIM TX%u port. DAI ID is %d\n",
 				__func__, tx_port, dai->id);
 			return -EINVAL;
 		}
@@ -4678,9 +4691,9 @@ static int taiko_set_decimator_rate(struct snd_soc_dai *dai,
 			} else if  ((tx_port_reg_val >= 0x8) &&
 				    (tx_port_reg_val <= 0x11)) {
 
-				pr_debug("%s: ERROR: Should not be here\n",
+				pr_err("%s: ERROR: Should not be here\n",
 				       __func__);
-				pr_debug("%s: ERROR: DEC connected to SLIM TX%u\n",
+				pr_err("%s: ERROR: DEC connected to SLIM TX%u\n",
 					__func__, tx_port);
 				return -EINVAL;
 
@@ -4688,9 +4701,9 @@ static int taiko_set_decimator_rate(struct snd_soc_dai *dai,
 				pr_debug("%s: no signal to SLIM TX%u\n",
 					__func__, tx_port);
 			} else {
-				pr_debug("%s: ERROR: wrong signal to SLIM TX%u\n",
+				pr_err("%s: ERROR: wrong signal to SLIM TX%u\n",
 					__func__, tx_port);
-				pr_debug("%s: ERROR: wrong signal = %u\n",
+				pr_err("%s: ERROR: wrong signal = %u\n",
 					__func__, tx_port_reg_val);
 				return -EINVAL;
 			}
@@ -4720,7 +4733,7 @@ static void taiko_set_rxsb_port_format(struct snd_pcm_hw_params *params,
 		taiko_p->dai[dai->id].bit_width = 24;
 		break;
 	default:
-		dev_dbg(codec->dev, "Invalid format\n");
+		dev_err(codec->dev, "Invalid format\n");
 		return;
 	}
 
@@ -4731,7 +4744,7 @@ static void taiko_set_rxsb_port_format(struct snd_pcm_hw_params *params,
 
 		if (IS_ERR_VALUE(port) ||
 		    !TAIKO_VALIDATE_RX_SBPORT_RANGE(port)) {
-			dev_dbg(codec->dev,
+			dev_warn(codec->dev,
 				 "%s: invalid port ID %d returned for RX DAI\n",
 				 __func__, port);
 			return;
@@ -4746,7 +4759,7 @@ static void taiko_set_rxsb_port_format(struct snd_pcm_hw_params *params,
 			sb_ctl_reg = TAIKO_A_CDC_CONN_RX_SB_B2_CTL;
 			field_shift = (port - 4) << 1;
 		} else { /* should not happen */
-			dev_dbg(codec->dev,
+			dev_warn(codec->dev,
 				 "%s: bad port ID %d\n", __func__, port);
 			return;
 		}
@@ -4768,7 +4781,7 @@ static int taiko_hw_params(struct snd_pcm_substream *substream,
 	u32 compander_fs;
 	int ret;
 
-	pr_debug("%s: dai_name = %s DAI-ID %x rate %d num_ch %d\n", __func__,
+	pr_info("%s: dai_name = %s DAI-ID %x rate %d num_ch %d\n", __func__,
 		 dai->name, dai->id, params_rate(params),
 		 params_channels(params));
 
@@ -4804,7 +4817,7 @@ static int taiko_hw_params(struct snd_pcm_substream *substream,
 		compander_fs = COMPANDER_FS_192KHZ;
 		break;
 	default:
-		pr_debug("%s: Invalid sampling rate %d\n", __func__,
+		pr_err("%s: Invalid sampling rate %d\n", __func__,
 			params_rate(params));
 		return -EINVAL;
 	}
@@ -4815,7 +4828,7 @@ static int taiko_hw_params(struct snd_pcm_substream *substream,
 			ret = taiko_set_decimator_rate(dai, tx_fs_rate,
 							   params_rate(params));
 			if (ret < 0) {
-				pr_debug("%s: set decimator rate failed %d\n",
+				pr_err("%s: set decimator rate failed %d\n",
 					__func__, ret);
 				return ret;
 			}
@@ -4834,7 +4847,7 @@ static int taiko_hw_params(struct snd_pcm_substream *substream,
 					0x20, 0x00);
 				break;
 			default:
-				pr_debug("invalid format\n");
+				pr_err("invalid format\n");
 				break;
 			}
 			snd_soc_update_bits(codec, TAIKO_A_CDC_CLK_TX_I2S_CTL,
@@ -4849,7 +4862,7 @@ static int taiko_hw_params(struct snd_pcm_substream *substream,
 						  compander_fs,
 						  params_rate(params));
 		if (ret < 0) {
-			pr_debug("%s: set decimator rate failed %d\n", __func__,
+			pr_err("%s: set decimator rate failed %d\n", __func__,
 				ret);
 			return ret;
 		}
@@ -4866,7 +4879,7 @@ static int taiko_hw_params(struct snd_pcm_substream *substream,
 					0x20, 0x00);
 				break;
 			default:
-				pr_debug("invalid format\n");
+				pr_err("invalid format\n");
 				break;
 			}
 			snd_soc_update_bits(codec, TAIKO_A_CDC_CLK_RX_I2S_CTL,
@@ -4877,7 +4890,7 @@ static int taiko_hw_params(struct snd_pcm_substream *substream,
 		}
 		break;
 	default:
-		pr_debug("%s: Invalid stream type %d\n", __func__,
+		pr_err("%s: Invalid stream type %d\n", __func__,
 			substream->stream);
 		return -EINVAL;
 	}
@@ -4934,7 +4947,7 @@ static int taiko_esxxx_hw_params(struct snd_pcm_substream *substream,
 		struct snd_soc_dai *dai)
 {
 	int rc = 0;
-	pr_debug("%s: dai_name = %s DAI-ID %x rate %d num_ch %d\n", __func__,
+	pr_info("%s: dai_name = %s DAI-ID %x rate %d num_ch %d\n", __func__,
 			dai->name, dai->id, params_rate(params),
 			params_channels(params));
 
@@ -4955,7 +4968,7 @@ static int taiko_esxxx_set_channel_map(struct snd_soc_dai *dai,
 	unsigned int taiko_rx_num = 0;
 	unsigned int taiko_rx_slot[6];
 	int rc = 0;
-	pr_debug("%s(): dai_name = %s DAI-ID %x tx_ch %d rx_ch %d\n",
+	pr_info("%s(): dai_name = %s DAI-ID %x tx_ch %d rx_ch %d\n",
 			__func__, dai->name, dai->id, tx_num, rx_num);
 
 	if (remote_route_enable(dai)) {
@@ -4979,7 +4992,7 @@ static int taiko_esxxx_get_channel_map(struct snd_soc_dai *dai,
 {
 	int rc = 0;
 
-	pr_debug("%s(): dai_name = %s DAI-ID %d tx_ch %d rx_ch %d\n",
+	pr_info("%s(): dai_name = %s DAI-ID %d tx_ch %d rx_ch %d\n",
 			__func__, dai->name, dai->id, *tx_num, *rx_num);
 
 	if (remote_route_enable(dai))
@@ -5008,7 +5021,7 @@ static int taiko_es325_hw_params(struct snd_pcm_substream *substream,
 		struct snd_soc_dai *dai)
 {
 	int rc = 0;
-	dev_dbg(dai->dev,"%s: dai_name = %s DAI-ID %x rate %d num_ch %d\n", __func__,
+	dev_info(dai->dev,"%s: dai_name = %s DAI-ID %x rate %d num_ch %d\n", __func__,
 			dai->name, dai->id, params_rate(params),
 			params_channels(params));
 
@@ -5331,7 +5344,7 @@ static int taiko_codec_enable_slim_chmask(struct wcd9xxx_codec_dai_data *dai,
 		list_for_each_entry(ch, &dai->wcd9xxx_ch_list, list) {
 			ret = wcd9xxx_get_slave_port(ch->ch_num);
 			if (ret < 0) {
-				pr_debug("%s: Invalid slave port ID: %d\n",
+				pr_err("%s: Invalid slave port ID: %d\n",
 				       __func__, ret);
 				ret = -EINVAL;
 			} else {
@@ -5343,7 +5356,7 @@ static int taiko_codec_enable_slim_chmask(struct wcd9xxx_codec_dai_data *dai,
 					 msecs_to_jiffies(
 						     TAIKO_SLIM_CLOSE_TIMEOUT));
 		if (!ret) {
-			pr_debug("%s: Slim close tx/rx wait timeout\n", __func__);
+			pr_err("%s: Slim close tx/rx wait timeout\n", __func__);
 			ret = -ETIMEDOUT;
 		} else {
 			ret = 0;
@@ -5360,7 +5373,7 @@ static void taiko_codec_enable_int_port(struct wcd9xxx_codec_dai_data *dai,
 	unsigned short reg = 0;
 	u8 val = 0;
 	if (!dai || !codec) {
-		pr_debug("%s: Invalid params\n", __func__);
+		pr_err("%s: Invalid params\n", __func__);
 		return;
 	}
 	list_for_each_entry(ch, &dai->wcd9xxx_ch_list, list) {
@@ -5465,7 +5478,7 @@ static int taiko_codec_enable_slimvi_feedback(struct snd_soc_dapm_widget *w,
 	struct wcd9xxx_codec_dai_data *dai = NULL;
 
 	if (!w || !w->codec) {
-		pr_debug("%s invalid params\n", __func__);
+		pr_err("%s invalid params\n", __func__);
 		return -EINVAL;
 	}
 	codec = w->codec;
@@ -5477,14 +5490,14 @@ static int taiko_codec_enable_slimvi_feedback(struct snd_soc_dapm_widget *w,
 
 	/* Execute the callback only if interface type is slimbus */
 	if (taiko_p->intf_type != WCD9XXX_INTERFACE_TYPE_SLIMBUS) {
-		pr_debug("%s Interface is not correct", __func__);
+		pr_err("%s Interface is not correct", __func__);
 		return 0;
 	}
 
 	pr_debug("%s(): w->name %s event %d w->shift %d\n",
 		__func__, w->name, event, w->shift);
 	if (w->shift != AIF4_VIFEED) {
-		pr_debug("%s Error in enabling the tx path\n", __func__);
+		pr_err("%s Error in enabling the tx path\n", __func__);
 		ret = -EINVAL;
 		goto out_vi;
 	}
@@ -5508,7 +5521,7 @@ static int taiko_codec_enable_slimvi_feedback(struct snd_soc_dapm_widget *w,
 		ret = wcd9xxx_close_slim_sch_tx(core, &dai->wcd9xxx_ch_list,
 						dai->grph);
 		if (ret)
-			pr_debug("%s error in close_slim_sch_tx %d\n",
+			pr_err("%s error in close_slim_sch_tx %d\n",
 				__func__, ret);
 		ret = taiko_codec_enable_slim_chmask(dai, false);
 		if (ret < 0) {
@@ -5699,25 +5712,6 @@ static int taiko_codec_enable_anc_ear(struct snd_soc_dapm_widget *w,
 	}
 	return ret;
 }
-#if 0
-static int taiko_codec_set_iir_gain(struct snd_soc_dapm_widget *w,
-	struct snd_kcontrol *kcontrol, int event)
-{
-	struct snd_soc_codec *codec = w->codec;
-	int value = 0;
-
-	switch (event) {
-	case SND_SOC_DAPM_POST_PMU:
-		value = snd_soc_read(codec, TAIKO_A_CDC_IIR1_GAIN_B1_CTL);
-		snd_soc_write(codec, TAIKO_A_CDC_IIR1_GAIN_B1_CTL, value);
-		break;
-	default:
-		pr_info("%s: event = %d not expected\n", __func__, event);
-		break;
-	}
-	return 0;
-}
-#endif
 
 /* Todo: Have seperate dapm widgets for I2S and Slimbus.
  * Might Need to have callbacks registered only for slimbus
@@ -6236,11 +6230,11 @@ static irqreturn_t taiko_slimbus_irq(int irq, void *data)
 		val = wcd9xxx_interface_reg_read(codec->control_data,
 					TAIKO_SLIM_PGD_PORT_INT_RX_SOURCE0 + j);
 		if (val & TAIKO_SLIM_IRQ_OVERFLOW)
-			pr_debug_ratelimited(
+			pr_err_ratelimited(
 			   "%s: overflow error on %s port %d, value %x\n",
 			   __func__, (tx ? "TX" : "RX"), port_id, val);
 		if (val & TAIKO_SLIM_IRQ_UNDERFLOW)
-			pr_debug_ratelimited(
+			pr_err_ratelimited(
 			   "%s: underflow error on %s port %d, value %x\n",
 			   __func__, (tx ? "TX" : "RX"), port_id, val);
 		if ((val & TAIKO_SLIM_IRQ_OVERFLOW) ||
@@ -6309,7 +6303,7 @@ static int taiko_handle_pdata(struct taiko_priv *taiko)
 	u8 anc_ctl_value = 0;
 
 	if (!pdata) {
-		pr_debug("%s: NULL pdata\n", __func__);
+		pr_err("%s: NULL pdata\n", __func__);
 		rc = -ENODEV;
 		goto done;
 	}
@@ -6414,7 +6408,7 @@ static int taiko_handle_pdata(struct taiko_priv *taiko)
 				snd_soc_write(codec, TAIKO_A_BIAS_REF_CTL,
 					      0x1E);
 			} else {
-				pr_debug("%s: unsupported CDC_VDDA_RX voltage\n"
+				pr_err("%s: unsupported CDC_VDDA_RX voltage\n"
 				       "min %d, max %d\n", __func__,
 				       pdata->regulator[i].min_uV,
 				       pdata->regulator[i].max_uV);
@@ -6461,7 +6455,7 @@ static int taiko_handle_pdata(struct taiko_priv *taiko)
 			anc_ctl_value = WCD9XXX_ANC_DMIC_X2_OFF;
 			break;
 		default:
-			pr_debug("%s Invalid sample rate %d for mclk %d\n",
+			pr_err("%s Invalid sample rate %d for mclk %d\n",
 			__func__, pdata->dmic_sample_rate, pdata->mclk_rate);
 			rc = -EINVAL;
 			goto done;
@@ -6489,14 +6483,14 @@ static int taiko_handle_pdata(struct taiko_priv *taiko)
 			anc_ctl_value = WCD9XXX_ANC_DMIC_X2_OFF;
 			break;
 		default:
-			pr_debug("%s Invalid sample rate %d for mclk %d\n",
+			pr_err("%s Invalid sample rate %d for mclk %d\n",
 			__func__, pdata->dmic_sample_rate, pdata->mclk_rate);
 			rc = -EINVAL;
 			goto done;
 			break;
 		}
 	} else {
-		pr_debug("%s MCLK is not set!\n", __func__);
+		pr_err("%s MCLK is not set!\n", __func__);
 		rc = -EINVAL;
 		goto done;
 	}
@@ -6797,7 +6791,7 @@ static void taiko_codec_init_reg(struct snd_soc_codec *codec)
 
 	for (i = 0; i < ARRAY_SIZE(taiko_codec_reg_init_val); i++) {
 #if 0
-		 pr_debug("Taiko Init: Reg: %u Mask: %u Val: %u ",
+		 pr_info("Taiko Init: Reg: %u Mask: %u Val: %u ",
 		 taiko_codec_reg_init_val[i].reg,
 		 taiko_codec_reg_init_val[i].mask,
 		 taiko_codec_reg_init_val[i].val);
@@ -6829,7 +6823,7 @@ static int taiko_setup_irqs(struct taiko_priv *taiko)
 	ret = wcd9xxx_request_irq(core_res, WCD9XXX_IRQ_SLIMBUS,
 				  taiko_slimbus_irq, "SLIMBUS Slave", taiko);
 	if (ret)
-		pr_debug("%s: Failed to request irq %d\n", __func__,
+		pr_err("%s: Failed to request irq %d\n", __func__,
 		       WCD9XXX_IRQ_SLIMBUS);
 	else
 		taiko_slim_interface_init_reg(codec);
@@ -7145,7 +7139,7 @@ static int taiko_post_reset_cb(struct wcd9xxx *wcd9xxx)
             codec->reg_cache = kmemdup(codec->reg_def_copy,
                                             codec->reg_size, GFP_KERNEL);
             if (!codec->reg_cache) {
-                pr_debug("%s: Cache update failed!\n", __func__);
+                pr_err("%s: Cache update failed!\n", __func__);
                 mutex_unlock(&codec->mutex);
                 return -ENOMEM;
             }
@@ -7167,7 +7161,7 @@ static int taiko_post_reset_cb(struct wcd9xxx *wcd9xxx)
 
 	ret = taiko_handle_pdata(taiko);
 	if (IS_ERR_VALUE(ret))
-		pr_debug("%s: bad pdata\n", __func__);
+		pr_err("%s: bad pdata\n", __func__);
 
 	taiko_init_slim_slave_cfg(codec);
 	taiko_slim_interface_init_reg(codec);
@@ -7188,7 +7182,7 @@ static int taiko_post_reset_cb(struct wcd9xxx *wcd9xxx)
 					&mbhc_cb, &cdc_intr_ids,
 					rco_clk_rate, false);
 		if (ret)
-			pr_debug("%s: mbhc init failed %d\n", __func__, ret);
+			pr_err("%s: mbhc init failed %d\n", __func__, ret);
 		else
 			taiko_hs_detect(codec, taiko->mbhc.mbhc_cfg);
 	}
@@ -7200,7 +7194,7 @@ static int taiko_post_reset_cb(struct wcd9xxx *wcd9xxx)
 	taiko_cleanup_irqs(taiko);
 	ret = taiko_setup_irqs(taiko);
 	if (ret)
-		pr_debug("%s: Failed to setup irq: %d\n", __func__, ret);
+		pr_err("%s: Failed to setup irq: %d\n", __func__, ret);
 
 	for (count = 0; count < NUM_CODEC_DAIS; count++)
 		taiko->dai[count].bus_down_in_recovery = true;
@@ -7235,7 +7229,7 @@ void *taiko_get_afe_config(struct snd_soc_codec *codec,
 		else
 			return NULL;
 	default:
-		pr_debug("%s: Unknown config_type 0x%x\n", __func__, config_type);
+		pr_err("%s: Unknown config_type 0x%x\n", __func__, config_type);
 		return NULL;
 	}
 }
@@ -7448,1352 +7442,6 @@ static ssize_t high_perf_mode_store(struct kobject *kobj,
 }
 
 #if 0
-static ssize_t allregs_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
-{
-	return sprintf(buf,
-				   "TAIKO_A_CHIP_CTL: reg %d value %d\n"
-				   "TAIKO_A_CHIP_STATUS: reg %d value %d\n"
-				   "TAIKO_A_CHIP_ID_BYTE_0: reg %d value %d\n"
-				   "TAIKO_A_CHIP_ID_BYTE_1: reg %d value %d\n"
-				   "TAIKO_A_CHIP_ID_BYTE_2: reg %d value %d\n"
-				   "TAIKO_A_CHIP_ID_BYTE_3: reg %d value %d\n"
-				   "TAIKO_A_CHIP_VERSION: reg %d value %d\n"
-				   "TAIKO_A_SLAVE_ID_1: reg %d value %d\n"
-				   "TAIKO_A_SLAVE_ID_2: reg %d value %d\n"
-				   "TAIKO_A_SLAVE_ID_3: reg %d value %d\n"
-				   "TAIKO_A_PIN_CTL_OE0: reg %d value %d\n"
-				   "TAIKO_A_PIN_CTL_OE1: reg %d value %d\n"
-				   "TAIKO_A_PIN_CTL_DATA0: reg %d value %d\n"
-				   "TAIKO_A_PIN_CTL_DATA1: reg %d value %d\n"
-				   "TAIKO_A_HDRIVE_GENERIC: reg %d value %d\n"
-				   "TAIKO_A_HDRIVE_OVERRIDE: reg %d value %d\n"
-				   "TAIKO_A_ANA_CSR_WAIT_STATE: reg %d value %d\n"
-				   "TAIKO_A_PROCESS_MONITOR_CTL0: reg %d value %d\n"
-				   "TAIKO_A_PROCESS_MONITOR_CTL1: reg %d value %d\n"
-				   "TAIKO_A_PROCESS_MONITOR_CTL2: reg %d value %d\n"
-				   "TAIKO_A_PROCESS_MONITOR_CTL3: reg %d value %d\n"
-				   "TAIKO_A_QFUSE_CTL: reg %d value %d\n"
-				   "TAIKO_A_QFUSE_STATUS: reg %d value %d\n"
-				   "TAIKO_A_QFUSE_DATA_OUT0: reg %d value %d\n"
-				   "TAIKO_A_QFUSE_DATA_OUT1: reg %d value %d\n"
-				   "TAIKO_A_QFUSE_DATA_OUT2: reg %d value %d\n"
-				   "TAIKO_A_QFUSE_DATA_OUT3: reg %d value %d\n"
-				   "TAIKO_A_QFUSE_DATA_OUT4: reg %d value %d\n"
-				   "TAIKO_A_QFUSE_DATA_OUT5: reg %d value %d\n"
-				   "TAIKO_A_QFUSE_DATA_OUT6: reg %d value %d\n"
-				   "TAIKO_A_QFUSE_DATA_OUT7: reg %d value %d\n"
-				   "TAIKO_A_CDC_CTL: reg %d value %d\n"
-				   "TAIKO_A_LEAKAGE_CTL: reg %d value %d\n"
-				   "TAIKO_A_INTR_MODE: reg %d value %d\n"
-				   "TAIKO_A_INTR_MASK0: reg %d value %d\n"
-				   "TAIKO_A_INTR_MASK1: reg %d value %d\n"
-				   "TAIKO_A_INTR_MASK2: reg %d value %d\n"
-				   "TAIKO_A_INTR_MASK3: reg %d value %d\n"
-				   "TAIKO_A_INTR_STATUS0: reg %d value %d\n"
-				   "TAIKO_A_INTR_STATUS1: reg %d value %d\n"
-				   "TAIKO_A_INTR_STATUS2: reg %d value %d\n"
-				   "TAIKO_A_INTR_STATUS3: reg %d value %d\n"
-				   "TAIKO_A_INTR_CLEAR0: reg %d value %d\n"
-				   "TAIKO_A_INTR_CLEAR1: reg %d value %d\n"
-				   "TAIKO_A_INTR_CLEAR2: reg %d value %d\n"
-				   "TAIKO_A_INTR_CLEAR3: reg %d value %d\n"
-				   "TAIKO_A_INTR_LEVEL0: reg %d value %d\n"
-				   "TAIKO_A_INTR_LEVEL1: reg %d value %d\n"
-				   "TAIKO_A_INTR_LEVEL2: reg %d value %d\n"
-				   "TAIKO_A_INTR_LEVEL3: reg %d value %d\n"
-				   "TAIKO_A_INTR_TEST0: reg %d value %d\n"
-				   "TAIKO_A_INTR_TEST1: reg %d value %d\n"
-				   "TAIKO_A_INTR_TEST2: reg %d value %d\n"
-				   "TAIKO_A_INTR_TEST3: reg %d value %d\n"
-				   "TAIKO_A_INTR_SET0: reg %d value %d\n"
-				   "TAIKO_A_INTR_SET1: reg %d value %d\n"
-				   "TAIKO_A_INTR_SET2: reg %d value %d\n"
-				   "TAIKO_A_INTR_SET3: reg %d value %d\n"
-				   "TAIKO_A_INTR_DESTN0: reg %d value %d\n"
-				   "TAIKO_A_INTR_DESTN1: reg %d value %d\n"
-				   "TAIKO_A_INTR_DESTN2: reg %d value %d\n"
-				   "TAIKO_A_INTR_DESTN3: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX_I2S_SCK_MODE: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX_I2S_WS_MODE: reg %d value %d\n"
-				   "TAIKO_A_CDC_DMIC_DATA0_MODE: reg %d value %d\n"
-				   "TAIKO_A_CDC_DMIC_CLK0_MODE: reg %d value %d\n"
-				   "TAIKO_A_CDC_DMIC_DATA1_MODE: reg %d value %d\n"
-				   "TAIKO_A_CDC_DMIC_CLK1_MODE: reg %d value %d\n"
-				   "TAIKO_A_CDC_RX_I2S_SCK_MODE: reg %d value %d\n"
-				   "TAIKO_A_CDC_RX_I2S_WS_MODE: reg %d value %d\n"
-				   "TAIKO_A_CDC_DMIC_DATA2_MODE: reg %d value %d\n"
-				   "TAIKO_A_CDC_DMIC_CLK2_MODE: reg %d value %d\n"
-				   "TAIKO_A_CDC_INTR1_MODE: reg %d value %d\n"
-				   "TAIKO_A_CDC_SB_NRZ_SEL_MODE: reg %d value %d\n"
-				   "TAIKO_A_CDC_INTR2_MODE: reg %d value %d\n"
-				   "TAIKO_A_CDC_RF_PA_ON_MODE: reg %d value %d\n"
-				   "TAIKO_A_BIAS_REF_CTL: reg %d value %d\n"
-				   "TAIKO_A_BIAS_CENTRAL_BG_CTL: reg %d value %d\n"
-				   "TAIKO_A_BIAS_PRECHRG_CTL: reg %d value %d\n"
-				   "TAIKO_A_BIAS_CURR_CTL_1: reg %d value %d\n"
-				   "TAIKO_A_BIAS_CURR_CTL_2: reg %d value %d\n"
-				   "TAIKO_A_BIAS_OSC_BG_CTL: reg %d value %d\n"
-				   "TAIKO_A_CLK_BUFF_EN1: reg %d value %d\n"
-				   "TAIKO_A_CLK_BUFF_EN2: reg %d value %d\n"
-				   "TAIKO_A_LDO_H_MODE_1: reg %d value %d\n"
-				   "TAIKO_A_LDO_H_MODE_2: reg %d value %d\n"
-				   "TAIKO_A_LDO_H_LOOP_CTL: reg %d value %d\n"
-				   "TAIKO_A_LDO_H_COMP_1: reg %d value %d\n"
-				   "TAIKO_A_LDO_H_COMP_2: reg %d value %d\n"
-				   "TAIKO_A_LDO_H_BIAS_1: reg %d value %d\n"
-				   "TAIKO_A_LDO_H_BIAS_2: reg %d value %d\n"
-				   "TAIKO_A_LDO_H_BIAS_3: reg %d value %d\n"
-				   "TAIKO_A_VBAT_CLK: reg %d value %d\n"
-				   "TAIKO_A_VBAT_LOOP: reg %d value %d\n"
-				   "TAIKO_A_VBAT_REF: reg %d value %d\n"
-				   "TAIKO_A_VBAT_ADC_TEST: reg %d value %d\n"
-				   "TAIKO_A_VBAT_FE: reg %d value %d\n"
-				   "TAIKO_A_VBAT_BIAS_1: reg %d value %d\n"
-				   "TAIKO_A_VBAT_BIAS_2: reg %d value %d\n"
-				   "TAIKO_A_VBAT_ADC_DATA_MSB: reg %d value %d\n"
-				   "TAIKO_A_VBAT_ADC_DATA_LSB: reg %d value %d\n"
-				   "TAIKO_A_MICB_CFILT_1_CTL: reg %d value %d\n"
-				   "TAIKO_A_MICB_CFILT_1_VAL: reg %d value %d\n"
-				   "TAIKO_A_MICB_CFILT_1_PRECHRG: reg %d value %d\n"
-				   "TAIKO_A_MICB_1_CTL: reg %d value %d\n"
-				   "TAIKO_A_MICB_1_INT_RBIAS: reg %d value %d\n"
-				   "TAIKO_A_MICB_1_MBHC: reg %d value %d\n"
-				   "TAIKO_A_MICB_CFILT_2_CTL: reg %d value %d\n"
-				   "TAIKO_A_MICB_CFILT_2_VAL: reg %d value %d\n"
-				   "TAIKO_A_MICB_CFILT_2_PRECHRG: reg %d value %d\n"
-				   "TAIKO_A_MICB_2_CTL: reg %d value %d\n"
-				   "TAIKO_A_MICB_2_INT_RBIAS: reg %d value %d\n"
-				   "TAIKO_A_MICB_2_MBHC: reg %d value %d\n"
-				   "TAIKO_A_MICB_CFILT_3_CTL: reg %d value %d\n"
-				   "TAIKO_A_MICB_CFILT_3_VAL: reg %d value %d\n"
-				   "TAIKO_A_MICB_CFILT_3_PRECHRG: reg %d value %d\n"
-				   "TAIKO_A_MICB_3_CTL: reg %d value %d\n"
-				   "TAIKO_A_MICB_3_INT_RBIAS: reg %d value %d\n"
-				   "TAIKO_A_MICB_3_MBHC: reg %d value %d\n"
-				   "TAIKO_A_MICB_4_CTL: reg %d value %d\n"
-				   "TAIKO_A_MICB_4_INT_RBIAS: reg %d value %d\n"
-				   "TAIKO_A_MICB_4_MBHC: reg %d value %d\n"
-				   "TAIKO_A_MBHC_INSERT_DETECT: reg %d value %d\n"
-				   "TAIKO_A_MBHC_INSERT_DET_STATUS: reg %d value %d\n"
-				   "TAIKO_A_TX_COM_BIAS: reg %d value %d\n"
-				   "TAIKO_A_MBHC_SCALING_MUX_1: reg %d value %d\n"
-				   "TAIKO_A_MBHC_SCALING_MUX_2: reg %d value %d\n"
-				   "TAIKO_A_MAD_ANA_CTRL: reg %d value %d\n"
-				   "TAIKO_A_TX_SUP_SWITCH_CTRL_1: reg %d value %d\n"
-				   "TAIKO_A_TX_SUP_SWITCH_CTRL_2: reg %d value %d\n"
-				   "TAIKO_A_TX_1_2_EN: reg %d value %d\n"
-				   "TAIKO_A_TX_1_2_TEST_EN: reg %d value %d\n"
-				   "TAIKO_A_TX_1_2_ADC_CH1: reg %d value %d\n"
-				   "TAIKO_A_TX_1_2_ADC_CH2: reg %d value %d\n"
-				   "TAIKO_A_TX_1_2_ATEST_REFCTRL: reg %d value %d\n"
-				   "TAIKO_A_TX_1_2_TEST_CTL: reg %d value %d\n"
-				   "TAIKO_A_TX_1_2_TEST_BLOCK_EN: reg %d value %d\n"
-				   "TAIKO_A_TX_1_2_TXFE_CLKDIV: reg %d value %d\n"
-				   "TAIKO_A_TX_1_2_SAR_ERR_CH1: reg %d value %d\n"
-				   "TAIKO_A_TX_1_2_SAR_ERR_CH2: reg %d value %d\n"
-				   "TAIKO_A_TX_3_4_EN: reg %d value %d\n"
-				   "TAIKO_A_TX_3_4_TEST_EN: reg %d value %d\n"
-				   "TAIKO_A_TX_3_4_ADC_CH3: reg %d value %d\n"
-				   "TAIKO_A_TX_3_4_ADC_CH4: reg %d value %d\n"
-				   "TAIKO_A_TX_3_4_ATEST_REFCTRL: reg %d value %d\n"
-				   "TAIKO_A_TX_3_4_TEST_CTL: reg %d value %d\n"
-				   "TAIKO_A_TX_3_4_TEST_BLOCK_EN: reg %d value %d\n"
-				   "TAIKO_A_TX_3_4_TXFE_CKDIV: reg %d value %d\n"
-				   "TAIKO_A_TX_3_4_SAR_ERR_CH3: reg %d value %d\n"
-				   "TAIKO_A_TX_3_4_SAR_ERR_CH4: reg %d value %d\n"
-				   "TAIKO_A_TX_5_6_EN: reg %d value %d\n"
-				   "TAIKO_A_TX_5_6_TEST_EN: reg %d value %d\n"
-				   "TAIKO_A_TX_5_6_ADC_CH5: reg %d value %d\n"
-				   "TAIKO_A_TX_5_6_ADC_CH6: reg %d value %d\n"
-				   "TAIKO_A_TX_5_6_ATEST_REFCTRL: reg %d value %d\n"
-				   "TAIKO_A_TX_5_6_TEST_CTL: reg %d value %d\n"
-				   "TAIKO_A_TX_5_6_TEST_BLOCK_EN: reg %d value %d\n"
-				   "TAIKO_A_TX_5_6_TXFE_CKDIV: reg %d value %d\n"
-				   "TAIKO_A_TX_5_6_SAR_ERR_CH5: reg %d value %d\n"
-				   "TAIKO_A_TX_5_6_SAR_ERR_CH6: reg %d value %d\n"
-				   "TAIKO_A_TX_7_MBHC_EN: reg %d value %d\n"
-				   "TAIKO_A_TX_7_MBHC_ATEST_REFCTRL: reg %d value %d\n"
-				   "TAIKO_A_TX_7_MBHC_ADC: reg %d value %d\n"
-				   "TAIKO_A_TX_7_MBHC_TEST_CTL: reg %d value %d\n"
-				   "TAIKO_A_TX_7_MBHC_SAR_ERR: reg %d value %d\n"
-				   "TAIKO_A_TX_7_TXFE_CLKDIV: reg %d value %d\n"
-				   "TAIKO_A_BUCK_MODE_1: reg %d value %d\n"
-				   "TAIKO_A_BUCK_MODE_2: reg %d value %d\n"
-				   "TAIKO_A_BUCK_MODE_3: reg %d value %d\n"
-				   "TAIKO_A_BUCK_MODE_4: reg %d value %d\n"
-				   "TAIKO_A_BUCK_MODE_5: reg %d value %d\n"
-				   "TAIKO_A_BUCK_CTRL_VCL_1: reg %d value %d\n"
-				   "TAIKO_A_BUCK_CTRL_VCL_2: reg %d value %d\n"
-				   "TAIKO_A_BUCK_CTRL_VCL_3: reg %d value %d\n"
-				   "TAIKO_A_BUCK_CTRL_CCL_1: reg %d value %d\n"
-				   "TAIKO_A_BUCK_CTRL_CCL_2: reg %d value %d\n"
-				   "TAIKO_A_BUCK_CTRL_CCL_3: reg %d value %d\n"
-				   "TAIKO_A_BUCK_CTRL_CCL_4: reg %d value %d\n"
-				   "TAIKO_A_BUCK_CTRL_PWM_DRVR_1: reg %d value %d\n"
-				   "TAIKO_A_BUCK_CTRL_PWM_DRVR_2: reg %d value %d\n"
-				   "TAIKO_A_BUCK_CTRL_PWM_DRVR_3: reg %d value %d\n"
-				   "TAIKO_A_BUCK_TMUX_A_D: reg %d value %d\n"
-				   "TAIKO_A_NCP_BUCKREF: reg %d value %d\n"
-				   "TAIKO_A_NCP_EN: reg %d value %d\n"
-				   "TAIKO_A_NCP_CLK: reg %d value %d\n"
-				   "TAIKO_A_NCP_STATIC: reg %d value %d\n"
-				   "TAIKO_A_NCP_VTH_LOW: reg %d value %d\n"
-				   "TAIKO_A_NCP_VTH_HIGH: reg %d value %d\n"
-				   "TAIKO_A_NCP_ATEST: reg %d value %d\n"
-				   "TAIKO_A_NCP_DTEST: reg %d value %d\n"
-				   "TAIKO_A_NCP_DLY1: reg %d value %d\n"
-				   "TAIKO_A_NCP_DLY2: reg %d value %d\n"
-				   "TAIKO_A_RX_AUX_SW_CTL: reg %d value %d\n"
-				   "TAIKO_A_RX_PA_AUX_IN_CONN: reg %d value %d\n"
-				   "TAIKO_A_RX_COM_TIMER_DIV: reg %d value %d\n"
-				   "TAIKO_A_RX_COM_OCP_CTL: reg %d value %d\n"
-				   "TAIKO_A_RX_COM_OCP_COUNT: reg %d value %d\n"
-				   "TAIKO_A_RX_COM_DAC_CTL: reg %d value %d\n"
-				   "TAIKO_A_RX_COM_BIAS: reg %d value %d\n"
-				   "TAIKO_A_RX_HPH_AUTO_CHOP: reg %d value %d\n"
-				   "TAIKO_A_RX_HPH_CHOP_CTL: reg %d value %d\n"
-				   "TAIKO_A_RX_HPH_BIAS_PA: reg %d value %d\n"
-				   "TAIKO_A_RX_HPH_BIAS_LDO: reg %d value %d\n"
-				   "TAIKO_A_RX_HPH_BIAS_CNP: reg %d value %d\n"
-				   "TAIKO_A_RX_HPH_BIAS_WG_OCP: reg %d value %d\n"
-				   "TAIKO_A_RX_HPH_OCP_CTL: reg %d value %d\n"
-				   "TAIKO_A_RX_HPH_CNP_EN: reg %d value %d\n"
-				   "TAIKO_A_RX_HPH_CNP_WG_CTL: reg %d value %d\n"
-				   "TAIKO_A_RX_HPH_CNP_WG_TIME: reg %d value %d\n"
-				   "TAIKO_A_RX_HPH_L_GAIN: reg %d value %d\n"
-				   "TAIKO_A_RX_HPH_L_TEST: reg %d value %d\n"
-				   "TAIKO_A_RX_HPH_L_PA_CTL: reg %d value %d\n"
-				   "TAIKO_A_RX_HPH_L_DAC_CTL: reg %d value %d\n"
-				   "TAIKO_A_RX_HPH_L_ATEST: reg %d value %d\n"
-				   "TAIKO_A_RX_HPH_L_STATUS: reg %d value %d\n"
-				   "TAIKO_A_RX_HPH_R_GAIN: reg %d value %d\n"
-				   "TAIKO_A_RX_HPH_R_TEST: reg %d value %d\n"
-				   "TAIKO_A_RX_HPH_R_PA_CTL: reg %d value %d\n"
-				   "TAIKO_A_RX_HPH_R_DAC_CTL: reg %d value %d\n"
-				   "TAIKO_A_RX_HPH_R_ATEST: reg %d value %d\n"
-				   "TAIKO_A_RX_HPH_R_STATUS: reg %d value %d\n"
-				   "TAIKO_A_RX_EAR_BIAS_PA: reg %d value %d\n"
-				   "TAIKO_A_RX_EAR_BIAS_CMBUFF: reg %d value %d\n"
-				   "TAIKO_A_RX_EAR_EN: reg %d value %d\n"
-				   "TAIKO_A_RX_EAR_GAIN: reg %d value %d\n"
-				   "TAIKO_A_RX_EAR_CMBUFF: reg %d value %d\n"
-				   "TAIKO_A_RX_EAR_ICTL: reg %d value %d\n"
-				   "TAIKO_A_RX_EAR_CCOMP: reg %d value %d\n"
-				   "TAIKO_A_RX_EAR_VCM: reg %d value %d\n"
-				   "TAIKO_A_RX_EAR_CNP: reg %d value %d\n"
-				   "TAIKO_A_RX_EAR_DAC_CTL_ATEST: reg %d value %d\n"
-				   "TAIKO_A_RX_EAR_STATUS: reg %d value %d\n"
-				   "TAIKO_A_RX_LINE_BIAS_PA: reg %d value %d\n"
-				   "TAIKO_A_RX_BUCK_BIAS1: reg %d value %d\n"
-				   "TAIKO_A_RX_BUCK_BIAS2: reg %d value %d\n"
-				   "TAIKO_A_RX_LINE_COM: reg %d value %d\n"
-				   "TAIKO_A_RX_LINE_CNP_EN: reg %d value %d\n"
-				   "TAIKO_A_RX_LINE_CNP_WG_CTL: reg %d value %d\n"
-				   "TAIKO_A_RX_LINE_CNP_WG_TIME: reg %d value %d\n"
-				   "TAIKO_A_RX_LINE_1_GAIN: reg %d value %d\n"
-				   "TAIKO_A_RX_LINE_1_TEST: reg %d value %d\n"
-				   "TAIKO_A_RX_LINE_1_DAC_CTL: reg %d value %d\n"
-				   "TAIKO_A_RX_LINE_1_STATUS: reg %d value %d\n"
-				   "TAIKO_A_RX_LINE_2_GAIN: reg %d value %d\n"
-				   "TAIKO_A_RX_LINE_2_TEST: reg %d value %d\n"
-				   "TAIKO_A_RX_LINE_2_DAC_CTL: reg %d value %d\n"
-				   "TAIKO_A_RX_LINE_2_STATUS: reg %d value %d\n"
-				   "TAIKO_A_RX_LINE_3_GAIN: reg %d value %d\n"
-				   "TAIKO_A_RX_LINE_3_TEST: reg %d value %d\n"
-				   "TAIKO_A_RX_LINE_3_DAC_CTL: reg %d value %d\n"
-				   "TAIKO_A_RX_LINE_3_STATUS: reg %d value %d\n"
-				   "TAIKO_A_RX_LINE_4_GAIN: reg %d value %d\n"
-				   "TAIKO_A_RX_LINE_4_TEST: reg %d value %d\n"
-				   "TAIKO_A_RX_LINE_4_DAC_CTL: reg %d value %d\n"
-				   "TAIKO_A_RX_LINE_4_STATUS: reg %d value %d\n"
-				   "TAIKO_A_RX_LINE_CNP_DBG: reg %d value %d\n"
-				   "TAIKO_A_SPKR_DRV_EN: reg %d value %d\n"
-				   "TAIKO_A_SPKR_DRV_GAIN: reg %d value %d\n"
-				   "TAIKO_A_SPKR_DRV_DAC_CTL: reg %d value %d\n"
-				   "TAIKO_A_SPKR_DRV_OCP_CTL: reg %d value %d\n"
-				   "TAIKO_A_SPKR_DRV_CLIP_DET: reg %d value %d\n"
-				   "TAIKO_A_SPKR_DRV_IEC: reg %d value %d\n"
-				   "TAIKO_A_SPKR_DRV_DBG_DAC: reg %d value %d\n"
-				   "TAIKO_A_SPKR_DRV_DBG_PA: reg %d value %d\n"
-				   "TAIKO_A_SPKR_DRV_DBG_PWRSTG: reg %d value %d\n"
-				   "TAIKO_A_SPKR_DRV_BIAS_LDO: reg %d value %d\n"
-				   "TAIKO_A_SPKR_DRV_BIAS_INT: reg %d value %d\n"
-				   "TAIKO_A_SPKR_DRV_BIAS_PA: reg %d value %d\n"
-				   "TAIKO_A_SPKR_DRV_STATUS_OCP: reg %d value %d\n"
-				   "TAIKO_A_SPKR_DRV_STATUS_PA: reg %d value %d\n"
-				   "TAIKO_A_SPKR_PROT_EN: reg %d value %d\n"
-				   "TAIKO_A_SPKR_PROT_ADC_EN: reg %d value %d\n"
-				   "TAIKO_A_SPKR_PROT_ISENSE_BIAS: reg %d value %d\n"
-				   "TAIKO_A_SPKR_PROT_VSENSE_BIAS: reg %d value %d\n"
-				   "TAIKO_A_SPKR_PROT_ADC_ATEST_REFCTRL: reg %d value %d\n"
-				   "TAIKO_A_SPKR_PROT_ADC_TEST_CTL: reg %d value %d\n"
-				   "TAIKO_A_SPKR_PROT_TEST_BLOCK_EN: reg %d value %d\n"
-				   "TAIKO_A_SPKR_PROT_ATEST: reg %d value %d\n"
-				   "TAIKO_A_SPKR_PROT_V_SAR_ERR: reg %d value %d\n"
-				   "TAIKO_A_SPKR_PROT_I_SAR_ERR: reg %d value %d\n"
-				   "TAIKO_A_SPKR_PROT_LDO_CTRL: reg %d value %d\n"
-				   "TAIKO_A_SPKR_PROT_ISENSE_CTRL: reg %d value %d\n"
-				   "TAIKO_A_SPKR_PROT_VSENSE_CTRL: reg %d value %d\n"
-				   "TAIKO_A_RC_OSC_FREQ: reg %d value %d\n"
-				   "TAIKO_A_RC_OSC_TEST: reg %d value %d\n"
-				   "TAIKO_A_RC_OSC_STATUS: reg %d value %d\n"
-				   "TAIKO_A_RC_OSC_TUNER: reg %d value %d\n"
-				   "TAIKO_A_MBHC_HPH: reg %d value %d\n"
-				   "TAIKO_A_CDC_ANC1_B1_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_ANC2_B1_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_ANC1_SHIFT: reg %d value %d\n"
-				   "TAIKO_A_CDC_ANC2_SHIFT: reg %d value %d\n"
-				   "TAIKO_A_CDC_ANC1_IIR_B1_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_ANC2_IIR_B1_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_ANC1_IIR_B2_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_ANC2_IIR_B2_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_ANC1_IIR_B3_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_ANC2_IIR_B3_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_ANC1_LPF_B1_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_ANC2_LPF_B1_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_ANC1_LPF_B2_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_ANC2_LPF_B2_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_ANC1_SPARE: reg %d value %d\n"
-				   "TAIKO_A_CDC_ANC2_SPARE: reg %d value %d\n"
-				   "TAIKO_A_CDC_ANC1_SMLPF_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_ANC2_SMLPF_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_ANC1_DCFLT_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_ANC2_DCFLT_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_ANC1_GAIN_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_ANC2_GAIN_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_ANC1_B2_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_ANC2_B2_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX1_VOL_CTL_TIMER: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX2_VOL_CTL_TIMER: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX3_VOL_CTL_TIMER: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX4_VOL_CTL_TIMER: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX5_VOL_CTL_TIMER: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX6_VOL_CTL_TIMER: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX7_VOL_CTL_TIMER: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX8_VOL_CTL_TIMER: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX9_VOL_CTL_TIMER: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX10_VOL_CTL_TIMER: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX1_VOL_CTL_GAIN: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX2_VOL_CTL_GAIN: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX3_VOL_CTL_GAIN: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX4_VOL_CTL_GAIN: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX5_VOL_CTL_GAIN: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX6_VOL_CTL_GAIN: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX7_VOL_CTL_GAIN: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX8_VOL_CTL_GAIN: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX9_VOL_CTL_GAIN: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX10_VOL_CTL_GAIN: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX1_VOL_CTL_CFG: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX2_VOL_CTL_CFG: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX3_VOL_CTL_CFG: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX4_VOL_CTL_CFG: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX5_VOL_CTL_CFG: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX6_VOL_CTL_CFG: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX7_VOL_CTL_CFG: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX8_VOL_CTL_CFG: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX9_VOL_CTL_CFG: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX10_VOL_CTL_CFG: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX1_MUX_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX2_MUX_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX3_MUX_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX4_MUX_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX5_MUX_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX6_MUX_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX7_MUX_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX8_MUX_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX9_MUX_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX10_MUX_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX1_CLK_FS_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX2_CLK_FS_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX3_CLK_FS_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX4_CLK_FS_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX5_CLK_FS_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX6_CLK_FS_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX7_CLK_FS_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX8_CLK_FS_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX9_CLK_FS_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX10_CLK_FS_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX1_DMIC_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX2_DMIC_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX3_DMIC_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX4_DMIC_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX5_DMIC_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX6_DMIC_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX7_DMIC_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX8_DMIC_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX9_DMIC_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_TX10_DMIC_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_DEBUG_B1_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_DEBUG_B2_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_DEBUG_B3_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_DEBUG_B4_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_DEBUG_B5_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_DEBUG_B6_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_DEBUG_B7_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_SRC1_PDA_CFG: reg %d value %d\n"
-				   "TAIKO_A_CDC_SRC2_PDA_CFG: reg %d value %d\n"
-				   "TAIKO_A_CDC_SRC1_FS_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_SRC2_FS_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_RX1_B1_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_RX2_B1_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_RX3_B1_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_RX4_B1_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_RX5_B1_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_RX6_B1_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_RX7_B1_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_RX1_B2_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_RX2_B2_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_RX3_B2_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_RX4_B2_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_RX5_B2_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_RX6_B2_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_RX7_B2_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_RX1_B3_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_RX2_B3_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_RX3_B3_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_RX4_B3_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_RX5_B3_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_RX6_B3_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_RX7_B3_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_RX1_B4_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_RX2_B4_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_RX3_B4_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_RX4_B4_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_RX5_B4_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_RX6_B4_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_RX7_B4_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_RX1_B5_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_RX2_B5_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_RX3_B5_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_RX4_B5_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_RX5_B5_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_RX6_B5_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_RX7_B5_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_RX1_B6_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_RX2_B6_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_RX3_B6_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_RX4_B6_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_RX5_B6_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_RX6_B6_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_RX7_B6_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_RX1_VOL_CTL_B1_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_RX2_VOL_CTL_B1_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_RX3_VOL_CTL_B1_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_RX4_VOL_CTL_B1_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_RX5_VOL_CTL_B1_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_RX6_VOL_CTL_B1_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_RX7_VOL_CTL_B1_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_RX1_VOL_CTL_B2_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_RX2_VOL_CTL_B2_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_RX3_VOL_CTL_B2_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_RX4_VOL_CTL_B2_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_RX5_VOL_CTL_B2_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_RX6_VOL_CTL_B2_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_RX7_VOL_CTL_B2_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_VBAT_CFG: reg %d value %d\n"
-				   "TAIKO_A_CDC_VBAT_ADC_CAL1: reg %d value %d\n"
-				   "TAIKO_A_CDC_VBAT_ADC_CAL2: reg %d value %d\n"
-				   "TAIKO_A_CDC_VBAT_ADC_CAL3: reg %d value %d\n"
-				   "TAIKO_A_CDC_VBAT_PK_EST1: reg %d value %d\n"
-				   "TAIKO_A_CDC_VBAT_PK_EST2: reg %d value %d\n"
-				   "TAIKO_A_CDC_VBAT_PK_EST3: reg %d value %d\n"
-				   "TAIKO_A_CDC_VBAT_RF_PROC1: reg %d value %d\n"
-				   "TAIKO_A_CDC_VBAT_RF_PROC2: reg %d value %d\n"
-				   "TAIKO_A_CDC_VBAT_TAC1: reg %d value %d\n"
-				   "TAIKO_A_CDC_VBAT_TAC2: reg %d value %d\n"
-				   "TAIKO_A_CDC_VBAT_TAC3: reg %d value %d\n"
-				   "TAIKO_A_CDC_VBAT_TAC4: reg %d value %d\n"
-				   "TAIKO_A_CDC_VBAT_GAIN_UPD1: reg %d value %d\n"
-				   "TAIKO_A_CDC_VBAT_GAIN_UPD2: reg %d value %d\n"
-				   "TAIKO_A_CDC_VBAT_GAIN_UPD3: reg %d value %d\n"
-				   "TAIKO_A_CDC_VBAT_GAIN_UPD4: reg %d value %d\n"
-				   "TAIKO_A_CDC_VBAT_DEBUG1: reg %d value %d\n"
-				   "TAIKO_A_CDC_CLK_ANC_RESET_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CLK_RX_RESET_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CLK_TX_RESET_B1_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CLK_TX_RESET_B2_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CLK_DMIC_B1_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CLK_DMIC_B2_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CLK_RX_I2S_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CLK_TX_I2S_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CLK_OTHR_RESET_B1_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CLK_OTHR_RESET_B2_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CLK_TX_CLK_EN_B1_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CLK_TX_CLK_EN_B2_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CLK_OTHR_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CLK_RDAC_CLK_EN_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CLK_ANC_CLK_EN_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CLK_RX_B1_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CLK_RX_B2_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CLK_MCLK_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CLK_PDM_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CLK_SD_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CLK_POWER_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CLSH_B1_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CLSH_B2_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CLSH_B3_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CLSH_BUCK_NCP_VARS: reg %d value %d\n"
-				   "TAIKO_A_CDC_CLSH_IDLE_HPH_THSD: reg %d value %d\n"
-				   "TAIKO_A_CDC_CLSH_IDLE_EAR_THSD: reg %d value %d\n"
-				   "TAIKO_A_CDC_CLSH_FCLKONLY_HPH_THSD: reg %d value %d\n"
-				   "TAIKO_A_CDC_CLSH_FCLKONLY_EAR_THSD: reg %d value %d\n"
-				   "TAIKO_A_CDC_CLSH_K_ADDR: reg %d value %d\n"
-				   "TAIKO_A_CDC_CLSH_K_DATA: reg %d value %d\n"
-				   "TAIKO_A_CDC_CLSH_I_PA_FACT_HPH_L: reg %d value %d\n"
-				   "TAIKO_A_CDC_CLSH_I_PA_FACT_HPH_U: reg %d value %d\n"
-				   "TAIKO_A_CDC_CLSH_I_PA_FACT_EAR_L: reg %d value %d\n"
-				   "TAIKO_A_CDC_CLSH_I_PA_FACT_EAR_U: reg %d value %d\n"
-				   "TAIKO_A_CDC_CLSH_V_PA_HD_EAR: reg %d value %d\n"
-				   "TAIKO_A_CDC_CLSH_V_PA_HD_HPH: reg %d value %d\n"
-				   "TAIKO_A_CDC_CLSH_V_PA_MIN_EAR: reg %d value %d\n"
-				   "TAIKO_A_CDC_CLSH_V_PA_MIN_HPH: reg %d value %d\n"
-				   "TAIKO_A_CDC_IIR1_GAIN_B1_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_IIR2_GAIN_B1_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_IIR1_GAIN_B2_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_IIR2_GAIN_B2_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_IIR1_GAIN_B3_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_IIR2_GAIN_B3_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_IIR1_GAIN_B4_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_IIR2_GAIN_B4_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_IIR1_GAIN_B5_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_IIR2_GAIN_B5_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_IIR1_GAIN_B6_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_IIR2_GAIN_B6_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_IIR1_GAIN_B7_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_IIR2_GAIN_B7_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_IIR1_GAIN_B8_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_IIR2_GAIN_B8_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_IIR1_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_IIR2_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_IIR1_GAIN_TIMER_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_IIR2_GAIN_TIMER_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_IIR1_COEF_B1_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_IIR2_COEF_B1_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_IIR1_COEF_B2_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_IIR2_COEF_B2_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_TOP_GAIN_UPDATE: reg %d value %d\n"
-				   "TAIKO_A_CDC_COMP0_B1_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_COMP1_B1_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_COMP2_B1_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_COMP0_B2_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_COMP1_B2_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_COMP2_B2_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_COMP0_B3_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_COMP1_B3_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_COMP2_B3_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_COMP0_B4_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_COMP1_B4_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_COMP2_B4_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_COMP0_B5_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_COMP1_B5_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_COMP2_B5_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_COMP0_B6_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_COMP1_B6_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_COMP2_B6_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_COMP0_SHUT_DOWN_STATUS: reg %d value %d\n"
-				   "TAIKO_A_CDC_COMP1_SHUT_DOWN_STATUS: reg %d value %d\n"
-				   "TAIKO_A_CDC_COMP2_SHUT_DOWN_STATUS: reg %d value %d\n"
-				   "TAIKO_A_CDC_COMP0_FS_CFG: reg %d value %d\n"
-				   "TAIKO_A_CDC_COMP1_FS_CFG: reg %d value %d\n"
-				   "TAIKO_A_CDC_COMP2_FS_CFG: reg %d value %d\n"
-				   "TAIKO_A_CDC_CONN_RX1_B1_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CONN_RX1_B2_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CONN_RX1_B3_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CONN_RX2_B1_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CONN_RX2_B2_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CONN_RX2_B3_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CONN_RX3_B1_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CONN_RX3_B2_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CONN_RX4_B1_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CONN_RX4_B2_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CONN_RX5_B1_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CONN_RX5_B2_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CONN_RX6_B1_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CONN_RX6_B2_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CONN_RX7_B1_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CONN_RX7_B2_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CONN_RX7_B3_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CONN_ANC_B1_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CONN_ANC_B2_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CONN_TX_B1_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CONN_TX_B2_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CONN_TX_B3_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CONN_TX_B4_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CONN_EQ1_B1_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CONN_EQ1_B2_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CONN_EQ1_B3_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CONN_EQ1_B4_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CONN_EQ2_B1_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CONN_EQ2_B2_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CONN_EQ2_B3_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CONN_EQ2_B4_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CONN_SRC1_B1_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CONN_SRC1_B2_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CONN_SRC2_B1_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CONN_SRC2_B2_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CONN_TX_SB_B1_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CONN_TX_SB_B2_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CONN_TX_SB_B3_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CONN_TX_SB_B4_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CONN_TX_SB_B5_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CONN_TX_SB_B6_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CONN_TX_SB_B7_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CONN_TX_SB_B8_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CONN_TX_SB_B9_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CONN_TX_SB_B10_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CONN_TX_SB_B11_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CONN_RX_SB_B1_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CONN_RX_SB_B2_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CONN_CLSH_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_CONN_MISC: reg %d value %d\n"
-				   "TAIKO_A_CDC_CONN_MAD: reg %d value %d\n"
-				   "TAIKO_A_CDC_MBHC_EN_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_MBHC_FIR_B1_CFG: reg %d value %d\n"
-				   "TAIKO_A_CDC_MBHC_FIR_B2_CFG: reg %d value %d\n"
-				   "TAIKO_A_CDC_MBHC_TIMER_B1_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_MBHC_TIMER_B2_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_MBHC_TIMER_B3_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_MBHC_TIMER_B4_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_MBHC_TIMER_B5_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_MBHC_TIMER_B6_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_MBHC_B1_STATUS: reg %d value %d\n"
-				   "TAIKO_A_CDC_MBHC_B2_STATUS: reg %d value %d\n"
-				   "TAIKO_A_CDC_MBHC_B3_STATUS: reg %d value %d\n"
-				   "TAIKO_A_CDC_MBHC_B4_STATUS: reg %d value %d\n"
-				   "TAIKO_A_CDC_MBHC_B5_STATUS: reg %d value %d\n"
-				   "TAIKO_A_CDC_MBHC_B1_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_MBHC_B2_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_MBHC_VOLT_B1_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_MBHC_VOLT_B2_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_MBHC_VOLT_B3_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_MBHC_VOLT_B4_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_MBHC_VOLT_B5_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_MBHC_VOLT_B6_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_MBHC_VOLT_B7_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_MBHC_VOLT_B8_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_MBHC_VOLT_B9_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_MBHC_VOLT_B10_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_MBHC_VOLT_B11_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_MBHC_VOLT_B12_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_MBHC_CLK_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_MBHC_INT_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_MBHC_DEBUG_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_MBHC_SPARE: reg %d value %d\n"
-				   "TAIKO_A_CDC_MAD_MAIN_CTL_1: reg %d value %d\n"
-				   "TAIKO_A_CDC_MAD_MAIN_CTL_2: reg %d value %d\n"
-				   "TAIKO_A_CDC_MAD_AUDIO_CTL_1: reg %d value %d\n"
-				   "TAIKO_A_CDC_MAD_AUDIO_CTL_2: reg %d value %d\n"
-				   "TAIKO_A_CDC_MAD_AUDIO_CTL_3: reg %d value %d\n"
-				   "TAIKO_A_CDC_MAD_AUDIO_CTL_4: reg %d value %d\n"
-				   "TAIKO_A_CDC_MAD_AUDIO_CTL_5: reg %d value %d\n"
-				   "TAIKO_A_CDC_MAD_AUDIO_CTL_6: reg %d value %d\n"
-				   "TAIKO_A_CDC_MAD_AUDIO_CTL_7: reg %d value %d\n"
-				   "TAIKO_A_CDC_MAD_AUDIO_CTL_8: reg %d value %d\n"
-				   "TAIKO_A_CDC_MAD_AUDIO_IIR_CTL_PTR: reg %d value %d\n"
-				   "TAIKO_A_CDC_MAD_AUDIO_IIR_CTL_VAL: reg %d value %d\n"
-				   "TAIKO_A_CDC_MAD_ULTR_CTL_1: reg %d value %d\n"
-				   "TAIKO_A_CDC_MAD_ULTR_CTL_2: reg %d value %d\n"
-				   "TAIKO_A_CDC_MAD_ULTR_CTL_3: reg %d value %d\n"
-				   "TAIKO_A_CDC_MAD_ULTR_CTL_4: reg %d value %d\n"
-				   "TAIKO_A_CDC_MAD_ULTR_CTL_5: reg %d value %d\n"
-				   "TAIKO_A_CDC_MAD_ULTR_CTL_6: reg %d value %d\n"
-				   "TAIKO_A_CDC_MAD_ULTR_CTL_7: reg %d value %d\n"
-				   "TAIKO_A_CDC_MAD_BEACON_CTL_1: reg %d value %d\n"
-				   "TAIKO_A_CDC_MAD_BEACON_CTL_2: reg %d value %d\n"
-				   "TAIKO_A_CDC_MAD_BEACON_CTL_3: reg %d value %d\n"
-				   "TAIKO_A_CDC_MAD_BEACON_CTL_4: reg %d value %d\n"
-				   "TAIKO_A_CDC_MAD_BEACON_CTL_5: reg %d value %d\n"
-				   "TAIKO_A_CDC_MAD_BEACON_CTL_6: reg %d value %d\n"
-				   "TAIKO_A_CDC_MAD_BEACON_CTL_7: reg %d value %d\n"
-				   "TAIKO_A_CDC_MAD_BEACON_CTL_8: reg %d value %d\n"
-				   "TAIKO_A_CDC_MAD_BEACON_IIR_CTL_PTR: reg %d value %d\n"
-				   "TAIKO_A_CDC_MAD_BEACON_IIR_CTL_VAL: reg %d value %d\n"
-				   "TAIKO_A_CDC_SPKR_CLIPDET_B1_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_SPKR_CLIPDET_VAL0: reg %d value %d\n"
-				   "TAIKO_A_CDC_SPKR_CLIPDET_VAL1: reg %d value %d\n"
-				   "TAIKO_A_CDC_SPKR_CLIPDET_VAL2: reg %d value %d\n"
-				   "TAIKO_A_CDC_SPKR_CLIPDET_VAL3: reg %d value %d\n"
-				   "TAIKO_A_CDC_SPKR_CLIPDET_VAL4: reg %d value %d\n"
-				   "TAIKO_A_CDC_SPKR_CLIPDET_VAL5: reg %d value %d\n"
-				   "TAIKO_A_CDC_SPKR_CLIPDET_VAL6: reg %d value %d\n"
-				   "TAIKO_A_CDC_SPKR_CLIPDET_VAL7: reg %d value %d\n"
-				   "TAIKO_A_CDC_PA_RAMP_B1_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_PA_RAMP_B2_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_PA_RAMP_B3_CTL: reg %d value %d\n"
-				   "TAIKO_A_CDC_PA_RAMP_B4_CTL: reg %d value %d\n",
-				   TAIKO_A_CHIP_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CHIP_CTL),
-				   TAIKO_A_CHIP_STATUS, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CHIP_STATUS),
-				   TAIKO_A_CHIP_ID_BYTE_0, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CHIP_ID_BYTE_0),
-				   TAIKO_A_CHIP_ID_BYTE_1, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CHIP_ID_BYTE_1),
-				   TAIKO_A_CHIP_ID_BYTE_2, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CHIP_ID_BYTE_2),
-				   TAIKO_A_CHIP_ID_BYTE_3, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CHIP_ID_BYTE_3),
-				   TAIKO_A_CHIP_VERSION, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CHIP_VERSION),
-				   TAIKO_A_SLAVE_ID_1, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_SLAVE_ID_1),
-				   TAIKO_A_SLAVE_ID_2, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_SLAVE_ID_2),
-				   TAIKO_A_SLAVE_ID_3, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_SLAVE_ID_3),
-				   TAIKO_A_PIN_CTL_OE0, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_PIN_CTL_OE0),
-				   TAIKO_A_PIN_CTL_OE1, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_PIN_CTL_OE1),
-				   TAIKO_A_PIN_CTL_DATA0, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_PIN_CTL_DATA0),
-				   TAIKO_A_PIN_CTL_DATA1, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_PIN_CTL_DATA1),
-				   TAIKO_A_HDRIVE_GENERIC, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_HDRIVE_GENERIC),
-				   TAIKO_A_HDRIVE_OVERRIDE, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_HDRIVE_OVERRIDE),
-				   TAIKO_A_ANA_CSR_WAIT_STATE, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_ANA_CSR_WAIT_STATE),
-				   TAIKO_A_PROCESS_MONITOR_CTL0, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_PROCESS_MONITOR_CTL0),
-				   TAIKO_A_PROCESS_MONITOR_CTL1, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_PROCESS_MONITOR_CTL1),
-				   TAIKO_A_PROCESS_MONITOR_CTL2, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_PROCESS_MONITOR_CTL2),
-				   TAIKO_A_PROCESS_MONITOR_CTL3, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_PROCESS_MONITOR_CTL3),
-				   TAIKO_A_QFUSE_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_QFUSE_CTL),
-				   TAIKO_A_QFUSE_STATUS, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_QFUSE_STATUS),
-				   TAIKO_A_QFUSE_DATA_OUT0, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_QFUSE_DATA_OUT0),
-				   TAIKO_A_QFUSE_DATA_OUT1, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_QFUSE_DATA_OUT1),
-				   TAIKO_A_QFUSE_DATA_OUT2, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_QFUSE_DATA_OUT2),
-				   TAIKO_A_QFUSE_DATA_OUT3, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_QFUSE_DATA_OUT3),
-				   TAIKO_A_QFUSE_DATA_OUT4, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_QFUSE_DATA_OUT4),
-				   TAIKO_A_QFUSE_DATA_OUT5, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_QFUSE_DATA_OUT5),
-				   TAIKO_A_QFUSE_DATA_OUT6, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_QFUSE_DATA_OUT6),
-				   TAIKO_A_QFUSE_DATA_OUT7, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_QFUSE_DATA_OUT7),
-				   TAIKO_A_CDC_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CTL),
-				   TAIKO_A_LEAKAGE_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_LEAKAGE_CTL),
-				   TAIKO_A_INTR_MODE, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_INTR_MODE),
-				   TAIKO_A_INTR_MASK0, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_INTR_MASK0),
-				   TAIKO_A_INTR_MASK1, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_INTR_MASK1),
-				   TAIKO_A_INTR_MASK2, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_INTR_MASK2),
-				   TAIKO_A_INTR_MASK3, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_INTR_MASK3),
-				   TAIKO_A_INTR_STATUS0, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_INTR_STATUS0),
-				   TAIKO_A_INTR_STATUS1, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_INTR_STATUS1),
-				   TAIKO_A_INTR_STATUS2, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_INTR_STATUS2),
-				   TAIKO_A_INTR_STATUS3, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_INTR_STATUS3),
-				   TAIKO_A_INTR_CLEAR0, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_INTR_CLEAR0),
-				   TAIKO_A_INTR_CLEAR1, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_INTR_CLEAR1),
-				   TAIKO_A_INTR_CLEAR2, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_INTR_CLEAR2),
-				   TAIKO_A_INTR_CLEAR3, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_INTR_CLEAR3),
-				   TAIKO_A_INTR_LEVEL0, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_INTR_LEVEL0),
-				   TAIKO_A_INTR_LEVEL1, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_INTR_LEVEL1),
-				   TAIKO_A_INTR_LEVEL2, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_INTR_LEVEL2),
-				   TAIKO_A_INTR_LEVEL3, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_INTR_LEVEL3),
-				   TAIKO_A_INTR_TEST0, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_INTR_TEST0),
-				   TAIKO_A_INTR_TEST1, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_INTR_TEST1),
-				   TAIKO_A_INTR_TEST2, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_INTR_TEST2),
-				   TAIKO_A_INTR_TEST3, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_INTR_TEST3),
-				   TAIKO_A_INTR_SET0, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_INTR_SET0),
-				   TAIKO_A_INTR_SET1, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_INTR_SET1),
-				   TAIKO_A_INTR_SET2, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_INTR_SET2),
-				   TAIKO_A_INTR_SET3, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_INTR_SET3),
-				   TAIKO_A_INTR_DESTN0, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_INTR_DESTN0),
-				   TAIKO_A_INTR_DESTN1, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_INTR_DESTN1),
-				   TAIKO_A_INTR_DESTN2, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_INTR_DESTN2),
-				   TAIKO_A_INTR_DESTN3, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_INTR_DESTN3),
-				   TAIKO_A_CDC_TX_I2S_SCK_MODE, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX_I2S_SCK_MODE),
-				   TAIKO_A_CDC_TX_I2S_WS_MODE, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX_I2S_WS_MODE),
-				   TAIKO_A_CDC_DMIC_DATA0_MODE, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_DMIC_DATA0_MODE),
-				   TAIKO_A_CDC_DMIC_CLK0_MODE, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_DMIC_CLK0_MODE),
-				   TAIKO_A_CDC_DMIC_DATA1_MODE, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_DMIC_DATA1_MODE),
-				   TAIKO_A_CDC_DMIC_CLK1_MODE, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_DMIC_CLK1_MODE),
-				   TAIKO_A_CDC_RX_I2S_SCK_MODE, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX_I2S_SCK_MODE),
-				   TAIKO_A_CDC_RX_I2S_WS_MODE, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX_I2S_WS_MODE),
-				   TAIKO_A_CDC_DMIC_DATA2_MODE, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_DMIC_DATA2_MODE),
-				   TAIKO_A_CDC_DMIC_CLK2_MODE, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_DMIC_CLK2_MODE),
-				   TAIKO_A_CDC_INTR1_MODE, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_INTR1_MODE),
-				   TAIKO_A_CDC_SB_NRZ_SEL_MODE, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_SB_NRZ_SEL_MODE),
-				   TAIKO_A_CDC_INTR2_MODE, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_INTR2_MODE),
-				   TAIKO_A_CDC_RF_PA_ON_MODE, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RF_PA_ON_MODE),
-				   TAIKO_A_BIAS_REF_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_BIAS_REF_CTL),
-				   TAIKO_A_BIAS_CENTRAL_BG_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_BIAS_CENTRAL_BG_CTL),
-				   TAIKO_A_BIAS_PRECHRG_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_BIAS_PRECHRG_CTL),
-				   TAIKO_A_BIAS_CURR_CTL_1, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_BIAS_CURR_CTL_1),
-				   TAIKO_A_BIAS_CURR_CTL_2, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_BIAS_CURR_CTL_2),
-				   TAIKO_A_BIAS_OSC_BG_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_BIAS_OSC_BG_CTL),
-				   TAIKO_A_CLK_BUFF_EN1, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CLK_BUFF_EN1),
-				   TAIKO_A_CLK_BUFF_EN2, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CLK_BUFF_EN2),
-				   TAIKO_A_LDO_H_MODE_1, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_LDO_H_MODE_1),
-				   TAIKO_A_LDO_H_MODE_2, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_LDO_H_MODE_2),
-				   TAIKO_A_LDO_H_LOOP_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_LDO_H_LOOP_CTL),
-				   TAIKO_A_LDO_H_COMP_1, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_LDO_H_COMP_1),
-				   TAIKO_A_LDO_H_COMP_2, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_LDO_H_COMP_2),
-				   TAIKO_A_LDO_H_BIAS_1, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_LDO_H_BIAS_1),
-				   TAIKO_A_LDO_H_BIAS_2, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_LDO_H_BIAS_2),
-				   TAIKO_A_LDO_H_BIAS_3, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_LDO_H_BIAS_3),
-				   TAIKO_A_VBAT_CLK, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_VBAT_CLK),
-				   TAIKO_A_VBAT_LOOP, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_VBAT_LOOP),
-				   TAIKO_A_VBAT_REF, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_VBAT_REF),
-				   TAIKO_A_VBAT_ADC_TEST, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_VBAT_ADC_TEST),
-				   TAIKO_A_VBAT_FE, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_VBAT_FE),
-				   TAIKO_A_VBAT_BIAS_1, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_VBAT_BIAS_1),
-				   TAIKO_A_VBAT_BIAS_2, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_VBAT_BIAS_2),
-				   TAIKO_A_VBAT_ADC_DATA_MSB, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_VBAT_ADC_DATA_MSB),
-				   TAIKO_A_VBAT_ADC_DATA_LSB, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_VBAT_ADC_DATA_LSB),
-				   TAIKO_A_MICB_CFILT_1_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_MICB_CFILT_1_CTL),
-				   TAIKO_A_MICB_CFILT_1_VAL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_MICB_CFILT_1_VAL),
-				   TAIKO_A_MICB_CFILT_1_PRECHRG, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_MICB_CFILT_1_PRECHRG),
-				   TAIKO_A_MICB_1_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_MICB_1_CTL),
-				   TAIKO_A_MICB_1_INT_RBIAS, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_MICB_1_INT_RBIAS),
-				   TAIKO_A_MICB_1_MBHC, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_MICB_1_MBHC),
-				   TAIKO_A_MICB_CFILT_2_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_MICB_CFILT_2_CTL),
-				   TAIKO_A_MICB_CFILT_2_VAL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_MICB_CFILT_2_VAL),
-				   TAIKO_A_MICB_CFILT_2_PRECHRG, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_MICB_CFILT_2_PRECHRG),
-				   TAIKO_A_MICB_2_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_MICB_2_CTL),
-				   TAIKO_A_MICB_2_INT_RBIAS, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_MICB_2_INT_RBIAS),
-				   TAIKO_A_MICB_2_MBHC, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_MICB_2_MBHC),
-				   TAIKO_A_MICB_CFILT_3_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_MICB_CFILT_3_CTL),
-				   TAIKO_A_MICB_CFILT_3_VAL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_MICB_CFILT_3_VAL),
-				   TAIKO_A_MICB_CFILT_3_PRECHRG, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_MICB_CFILT_3_PRECHRG),
-				   TAIKO_A_MICB_3_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_MICB_3_CTL),
-				   TAIKO_A_MICB_3_INT_RBIAS, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_MICB_3_INT_RBIAS),
-				   TAIKO_A_MICB_3_MBHC, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_MICB_3_MBHC),
-				   TAIKO_A_MICB_4_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_MICB_4_CTL),
-				   TAIKO_A_MICB_4_INT_RBIAS, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_MICB_4_INT_RBIAS),
-				   TAIKO_A_MICB_4_MBHC, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_MICB_4_MBHC),
-				   TAIKO_A_MBHC_INSERT_DETECT, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_MBHC_INSERT_DETECT),
-				   TAIKO_A_MBHC_INSERT_DET_STATUS, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_MBHC_INSERT_DET_STATUS),
-				   TAIKO_A_TX_COM_BIAS, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_TX_COM_BIAS),
-				   TAIKO_A_MBHC_SCALING_MUX_1, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_MBHC_SCALING_MUX_1),
-				   TAIKO_A_MBHC_SCALING_MUX_2, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_MBHC_SCALING_MUX_2),
-				   TAIKO_A_MAD_ANA_CTRL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_MAD_ANA_CTRL),
-				   TAIKO_A_TX_SUP_SWITCH_CTRL_1, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_TX_SUP_SWITCH_CTRL_1),
-				   TAIKO_A_TX_SUP_SWITCH_CTRL_2, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_TX_SUP_SWITCH_CTRL_2),
-				   TAIKO_A_TX_1_2_EN, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_TX_1_2_EN),
-				   TAIKO_A_TX_1_2_TEST_EN, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_TX_1_2_TEST_EN),
-				   TAIKO_A_TX_1_2_ADC_CH1, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_TX_1_2_ADC_CH1),
-				   TAIKO_A_TX_1_2_ADC_CH2, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_TX_1_2_ADC_CH2),
-				   TAIKO_A_TX_1_2_ATEST_REFCTRL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_TX_1_2_ATEST_REFCTRL),
-				   TAIKO_A_TX_1_2_TEST_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_TX_1_2_TEST_CTL),
-				   TAIKO_A_TX_1_2_TEST_BLOCK_EN, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_TX_1_2_TEST_BLOCK_EN),
-				   TAIKO_A_TX_1_2_TXFE_CLKDIV, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_TX_1_2_TXFE_CLKDIV),
-				   TAIKO_A_TX_1_2_SAR_ERR_CH1, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_TX_1_2_SAR_ERR_CH1),
-				   TAIKO_A_TX_1_2_SAR_ERR_CH2, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_TX_1_2_SAR_ERR_CH2),
-				   TAIKO_A_TX_3_4_EN, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_TX_3_4_EN),
-				   TAIKO_A_TX_3_4_TEST_EN, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_TX_3_4_TEST_EN),
-				   TAIKO_A_TX_3_4_ADC_CH3, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_TX_3_4_ADC_CH3),
-				   TAIKO_A_TX_3_4_ADC_CH4, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_TX_3_4_ADC_CH4),
-				   TAIKO_A_TX_3_4_ATEST_REFCTRL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_TX_3_4_ATEST_REFCTRL),
-				   TAIKO_A_TX_3_4_TEST_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_TX_3_4_TEST_CTL),
-				   TAIKO_A_TX_3_4_TEST_BLOCK_EN, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_TX_3_4_TEST_BLOCK_EN),
-				   TAIKO_A_TX_3_4_TXFE_CKDIV, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_TX_3_4_TXFE_CKDIV),
-				   TAIKO_A_TX_3_4_SAR_ERR_CH3, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_TX_3_4_SAR_ERR_CH3),
-				   TAIKO_A_TX_3_4_SAR_ERR_CH4, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_TX_3_4_SAR_ERR_CH4),
-				   TAIKO_A_TX_5_6_EN, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_TX_5_6_EN),
-				   TAIKO_A_TX_5_6_TEST_EN, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_TX_5_6_TEST_EN),
-				   TAIKO_A_TX_5_6_ADC_CH5, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_TX_5_6_ADC_CH5),
-				   TAIKO_A_TX_5_6_ADC_CH6, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_TX_5_6_ADC_CH6),
-				   TAIKO_A_TX_5_6_ATEST_REFCTRL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_TX_5_6_ATEST_REFCTRL),
-				   TAIKO_A_TX_5_6_TEST_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_TX_5_6_TEST_CTL),
-				   TAIKO_A_TX_5_6_TEST_BLOCK_EN, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_TX_5_6_TEST_BLOCK_EN),
-				   TAIKO_A_TX_5_6_TXFE_CKDIV, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_TX_5_6_TXFE_CKDIV),
-				   TAIKO_A_TX_5_6_SAR_ERR_CH5, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_TX_5_6_SAR_ERR_CH5),
-				   TAIKO_A_TX_5_6_SAR_ERR_CH6, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_TX_5_6_SAR_ERR_CH6),
-				   TAIKO_A_TX_7_MBHC_EN, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_TX_7_MBHC_EN),
-				   TAIKO_A_TX_7_MBHC_ATEST_REFCTRL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_TX_7_MBHC_ATEST_REFCTRL),
-				   TAIKO_A_TX_7_MBHC_ADC, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_TX_7_MBHC_ADC),
-				   TAIKO_A_TX_7_MBHC_TEST_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_TX_7_MBHC_TEST_CTL),
-				   TAIKO_A_TX_7_MBHC_SAR_ERR, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_TX_7_MBHC_SAR_ERR),
-				   TAIKO_A_TX_7_TXFE_CLKDIV, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_TX_7_TXFE_CLKDIV),
-				   TAIKO_A_BUCK_MODE_1, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_BUCK_MODE_1),
-				   TAIKO_A_BUCK_MODE_2, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_BUCK_MODE_2),
-				   TAIKO_A_BUCK_MODE_3, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_BUCK_MODE_3),
-				   TAIKO_A_BUCK_MODE_4, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_BUCK_MODE_4),
-				   TAIKO_A_BUCK_MODE_5, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_BUCK_MODE_5),
-				   TAIKO_A_BUCK_CTRL_VCL_1, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_BUCK_CTRL_VCL_1),
-				   TAIKO_A_BUCK_CTRL_VCL_2, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_BUCK_CTRL_VCL_2),
-				   TAIKO_A_BUCK_CTRL_VCL_3, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_BUCK_CTRL_VCL_3),
-				   TAIKO_A_BUCK_CTRL_CCL_1, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_BUCK_CTRL_CCL_1),
-				   TAIKO_A_BUCK_CTRL_CCL_2, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_BUCK_CTRL_CCL_2),
-				   TAIKO_A_BUCK_CTRL_CCL_3, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_BUCK_CTRL_CCL_3),
-				   TAIKO_A_BUCK_CTRL_CCL_4, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_BUCK_CTRL_CCL_4),
-				   TAIKO_A_BUCK_CTRL_PWM_DRVR_1, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_BUCK_CTRL_PWM_DRVR_1),
-				   TAIKO_A_BUCK_CTRL_PWM_DRVR_2, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_BUCK_CTRL_PWM_DRVR_2),
-				   TAIKO_A_BUCK_CTRL_PWM_DRVR_3, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_BUCK_CTRL_PWM_DRVR_3),
-				   TAIKO_A_BUCK_TMUX_A_D, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_BUCK_TMUX_A_D),
-				   TAIKO_A_NCP_BUCKREF, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_NCP_BUCKREF),
-				   TAIKO_A_NCP_EN, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_NCP_EN),
-				   TAIKO_A_NCP_CLK, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_NCP_CLK),
-				   TAIKO_A_NCP_STATIC, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_NCP_STATIC),
-				   TAIKO_A_NCP_VTH_LOW, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_NCP_VTH_LOW),
-				   TAIKO_A_NCP_VTH_HIGH, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_NCP_VTH_HIGH),
-				   TAIKO_A_NCP_ATEST, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_NCP_ATEST),
-				   TAIKO_A_NCP_DTEST, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_NCP_DTEST),
-				   TAIKO_A_NCP_DLY1, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_NCP_DLY1),
-				   TAIKO_A_NCP_DLY2, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_NCP_DLY2),
-				   TAIKO_A_RX_AUX_SW_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_AUX_SW_CTL),
-				   TAIKO_A_RX_PA_AUX_IN_CONN, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_PA_AUX_IN_CONN),
-				   TAIKO_A_RX_COM_TIMER_DIV, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_COM_TIMER_DIV),
-				   TAIKO_A_RX_COM_OCP_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_COM_OCP_CTL),
-				   TAIKO_A_RX_COM_OCP_COUNT, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_COM_OCP_COUNT),
-				   TAIKO_A_RX_COM_DAC_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_COM_DAC_CTL),
-				   TAIKO_A_RX_COM_BIAS, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_COM_BIAS),
-				   TAIKO_A_RX_HPH_AUTO_CHOP, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_AUTO_CHOP),
-				   TAIKO_A_RX_HPH_CHOP_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_CHOP_CTL),
-				   TAIKO_A_RX_HPH_BIAS_PA, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_BIAS_PA),
-				   TAIKO_A_RX_HPH_BIAS_LDO, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_BIAS_LDO),
-				   TAIKO_A_RX_HPH_BIAS_CNP, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_BIAS_CNP),
-				   TAIKO_A_RX_HPH_BIAS_WG_OCP, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_BIAS_WG_OCP),
-				   TAIKO_A_RX_HPH_OCP_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_OCP_CTL),
-				   TAIKO_A_RX_HPH_CNP_EN, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_CNP_EN),
-				   TAIKO_A_RX_HPH_CNP_WG_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_CNP_WG_CTL),
-				   TAIKO_A_RX_HPH_CNP_WG_TIME, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_CNP_WG_TIME),
-				   TAIKO_A_RX_HPH_L_GAIN, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_L_GAIN),
-				   TAIKO_A_RX_HPH_L_TEST, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_L_TEST),
-				   TAIKO_A_RX_HPH_L_PA_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_L_PA_CTL),
-				   TAIKO_A_RX_HPH_L_DAC_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_L_DAC_CTL),
-				   TAIKO_A_RX_HPH_L_ATEST, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_L_ATEST),
-				   TAIKO_A_RX_HPH_L_STATUS, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_L_STATUS),
-				   TAIKO_A_RX_HPH_R_GAIN, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_R_GAIN),
-				   TAIKO_A_RX_HPH_R_TEST, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_R_TEST),
-				   TAIKO_A_RX_HPH_R_PA_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_R_PA_CTL),
-				   TAIKO_A_RX_HPH_R_DAC_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_R_DAC_CTL),
-				   TAIKO_A_RX_HPH_R_ATEST, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_R_ATEST),
-				   TAIKO_A_RX_HPH_R_STATUS, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_R_STATUS),
-				   TAIKO_A_RX_EAR_BIAS_PA, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_EAR_BIAS_PA),
-				   TAIKO_A_RX_EAR_BIAS_CMBUFF, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_EAR_BIAS_CMBUFF),
-				   TAIKO_A_RX_EAR_EN, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_EAR_EN),
-				   TAIKO_A_RX_EAR_GAIN, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_EAR_GAIN),
-				   TAIKO_A_RX_EAR_CMBUFF, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_EAR_CMBUFF),
-				   TAIKO_A_RX_EAR_ICTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_EAR_ICTL),
-				   TAIKO_A_RX_EAR_CCOMP, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_EAR_CCOMP),
-				   TAIKO_A_RX_EAR_VCM, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_EAR_VCM),
-				   TAIKO_A_RX_EAR_CNP, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_EAR_CNP),
-				   TAIKO_A_RX_EAR_DAC_CTL_ATEST, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_EAR_DAC_CTL_ATEST),
-				   TAIKO_A_RX_EAR_STATUS, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_EAR_STATUS),
-				   TAIKO_A_RX_LINE_BIAS_PA, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_LINE_BIAS_PA),
-				   TAIKO_A_RX_BUCK_BIAS1, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_BUCK_BIAS1),
-				   TAIKO_A_RX_BUCK_BIAS2, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_BUCK_BIAS2),
-				   TAIKO_A_RX_LINE_COM, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_LINE_COM),
-				   TAIKO_A_RX_LINE_CNP_EN, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_LINE_CNP_EN),
-				   TAIKO_A_RX_LINE_CNP_WG_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_LINE_CNP_WG_CTL),
-				   TAIKO_A_RX_LINE_CNP_WG_TIME, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_LINE_CNP_WG_TIME),
-				   TAIKO_A_RX_LINE_1_GAIN, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_LINE_1_GAIN),
-				   TAIKO_A_RX_LINE_1_TEST, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_LINE_1_TEST),
-				   TAIKO_A_RX_LINE_1_DAC_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_LINE_1_DAC_CTL),
-				   TAIKO_A_RX_LINE_1_STATUS, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_LINE_1_STATUS),
-				   TAIKO_A_RX_LINE_2_GAIN, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_LINE_2_GAIN),
-				   TAIKO_A_RX_LINE_2_TEST, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_LINE_2_TEST),
-				   TAIKO_A_RX_LINE_2_DAC_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_LINE_2_DAC_CTL),
-				   TAIKO_A_RX_LINE_2_STATUS, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_LINE_2_STATUS),
-				   TAIKO_A_RX_LINE_3_GAIN, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_LINE_3_GAIN),
-				   TAIKO_A_RX_LINE_3_TEST, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_LINE_3_TEST),
-				   TAIKO_A_RX_LINE_3_DAC_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_LINE_3_DAC_CTL),
-				   TAIKO_A_RX_LINE_3_STATUS, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_LINE_3_STATUS),
-				   TAIKO_A_RX_LINE_4_GAIN, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_LINE_4_GAIN),
-				   TAIKO_A_RX_LINE_4_TEST, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_LINE_4_TEST),
-				   TAIKO_A_RX_LINE_4_DAC_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_LINE_4_DAC_CTL),
-				   TAIKO_A_RX_LINE_4_STATUS, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_LINE_4_STATUS),
-				   TAIKO_A_RX_LINE_CNP_DBG, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_LINE_CNP_DBG),
-				   TAIKO_A_SPKR_DRV_EN, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_SPKR_DRV_EN),
-				   TAIKO_A_SPKR_DRV_GAIN, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_SPKR_DRV_GAIN),
-				   TAIKO_A_SPKR_DRV_DAC_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_SPKR_DRV_DAC_CTL),
-				   TAIKO_A_SPKR_DRV_OCP_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_SPKR_DRV_OCP_CTL),
-				   TAIKO_A_SPKR_DRV_CLIP_DET, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_SPKR_DRV_CLIP_DET),
-				   TAIKO_A_SPKR_DRV_IEC, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_SPKR_DRV_IEC),
-				   TAIKO_A_SPKR_DRV_DBG_DAC, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_SPKR_DRV_DBG_DAC),
-				   TAIKO_A_SPKR_DRV_DBG_PA, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_SPKR_DRV_DBG_PA),
-				   TAIKO_A_SPKR_DRV_DBG_PWRSTG, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_SPKR_DRV_DBG_PWRSTG),
-				   TAIKO_A_SPKR_DRV_BIAS_LDO, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_SPKR_DRV_BIAS_LDO),
-				   TAIKO_A_SPKR_DRV_BIAS_INT, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_SPKR_DRV_BIAS_INT),
-				   TAIKO_A_SPKR_DRV_BIAS_PA, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_SPKR_DRV_BIAS_PA),
-				   TAIKO_A_SPKR_DRV_STATUS_OCP, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_SPKR_DRV_STATUS_OCP),
-				   TAIKO_A_SPKR_DRV_STATUS_PA, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_SPKR_DRV_STATUS_PA),
-				   TAIKO_A_SPKR_PROT_EN, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_SPKR_PROT_EN),
-				   TAIKO_A_SPKR_PROT_ADC_EN, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_SPKR_PROT_ADC_EN),
-				   TAIKO_A_SPKR_PROT_ISENSE_BIAS, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_SPKR_PROT_ISENSE_BIAS),
-				   TAIKO_A_SPKR_PROT_VSENSE_BIAS, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_SPKR_PROT_VSENSE_BIAS),
-				   TAIKO_A_SPKR_PROT_ADC_ATEST_REFCTRL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_SPKR_PROT_ADC_ATEST_REFCTRL),
-				   TAIKO_A_SPKR_PROT_ADC_TEST_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_SPKR_PROT_ADC_TEST_CTL),
-				   TAIKO_A_SPKR_PROT_TEST_BLOCK_EN, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_SPKR_PROT_TEST_BLOCK_EN),
-				   TAIKO_A_SPKR_PROT_ATEST, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_SPKR_PROT_ATEST),
-				   TAIKO_A_SPKR_PROT_V_SAR_ERR, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_SPKR_PROT_V_SAR_ERR),
-				   TAIKO_A_SPKR_PROT_I_SAR_ERR, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_SPKR_PROT_I_SAR_ERR),
-				   TAIKO_A_SPKR_PROT_LDO_CTRL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_SPKR_PROT_LDO_CTRL),
-				   TAIKO_A_SPKR_PROT_ISENSE_CTRL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_SPKR_PROT_ISENSE_CTRL),
-				   TAIKO_A_SPKR_PROT_VSENSE_CTRL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_SPKR_PROT_VSENSE_CTRL),
-				   TAIKO_A_RC_OSC_FREQ, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RC_OSC_FREQ),
-				   TAIKO_A_RC_OSC_TEST, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RC_OSC_TEST),
-				   TAIKO_A_RC_OSC_STATUS, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RC_OSC_STATUS),
-				   TAIKO_A_RC_OSC_TUNER, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RC_OSC_TUNER),
-				   TAIKO_A_MBHC_HPH, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_MBHC_HPH),
-				   TAIKO_A_CDC_ANC1_B1_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_ANC1_B1_CTL),
-				   TAIKO_A_CDC_ANC2_B1_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_ANC2_B1_CTL),
-				   TAIKO_A_CDC_ANC1_SHIFT, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_ANC1_SHIFT),
-				   TAIKO_A_CDC_ANC2_SHIFT, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_ANC2_SHIFT),
-				   TAIKO_A_CDC_ANC1_IIR_B1_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_ANC1_IIR_B1_CTL),
-				   TAIKO_A_CDC_ANC2_IIR_B1_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_ANC2_IIR_B1_CTL),
-				   TAIKO_A_CDC_ANC1_IIR_B2_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_ANC1_IIR_B2_CTL),
-				   TAIKO_A_CDC_ANC2_IIR_B2_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_ANC2_IIR_B2_CTL),
-				   TAIKO_A_CDC_ANC1_IIR_B3_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_ANC1_IIR_B3_CTL),
-				   TAIKO_A_CDC_ANC2_IIR_B3_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_ANC2_IIR_B3_CTL),
-				   TAIKO_A_CDC_ANC1_LPF_B1_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_ANC1_LPF_B1_CTL),
-				   TAIKO_A_CDC_ANC2_LPF_B1_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_ANC2_LPF_B1_CTL),
-				   TAIKO_A_CDC_ANC1_LPF_B2_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_ANC1_LPF_B2_CTL),
-				   TAIKO_A_CDC_ANC2_LPF_B2_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_ANC2_LPF_B2_CTL),
-				   TAIKO_A_CDC_ANC1_SPARE, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_ANC1_SPARE),
-				   TAIKO_A_CDC_ANC2_SPARE, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_ANC2_SPARE),
-				   TAIKO_A_CDC_ANC1_SMLPF_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_ANC1_SMLPF_CTL),
-				   TAIKO_A_CDC_ANC2_SMLPF_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_ANC2_SMLPF_CTL),
-				   TAIKO_A_CDC_ANC1_DCFLT_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_ANC1_DCFLT_CTL),
-				   TAIKO_A_CDC_ANC2_DCFLT_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_ANC2_DCFLT_CTL),
-				   TAIKO_A_CDC_ANC1_GAIN_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_ANC1_GAIN_CTL),
-				   TAIKO_A_CDC_ANC2_GAIN_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_ANC2_GAIN_CTL),
-				   TAIKO_A_CDC_ANC1_B2_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_ANC1_B2_CTL),
-				   TAIKO_A_CDC_ANC2_B2_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_ANC2_B2_CTL),
-				   TAIKO_A_CDC_TX1_VOL_CTL_TIMER, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX1_VOL_CTL_TIMER),
-				   TAIKO_A_CDC_TX2_VOL_CTL_TIMER, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX2_VOL_CTL_TIMER),
-				   TAIKO_A_CDC_TX3_VOL_CTL_TIMER, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX3_VOL_CTL_TIMER),
-				   TAIKO_A_CDC_TX4_VOL_CTL_TIMER, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX4_VOL_CTL_TIMER),
-				   TAIKO_A_CDC_TX5_VOL_CTL_TIMER, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX5_VOL_CTL_TIMER),
-				   TAIKO_A_CDC_TX6_VOL_CTL_TIMER, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX6_VOL_CTL_TIMER),
-				   TAIKO_A_CDC_TX7_VOL_CTL_TIMER, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX7_VOL_CTL_TIMER),
-				   TAIKO_A_CDC_TX8_VOL_CTL_TIMER, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX8_VOL_CTL_TIMER),
-				   TAIKO_A_CDC_TX9_VOL_CTL_TIMER, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX9_VOL_CTL_TIMER),
-				   TAIKO_A_CDC_TX10_VOL_CTL_TIMER, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX10_VOL_CTL_TIMER),
-				   TAIKO_A_CDC_TX1_VOL_CTL_GAIN, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX1_VOL_CTL_GAIN),
-				   TAIKO_A_CDC_TX2_VOL_CTL_GAIN, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX2_VOL_CTL_GAIN),
-				   TAIKO_A_CDC_TX3_VOL_CTL_GAIN, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX3_VOL_CTL_GAIN),
-				   TAIKO_A_CDC_TX4_VOL_CTL_GAIN, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX4_VOL_CTL_GAIN),
-				   TAIKO_A_CDC_TX5_VOL_CTL_GAIN, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX5_VOL_CTL_GAIN),
-				   TAIKO_A_CDC_TX6_VOL_CTL_GAIN, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX6_VOL_CTL_GAIN),
-				   TAIKO_A_CDC_TX7_VOL_CTL_GAIN, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX7_VOL_CTL_GAIN),
-				   TAIKO_A_CDC_TX8_VOL_CTL_GAIN, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX8_VOL_CTL_GAIN),
-				   TAIKO_A_CDC_TX9_VOL_CTL_GAIN, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX9_VOL_CTL_GAIN),
-				   TAIKO_A_CDC_TX10_VOL_CTL_GAIN, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX10_VOL_CTL_GAIN),
-				   TAIKO_A_CDC_TX1_VOL_CTL_CFG, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX1_VOL_CTL_CFG),
-				   TAIKO_A_CDC_TX2_VOL_CTL_CFG, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX2_VOL_CTL_CFG),
-				   TAIKO_A_CDC_TX3_VOL_CTL_CFG, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX3_VOL_CTL_CFG),
-				   TAIKO_A_CDC_TX4_VOL_CTL_CFG, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX4_VOL_CTL_CFG),
-				   TAIKO_A_CDC_TX5_VOL_CTL_CFG, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX5_VOL_CTL_CFG),
-				   TAIKO_A_CDC_TX6_VOL_CTL_CFG, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX6_VOL_CTL_CFG),
-				   TAIKO_A_CDC_TX7_VOL_CTL_CFG, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX7_VOL_CTL_CFG),
-				   TAIKO_A_CDC_TX8_VOL_CTL_CFG, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX8_VOL_CTL_CFG),
-				   TAIKO_A_CDC_TX9_VOL_CTL_CFG, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX9_VOL_CTL_CFG),
-				   TAIKO_A_CDC_TX10_VOL_CTL_CFG, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX10_VOL_CTL_CFG),
-				   TAIKO_A_CDC_TX1_MUX_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX1_MUX_CTL),
-				   TAIKO_A_CDC_TX2_MUX_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX2_MUX_CTL),
-				   TAIKO_A_CDC_TX3_MUX_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX3_MUX_CTL),
-				   TAIKO_A_CDC_TX4_MUX_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX4_MUX_CTL),
-				   TAIKO_A_CDC_TX5_MUX_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX5_MUX_CTL),
-				   TAIKO_A_CDC_TX6_MUX_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX6_MUX_CTL),
-				   TAIKO_A_CDC_TX7_MUX_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX7_MUX_CTL),
-				   TAIKO_A_CDC_TX8_MUX_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX8_MUX_CTL),
-				   TAIKO_A_CDC_TX9_MUX_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX9_MUX_CTL),
-				   TAIKO_A_CDC_TX10_MUX_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX10_MUX_CTL),
-				   TAIKO_A_CDC_TX1_CLK_FS_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX1_CLK_FS_CTL),
-				   TAIKO_A_CDC_TX2_CLK_FS_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX2_CLK_FS_CTL),
-				   TAIKO_A_CDC_TX3_CLK_FS_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX3_CLK_FS_CTL),
-				   TAIKO_A_CDC_TX4_CLK_FS_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX4_CLK_FS_CTL),
-				   TAIKO_A_CDC_TX5_CLK_FS_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX5_CLK_FS_CTL),
-				   TAIKO_A_CDC_TX6_CLK_FS_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX6_CLK_FS_CTL),
-				   TAIKO_A_CDC_TX7_CLK_FS_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX7_CLK_FS_CTL),
-				   TAIKO_A_CDC_TX8_CLK_FS_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX8_CLK_FS_CTL),
-				   TAIKO_A_CDC_TX9_CLK_FS_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX9_CLK_FS_CTL),
-				   TAIKO_A_CDC_TX10_CLK_FS_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX10_CLK_FS_CTL),
-				   TAIKO_A_CDC_TX1_DMIC_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX1_DMIC_CTL),
-				   TAIKO_A_CDC_TX2_DMIC_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX2_DMIC_CTL),
-				   TAIKO_A_CDC_TX3_DMIC_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX3_DMIC_CTL),
-				   TAIKO_A_CDC_TX4_DMIC_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX4_DMIC_CTL),
-				   TAIKO_A_CDC_TX5_DMIC_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX5_DMIC_CTL),
-				   TAIKO_A_CDC_TX6_DMIC_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX6_DMIC_CTL),
-				   TAIKO_A_CDC_TX7_DMIC_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX7_DMIC_CTL),
-				   TAIKO_A_CDC_TX8_DMIC_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX8_DMIC_CTL),
-				   TAIKO_A_CDC_TX9_DMIC_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX9_DMIC_CTL),
-				   TAIKO_A_CDC_TX10_DMIC_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TX10_DMIC_CTL),
-				   TAIKO_A_CDC_DEBUG_B1_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_DEBUG_B1_CTL),
-				   TAIKO_A_CDC_DEBUG_B2_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_DEBUG_B2_CTL),
-				   TAIKO_A_CDC_DEBUG_B3_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_DEBUG_B3_CTL),
-				   TAIKO_A_CDC_DEBUG_B4_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_DEBUG_B4_CTL),
-				   TAIKO_A_CDC_DEBUG_B5_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_DEBUG_B5_CTL),
-				   TAIKO_A_CDC_DEBUG_B6_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_DEBUG_B6_CTL),
-				   TAIKO_A_CDC_DEBUG_B7_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_DEBUG_B7_CTL),
-				   TAIKO_A_CDC_SRC1_PDA_CFG, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_SRC1_PDA_CFG),
-				   TAIKO_A_CDC_SRC2_PDA_CFG, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_SRC2_PDA_CFG),
-				   TAIKO_A_CDC_SRC1_FS_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_SRC1_FS_CTL),
-				   TAIKO_A_CDC_SRC2_FS_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_SRC2_FS_CTL),
-				   TAIKO_A_CDC_RX1_B1_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX1_B1_CTL),
-				   TAIKO_A_CDC_RX2_B1_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX2_B1_CTL),
-				   TAIKO_A_CDC_RX3_B1_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX3_B1_CTL),
-				   TAIKO_A_CDC_RX4_B1_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX4_B1_CTL),
-				   TAIKO_A_CDC_RX5_B1_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX5_B1_CTL),
-				   TAIKO_A_CDC_RX6_B1_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX6_B1_CTL),
-				   TAIKO_A_CDC_RX7_B1_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX7_B1_CTL),
-				   TAIKO_A_CDC_RX1_B2_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX1_B2_CTL),
-				   TAIKO_A_CDC_RX2_B2_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX2_B2_CTL),
-				   TAIKO_A_CDC_RX3_B2_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX3_B2_CTL),
-				   TAIKO_A_CDC_RX4_B2_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX4_B2_CTL),
-				   TAIKO_A_CDC_RX5_B2_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX5_B2_CTL),
-				   TAIKO_A_CDC_RX6_B2_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX6_B2_CTL),
-				   TAIKO_A_CDC_RX7_B2_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX7_B2_CTL),
-				   TAIKO_A_CDC_RX1_B3_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX1_B3_CTL),
-				   TAIKO_A_CDC_RX2_B3_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX2_B3_CTL),
-				   TAIKO_A_CDC_RX3_B3_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX3_B3_CTL),
-				   TAIKO_A_CDC_RX4_B3_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX4_B3_CTL),
-				   TAIKO_A_CDC_RX5_B3_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX5_B3_CTL),
-				   TAIKO_A_CDC_RX6_B3_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX6_B3_CTL),
-				   TAIKO_A_CDC_RX7_B3_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX7_B3_CTL),
-				   TAIKO_A_CDC_RX1_B4_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX1_B4_CTL),
-				   TAIKO_A_CDC_RX2_B4_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX2_B4_CTL),
-				   TAIKO_A_CDC_RX3_B4_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX3_B4_CTL),
-				   TAIKO_A_CDC_RX4_B4_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX4_B4_CTL),
-				   TAIKO_A_CDC_RX5_B4_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX5_B4_CTL),
-				   TAIKO_A_CDC_RX6_B4_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX6_B4_CTL),
-				   TAIKO_A_CDC_RX7_B4_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX7_B4_CTL),
-				   TAIKO_A_CDC_RX1_B5_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX1_B5_CTL),
-				   TAIKO_A_CDC_RX2_B5_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX2_B5_CTL),
-				   TAIKO_A_CDC_RX3_B5_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX3_B5_CTL),
-				   TAIKO_A_CDC_RX4_B5_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX4_B5_CTL),
-				   TAIKO_A_CDC_RX5_B5_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX5_B5_CTL),
-				   TAIKO_A_CDC_RX6_B5_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX6_B5_CTL),
-				   TAIKO_A_CDC_RX7_B5_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX7_B5_CTL),
-				   TAIKO_A_CDC_RX1_B6_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX1_B6_CTL),
-				   TAIKO_A_CDC_RX2_B6_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX2_B6_CTL),
-				   TAIKO_A_CDC_RX3_B6_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX3_B6_CTL),
-				   TAIKO_A_CDC_RX4_B6_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX4_B6_CTL),
-				   TAIKO_A_CDC_RX5_B6_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX5_B6_CTL),
-				   TAIKO_A_CDC_RX6_B6_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX6_B6_CTL),
-				   TAIKO_A_CDC_RX7_B6_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX7_B6_CTL),
-				   TAIKO_A_CDC_RX1_VOL_CTL_B1_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX1_VOL_CTL_B1_CTL),
-				   TAIKO_A_CDC_RX2_VOL_CTL_B1_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX2_VOL_CTL_B1_CTL),
-				   TAIKO_A_CDC_RX3_VOL_CTL_B1_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX3_VOL_CTL_B1_CTL),
-				   TAIKO_A_CDC_RX4_VOL_CTL_B1_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX4_VOL_CTL_B1_CTL),
-				   TAIKO_A_CDC_RX5_VOL_CTL_B1_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX5_VOL_CTL_B1_CTL),
-				   TAIKO_A_CDC_RX6_VOL_CTL_B1_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX6_VOL_CTL_B1_CTL),
-				   TAIKO_A_CDC_RX7_VOL_CTL_B1_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX7_VOL_CTL_B1_CTL),
-				   TAIKO_A_CDC_RX1_VOL_CTL_B2_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX1_VOL_CTL_B2_CTL),
-				   TAIKO_A_CDC_RX2_VOL_CTL_B2_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX2_VOL_CTL_B2_CTL),
-				   TAIKO_A_CDC_RX3_VOL_CTL_B2_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX3_VOL_CTL_B2_CTL),
-				   TAIKO_A_CDC_RX4_VOL_CTL_B2_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX4_VOL_CTL_B2_CTL),
-				   TAIKO_A_CDC_RX5_VOL_CTL_B2_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX5_VOL_CTL_B2_CTL),
-				   TAIKO_A_CDC_RX6_VOL_CTL_B2_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX6_VOL_CTL_B2_CTL),
-				   TAIKO_A_CDC_RX7_VOL_CTL_B2_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX7_VOL_CTL_B2_CTL),
-				   TAIKO_A_CDC_VBAT_CFG, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_VBAT_CFG),
-				   TAIKO_A_CDC_VBAT_ADC_CAL1, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_VBAT_ADC_CAL1),
-				   TAIKO_A_CDC_VBAT_ADC_CAL2, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_VBAT_ADC_CAL2),
-				   TAIKO_A_CDC_VBAT_ADC_CAL3, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_VBAT_ADC_CAL3),
-				   TAIKO_A_CDC_VBAT_PK_EST1, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_VBAT_PK_EST1),
-				   TAIKO_A_CDC_VBAT_PK_EST2, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_VBAT_PK_EST2),
-				   TAIKO_A_CDC_VBAT_PK_EST3, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_VBAT_PK_EST3),
-				   TAIKO_A_CDC_VBAT_RF_PROC1, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_VBAT_RF_PROC1),
-				   TAIKO_A_CDC_VBAT_RF_PROC2, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_VBAT_RF_PROC2),
-				   TAIKO_A_CDC_VBAT_TAC1, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_VBAT_TAC1),
-				   TAIKO_A_CDC_VBAT_TAC2, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_VBAT_TAC2),
-				   TAIKO_A_CDC_VBAT_TAC3, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_VBAT_TAC3),
-				   TAIKO_A_CDC_VBAT_TAC4, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_VBAT_TAC4),
-				   TAIKO_A_CDC_VBAT_GAIN_UPD1, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_VBAT_GAIN_UPD1),
-				   TAIKO_A_CDC_VBAT_GAIN_UPD2, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_VBAT_GAIN_UPD2),
-				   TAIKO_A_CDC_VBAT_GAIN_UPD3, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_VBAT_GAIN_UPD3),
-				   TAIKO_A_CDC_VBAT_GAIN_UPD4, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_VBAT_GAIN_UPD4),
-				   TAIKO_A_CDC_VBAT_DEBUG1, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_VBAT_DEBUG1),
-				   TAIKO_A_CDC_CLK_ANC_RESET_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CLK_ANC_RESET_CTL),
-				   TAIKO_A_CDC_CLK_RX_RESET_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CLK_RX_RESET_CTL),
-				   TAIKO_A_CDC_CLK_TX_RESET_B1_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CLK_TX_RESET_B1_CTL),
-				   TAIKO_A_CDC_CLK_TX_RESET_B2_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CLK_TX_RESET_B2_CTL),
-				   TAIKO_A_CDC_CLK_DMIC_B1_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CLK_DMIC_B1_CTL),
-				   TAIKO_A_CDC_CLK_DMIC_B2_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CLK_DMIC_B2_CTL),
-				   TAIKO_A_CDC_CLK_RX_I2S_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CLK_RX_I2S_CTL),
-				   TAIKO_A_CDC_CLK_TX_I2S_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CLK_TX_I2S_CTL),
-				   TAIKO_A_CDC_CLK_OTHR_RESET_B1_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CLK_OTHR_RESET_B1_CTL),
-				   TAIKO_A_CDC_CLK_OTHR_RESET_B2_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CLK_OTHR_RESET_B2_CTL),
-				   TAIKO_A_CDC_CLK_TX_CLK_EN_B1_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CLK_TX_CLK_EN_B1_CTL),
-				   TAIKO_A_CDC_CLK_TX_CLK_EN_B2_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CLK_TX_CLK_EN_B2_CTL),
-				   TAIKO_A_CDC_CLK_OTHR_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CLK_OTHR_CTL),
-				   TAIKO_A_CDC_CLK_RDAC_CLK_EN_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CLK_RDAC_CLK_EN_CTL),
-				   TAIKO_A_CDC_CLK_ANC_CLK_EN_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CLK_ANC_CLK_EN_CTL),
-				   TAIKO_A_CDC_CLK_RX_B1_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CLK_RX_B1_CTL),
-				   TAIKO_A_CDC_CLK_RX_B2_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CLK_RX_B2_CTL),
-				   TAIKO_A_CDC_CLK_MCLK_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CLK_MCLK_CTL),
-				   TAIKO_A_CDC_CLK_PDM_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CLK_PDM_CTL),
-				   TAIKO_A_CDC_CLK_SD_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CLK_SD_CTL),
-				   TAIKO_A_CDC_CLK_POWER_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CLK_POWER_CTL),
-				   TAIKO_A_CDC_CLSH_B1_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CLSH_B1_CTL),
-				   TAIKO_A_CDC_CLSH_B2_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CLSH_B2_CTL),
-				   TAIKO_A_CDC_CLSH_B3_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CLSH_B3_CTL),
-				   TAIKO_A_CDC_CLSH_BUCK_NCP_VARS, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CLSH_BUCK_NCP_VARS),
-				   TAIKO_A_CDC_CLSH_IDLE_HPH_THSD, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CLSH_IDLE_HPH_THSD),
-				   TAIKO_A_CDC_CLSH_IDLE_EAR_THSD, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CLSH_IDLE_EAR_THSD),
-				   TAIKO_A_CDC_CLSH_FCLKONLY_HPH_THSD, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CLSH_FCLKONLY_HPH_THSD),
-				   TAIKO_A_CDC_CLSH_FCLKONLY_EAR_THSD, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CLSH_FCLKONLY_EAR_THSD),
-				   TAIKO_A_CDC_CLSH_K_ADDR, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CLSH_K_ADDR),
-				   TAIKO_A_CDC_CLSH_K_DATA, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CLSH_K_DATA),
-				   TAIKO_A_CDC_CLSH_I_PA_FACT_HPH_L, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CLSH_I_PA_FACT_HPH_L),
-				   TAIKO_A_CDC_CLSH_I_PA_FACT_HPH_U, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CLSH_I_PA_FACT_HPH_U),
-				   TAIKO_A_CDC_CLSH_I_PA_FACT_EAR_L, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CLSH_I_PA_FACT_EAR_L),
-				   TAIKO_A_CDC_CLSH_I_PA_FACT_EAR_U, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CLSH_I_PA_FACT_EAR_U),
-				   TAIKO_A_CDC_CLSH_V_PA_HD_EAR, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CLSH_V_PA_HD_EAR),
-				   TAIKO_A_CDC_CLSH_V_PA_HD_HPH, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CLSH_V_PA_HD_HPH),
-				   TAIKO_A_CDC_CLSH_V_PA_MIN_EAR, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CLSH_V_PA_MIN_EAR),
-				   TAIKO_A_CDC_CLSH_V_PA_MIN_HPH, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CLSH_V_PA_MIN_HPH),
-				   TAIKO_A_CDC_IIR1_GAIN_B1_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_IIR1_GAIN_B1_CTL),
-				   TAIKO_A_CDC_IIR2_GAIN_B1_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_IIR2_GAIN_B1_CTL),
-				   TAIKO_A_CDC_IIR1_GAIN_B2_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_IIR1_GAIN_B2_CTL),
-				   TAIKO_A_CDC_IIR2_GAIN_B2_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_IIR2_GAIN_B2_CTL),
-				   TAIKO_A_CDC_IIR1_GAIN_B3_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_IIR1_GAIN_B3_CTL),
-				   TAIKO_A_CDC_IIR2_GAIN_B3_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_IIR2_GAIN_B3_CTL),
-				   TAIKO_A_CDC_IIR1_GAIN_B4_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_IIR1_GAIN_B4_CTL),
-				   TAIKO_A_CDC_IIR2_GAIN_B4_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_IIR2_GAIN_B4_CTL),
-				   TAIKO_A_CDC_IIR1_GAIN_B5_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_IIR1_GAIN_B5_CTL),
-				   TAIKO_A_CDC_IIR2_GAIN_B5_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_IIR2_GAIN_B5_CTL),
-				   TAIKO_A_CDC_IIR1_GAIN_B6_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_IIR1_GAIN_B6_CTL),
-				   TAIKO_A_CDC_IIR2_GAIN_B6_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_IIR2_GAIN_B6_CTL),
-				   TAIKO_A_CDC_IIR1_GAIN_B7_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_IIR1_GAIN_B7_CTL),
-				   TAIKO_A_CDC_IIR2_GAIN_B7_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_IIR2_GAIN_B7_CTL),
-				   TAIKO_A_CDC_IIR1_GAIN_B8_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_IIR1_GAIN_B8_CTL),
-				   TAIKO_A_CDC_IIR2_GAIN_B8_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_IIR2_GAIN_B8_CTL),
-				   TAIKO_A_CDC_IIR1_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_IIR1_CTL),
-				   TAIKO_A_CDC_IIR2_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_IIR2_CTL),
-				   TAIKO_A_CDC_IIR1_GAIN_TIMER_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_IIR1_GAIN_TIMER_CTL),
-				   TAIKO_A_CDC_IIR2_GAIN_TIMER_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_IIR2_GAIN_TIMER_CTL),
-				   TAIKO_A_CDC_IIR1_COEF_B1_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_IIR1_COEF_B1_CTL),
-				   TAIKO_A_CDC_IIR2_COEF_B1_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_IIR2_COEF_B1_CTL),
-				   TAIKO_A_CDC_IIR1_COEF_B2_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_IIR1_COEF_B2_CTL),
-				   TAIKO_A_CDC_IIR2_COEF_B2_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_IIR2_COEF_B2_CTL),
-				   TAIKO_A_CDC_TOP_GAIN_UPDATE, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_TOP_GAIN_UPDATE),
-				   TAIKO_A_CDC_COMP0_B1_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_COMP0_B1_CTL),
-				   TAIKO_A_CDC_COMP1_B1_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_COMP1_B1_CTL),
-				   TAIKO_A_CDC_COMP2_B1_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_COMP2_B1_CTL),
-				   TAIKO_A_CDC_COMP0_B2_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_COMP0_B2_CTL),
-				   TAIKO_A_CDC_COMP1_B2_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_COMP1_B2_CTL),
-				   TAIKO_A_CDC_COMP2_B2_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_COMP2_B2_CTL),
-				   TAIKO_A_CDC_COMP0_B3_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_COMP0_B3_CTL),
-				   TAIKO_A_CDC_COMP1_B3_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_COMP1_B3_CTL),
-				   TAIKO_A_CDC_COMP2_B3_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_COMP2_B3_CTL),
-				   TAIKO_A_CDC_COMP0_B4_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_COMP0_B4_CTL),
-				   TAIKO_A_CDC_COMP1_B4_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_COMP1_B4_CTL),
-				   TAIKO_A_CDC_COMP2_B4_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_COMP2_B4_CTL),
-				   TAIKO_A_CDC_COMP0_B5_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_COMP0_B5_CTL),
-				   TAIKO_A_CDC_COMP1_B5_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_COMP1_B5_CTL),
-				   TAIKO_A_CDC_COMP2_B5_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_COMP2_B5_CTL),
-				   TAIKO_A_CDC_COMP0_B6_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_COMP0_B6_CTL),
-				   TAIKO_A_CDC_COMP1_B6_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_COMP1_B6_CTL),
-				   TAIKO_A_CDC_COMP2_B6_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_COMP2_B6_CTL),
-				   TAIKO_A_CDC_COMP0_SHUT_DOWN_STATUS, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_COMP0_SHUT_DOWN_STATUS),
-				   TAIKO_A_CDC_COMP1_SHUT_DOWN_STATUS, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_COMP1_SHUT_DOWN_STATUS),
-				   TAIKO_A_CDC_COMP2_SHUT_DOWN_STATUS, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_COMP2_SHUT_DOWN_STATUS),
-				   TAIKO_A_CDC_COMP0_FS_CFG, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_COMP0_FS_CFG),
-				   TAIKO_A_CDC_COMP1_FS_CFG, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_COMP1_FS_CFG),
-				   TAIKO_A_CDC_COMP2_FS_CFG, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_COMP2_FS_CFG),
-				   TAIKO_A_CDC_CONN_RX1_B1_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CONN_RX1_B1_CTL),
-				   TAIKO_A_CDC_CONN_RX1_B2_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CONN_RX1_B2_CTL),
-				   TAIKO_A_CDC_CONN_RX1_B3_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CONN_RX1_B3_CTL),
-				   TAIKO_A_CDC_CONN_RX2_B1_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CONN_RX2_B1_CTL),
-				   TAIKO_A_CDC_CONN_RX2_B2_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CONN_RX2_B2_CTL),
-				   TAIKO_A_CDC_CONN_RX2_B3_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CONN_RX2_B3_CTL),
-				   TAIKO_A_CDC_CONN_RX3_B1_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CONN_RX3_B1_CTL),
-				   TAIKO_A_CDC_CONN_RX3_B2_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CONN_RX3_B2_CTL),
-				   TAIKO_A_CDC_CONN_RX4_B1_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CONN_RX4_B1_CTL),
-				   TAIKO_A_CDC_CONN_RX4_B2_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CONN_RX4_B2_CTL),
-				   TAIKO_A_CDC_CONN_RX5_B1_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CONN_RX5_B1_CTL),
-				   TAIKO_A_CDC_CONN_RX5_B2_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CONN_RX5_B2_CTL),
-				   TAIKO_A_CDC_CONN_RX6_B1_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CONN_RX6_B1_CTL),
-				   TAIKO_A_CDC_CONN_RX6_B2_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CONN_RX6_B2_CTL),
-				   TAIKO_A_CDC_CONN_RX7_B1_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CONN_RX7_B1_CTL),
-				   TAIKO_A_CDC_CONN_RX7_B2_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CONN_RX7_B2_CTL),
-				   TAIKO_A_CDC_CONN_RX7_B3_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CONN_RX7_B3_CTL),
-				   TAIKO_A_CDC_CONN_ANC_B1_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CONN_ANC_B1_CTL),
-				   TAIKO_A_CDC_CONN_ANC_B2_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CONN_ANC_B2_CTL),
-				   TAIKO_A_CDC_CONN_TX_B1_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CONN_TX_B1_CTL),
-				   TAIKO_A_CDC_CONN_TX_B2_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CONN_TX_B2_CTL),
-				   TAIKO_A_CDC_CONN_TX_B3_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CONN_TX_B3_CTL),
-				   TAIKO_A_CDC_CONN_TX_B4_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CONN_TX_B4_CTL),
-				   TAIKO_A_CDC_CONN_EQ1_B1_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CONN_EQ1_B1_CTL),
-				   TAIKO_A_CDC_CONN_EQ1_B2_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CONN_EQ1_B2_CTL),
-				   TAIKO_A_CDC_CONN_EQ1_B3_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CONN_EQ1_B3_CTL),
-				   TAIKO_A_CDC_CONN_EQ1_B4_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CONN_EQ1_B4_CTL),
-				   TAIKO_A_CDC_CONN_EQ2_B1_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CONN_EQ2_B1_CTL),
-				   TAIKO_A_CDC_CONN_EQ2_B2_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CONN_EQ2_B2_CTL),
-				   TAIKO_A_CDC_CONN_EQ2_B3_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CONN_EQ2_B3_CTL),
-				   TAIKO_A_CDC_CONN_EQ2_B4_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CONN_EQ2_B4_CTL),
-				   TAIKO_A_CDC_CONN_SRC1_B1_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CONN_SRC1_B1_CTL),
-				   TAIKO_A_CDC_CONN_SRC1_B2_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CONN_SRC1_B2_CTL),
-				   TAIKO_A_CDC_CONN_SRC2_B1_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CONN_SRC2_B1_CTL),
-				   TAIKO_A_CDC_CONN_SRC2_B2_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CONN_SRC2_B2_CTL),
-				   TAIKO_A_CDC_CONN_TX_SB_B1_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CONN_TX_SB_B1_CTL),
-				   TAIKO_A_CDC_CONN_TX_SB_B2_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CONN_TX_SB_B2_CTL),
-				   TAIKO_A_CDC_CONN_TX_SB_B3_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CONN_TX_SB_B3_CTL),
-				   TAIKO_A_CDC_CONN_TX_SB_B4_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CONN_TX_SB_B4_CTL),
-				   TAIKO_A_CDC_CONN_TX_SB_B5_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CONN_TX_SB_B5_CTL),
-				   TAIKO_A_CDC_CONN_TX_SB_B6_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CONN_TX_SB_B6_CTL),
-				   TAIKO_A_CDC_CONN_TX_SB_B7_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CONN_TX_SB_B7_CTL),
-				   TAIKO_A_CDC_CONN_TX_SB_B8_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CONN_TX_SB_B8_CTL),
-				   TAIKO_A_CDC_CONN_TX_SB_B9_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CONN_TX_SB_B9_CTL),
-				   TAIKO_A_CDC_CONN_TX_SB_B10_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CONN_TX_SB_B10_CTL),
-				   TAIKO_A_CDC_CONN_TX_SB_B11_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CONN_TX_SB_B11_CTL),
-				   TAIKO_A_CDC_CONN_RX_SB_B1_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CONN_RX_SB_B1_CTL),
-				   TAIKO_A_CDC_CONN_RX_SB_B2_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CONN_RX_SB_B2_CTL),
-				   TAIKO_A_CDC_CONN_CLSH_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CONN_CLSH_CTL),
-				   TAIKO_A_CDC_CONN_MISC, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CONN_MISC),
-				   TAIKO_A_CDC_CONN_MAD, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_CONN_MAD),
-				   TAIKO_A_CDC_MBHC_EN_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_MBHC_EN_CTL),
-				   TAIKO_A_CDC_MBHC_FIR_B1_CFG, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_MBHC_FIR_B1_CFG),
-				   TAIKO_A_CDC_MBHC_FIR_B2_CFG, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_MBHC_FIR_B2_CFG),
-				   TAIKO_A_CDC_MBHC_TIMER_B1_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_MBHC_TIMER_B1_CTL),
-				   TAIKO_A_CDC_MBHC_TIMER_B2_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_MBHC_TIMER_B2_CTL),
-				   TAIKO_A_CDC_MBHC_TIMER_B3_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_MBHC_TIMER_B3_CTL),
-				   TAIKO_A_CDC_MBHC_TIMER_B4_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_MBHC_TIMER_B4_CTL),
-				   TAIKO_A_CDC_MBHC_TIMER_B5_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_MBHC_TIMER_B5_CTL),
-				   TAIKO_A_CDC_MBHC_TIMER_B6_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_MBHC_TIMER_B6_CTL),
-				   TAIKO_A_CDC_MBHC_B1_STATUS, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_MBHC_B1_STATUS),
-				   TAIKO_A_CDC_MBHC_B2_STATUS, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_MBHC_B2_STATUS),
-				   TAIKO_A_CDC_MBHC_B3_STATUS, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_MBHC_B3_STATUS),
-				   TAIKO_A_CDC_MBHC_B4_STATUS, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_MBHC_B4_STATUS),
-				   TAIKO_A_CDC_MBHC_B5_STATUS, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_MBHC_B5_STATUS),
-				   TAIKO_A_CDC_MBHC_B1_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_MBHC_B1_CTL),
-				   TAIKO_A_CDC_MBHC_B2_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_MBHC_B2_CTL),
-				   TAIKO_A_CDC_MBHC_VOLT_B1_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_MBHC_VOLT_B1_CTL),
-				   TAIKO_A_CDC_MBHC_VOLT_B2_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_MBHC_VOLT_B2_CTL),
-				   TAIKO_A_CDC_MBHC_VOLT_B3_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_MBHC_VOLT_B3_CTL),
-				   TAIKO_A_CDC_MBHC_VOLT_B4_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_MBHC_VOLT_B4_CTL),
-				   TAIKO_A_CDC_MBHC_VOLT_B5_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_MBHC_VOLT_B5_CTL),
-				   TAIKO_A_CDC_MBHC_VOLT_B6_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_MBHC_VOLT_B6_CTL),
-				   TAIKO_A_CDC_MBHC_VOLT_B7_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_MBHC_VOLT_B7_CTL),
-				   TAIKO_A_CDC_MBHC_VOLT_B8_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_MBHC_VOLT_B8_CTL),
-				   TAIKO_A_CDC_MBHC_VOLT_B9_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_MBHC_VOLT_B9_CTL),
-				   TAIKO_A_CDC_MBHC_VOLT_B10_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_MBHC_VOLT_B10_CTL),
-				   TAIKO_A_CDC_MBHC_VOLT_B11_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_MBHC_VOLT_B11_CTL),
-				   TAIKO_A_CDC_MBHC_VOLT_B12_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_MBHC_VOLT_B12_CTL),
-				   TAIKO_A_CDC_MBHC_CLK_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_MBHC_CLK_CTL),
-				   TAIKO_A_CDC_MBHC_INT_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_MBHC_INT_CTL),
-				   TAIKO_A_CDC_MBHC_DEBUG_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_MBHC_DEBUG_CTL),
-				   TAIKO_A_CDC_MBHC_SPARE, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_MBHC_SPARE),
-				   TAIKO_A_CDC_MAD_MAIN_CTL_1, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_MAD_MAIN_CTL_1),
-				   TAIKO_A_CDC_MAD_MAIN_CTL_2, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_MAD_MAIN_CTL_2),
-				   TAIKO_A_CDC_MAD_AUDIO_CTL_1, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_MAD_AUDIO_CTL_1),
-				   TAIKO_A_CDC_MAD_AUDIO_CTL_2, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_MAD_AUDIO_CTL_2),
-				   TAIKO_A_CDC_MAD_AUDIO_CTL_3, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_MAD_AUDIO_CTL_3),
-				   TAIKO_A_CDC_MAD_AUDIO_CTL_4, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_MAD_AUDIO_CTL_4),
-				   TAIKO_A_CDC_MAD_AUDIO_CTL_5, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_MAD_AUDIO_CTL_5),
-				   TAIKO_A_CDC_MAD_AUDIO_CTL_6, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_MAD_AUDIO_CTL_6),
-				   TAIKO_A_CDC_MAD_AUDIO_CTL_7, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_MAD_AUDIO_CTL_7),
-				   TAIKO_A_CDC_MAD_AUDIO_CTL_8, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_MAD_AUDIO_CTL_8),
-				   TAIKO_A_CDC_MAD_AUDIO_IIR_CTL_PTR, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_MAD_AUDIO_IIR_CTL_PTR),
-				   TAIKO_A_CDC_MAD_AUDIO_IIR_CTL_VAL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_MAD_AUDIO_IIR_CTL_VAL),
-				   TAIKO_A_CDC_MAD_ULTR_CTL_1, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_MAD_ULTR_CTL_1),
-				   TAIKO_A_CDC_MAD_ULTR_CTL_2, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_MAD_ULTR_CTL_2),
-				   TAIKO_A_CDC_MAD_ULTR_CTL_3, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_MAD_ULTR_CTL_3),
-				   TAIKO_A_CDC_MAD_ULTR_CTL_4, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_MAD_ULTR_CTL_4),
-				   TAIKO_A_CDC_MAD_ULTR_CTL_5, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_MAD_ULTR_CTL_5),
-				   TAIKO_A_CDC_MAD_ULTR_CTL_6, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_MAD_ULTR_CTL_6),
-				   TAIKO_A_CDC_MAD_ULTR_CTL_7, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_MAD_ULTR_CTL_7),
-				   TAIKO_A_CDC_MAD_BEACON_CTL_1, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_MAD_BEACON_CTL_1),
-				   TAIKO_A_CDC_MAD_BEACON_CTL_2, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_MAD_BEACON_CTL_2),
-				   TAIKO_A_CDC_MAD_BEACON_CTL_3, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_MAD_BEACON_CTL_3),
-				   TAIKO_A_CDC_MAD_BEACON_CTL_4, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_MAD_BEACON_CTL_4),
-				   TAIKO_A_CDC_MAD_BEACON_CTL_5, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_MAD_BEACON_CTL_5),
-				   TAIKO_A_CDC_MAD_BEACON_CTL_6, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_MAD_BEACON_CTL_6),
-				   TAIKO_A_CDC_MAD_BEACON_CTL_7, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_MAD_BEACON_CTL_7),
-				   TAIKO_A_CDC_MAD_BEACON_CTL_8, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_MAD_BEACON_CTL_8),
-				   TAIKO_A_CDC_MAD_BEACON_IIR_CTL_PTR, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_MAD_BEACON_IIR_CTL_PTR),
-				   TAIKO_A_CDC_MAD_BEACON_IIR_CTL_VAL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_MAD_BEACON_IIR_CTL_VAL),
-				   TAIKO_A_CDC_SPKR_CLIPDET_B1_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_SPKR_CLIPDET_B1_CTL),
-				   TAIKO_A_CDC_SPKR_CLIPDET_VAL0, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_SPKR_CLIPDET_VAL0),
-				   TAIKO_A_CDC_SPKR_CLIPDET_VAL1, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_SPKR_CLIPDET_VAL1),
-				   TAIKO_A_CDC_SPKR_CLIPDET_VAL2, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_SPKR_CLIPDET_VAL2),
-				   TAIKO_A_CDC_SPKR_CLIPDET_VAL3, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_SPKR_CLIPDET_VAL3),
-				   TAIKO_A_CDC_SPKR_CLIPDET_VAL4, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_SPKR_CLIPDET_VAL4),
-				   TAIKO_A_CDC_SPKR_CLIPDET_VAL5, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_SPKR_CLIPDET_VAL5),
-				   TAIKO_A_CDC_SPKR_CLIPDET_VAL6, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_SPKR_CLIPDET_VAL6),
-				   TAIKO_A_CDC_SPKR_CLIPDET_VAL7, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_SPKR_CLIPDET_VAL7),
-				   TAIKO_A_CDC_PA_RAMP_B1_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_PA_RAMP_B1_CTL),
-				   TAIKO_A_CDC_PA_RAMP_B2_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_PA_RAMP_B2_CTL),
-				   TAIKO_A_CDC_PA_RAMP_B3_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_PA_RAMP_B3_CTL),
-				   TAIKO_A_CDC_PA_RAMP_B4_CTL, (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_PA_RAMP_B4_CTL));
-}
-#endif
-#if 0
 static ssize_t headphone_pa_gain_raw_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf) {
 	int wcd_hphl, wcd_hphr;
@@ -8866,13 +7514,6 @@ static struct kobj_attribute high_perf_mode_attribute =
 	__ATTR(high_perf_mode, 0644,
 		high_perf_mode_show,
 		high_perf_mode_store);
-
-#if 0
-static struct kobj_attribute allregs_attribute =
-	__ATTR(allregs, 0444,
-		allregs_show,
-		NULL);
-#endif
 #if 0
 static struct kobj_attribute headphone_pa_gain_attribute =
 	__ATTR(headphone_pa_gain, 0644,
@@ -8890,7 +7531,6 @@ static struct attribute *sound_control_attrs[] = {
 		&speaker_gain_attribute.attr,
 		&uhqa_mode_attribute.attr,
 		&high_perf_mode_attribute.attr,
-//		&allregs_attribute.attr,
 #if 0
 		&headphone_pa_gain_attribute.attr,
 		&headphone_pa_gain_raw_attribute.attr,
@@ -8923,11 +7563,11 @@ static int taiko_codec_probe(struct snd_soc_codec *codec)
 	wcd9xxx_ssr_register(control, taiko_device_down,
 			     taiko_post_reset_cb, (void *)codec);
 
-	dev_dbg(codec->dev, "%s()\n", __func__);
+	dev_info(codec->dev, "%s()\n", __func__);
 
 	taiko = kzalloc(sizeof(struct taiko_priv), GFP_KERNEL);
 	if (!taiko) {
-		dev_dbg(codec->dev, "Failed to allocate private data\n");
+		dev_err(codec->dev, "Failed to allocate private data\n");
 		return -ENOMEM;
 	}
 	for (i = 0 ; i < NUM_DECIMATORS; i++) {
@@ -8947,7 +7587,7 @@ static int taiko_codec_probe(struct snd_soc_codec *codec)
 				  &pdata->micbias, &taiko_reg_address,
 				  WCD9XXX_CDC_TYPE_TAIKO);
 	if (ret) {
-		pr_debug("%s: wcd9xxx init failed %d\n", __func__, ret);
+		pr_err("%s: wcd9xxx init failed %d\n", __func__, ret);
 		goto err_init;
 	}
 
@@ -8963,31 +7603,6 @@ static int taiko_codec_probe(struct snd_soc_codec *codec)
 		rco_clk_rate = TAIKO_MCLK_CLK_9P6MHZ;
 		wcd9xxx_hw_revision = 2;
 	}
-#if defined(CONFIG_MACH_KLTE_KOR)
-	if (system_rev >= 13) {
-		/* init and start mbhc */
-		ret = wcd9xxx_mbhc_init(&taiko->mbhc, &taiko->resmgr, codec,
-					taiko_enable_mbhc_micbias,
-					&mbhc_cb, &cdc_intr_ids,
-					rco_clk_rate, false);
-		if (ret) {
-			pr_err("%s: mbhc init failed %d\n", __func__, ret);
-			goto err_init;
-		}
-	}
-#elif defined(CONFIG_MACH_KLTE_JPN)
-	if (system_rev >= 11) {
-		/* init and start mbhc */
-		ret = wcd9xxx_mbhc_init(&taiko->mbhc, &taiko->resmgr, codec,
-					taiko_enable_mbhc_micbias,
-					&mbhc_cb, &cdc_intr_ids,
-					rco_clk_rate, false);
-		if (ret) {
-			pr_err("%s: mbhc init failed %d\n", __func__, ret);
-			goto err_init;
-		}
-	}
-#else
 #if !defined(CONFIG_SAMSUNG_JACK) && !defined(CONFIG_MUIC_DET_JACK)
 	/* init and start mbhc */
 	ret = wcd9xxx_mbhc_init(&taiko->mbhc, &taiko->resmgr, codec,
@@ -8995,12 +7610,10 @@ static int taiko_codec_probe(struct snd_soc_codec *codec)
 				&mbhc_cb, &cdc_intr_ids,
 				rco_clk_rate, false);
 	if (ret) {
-		pr_debug("%s: mbhc init failed %d\n", __func__, ret);
+		pr_err("%s: mbhc init failed %d\n", __func__, ret);
 		goto err_init;
 	}
 #endif
-#endif
-
 	taiko->codec = codec;
 	for (i = 0; i < COMPANDER_MAX; i++) {
 		taiko->comp_enabled[i] = 0;
@@ -9021,7 +7634,7 @@ static int taiko_codec_probe(struct snd_soc_codec *codec)
 	taiko_codec_init_reg(codec);
 	ret = taiko_handle_pdata(taiko);
 	if (IS_ERR_VALUE(ret)) {
-		pr_debug("%s: bad pdata\n", __func__);
+		pr_err("%s: bad pdata\n", __func__);
 		goto err_pdata;
 	}
 
@@ -9044,7 +7657,7 @@ static int taiko_codec_probe(struct snd_soc_codec *codec)
 	ptr = kmalloc((sizeof(taiko_rx_chs) +
 		       sizeof(taiko_tx_chs)), GFP_KERNEL);
 	if (!ptr) {
-		pr_debug("%s: no mem for slim chan ctl data\n", __func__);
+		pr_err("%s: no mem for slim chan ctl data\n", __func__);
 		ret = -ENOMEM;
 		goto err_nomem_slimch;
 	}
@@ -9105,7 +7718,7 @@ static int taiko_codec_probe(struct snd_soc_codec *codec)
 
 	ret = taiko_setup_irqs(taiko);
 	if (ret) {
-		pr_debug("%s: taiko irq setup failed %d\n", __func__, ret);
+		pr_err("%s: taiko irq setup failed %d\n", __func__, ret);
 		goto err_irq;
 	}
 
@@ -9125,6 +7738,14 @@ static int taiko_codec_probe(struct snd_soc_codec *codec)
 	direct_codec = codec;
 	if (codec->name)
 		pr_info("Sound Control: Probing Codec %s\n", codec->name);
+
+	hph_l_pa_ctl_default = wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_L_PA_CTL);
+	hph_r_pa_ctl_default = wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_R_PA_CTL);
+	hph_bias_pa_default = wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_BIAS_PA);
+
+	pr_info("Sound Control: TAIKO_A_RX_HPH_L_PA_CTL default reg value: 0x%x\n", hph_l_pa_ctl_default);
+	pr_info("Sound Control: TAIKO_A_RX_HPH_R_PA_CTL default reg value: 0x%x\n", hph_r_pa_ctl_default);
+	pr_info("Sound Control: TAIKO_A_RX_HPH_BIAS_PA default reg value: 0x%x\n", hph_bias_pa_default);
 
 	sound_control_kobj = kobject_create_and_add("sound_control", kernel_kobj);
 	if (sound_control_kobj) {
@@ -9160,28 +7781,9 @@ static int taiko_codec_remove(struct snd_soc_codec *codec)
 	WCD9XXX_BG_CLK_UNLOCK(&taiko->resmgr);
 
 	taiko_cleanup_irqs(taiko);
-
-#if defined(CONFIG_MACH_KLTE_KOR)
-	if (system_rev >= 13) {
-		/* cleanup MBHC */
-		wcd9xxx_mbhc_deinit(&taiko->mbhc);
-	}
-#elif defined(CONFIG_MACH_KLTE_JPN)
-	if (system_rev >= 11) {
-		/* cleanup MBHC */
-		wcd9xxx_mbhc_deinit(&taiko->mbhc);
-	}
-#else
 #if !defined(CONFIG_SAMSUNG_JACK) && !defined(CONFIG_MUIC_DET_JACK)
 	/* cleanup MBHC */
 	wcd9xxx_mbhc_deinit(&taiko->mbhc);
-#elif defined(CONFIG_SEC_JACTIVE_PROJECT)
-	pr_info("taiko_codec_remove system_rev %d",system_rev);
-	if(system_rev < 3)
-	{
-		wcd9xxx_mbhc_deinit(&taiko->mbhc);
-	}
-#endif
 #endif
 	/* cleanup resmgr */
 	wcd9xxx_resmgr_deinit(&taiko->resmgr);
@@ -9226,7 +7828,7 @@ static int taiko_resume(struct device *dev)
 	struct taiko_priv *taiko = platform_get_drvdata(pdev);
 
 	if (!taiko) {
-		dev_dbg(dev, "%s: taiko private data is NULL\n", __func__);
+		dev_err(dev, "%s: taiko private data is NULL\n", __func__);
 		return -ENODEV;
 	}
 	dev_dbg(dev, "%s: system resume\n", __func__);
@@ -9284,3 +7886,4 @@ module_exit(taiko_codec_exit);
 
 MODULE_DESCRIPTION("Taiko codec driver");
 MODULE_LICENSE("GPL v2");
+
