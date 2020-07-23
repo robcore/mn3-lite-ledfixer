@@ -1457,6 +1457,12 @@ static int msm_sec_lrsm_get(struct snd_kcontrol *kcontrol,
 	return 0;
 }
 
+static int msm_sec_msp_get(struct snd_kcontrol *kcontrol,
+			struct snd_ctl_elem_value *ucontrol)
+{
+	return 0;
+}
+
 static int msm_sec_sa_put(struct snd_kcontrol *kcontrol,
 			struct snd_ctl_elem_value *ucontrol)
 {
@@ -1516,6 +1522,18 @@ static int msm_sec_sa_ep_put(struct snd_kcontrol *kcontrol,
 	ret = q6asm_set_sa_ep(ac,(int*)ucontrol->value.integer.value);
 	mutex_unlock(&routing_lock);	
 	return ret;	
+}
+
+static int msm_sec_msp_put(struct snd_kcontrol *kcontrol,
+			struct snd_ctl_elem_value *ucontrol)
+{
+	int ret = 0;
+	struct audio_client *ac;
+	mutex_lock(&routing_lock);
+	ac = q6asm_get_audio_client(fe_dai_map[3][SESSION_TYPE_RX].strm_id);
+	ret = q6asm_set_msp(ac, (long*)ucontrol->value.integer.value);
+	mutex_unlock(&routing_lock);	
+	return ret;
 }
 
 static int msm_routing_ec_ref_rx_get(struct snd_kcontrol *kcontrol,
