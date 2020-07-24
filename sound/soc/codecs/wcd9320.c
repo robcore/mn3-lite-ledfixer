@@ -327,7 +327,7 @@ static void set_uhqa_mode(unsigned int enable) {
 		pr_info("%s: uhqa reg val: %d uhqa reg val masked: %d\n",
 				__func__, snd_soc_read(direct_codec, TAIKO_A_RX_HPH_CHOP_CTL),
 				(snd_soc_read(direct_codec, TAIKO_A_RX_HPH_CHOP_CTL) & 0x20));
-		goto printandflee;
+		return;
 	}
 //	mutex_lock(&codec->mutex);
 	snd_soc_update_bits(direct_codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x00);
