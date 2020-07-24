@@ -324,16 +324,17 @@ static void set_uhqa_mode(unsigned int enable) {
 //		mutex_lock(&codec->mutex);
 		snd_soc_update_bits(direct_codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20);
 //		mutex_unlock(&codec->mutex);
+		pr_info("%s: uhqa reg val: %d uhqa reg val masked: %d\n",
+				__func__, snd_soc_read(direct_codec, TAIKO_A_RX_HPH_CHOP_CTL),
+				(snd_soc_read(direct_codec, TAIKO_A_RX_HPH_CHOP_CTL) & 0x20));
 		goto printandflee;
 	}
 //	mutex_lock(&codec->mutex);
 	snd_soc_update_bits(direct_codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x00);
 //	mutex_unlock(&codec->mutex);
-printandflee:
-		pr_info("%s: uhqa reg val: %d uhqa reg val masked: %d\n",
-				__func__, snd_soc_read(direct_codec, TAIKO_A_RX_HPH_CHOP_CTL),
-				(snd_soc_read(direct_codec, TAIKO_A_RX_HPH_CHOP_CTL) & 0x20));
-		return;
+	pr_info("%s: uhqa reg val: %d uhqa reg val masked: %d\n",
+			__func__, snd_soc_read(direct_codec, TAIKO_A_RX_HPH_CHOP_CTL),
+			(snd_soc_read(direct_codec, TAIKO_A_RX_HPH_CHOP_CTL) & 0x20));
 }
 
 #define WCD9320_RATES (SNDRV_PCM_RATE_8000 | SNDRV_PCM_RATE_16000 |\
@@ -1792,7 +1793,7 @@ static const struct soc_enum rx5_mix1_inp2_chain_enum =
 
 static const struct soc_enum rx6_mix1_inp1_chain_enum =
 	SOC_ENUM_SINGLE(TAIKO_A_CDC_CONN_RX6_B1_CTL, 0, 12, rx_mix1_text);
-pr_debug("%s: Invalid decimator = %s\n", __func__, w->name);
+
 static const struct soc_enum rx6_mix1_inp2_chain_enum =
 	SOC_ENUM_SINGLE(TAIKO_A_CDC_CONN_RX6_B1_CTL, 4, 12, rx_mix1_text);
 
