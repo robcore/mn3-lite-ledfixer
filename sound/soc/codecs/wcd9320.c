@@ -266,10 +266,12 @@ static unsigned int wcd9xxx_hw_revision;
 static bool hpwidget = false;
 static bool spkwidget = false;
 static unsigned int uhqa_mode = 0;
+static unsigned int previous_uhqa;
 u8 hphl_cached_gain = 0;
 u8 hphr_cached_gain = 0;
 u8 speaker_cached_gain = 0;
 static unsigned int high_perf_mode = 0;
+static unsigned int previous_hpm;
 
 #if 0
 u32 hphl_pa_gain = 0x20;
@@ -293,22 +295,39 @@ static void update_headphone_gain(void) {
 
 static void set_high_perf_mode(unsigned int enable) {
 	if (!hpwidget || !enable) {
+		if (!previous_hpm)
+			return;
 		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_BIAS_PA,  0x7A);
 		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_L_PA_CTL, 0x40);
 		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_R_PA_CTL, 0x40);
+		previous_hpm = high_perf_mode;
 		return;
 	}
+
+	if (previous_hpm)
+		return;
 	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_L_PA_CTL, 0x48);
 	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_R_PA_CTL, 0x48);
 	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_BIAS_PA,  0xAA);
+	previous_hpm = high_perf_mode;
 }
 
 static void set_uhqa_mode(unsigned int enable) {
 	if (!hpwidget || !enable) {
+		if (!previous_uhqa)
+			return;
+
 		snd_soc_update_bits(direct_codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20);
+		previous_uhqa = uhqa_mode;
+
 		return;
 	}
+
+	if (previous_uhqa)
+		return;
+
 	snd_soc_update_bits(direct_codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x00);
+	previous_uhqa = uhqa_mode;
 }
 
 #define WCD9320_RATES (SNDRV_PCM_RATE_8000 | SNDRV_PCM_RATE_16000 |\
