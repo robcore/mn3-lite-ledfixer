@@ -7347,7 +7347,7 @@ static int show_sound_value(unsigned int inputval)
 
 	tempval = (int)wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, inputval);
 
-	if ((tempval >= 172) && (tempval <= 255))
+	if ((tempval > 171) && (tempval < 256))
 		tempval -= 256;
 
 	return tempval;
