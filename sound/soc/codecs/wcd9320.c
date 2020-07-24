@@ -266,12 +266,10 @@ static unsigned int wcd9xxx_hw_revision;
 static bool hpwidget = false;
 static bool spkwidget = false;
 static unsigned int uhqa_mode = 0;
-static unsigned int previous_uhqa;
 u8 hphl_cached_gain = 0;
 u8 hphr_cached_gain = 0;
 u8 speaker_cached_gain = 0;
 static unsigned int high_perf_mode = 0;
-static unsigned int previous_hpm;
 
 #if 0
 u32 hphl_pa_gain = 0x20;
@@ -295,39 +293,47 @@ static void update_headphone_gain(void) {
 
 static void set_high_perf_mode(unsigned int enable) {
 	if (!hpwidget || !enable) {
-		if (!previous_hpm)
-			return;
-		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_BIAS_PA,  0x7A);
-		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_L_PA_CTL, 0x40);
-		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_R_PA_CTL, 0x40);
-		previous_hpm = high_perf_mode;
+		if (wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_L_PA_CTL) != 0x48)
+			wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_L_PA_CTL, 0x48);
+		if (wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_R_PA_CTL) != 0x48)
+			wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_R_PA_CTL, 0x48);
+		if (wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_BIAS_PA) != 0x7A)
+			wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_BIAS_PA, 0x7A);
+		if (wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_L_PA_CTL) != 0x40)
+			wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_L_PA_CTL, 0x40);
+		if (wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_R_PA_CTL) != 0x40)
+			wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_R_PA_CTL, 0x40);
 		return;
 	}
-
-	if (previous_hpm)
-		return;
-	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_L_PA_CTL, 0x48);
-	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_R_PA_CTL, 0x48);
-	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_BIAS_PA,  0xAA);
-	previous_hpm = high_perf_mode;
+	if (wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_L_PA_CTL) != 0x48)
+		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_L_PA_CTL, 0x48);
+	if (wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_R_PA_CTL) != 0x48)
+		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_R_PA_CTL, 0x48);
+	if (wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_BIAS_PA) != 0xAA)
+		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_BIAS_PA, 0xAA);
 }
 
 static void set_uhqa_mode(unsigned int enable) {
+	struct snd_soc_codec *codec;
+	codec = direct_codec;
+	if (!codec)
+		return;
+
 	if (!hpwidget || !enable) {
-		if (!previous_uhqa)
-			return;
-
+		mutex_lock(&codec->mutex);
 		snd_soc_update_bits(direct_codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20);
-		previous_uhqa = uhqa_mode;
-
+		mutex_unlock(&codec->mutex);
+		pr_info("%s: uhqa reg val: %d uhqa reg val masked: %d\n",
+				__func__, snd_soc_read(direct_codec, TAIKO_A_RX_HPH_CHOP_CTL),
+				(snd_soc_read(direct_codec, TAIKO_A_RX_HPH_CHOP_CTL) & 0x20));
 		return;
 	}
-
-	if (previous_uhqa)
-		return;
-
+	mutex_lock(&codec->mutex);
 	snd_soc_update_bits(direct_codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x00);
-	previous_uhqa = uhqa_mode;
+	mutex_unlock(&codec->mutex);
+	pr_info("%s: uhqa reg val: %d uhqa reg val masked: %d\n",
+			__func__, snd_soc_read(direct_codec, TAIKO_A_RX_HPH_CHOP_CTL),
+			(snd_soc_read(direct_codec, TAIKO_A_RX_HPH_CHOP_CTL) & 0x20));
 }
 
 #define WCD9320_RATES (SNDRV_PCM_RATE_8000 | SNDRV_PCM_RATE_16000 |\
@@ -1786,7 +1792,7 @@ static const struct soc_enum rx5_mix1_inp2_chain_enum =
 
 static const struct soc_enum rx6_mix1_inp1_chain_enum =
 	SOC_ENUM_SINGLE(TAIKO_A_CDC_CONN_RX6_B1_CTL, 0, 12, rx_mix1_text);
-
+pr_debug("%s: Invalid decimator = %s\n", __func__, w->name);
 static const struct soc_enum rx6_mix1_inp2_chain_enum =
 	SOC_ENUM_SINGLE(TAIKO_A_CDC_CONN_RX6_B1_CTL, 4, 12, rx_mix1_text);
 
@@ -6965,7 +6971,7 @@ static int wcd9xxx_prepare_static_pa(struct wcd9xxx_mbhc *mbhc,
 					     reg_set_paon[i].reg,
 					     reg_set_paon[i].mask,
 					     reg_set_paon[i].val, 0);
-	pr_debug("%s: PAs are prepared\n", __func__);
+	pr_info("%s: PAs are prepared\n", __func__);
 
 	return 0;
 }
@@ -6980,7 +6986,7 @@ static int wcd9xxx_enable_static_pa(struct wcd9xxx_mbhc *mbhc, bool enable)
 			    enable ? 0x30 : 0x0);
 	/* Wait for wave gen time to avoid pop noise */
 	usleep_range(wg_time, wg_time + WCD9XXX_USLEEP_RANGE_MARGIN_US);
-	pr_debug("%s: PAs are %s as static mode (wg_time %d)\n", __func__,
+	pr_info("%s: PAs are %s as static mode (wg_time %d)\n", __func__,
 		 enable ? "enabled" : "disabled", wg_time);
 	return 0;
 }

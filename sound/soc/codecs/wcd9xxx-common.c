@@ -529,7 +529,6 @@ static void wcd9xxx_chargepump_request(struct snd_soc_codec *codec, bool on)
 					__func__);
 			}
 			cp_count = 0;
-			WARN_ON(1);
 		}
 
 		if (cp_count == 0) {
@@ -741,7 +740,7 @@ static void wcd9xxx_clsh_enable_post_pa(struct snd_soc_codec *codec,
 		snd_soc_update_bits(codec, WCD9XXX_A_BUCK_MODE_3,
 							0x08, 0x08);
 
-	dev_dbg(codec->dev, "%s: completed clsh mode settings after PA enable\n",
+	dev_info(codec->dev, "%s: completed clsh mode settings after PA enable\n",
 		   __func__);
 
 }
