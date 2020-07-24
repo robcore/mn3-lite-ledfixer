@@ -32,6 +32,8 @@ TOOLCHAIN="/opt/toolchains/gcc-linaro-7.5.0-2019.12-x86_64_arm-linux-gnueabihf/b
 export CROSS_COMPILE="$TOOLCHAIN"
 echo -n "$(date +%s)" > "$RDIR/.starttime"
 STARTTIME="$(cat $RDIR/.starttime)"
+SAMSTRING="$(lsusb | grep '04e8:6860')"
+RECOVSTRING="$(lsusb | grep '18d1:4ee2')"
 
 timerprint() {
 
@@ -279,12 +281,25 @@ test_funcs() {
 }
 
 checkrecov() {
-	echo -n "Reboot into Recovery? [y|n]: "
-	read -r RECREBOOT
-	if [ "$RECREBOOT" = "y" ]
+	echo "Starting ADB as root."
+	adb root
+	echo "Checking if Device is Connected"
+
+	if [ -n "$RECOVSTRING" ]
 	then
-		echo "Rebooting into TWRP Recovery"
-		adb reboot recovery
+		echo "Device is in Recovery State"
+	elif [ -n "$SAMSTRING" ]
+	then
+		echo "Device is in System State"
+		echo -n "Reboot into Recovery? [y|n]: "
+		read -r RECREBOOT
+		if [ "$RECREBOOT" = "y" ]
+		then
+			echo "Rebooting into TWRP Recovery"
+			adb reboot recovery
+		fi
+	else
+		echo "Device not Connected. You will have to transfer the built kernel yourself"
 	fi
 }
 
@@ -513,13 +528,6 @@ create_zip() {
 #			echo "$RDIR/$MX_KERNEL_VERSION.zip upload FAILED!"
 #		fi
 		echo -n "$MX_KERNEL_VERSION.zip" > "$RDIR/.lastzip"
-		echo "Starting ADB as root."
-		adb start-server
-		adb root
-		echo "Checking if Device is Connected..."
-		local SAMSTRING
-		SAMSTRING="$(lsusb | grep '04e8:6860')"
-		RECOVSTRING="$(lsusb | grep '18d1:4ee2')"
 		if [ -n "$SAMSTRING" ]
 		then
 			echo "Device is Connected via Usb in System Mode!"
