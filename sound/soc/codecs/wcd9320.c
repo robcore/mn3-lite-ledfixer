@@ -7336,19 +7336,35 @@ static int show_sound_value(unsigned int inputval)
 
 static ssize_t headphone_gain_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-	int leftval;
-	int rightval;
+	int leftval, rightval, templeft, tempright;
+
 	leftval = show_sound_value(TAIKO_A_CDC_RX1_VOL_CTL_B2_CTL);
+	if (leftval == -84) {
+		templeft = hphl_cached_gain;
+
+		if ((templeft > 171) && (templeft < 256))
+			templeft -= 256;
+	} else {
+		templeft = leftval;
+	}
+
 	rightval = show_sound_value(TAIKO_A_CDC_RX2_VOL_CTL_B2_CTL);
-	return sprintf(buf, "%d %d\n", leftval, rightval);
+	if (rightval == -84) {
+		tempright = hphr_cached_gain;
+
+		if ((tempright > 171) && (tempright < 256))
+			tempright -= 256;
+	} else {
+		tempright = rightval;
+	}
+
+	return sprintf(buf, "%d %d\n", templeft, tempright);
 }
 
 static ssize_t headphone_gain_store(struct kobject *kobj, struct kobj_attribute *attr, const char *buf, size_t count)
 {
 
-	int leftinput;
-	int rightinput;
-	int dualinput;
+	int leftinput, rightinput, dualinput;
 
 	if (sscanf(buf, "%d %d", &leftinput, &rightinput) == 2) {
 		leftinput = clamp_val(leftinput, -84, 40);
@@ -7382,9 +7398,19 @@ static ssize_t headphone_gain_store(struct kobject *kobj, struct kobj_attribute 
 
 static ssize_t speaker_gain_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf) {
-	int spkval;
+	int spkval, tempval;
+
 	spkval = show_sound_value(TAIKO_A_CDC_RX7_VOL_CTL_B2_CTL);
-	return sprintf(buf, "%d\n", spkval);
+	if (spkval == -84) {
+		tempval = speaker_cached_gain;
+
+		if ((tempval > 171) && (tempval < 256))
+			tempval -= 256;
+	} else {
+		tempval = spkval;
+	}
+
+	return sprintf(buf, "%d\n", tempval);
 }
 
 static ssize_t speaker_gain_store(struct kobject *kobj,
