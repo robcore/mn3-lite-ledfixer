@@ -69,7 +69,7 @@ static int msm8974_auxpcm_rate = 8000;
 
 #define WCD9XXX_MBHC_DEF_BUTTONS 3
 #define WCD9XXX_MBHC_DEF_RLOADS 5
-#define TAIKO_EXT_CLK_RATE 12288000
+#define TAIKO_EXT_CLK_RATE 9600000
 
 /* It takes about 13ms for Class-D PAs to ramp-up */
 #define EXT_CLASS_D_EN_DELAY 13000
