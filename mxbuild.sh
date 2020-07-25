@@ -282,6 +282,9 @@ checkrecov() {
 	lsusb > "$RDIR/mxtempusb"
 	if grep -q '04e8:6860' mxtempusb;
 	then
+		echo "Ensuring System is ready for operations"
+		adb "wait-for-device";
+		echo "System is Ready"
 		echo -n "Reboot into Recovery? [y|n]: "
 		read -r RECREBOOT
 		if [ "$RECREBOOT" = "y" ]
@@ -529,6 +532,9 @@ create_zip() {
 		then
 			echo "Device is Connected via Usb in System Mode!"
 			echo "$SAMSTRING"
+			echo "Ensuring System is ready for operations"
+			adb "wait-for-device";
+			echo "System is Ready"
 			adb shell input keyevent KEYCODE_WAKEUP
 			#adb shell input touchscreen swipe 930 880 930 380
 			echo "Transferring via adb to $ADBPUSHLOCATION/$MX_KERNEL_VERSION.zip"
@@ -549,6 +555,7 @@ create_zip() {
 			#adb shell input touchscreen swipe 930 880 930 380
 			echo "Ensuring Recovery is ready for operations"
 			adb "wait-for-recovery";
+			echo "Recovery is Ready"
 			echo "Transferring via adb to $ADBPUSHLOCATION/$MX_KERNEL_VERSION.zip"
 			adb push "$RDIR/$MX_KERNEL_VERSION.zip" "$ADBPUSHLOCATION"
 			if [ "$?" -eq "0" ]
