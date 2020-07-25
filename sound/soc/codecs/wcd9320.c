@@ -263,7 +263,7 @@ MODULE_PARM_DESC(spkr_drv_wrnd,
 static struct wcd9xxx *sound_control_codec_ptr;
 static struct snd_soc_codec *direct_codec;
 static unsigned int wcd9xxx_hw_revision;
-static bool hphlwidget = false;.
+static bool hphlwidget = false;
 static bool hphrwidget = false;
 static bool spkwidget = false;
 static unsigned int uhqa_mode = 0;
