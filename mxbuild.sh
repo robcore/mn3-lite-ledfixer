@@ -520,7 +520,6 @@ create_zip() {
 #		fi
 		echo -n "$MX_KERNEL_VERSION.zip" > "$RDIR/.lastzip"
 		echo "Starting ADB as root."
-		adb start-server
 		adb root
 		echo "Checking if Device is Connected..."
 		local SAMSTRING
