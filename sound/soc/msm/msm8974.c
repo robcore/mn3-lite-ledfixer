@@ -69,7 +69,7 @@ static int msm8974_auxpcm_rate = 8000;
 
 #define WCD9XXX_MBHC_DEF_BUTTONS 3
 #define WCD9XXX_MBHC_DEF_RLOADS 5
-#define TAIKO_EXT_CLK_RATE 9600000
+#define TAIKO_EXT_CLK_RATE 12288000
 
 /* It takes about 13ms for Class-D PAs to ramp-up */
 #define EXT_CLASS_D_EN_DELAY 13000
@@ -91,7 +91,7 @@ static int msm8974_auxpcm_rate = 8000;
 
 static void *adsp_state_notifier;
 
-#define ADSP_STATE_READY_TIMEOUT_MS 50
+#define ADSP_STATE_READY_TIMEOUT_MS 100
 
 static inline int param_is_mask(int p)
 {
@@ -116,7 +116,7 @@ static void param_set_mask(struct snd_pcm_hw_params *p, int n, unsigned bit)
 	}
 }
 
-static const char *const auxpcm_rate_text[] = {"rate_8000", "rate_16000"};
+static const char *auxpcm_rate_text[] = {"rate_8000", "rate_16000"};
 static const struct soc_enum msm8974_auxpcm_enum[] = {
 		SOC_ENUM_SINGLE_EXT(2, auxpcm_rate_text),
 };
@@ -952,9 +952,9 @@ static const struct snd_soc_dapm_widget msm8974_dapm_widgets[] = {
 };
 #endif
 
-static const char *const spk_function[] = {"Off", "On"};
-static const char *const slim0_rx_ch_text[] = {"One", "Two"};
-static const char *const slim0_tx_ch_text[] = {"One", "Two", "Three", "Four",
+static const char *spk_function[] = {"Off", "On"};
+static const char *slim0_rx_ch_text[] = {"One", "Two"};
+static const char *slim0_tx_ch_text[] = {"One", "Two", "Three", "Four",
 						"Five", "Six", "Seven",
 						"Eight"};
 static char const *hdmi_rx_ch_text[] = {"Two", "Three", "Four", "Five",
@@ -962,13 +962,13 @@ static char const *hdmi_rx_ch_text[] = {"Two", "Three", "Four", "Five",
 static char const *rx_bit_format_text[] = {"S16_LE", "S24_LE"};
 static char const *slim0_rx_sample_rate_text[] = {"KHZ_48", "KHZ_96",
 					"KHZ_192"};
-static const char *const proxy_rx_ch_text[] = {"One", "Two", "Three", "Four",
+static const char *proxy_rx_ch_text[] = {"One", "Two", "Three", "Four",
 	"Five",	"Six", "Seven", "Eight"};
 
 static char const *hdmi_rx_sample_rate_text[] = {"KHZ_48", "KHZ_96",
 					"KHZ_192"};
 
-static const char *const btsco_rate_text[] = {"8000", "16000"};
+static const char *btsco_rate_text[] = {"8000", "16000"};
 static const struct soc_enum msm_btsco_enum[] = {
 	SOC_ENUM_SINGLE_EXT(2, btsco_rate_text),
 };
