@@ -319,6 +319,11 @@ static void set_high_perf_mode(unsigned int enable) {
 				wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_BIAS_PA, 0xAA);
 		}
 	}
+	
+	pr_info("%s: high_perf_mode %d\n", __func__,
+			(wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_L_PA_CTL) == 0x48 &&
+			wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_R_PA_CTL) == 0x48 &&
+			wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_BIAS_PA) == 0xAA ? 1 : 0));
 }
 
 static void set_uhqa_mode(unsigned int enable) {
@@ -331,6 +336,7 @@ static void set_uhqa_mode(unsigned int enable) {
 			wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX2_VOL_CTL_B2_CTL) != 172)
 			snd_soc_update_bits(direct_codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x00);
 	}
+	pr_info("%s: uhqa_mode %d\n", __func__, snd_soc_test_bits(direct_codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20));
 }
 
 #define WCD9320_RATES (SNDRV_PCM_RATE_8000 | SNDRV_PCM_RATE_16000 |\
