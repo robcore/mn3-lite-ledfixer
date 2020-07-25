@@ -127,3 +127,4 @@ robtools/*
 wtflog.txt
 dolbydumpprops.txt
 arch/arm/configs/mxconfig.recent
+mxtempusb

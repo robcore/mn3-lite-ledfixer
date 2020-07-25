@@ -279,13 +279,18 @@ test_funcs() {
 }
 
 checkrecov() {
-	echo -n "Reboot into Recovery? [y|n]: "
-	read -r RECREBOOT
-	if [ "$RECREBOOT" = "y" ]
+	lsusb > "$RDIR/mxtempusb"
+	if grep -q '04e8:6860' mxtempusb;
 	then
-		echo "Rebooting into TWRP Recovery"
-		adb reboot recovery
+		echo -n "Reboot into Recovery? [y|n]: "
+		read -r RECREBOOT
+		if [ "$RECREBOOT" = "y" ]
+		then
+			echo "Rebooting into TWRP Recovery"
+			adb reboot recovery
+		fi
 	fi
+	rm "$RDIR/mxtempusb"
 }
 
 handle_existing() {
