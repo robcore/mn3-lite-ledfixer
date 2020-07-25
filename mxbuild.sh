@@ -87,6 +87,7 @@ takeouttrash() {
 
 	rm $RDIR/.starttime &> /dev/null
 	rm $RDIR/.endtime &> /dev/null
+	rm $RDIR/mxtempusb &> /dev/null
 
 	find . -type f \( -iname \*.rej \
 			-o -iname \*.orig \
@@ -293,7 +294,7 @@ checkrecov() {
 			adb reboot recovery
 		fi
 	fi
-	rm "$RDIR/mxtempusb"
+	rm $RDIR/mxtempusb &> /dev/null
 }
 
 handle_existing() {
