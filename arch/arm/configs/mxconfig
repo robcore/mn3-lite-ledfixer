@@ -3863,6 +3863,7 @@ CONFIG_SEC_OOM_KILLER=y
 # CONFIG_SAMP_HOTNESS is not set
 # CONFIG_PHONE is not set
 # CONFIG_USB_WPAN_HCD is not set
+CONFIG_VNSWAP=y
 
 #
 # Qualcomm MSM specific device drivers
