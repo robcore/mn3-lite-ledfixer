@@ -885,7 +885,7 @@ static int is_connected_input_ep(struct snd_soc_dapm_widget *widget,
 	return con;
 }
 
-/* Get the DAPM AIF widget for thie DAI stream */
+/* Get the DAPM AIF widget for the DAI stream */
 struct snd_soc_dapm_widget *snd_soc_get_codec_widget(struct snd_soc_card *card,
 		struct snd_soc_codec *codec, const char *name)
 {
@@ -3108,7 +3108,7 @@ static void soc_dapm_stream_event(struct snd_soc_dapm_context *dapm,
 	{
 		if (!w->sname || w->dapm != dapm)
 			continue;
-		dev_vdbg(w->dapm->dev, "widget %s\n %s stream %s event %d\n",
+		dev_info(w->dapm->dev, "widget %s\n %s stream %s event %d\n",
 			w->name, w->sname, stream, event);
 		if (strstr(w->sname, stream)) {
 			dapm_mark_dirty(w, "stream event");
@@ -3130,7 +3130,7 @@ static void soc_dapm_stream_event(struct snd_soc_dapm_context *dapm,
 
 	dapm_power_widgets(dapm, event);
 
-	/* do we need to notify any clients that DAPM stream is complete */
+	/* we need to notify any clients that DAPM stream is complete */
 	if (dapm->stream_event)
 		dapm->stream_event(dapm, event);
 }

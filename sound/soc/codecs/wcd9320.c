@@ -263,7 +263,8 @@ MODULE_PARM_DESC(spkr_drv_wrnd,
 static struct wcd9xxx *sound_control_codec_ptr;
 static struct snd_soc_codec *direct_codec;
 static unsigned int wcd9xxx_hw_revision;
-static bool hpwidget = false;
+static bool hphlwidget = false;.
+static bool hphrwidget = false;
 static bool spkwidget = false;
 static unsigned int uhqa_mode = 0;
 u8 hphl_cached_gain = 0;
@@ -292,49 +293,44 @@ static void update_headphone_gain(void) {
 }
 
 static void set_high_perf_mode(unsigned int enable) {
-	if (!hpwidget || !enable) {
-		if (wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_L_PA_CTL) != 0x48)
-			wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_L_PA_CTL, 0x48);
-		if (wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_R_PA_CTL) != 0x48)
-			wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_R_PA_CTL, 0x48);
-		if (wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_BIAS_PA) != 0x7A)
-			wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_BIAS_PA, 0x7A);
-		if (wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_L_PA_CTL) != 0x40)
-			wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_L_PA_CTL, 0x40);
-		if (wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_R_PA_CTL) != 0x40)
-			wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_R_PA_CTL, 0x40);
-		return;
+	if (!enable) {
+		if (!hphlwidget && !hphrwidget) {
+			if (wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_L_PA_CTL) != 0x48)
+				wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_L_PA_CTL, 0x48);
+			if (wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_R_PA_CTL) != 0x48)
+				wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_R_PA_CTL, 0x48);
+			if (wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_BIAS_PA) != 0x7A)
+				wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_BIAS_PA, 0x7A);
+			if (wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_L_PA_CTL) != 0x40)
+				wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_L_PA_CTL, 0x40);
+			if (wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_R_PA_CTL) != 0x40)
+				wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_R_PA_CTL, 0x40);
+			return;
+		}
+	} else {
+		if (hphlwidget && hphrwidget &&
+			wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX1_VOL_CTL_B2_CTL) != 172 &&
+			wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX2_VOL_CTL_B2_CTL) != 172) {
+			if (wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_L_PA_CTL) != 0x48)
+				wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_L_PA_CTL, 0x48);
+			if (wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_R_PA_CTL) != 0x48)
+				wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_R_PA_CTL, 0x48);
+			if (wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_BIAS_PA) != 0xAA)
+				wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_BIAS_PA, 0xAA);
+		}
 	}
-	if (wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_L_PA_CTL) != 0x48)
-		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_L_PA_CTL, 0x48);
-	if (wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_R_PA_CTL) != 0x48)
-		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_R_PA_CTL, 0x48);
-	if (wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_BIAS_PA) != 0xAA)
-		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_BIAS_PA, 0xAA);
 }
 
 static void set_uhqa_mode(unsigned int enable) {
-#if 0
-	struct snd_soc_codec *codec;
-	codec = direct_codec;
-	if (!codec)
-		return;
-#endif
-	if (!hpwidget || !enable) {
-//		mutex_lock(&codec->mutex);
-		snd_soc_update_bits(direct_codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20);
-//		mutex_unlock(&codec->mutex);
-		pr_info("%s: uhqa reg val: %d uhqa reg val masked: %d\n",
-				__func__, snd_soc_read(direct_codec, TAIKO_A_RX_HPH_CHOP_CTL),
-				(snd_soc_read(direct_codec, TAIKO_A_RX_HPH_CHOP_CTL) & 0x20));
-		return;
+	if (!enable) {
+		if (!hphlwidget && !hphrwidget)
+			snd_soc_update_bits(direct_codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20);
+	} else {
+		if (hphlwidget && hphrwidget &&
+			wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX1_VOL_CTL_B2_CTL) != 172 &&
+			wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX2_VOL_CTL_B2_CTL) != 172)
+			snd_soc_update_bits(direct_codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x00);
 	}
-//	mutex_lock(&codec->mutex);
-	snd_soc_update_bits(direct_codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x00);
-//	mutex_unlock(&codec->mutex);
-	pr_info("%s: uhqa reg val: %d uhqa reg val masked: %d\n",
-			__func__, snd_soc_read(direct_codec, TAIKO_A_RX_HPH_CHOP_CTL),
-			(snd_soc_read(direct_codec, TAIKO_A_RX_HPH_CHOP_CTL) & 0x20));
 }
 
 #define WCD9320_RATES (SNDRV_PCM_RATE_8000 | SNDRV_PCM_RATE_16000 |\
@@ -3312,6 +3308,19 @@ static int taiko_hphl_dac_event(struct snd_soc_dapm_widget *w,
 			dev_dbg(codec->dev, "Failed to get mbhc impedance %d\n",
 						ret); */
 		break;
+	case SND_SOC_DAPM_POST_PMU:
+		hphlwidget = true;
+		update_headphone_gain();
+		if (uhqa_mode)
+			set_uhqa_mode(1);
+		if (high_perf_mode)
+			set_high_perf_mode(1);
+		break;
+	case SND_SOC_DAPM_PRE_PMD:
+		hphlwidget = false;
+		set_uhqa_mode(0);
+		set_high_perf_mode(0);
+		break;
 	case SND_SOC_DAPM_POST_PMD:
 		snd_soc_update_bits(codec, TAIKO_A_CDC_CLK_RDAC_CLK_EN_CTL,
 							0x02, 0x00);
@@ -3336,6 +3345,19 @@ static int taiko_hphr_dac_event(struct snd_soc_dapm_widget *w,
 						 WCD9XXX_CLSH_STATE_HPHR,
 						 WCD9XXX_CLSH_REQ_ENABLE,
 						 WCD9XXX_CLSH_EVENT_PRE_DAC);
+		break;
+	case SND_SOC_DAPM_POST_PMU:
+		hphrwidget = true;
+		update_headphone_gain();
+		if (uhqa_mode)
+			set_uhqa_mode(1);
+		if (high_perf_mode)
+			set_high_perf_mode(1);
+		break;
+	case SND_SOC_DAPM_PRE_PMD:
+		hphrwidget = false;
+		set_uhqa_mode(0);
+		set_high_perf_mode(0);
 		break;
 	case SND_SOC_DAPM_POST_PMD:
 		snd_soc_update_bits(codec, TAIKO_A_CDC_CLK_RDAC_CLK_EN_CTL,
@@ -3487,17 +3509,8 @@ static int taiko_hph_pa_event(struct snd_soc_dapm_widget *w,
 						 req_clsh_state,
 						 WCD9XXX_CLSH_REQ_ENABLE,
 						 WCD9XXX_CLSH_EVENT_POST_PA);
-		hpwidget = true;
-		update_headphone_gain();
-		if (uhqa_mode)
-			set_uhqa_mode(1);
-		if (high_perf_mode)
-			set_high_perf_mode(1);
 		break;
 	case SND_SOC_DAPM_POST_PMD:
-		hpwidget = false;
-		set_uhqa_mode(0);
-		set_high_perf_mode(0);
 		usleep_range(pa_settle_time, pa_settle_time + 1000);
 		pr_debug("%s: sleep %d us after %s PA disable\n", __func__,
 				pa_settle_time, w->name);
