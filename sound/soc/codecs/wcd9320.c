@@ -3187,8 +3187,8 @@ static int taiko_codec_enable_interpolator(struct snd_soc_dapm_widget *w,
 #if 0
 		if (w->shift == 0 || w->shift == 1)
 			taiko_update_uhqa_mode(codec, (1 << w->shift));
-			}
 #endif
+		}
 		break;
 	}
 	return 0;
