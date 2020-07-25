@@ -426,8 +426,9 @@ build_kernel() {
 	OLDCFG="/root/mn3-oldconfigs"
 	echo "Backing up .config to $OLDCFG/config.$QUICKDATE"
 	cp "$BUILDIR/.config" "$OLDCFG/config.$QUICKDATE"
-	echo "Snapshot of current environment variables:"
-	env
+	#echo "Snapshot of current environment variables:"
+	#env
+	echo -n "$(date +%s)" > "$RDIR/.starttime"
 	echo "Starting build..."
 	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -S -s -C "$RDIR" O="$BUILDIR" -j16 || warnandfail "Kernel Build failed!"
 
