@@ -5424,7 +5424,7 @@ void setup_per_zone_wmarks(void)
 static void __meminit calculate_zone_inactive_ratio(struct zone *zone)
 {
 #ifdef CONFIG_FIX_INACTIVE_RATIO
-	zone->inactive_ratio = 1;
+	zone->inactive_ratio = 3;
 #else
 	unsigned int gb, ratio;
 
