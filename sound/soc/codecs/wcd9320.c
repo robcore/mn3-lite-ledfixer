@@ -7129,7 +7129,7 @@ static const struct wcd9xxx_reg_mask_val taiko_reg_defaults[] = {
 
 	/* Set HPH Path to low power mode */
 #if 0
-	TAIKO_REG_VAL(TAIKO_A_RX_HPH_BIAS_PA, 0x55),
+	TAIKO_REG_VAL(TAIKO_A_RX_HPH_BIAS_PA, 0x57),
 #endif
 	/* BUCK default */
 	TAIKO_REG_VAL(WCD9XXX_A_BUCK_CTRL_CCL_4, 0x51),
