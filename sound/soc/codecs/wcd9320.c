@@ -576,9 +576,9 @@ static const struct comp_sample_dependent_params comp_samp_params[] = {
 	},
 	{
 		/* 48 Khz */
-		.peak_det_timeout = 0x0A,
-		.rms_meter_div_fact = 0x0C,
-		.rms_meter_resamp_fact = 0x50,
+		.peak_det_timeout = 0x09,
+		.rms_meter_div_fact = 0x0B,
+		.rms_meter_resamp_fact = 0x28,
 	},
 	{
 		/* 96 Khz */
@@ -833,7 +833,7 @@ static int taiko_get_iir_band_audio_mixer(
 		get_iir_band_coeff(codec, iir_idx, band_idx, 3);
 	ucontrol->value.integer.value[4] =
 		get_iir_band_coeff(codec, iir_idx, band_idx, 4);
-/*
+
 	pr_debug("%s: IIR #%d band #%d b0 = 0x%x\n"
 		"%s: IIR #%d band #%d b1 = 0x%x\n"
 		"%s: IIR #%d band #%d b2 = 0x%x\n"
@@ -849,7 +849,6 @@ static int taiko_get_iir_band_audio_mixer(
 		(uint32_t)ucontrol->value.integer.value[3],
 		__func__, iir_idx, band_idx,
 		(uint32_t)ucontrol->value.integer.value[4]);
-*/
 	return 0;
 }
 
@@ -949,8 +948,8 @@ static int taiko_set_compander(struct snd_kcontrol *kcontrol,
 	if (comp == COMPANDER_1 &&
 			taiko->comp_enabled[comp] == 1) {
 		/* Wavegen to 5 msec */
-		snd_soc_write(codec, TAIKO_A_RX_HPH_CNP_WG_CTL, 0xDA);
-		snd_soc_write(codec, TAIKO_A_RX_HPH_CNP_WG_TIME, 0x15);
+		snd_soc_write(codec, TAIKO_A_RX_HPH_CNP_WG_CTL, 0xDB);
+		snd_soc_write(codec, TAIKO_A_RX_HPH_CNP_WG_TIME, 0x2A);
 		snd_soc_write(codec, TAIKO_A_RX_HPH_BIAS_WG_OCP, 0x2A);
 
 		/* Enable Chopper */
@@ -3312,21 +3311,11 @@ static int taiko_codec_enable_interpolator(struct snd_soc_dapm_widget *w,
 		break;
 	case SND_SOC_DAPM_POST_PMU:
 		/* apply the digital gain after the interpolator is enabled*/
-		if ((w->shift) < ARRAY_SIZE(rx_digital_gain_reg)) {
+		if ((w->shift) < ARRAY_SIZE(rx_digital_gain_reg))
 			snd_soc_write(codec,
 				  rx_digital_gain_reg[w->shift],
 				  snd_soc_read(codec,
 				  rx_digital_gain_reg[w->shift]));
-			pr_info("%s :Applying digital gain for Reg: %d Val: %d\n",
-					__func__, rx_digital_gain_reg[w->shift],
-					snd_soc_read(codec, rx_digital_gain_reg[w->shift]));
-		/*NOTE: ONEPLUSONE updates uhqa here*/
-		/* Check for Rx1 and Rx2 paths for uhqa mode update */
-#if 0
-		if (w->shift == 0 || w->shift == 1)
-			taiko_update_uhqa_mode(codec, (1 << w->shift));
-#endif
-		}
 		break;
 	}
 	return 0;
