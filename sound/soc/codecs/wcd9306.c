@@ -1,4 +1,4 @@
-/* Copyright (c) 2012-2015, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2012-2014, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -312,9 +312,6 @@ struct tapan_priv {
 	u32 anc_slot;
 	bool anc_func;
 
-	/*track adie loopback mode*/
-	bool lb_mode;
-
 	/*track tapan interface type*/
 	u8 intf_type;
 
@@ -329,8 +326,6 @@ struct tapan_priv {
 	int aux_pga_cnt;
 	u8 aux_l_gain;
 	u8 aux_r_gain;
-
-	bool dec_active[NUM_DECIMATORS];
 
 	bool spkr_pa_widget_on;
 
@@ -541,43 +536,6 @@ static int tapan_put_anc_func(struct snd_kcontrol *kcontrol,
 	mutex_unlock(&dapm->codec->mutex);
 	return 0;
 }
-
-static int tapan_loopback_mode_get(struct snd_kcontrol *kcontrol,
-				struct snd_ctl_elem_value *ucontrol)
-{
-	struct snd_soc_codec *codec = snd_kcontrol_chip(kcontrol);
-	struct tapan_priv *tapan = snd_soc_codec_get_drvdata(codec);
-
-	ucontrol->value.integer.value[0] = tapan->lb_mode;
-	dev_dbg(codec->dev, "%s: lb_mode = %d\n",
-		__func__, tapan->lb_mode);
-
-	return 0;
-}
-
-static int tapan_loopback_mode_put(struct snd_kcontrol *kcontrol,
-				struct snd_ctl_elem_value *ucontrol)
-{
-	struct snd_soc_codec *codec = snd_kcontrol_chip(kcontrol);
-	struct tapan_priv *tapan = snd_soc_codec_get_drvdata(codec);
-
-	dev_dbg(codec->dev, "%s: ucontrol->value.integer.value[0] = %ld\n",
-		__func__, ucontrol->value.integer.value[0]);
-
-	switch (ucontrol->value.integer.value[0]) {
-	case 0:
-		tapan->lb_mode = false;
-		break;
-	case 1:
-		tapan->lb_mode = true;
-		break;
-	default:
-		return -EINVAL;
-	}
-
-	return 0;
-}
-
 
 static int tapan_pa_gain_get(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
@@ -1103,13 +1061,6 @@ static int tapan_config_compander(struct snd_soc_dapm_widget *w,
 	return 0;
 }
 
-static const char * const tapan_loopback_mode_ctrl_text[] = {
-		"DISABLE", "ENABLE"};
-static const struct soc_enum tapan_loopback_mode_ctl_enum[] = {
-		SOC_ENUM_SINGLE_EXT(2, tapan_loopback_mode_ctrl_text),
-};
-
-
 static const char * const tapan_ear_pa_gain_text[] = {"POS_6_DB", "POS_4P5_DB",
 						      "POS_3_DB", "POS_1P5_DB",
 						      "POS_0_DB", "NEG_2P5_DB",
@@ -1166,9 +1117,6 @@ static const struct snd_kcontrol_new tapan_common_snd_controls[] = {
 
 	SOC_ENUM_EXT("EAR PA Gain", tapan_ear_pa_gain_enum[0],
 		tapan_pa_gain_get, tapan_pa_gain_put),
-
-	SOC_ENUM_EXT("LOOPBACK Mode", tapan_loopback_mode_ctl_enum[0],
-		tapan_loopback_mode_get, tapan_loopback_mode_put),
 
 	SOC_SINGLE_TLV("HPHL Volume", TAPAN_A_RX_HPH_L_GAIN, 0, 20, 1,
 		line_gain),
@@ -2087,20 +2035,15 @@ static int tapan_codec_enable_lineout(struct snd_soc_dapm_widget *w,
 						 WCD9XXX_CLSH_STATE_LO,
 						 WCD9XXX_CLSH_REQ_ENABLE,
 						 WCD9XXX_CLSH_EVENT_POST_PA);
-		dev_dbg(codec->dev, "%s: sleeping 5 ms after %s PA turn on\n",
+		dev_dbg(codec->dev, "%s: sleeping 3 ms after %s PA turn on\n",
 				__func__, w->name);
-		/* Wait for CnP time after PA enable */
-		usleep_range(5000, 5100);
+		usleep_range(3000, 3010);
 		break;
 	case SND_SOC_DAPM_POST_PMD:
 		wcd9xxx_clsh_fsm(codec, &tapan->clsh_d,
 						 WCD9XXX_CLSH_STATE_LO,
 						 WCD9XXX_CLSH_REQ_DISABLE,
 						 WCD9XXX_CLSH_EVENT_POST_PA);
-		dev_dbg(codec->dev, "%s: sleeping 5 ms after %s PA turn on\n",
-				__func__, w->name);
-		/* Wait for CnP time after PA disable */
-		usleep_range(5000, 5100);
 		break;
 	}
 	return 0;
@@ -2482,11 +2425,10 @@ static int tapan_codec_enable_dec(struct snd_soc_dapm_widget *w,
 {
 	struct snd_soc_codec *codec = w->codec;
 	unsigned int decimator;
-	struct tapan_priv *tapan_p = snd_soc_codec_get_drvdata(codec);
 	char *dec_name = NULL;
 	char *widget_name = NULL;
 	char *temp;
-	int ret = 0, i;
+	int ret = 0;
 	u16 dec_reset_reg, tx_vol_ctl_reg, tx_mux_ctl_reg;
 	u8 dec_hpf_cut_of_freq;
 	int offset;
@@ -2538,10 +2480,6 @@ static int tapan_codec_enable_dec(struct snd_soc_dapm_widget *w,
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
-		for (i = 0; i < NUM_DECIMATORS; i++) {
-			if (decimator == i + 1)
-				tapan_p->dec_active[i] = true;
-		}
 
 		/* Enableable TX digital mute */
 		snd_soc_update_bits(codec, tx_vol_ctl_reg, 0x01, 0x01);
@@ -2572,11 +2510,8 @@ static int tapan_codec_enable_dec(struct snd_soc_dapm_widget *w,
 
 	case SND_SOC_DAPM_POST_PMU:
 
-		if (tapan_p->lb_mode) {
-			pr_debug("%s: loopback mode unmute the DEC\n",
-							__func__);
-			snd_soc_update_bits(codec, tx_vol_ctl_reg, 0x01, 0x00);
-		}
+		/* Disable TX digital mute */
+		snd_soc_update_bits(codec, tx_vol_ctl_reg, 0x01, 0x00);
 
 		if (tx_hpf_work[decimator - 1].tx_hpf_cut_of_freq !=
 				CF_MIN_3DB_150HZ) {
@@ -2605,10 +2540,7 @@ static int tapan_codec_enable_dec(struct snd_soc_dapm_widget *w,
 		snd_soc_update_bits(codec, tx_mux_ctl_reg, 0x08, 0x08);
 		snd_soc_update_bits(codec, tx_mux_ctl_reg, 0x30,
 			(tx_hpf_work[decimator - 1].tx_hpf_cut_of_freq) << 4);
-		for (i = 0; i < NUM_DECIMATORS; i++) {
-			if (decimator == i + 1)
-				tapan_p->dec_active[i] = false;
-		}
+
 		break;
 	}
 out:
@@ -4520,20 +4452,6 @@ static struct snd_soc_dai_driver tapan9302_dai[] = {
 		.ops = &tapan_dai_ops,
 	},
 	{
-		.name = "tapan9302_rx3",
-		.id = AIF3_PB,
-		.playback = {
-			.stream_name = "AIF3 Playback",
-			.rates = WCD9302_RATES,
-			.formats = TAPAN_FORMATS,
-			.rate_min = 8000,
-			.rate_max = 48000,
-			.channels_min = 1,
-			.channels_max = 2,
-		},
-		.ops = &tapan_dai_ops,
-	},
-	{
 		.name = "tapan9302_tx3",
 		.id = AIF3_CAP,
 		.capture = {
@@ -4542,6 +4460,20 @@ static struct snd_soc_dai_driver tapan9302_dai[] = {
 			.formats = TAPAN_FORMATS,
 			.rate_max = 48000,
 			.rate_min = 8000,
+			.channels_min = 1,
+			.channels_max = 2,
+		},
+		.ops = &tapan_dai_ops,
+	},
+	{
+		.name = "tapan9302_rx3",
+		.id = AIF3_PB,
+		.playback = {
+			.stream_name = "AIF3 Playback",
+			.rates = WCD9302_RATES,
+			.formats = TAPAN_FORMATS,
+			.rate_min = 8000,
+			.rate_max = 48000,
 			.channels_min = 1,
 			.channels_max = 2,
 		},
@@ -4651,20 +4583,6 @@ static struct snd_soc_dai_driver tapan_dai[] = {
 		.ops = &tapan_dai_ops,
 	},
 	{
-		.name = "tapan_rx3",
-		.id = AIF3_PB,
-		.playback = {
-			.stream_name = "AIF3 Playback",
-			.rates = WCD9306_RATES,
-			.formats = TAPAN_FORMATS,
-			.rate_min = 8000,
-			.rate_max = 192000,
-			.channels_min = 1,
-			.channels_max = 2,
-		},
-		.ops = &tapan_dai_ops,
-	},
-	{
 		.name = "tapan_tx3",
 		.id = AIF3_CAP,
 		.capture = {
@@ -4673,6 +4591,20 @@ static struct snd_soc_dai_driver tapan_dai[] = {
 			.formats = TAPAN_FORMATS,
 			.rate_max = 48000,
 			.rate_min = 8000,
+			.channels_min = 1,
+			.channels_max = 2,
+		},
+		.ops = &tapan_dai_ops,
+	},
+	{
+		.name = "tapan_rx3",
+		.id = AIF3_PB,
+		.playback = {
+			.stream_name = "AIF3 Playback",
+			.rates = WCD9306_RATES,
+			.formats = TAPAN_FORMATS_S16_S24_LE,
+			.rate_min = 8000,
+			.rate_max = 192000,
 			.channels_min = 1,
 			.channels_max = 2,
 		},
@@ -5956,7 +5888,7 @@ static const struct tapan_reg_mask_val tapan_codec_reg_init_val[] = {
 	{TAPAN_A_CDC_CONN_MISC, 0x04, 0x04},
 
 	/* CLASS H config */
-	{TAPAN_A_CDC_CONN_CLSH_CTL, 0x30, 0x10},
+	{TAPAN_A_CDC_CONN_CLSH_CTL, 0x3C, 0x14},
 
 	/* Use 16 bit sample size for TX1 to TX5 */
 	{TAPAN_A_CDC_CONN_TX_SB_B1_CTL, 0x30, 0x20},
@@ -6499,6 +6431,8 @@ static int tapan_post_reset_cb(struct wcd9xxx *wcd9xxx)
 	codec = (struct snd_soc_codec *)(wcd9xxx->ssr_priv);
 	tapan = snd_soc_codec_get_drvdata(codec);
 
+	snd_soc_card_change_online_state(codec->card, 1);
+
 	mutex_lock(&codec->mutex);
 	if (codec->reg_def_copy) {
 		pr_debug("%s: Update ASOC cache", __func__);
@@ -6511,10 +6445,6 @@ static int tapan_post_reset_cb(struct wcd9xxx *wcd9xxx)
 			return -ENOMEM;
 		}
 	}
-
-	tapan->machine_codec_event_cb(codec, WCD9XXX_CODEC_EVENT_CODEC_UP);
-
-	snd_soc_card_change_online_state(codec->card, 1);
 
 	if (spkr_drv_wrnd == 1)
 		snd_soc_update_bits(codec, TAPAN_A_SPKR_DRV_EN, 0x80, 0x80);
@@ -6555,6 +6485,8 @@ static int tapan_post_reset_cb(struct wcd9xxx *wcd9xxx)
 	ret = tapan_setup_irqs(tapan);
 	if (ret)
 		pr_err("%s: Failed to setup irq: %d\n", __func__, ret);
+
+	tapan->machine_codec_event_cb(codec, WCD9XXX_CODEC_EVENT_CODEC_UP);
 
 	for (count = 0; count < NUM_CODEC_DAIS; count++)
 		tapan->dai[count].bus_down_in_recovery = true;
@@ -6797,7 +6729,6 @@ static int tapan_codec_probe(struct snd_soc_codec *codec)
 	tapan->aux_r_gain = 0x1F;
 	tapan->ldo_h_users = 0;
 	tapan->micb_2_users = 0;
-	tapan->lb_mode = false;
 	tapan_update_reg_defaults(codec);
 	tapan_update_reg_mclk_rate(wcd9xxx);
 	tapan_codec_init_reg(codec);
