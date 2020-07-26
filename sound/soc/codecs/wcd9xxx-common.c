@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2014, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2013-2015, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -22,7 +22,9 @@
 #define CLSH_COMPUTE_HPH_L 0x02
 #define CLSH_COMPUTE_HPH_R 0x03
 
+#define BUCK_VREF_0P494V 0x3F
 #define BUCK_VREF_2V 0xFF
+#define BUCK_VREF_0P494V 0x3F
 #define BUCK_VREF_1P8V 0xE6
 
 #define BUCK_SETTLE_TIME_US 50
@@ -792,7 +794,7 @@ static void wcd9xxx_clsh_enable_post_pa(struct snd_soc_codec *codec,
 		snd_soc_update_bits(codec, WCD9XXX_A_BUCK_MODE_3,
 							0x08, 0x08);
 
-	dev_info(codec->dev, "%s: completed clsh mode settings after PA enable\n",
+	dev_dbg(codec->dev, "%s: completed clsh mode settings after PA enable\n",
 		   __func__);
 
 }
@@ -939,6 +941,11 @@ static void wcd9xxx_clsh_state_hph_ear(struct snd_soc_codec *codec,
 		 * The below check condition is required to make sure
 		 * functions inside if condition will execute only once.
 		 */
+		if (req_state == WCD9XXX_CLSH_STATE_EAR)
+			wcd9xxx_cfg_clsh_param_ear(codec);
+		if (clsh_d->state == WCD9XXX_CLSH_STATE_EAR)
+			wcd9xxx_cfg_clsh_param_hph(codec);
+
 		if ((clsh_d->state == WCD9XXX_CLSH_STATE_EAR) ||
 			(req_state == WCD9XXX_CLSH_STATE_EAR)) {
 			wcd9xxx_dynamic_bypass_buck_ctrl(codec, false);
@@ -1000,13 +1007,16 @@ static void wcd9xxx_clsh_state_hph_lo(struct snd_soc_codec *codec,
 	dev_dbg(codec->dev, "%s: enter %s\n", __func__,
 			is_enable ? "enable" : "disable");
 	if (is_enable) {
+		if (clsh_d->state == WCD9XXX_CLSH_STATE_LO)
+			wcd9xxx_cfg_clsh_param_hph(codec);
+
 		if ((clsh_d->state == WCD9XXX_CLSH_STATE_LO) ||
 			(req_state == WCD9XXX_CLSH_STATE_LO)) {
 			wcd9xxx_dynamic_bypass_buck_ctrl_lo(codec, false);
-			wcd9xxx_ncp_bypass_enable(codec, true);
+			wcd9xxx_set_fclk_get_ncp(codec, clsh_d,
+						NCP_FCLK_LEVEL_8);
 			if (req_state & WCD9XXX_CLSH_STATE_HPH_ST) {
-				wcd9xxx_set_fclk_get_ncp(codec, clsh_d,
-							NCP_FCLK_LEVEL_8);				
+				wcd9xxx_ncp_bypass_enable(codec, true);
 				wcd9xxx_enable_clsh_block(codec, clsh_d, true);
 				wcd9xxx_chargepump_request(codec, true);
 				wcd9xxx_enable_anc_delay(codec, true);
@@ -1041,9 +1051,10 @@ static void wcd9xxx_clsh_state_hph_lo(struct snd_soc_codec *codec,
 		}
 		if ((req_state == WCD9XXX_CLSH_STATE_LO) ||
 		((clsh_d->state & (~req_state)) == WCD9XXX_CLSH_STATE_LO)) {
-			wcd9xxx_ncp_bypass_enable(codec, false);
 			wcd9xxx_set_fclk_put_ncp(codec, clsh_d,
 						NCP_FCLK_LEVEL_8);
+			wcd9xxx_ncp_bypass_enable(codec, false);
+
 			if (req_state & WCD9XXX_CLSH_STATE_HPH_ST) {
 				usleep_range(BUCK_SETTLE_TIME_US,
 						BUCK_SETTLE_TIME_US + 10);
@@ -1082,10 +1093,11 @@ static void wcd9xxx_clsh_state_ear_lo(struct snd_soc_codec *codec,
 	if (is_enable) {
 		wcd9xxx_dynamic_bypass_buck_ctrl(codec, false);
 		wcd9xxx_enable_buck(codec, clsh_d, true);
-		wcd9xxx_ncp_bypass_enable(codec, true);
 		if (req_state & WCD9XXX_CLSH_STATE_EAR) {
+			wcd9xxx_cfg_clsh_param_ear(codec);
 			wcd9xxx_set_fclk_get_ncp(codec, clsh_d,
 						NCP_FCLK_LEVEL_8);
+			wcd9xxx_ncp_bypass_enable(codec, true);
 			wcd9xxx_enable_clsh_block(codec, clsh_d, true);
 			wcd9xxx_chargepump_request(codec, true);
 			wcd9xxx_enable_anc_delay(codec, true);
@@ -1093,8 +1105,8 @@ static void wcd9xxx_clsh_state_ear_lo(struct snd_soc_codec *codec,
 						CLSH_COMPUTE_EAR, true);
 		}
 	} else {
-		wcd9xxx_ncp_bypass_enable(codec, false);
 		wcd9xxx_set_fclk_put_ncp(codec, clsh_d, NCP_FCLK_LEVEL_8);
+		wcd9xxx_ncp_bypass_enable(codec, false);
 		if (req_state & WCD9XXX_CLSH_STATE_LO) {
 			snd_soc_update_bits(codec, WCD9XXX_A_NCP_STATIC,
 						0x20, 0x00);
@@ -1127,6 +1139,9 @@ static void wcd9xxx_clsh_state_hph_ear_lo(struct snd_soc_codec *codec,
 	dev_dbg(codec->dev, "%s: enter %s\n", __func__,
 			is_enable ? "enable" : "disable");
 
+	if (clsh_d->state == WCD9XXX_CLSH_STATE_EAR_LO)
+		wcd9xxx_cfg_clsh_param_hph(codec);
+
 	if (req_state & WCD9XXX_CLSH_STATE_HPHL)
 		wcd9xxx_clsh_comp_req(codec, clsh_d, CLSH_COMPUTE_HPH_L,
 					is_enable);
@@ -1135,9 +1150,11 @@ static void wcd9xxx_clsh_state_hph_ear_lo(struct snd_soc_codec *codec,
 		wcd9xxx_clsh_comp_req(codec, clsh_d, CLSH_COMPUTE_HPH_R,
 					is_enable);
 
-	if (req_state & WCD9XXX_CLSH_STATE_EAR)
+	if (req_state & WCD9XXX_CLSH_STATE_EAR) {
+		wcd9xxx_cfg_clsh_param_ear(codec);
 		wcd9xxx_clsh_comp_req(codec, clsh_d, CLSH_COMPUTE_EAR,
 					is_enable);
+	}
 }
 
 static void wcd9xxx_clsh_state_ear(struct snd_soc_codec *codec,
@@ -1168,25 +1185,6 @@ static void wcd9xxx_clsh_state_ear(struct snd_soc_codec *codec,
 	}
 }
 
-static void wcd9xxx_clsh_set_hs_performance_mode(struct snd_soc_codec *codec,
-		struct wcd9xxx_clsh_cdc_data *clsh_d)
-{
-	clsh_d->ncp_users[NCP_FCLK_LEVEL_8]++;
-
-	pr_debug("%s: users fclk8 %d, fclk5 %d\n", __func__,
-		 clsh_d->ncp_users[NCP_FCLK_LEVEL_8],
-		 clsh_d->ncp_users[NCP_FCLK_LEVEL_5]);
-
-	if (clsh_d->ncp_users[NCP_FCLK_LEVEL_8] > 0)
-		snd_soc_update_bits(codec, WCD9XXX_A_NCP_STATIC, 0x0F, 0x08);
-
-	snd_soc_update_bits(codec, WCD9XXX_A_NCP_STATIC, 0x30, 0x30);
-
-	/* enable NCP and wait until settles down */
-	if (snd_soc_update_bits(codec, WCD9XXX_A_NCP_EN, 0x01, 0x01))
-		usleep_range(NCP_SETTLE_TIME_US, NCP_SETTLE_TIME_US);
-}
-
 static void wcd9xxx_clsh_state_hph_l(struct snd_soc_codec *codec,
 		struct wcd9xxx_clsh_cdc_data *clsh_d,
 		u8 req_state, bool is_enable)
@@ -1200,7 +1198,6 @@ static void wcd9xxx_clsh_state_hph_l(struct snd_soc_codec *codec,
 		wcd9xxx_chargepump_request(codec, true);
 		wcd9xxx_enable_anc_delay(codec, true);
 		wcd9xxx_clsh_comp_req(codec, clsh_d, CLSH_COMPUTE_HPH_L, true);
-#if 0
 		pr_debug("%s class state: %d\n", __func__, clsh_d->state);
 		if (clsh_d->state & WCD9XXX_CLSH_STATE_LO)
 			wcd9xxx_set_buck_mode(codec, BUCK_VREF_2V);
@@ -1208,19 +1205,11 @@ static void wcd9xxx_clsh_state_hph_l(struct snd_soc_codec *codec,
 			wcd9xxx_set_buck_mode(codec, BUCK_VREF_0P494V);
 		wcd9xxx_enable_buck(codec, clsh_d, true);
 		wcd9xxx_set_fclk_get_ncp(codec, clsh_d, NCP_FCLK_LEVEL_8);
-#endif
-		if (clsh_d->hs_perf_mode_enabled)
-			wcd9xxx_clsh_set_hs_performance_mode(codec, clsh_d);
-		else {
-			wcd9xxx_set_buck_mode(codec, BUCK_VREF_2V);
-			wcd9xxx_enable_buck(codec, clsh_d, true);
-			wcd9xxx_set_fclk_get_ncp(codec, clsh_d, NCP_FCLK_LEVEL_8);
-		}
+
 		dev_dbg(codec->dev, "%s: Done\n", __func__);
 	} else {
 		wcd9xxx_set_fclk_put_ncp(codec, clsh_d, NCP_FCLK_LEVEL_8);
-		if (!clsh_d->hs_perf_mode_enabled)
-			wcd9xxx_enable_buck(codec, clsh_d, false);
+		wcd9xxx_enable_buck(codec, clsh_d, false);
 		wcd9xxx_clsh_comp_req(codec, clsh_d, CLSH_COMPUTE_HPH_L, false);
 		wcd9xxx_chargepump_request(codec, false);
 		wcd9xxx_enable_clsh_block(codec, clsh_d, false);
@@ -1241,25 +1230,18 @@ static void wcd9xxx_clsh_state_hph_r(struct snd_soc_codec *codec,
 		wcd9xxx_chargepump_request(codec, true);
 		wcd9xxx_enable_anc_delay(codec, true);
 		wcd9xxx_clsh_comp_req(codec, clsh_d, CLSH_COMPUTE_HPH_R, true);
-#if 0
 		pr_debug("%s class state: %d\n", __func__, clsh_d->state);
 		if (clsh_d->state & WCD9XXX_CLSH_STATE_LO)
 			wcd9xxx_set_buck_mode(codec, BUCK_VREF_2V);
 		else
 			wcd9xxx_set_buck_mode(codec, BUCK_VREF_0P494V);
-#endif
-		if (clsh_d->hs_perf_mode_enabled)
-			wcd9xxx_clsh_set_hs_performance_mode(codec, clsh_d);
-		else {
-			wcd9xxx_set_buck_mode(codec, BUCK_VREF_2V);
-			wcd9xxx_enable_buck(codec, clsh_d, true);
-			wcd9xxx_set_fclk_get_ncp(codec, clsh_d, NCP_FCLK_LEVEL_8);
-		}
+		wcd9xxx_enable_buck(codec, clsh_d, true);
+		wcd9xxx_set_fclk_get_ncp(codec, clsh_d, NCP_FCLK_LEVEL_8);
+
 		dev_dbg(codec->dev, "%s: Done\n", __func__);
 	} else {
 		wcd9xxx_set_fclk_put_ncp(codec, clsh_d, NCP_FCLK_LEVEL_8);
-		if (!clsh_d->hs_perf_mode_enabled)
-			wcd9xxx_enable_buck(codec, clsh_d, false);
+		wcd9xxx_enable_buck(codec, clsh_d, false);
 		wcd9xxx_clsh_comp_req(codec, clsh_d, CLSH_COMPUTE_HPH_R, false);
 		wcd9xxx_chargepump_request(codec, false);
 		wcd9xxx_enable_clsh_block(codec, clsh_d, false);
@@ -1466,8 +1448,7 @@ void wcd9xxx_clsh_fsm(struct snd_soc_codec *codec,
 						__func__, new_state);
 			}
 		} else if (!(cdc_clsh_d->state & WCD9XXX_CLSH_STATE_LO)) {
-			if (!cdc_clsh_d->hs_perf_mode_enabled)
-				wcd9xxx_clsh_enable_post_pa(codec, cdc_clsh_d);
+			wcd9xxx_clsh_enable_post_pa(codec, cdc_clsh_d);
 		}
 
 		break;

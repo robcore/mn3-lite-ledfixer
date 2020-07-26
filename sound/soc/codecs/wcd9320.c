@@ -4878,6 +4878,8 @@ static void taiko_shutdown(struct snd_pcm_substream *substream,
 static int taiko_prepare(struct snd_pcm_substream *substream,
 		struct snd_soc_dai *dai)
 {
+	return 0;
+/*
 	int paths, i;
 	struct snd_soc_dapm_widget_list *wlist;
 	struct snd_soc_codec *codec = dai->codec;
@@ -4924,6 +4926,7 @@ static int taiko_prepare(struct snd_pcm_substream *substream,
 		taiko_p->clsh_d.hs_perf_mode_enabled = false;
 	}
 	return 0;
+*/
 }
 
 int taiko_mclk_enable(struct snd_soc_codec *codec, int mclk_enable, bool dapm)
