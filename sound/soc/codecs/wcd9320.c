@@ -429,7 +429,7 @@ struct comp_sample_dependent_params {
 struct hpf_work {
 	struct taiko_priv *taiko;
 	u32 decimator;
-	u8 tx_hpf_cut_off_freq;
+	u8 tx_hpf_cut_of_freq;
 	struct delayed_work dwork;
 };
 
@@ -3109,7 +3109,7 @@ static void tx_hpf_corner_freq_callback(struct work_struct *work)
 	hpf_work = container_of(hpf_delayed_work, struct hpf_work, dwork);
 	taiko = hpf_work->taiko;
 	codec = hpf_work->taiko->codec;
-	hpf_cut_of_freq = hpf_work->tx_hpf_cut_off_freq;
+	hpf_cut_of_freq = hpf_work->tx_hpf_cut_of_freq;
 
 	tx_mux_ctl_reg = TAIKO_A_CDC_TX1_MUX_CTL +
 			(hpf_work->decimator - 1) * 8;
@@ -3192,7 +3192,7 @@ static int taiko_codec_enable_dec(struct snd_soc_dapm_widget *w,
 
 		dec_hpf_cut_of_freq = (dec_hpf_cut_of_freq & 0x30) >> 4;
 
-		tx_hpf_work[decimator - 1].tx_hpf_cut_off_freq =
+		tx_hpf_work[decimator - 1].tx_hpf_cut_of_freq =
 			dec_hpf_cut_of_freq;
 
 		if ((dec_hpf_cut_of_freq != CF_MIN_3DB_150HZ)) {
@@ -3212,7 +3212,7 @@ static int taiko_codec_enable_dec(struct snd_soc_dapm_widget *w,
 		/* Disable TX digital mute */
 		snd_soc_update_bits(codec, tx_vol_ctl_reg, 0x01, 0x00);
 
-		if (tx_hpf_work[decimator - 1].tx_hpf_cut_off_freq !=
+		if (tx_hpf_work[decimator - 1].tx_hpf_cut_of_freq !=
 				CF_MIN_3DB_150HZ) {
 
 			schedule_delayed_work(&tx_hpf_work[decimator - 1].dwork,
@@ -3238,7 +3238,7 @@ static int taiko_codec_enable_dec(struct snd_soc_dapm_widget *w,
 
 		snd_soc_update_bits(codec, tx_mux_ctl_reg, 0x08, 0x08);
 		snd_soc_update_bits(codec, tx_mux_ctl_reg, 0x30,
-			(tx_hpf_work[decimator - 1].tx_hpf_cut_off_freq) << 4);
+			(tx_hpf_work[decimator - 1].tx_hpf_cut_of_freq) << 4);
 
 		break;
 	}
