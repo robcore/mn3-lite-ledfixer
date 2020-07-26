@@ -2359,8 +2359,10 @@ static int slim_rx_mux_put(struct snd_kcontrol *kcontrol,
 		goto err;
 	}
 rtn:
+
 	mutex_unlock(&codec->mutex);
 	snd_soc_dapm_mux_update_power(widget, kcontrol, 1, widget->value, e);
+
 	return 0;
 err:
 	mutex_unlock(&codec->mutex);
