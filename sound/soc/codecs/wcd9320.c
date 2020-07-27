@@ -7798,7 +7798,6 @@ static ssize_t high_perf_mode_store(struct kobject *kobj,
 		uval = 1;
 
 	high_perf_mode = uval;
-	set_high_perf_mode(high_perf_mode);
 	return count;
 }
 
