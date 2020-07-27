@@ -44,6 +44,8 @@
 #define WCD9XXX_CLSAB_REQ_ENABLE  true
 #define WCD9XXX_CLSAB_REQ_DISABLE false
 
+#define WCD9XXX_NON_UHQA_MODE	0
+
 #define WCD9XXX_DMIC_SAMPLE_RATE_DIV_2    0x0
 #define WCD9XXX_DMIC_SAMPLE_RATE_DIV_3    0x1
 #define WCD9XXX_DMIC_SAMPLE_RATE_DIV_4    0x2
@@ -113,7 +115,6 @@ struct wcd9xxx_clsh_cdc_data {
 	int buck_users;
 	int ncp_users[NCP_FCLK_LEVEL_MAX];
 	struct wcd9xxx_resmgr *resmgr;
-	bool hs_perf_mode_enabled;	
 };
 
 struct wcd9xxx_anc_header {
@@ -130,6 +131,10 @@ enum wcd9xxx_buck_volt {
 extern void wcd9xxx_clsh_fsm(struct snd_soc_codec *codec,
 		struct wcd9xxx_clsh_cdc_data *cdc_clsh_d,
 		u8 req_state, bool req_type, u8 clsh_event);
+
+extern void wcd9xxx_enable_high_perf_mode(struct snd_soc_codec *codec,
+				struct wcd9xxx_clsh_cdc_data *clsh_d,
+				u8 uhqa_mode, u8 req_state, bool req_type);
 
 extern void wcd9xxx_clsh_init(struct wcd9xxx_clsh_cdc_data *clsh,
 			      struct wcd9xxx_resmgr *resmgr);
