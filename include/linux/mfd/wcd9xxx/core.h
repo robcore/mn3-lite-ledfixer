@@ -163,6 +163,7 @@ struct wcd9xxx {
 	struct slim_device *slim_slave;
 	struct mutex io_lock;
 	struct mutex xfer_lock;
+	struct mutex sound_control_lock;
 	u8 version;
 
 	int reset_gpio;
