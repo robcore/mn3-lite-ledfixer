@@ -22,7 +22,6 @@
 #include <linux/mfd/wcd9xxx/core-resource.h>
 #include <linux/mfd/wcd9xxx/pdata.h>
 #include <linux/mfd/wcd9xxx/wcd9xxx_registers.h>
-#include <linux/mfd/wcd9xxx/wcd9320_registers.h>
 
 #include <linux/delay.h>
 #include <linux/gpio.h>
@@ -119,22 +118,7 @@ int wcd9xxx_reg_read(
 }
 EXPORT_SYMBOL(wcd9xxx_reg_read);
 
-static bool is_soundcontrol_reg(unsigned short reg)
-{
-	switch (reg) {
-		case 0x2B7:
-		case 0x2BF:
-		case 0x2E7:
-			return true;
-		default:
-			break;
-		}
-
-	return false;
-}
-
 static unsigned int sound_control_override = 0;
-
 void lock_sound_control(struct wcd9xxx_core_resource *core_res,
 						unsigned int lockval) {
 	struct wcd9xxx *wcd9xxx = (struct wcd9xxx *) core_res->parent;
@@ -143,9 +127,9 @@ void lock_sound_control(struct wcd9xxx_core_resource *core_res,
 	if (unlikely(lockval >= 1))
 		lockval = 1;
 
-	mutex_lock(&wcd9xxx->sound_control_lock);
+	mutex_lock(&wcd9xxx->io_lock);
 	sound_control_override = lockval;
-	mutex_unlock(&wcd9xxx->sound_control_lock);
+	mutex_unlock(&wcd9xxx->io_lock);
 }
 EXPORT_SYMBOL(lock_sound_control);
 
@@ -158,8 +142,16 @@ static int wcd9xxx_write(struct wcd9xxx *wcd9xxx, unsigned short reg,
 		return -EINVAL;
 	}
 
-	if (!sound_control_override && is_soundcontrol_reg(reg))
-			return 0;
+	if (!sound_control_override) {
+		switch (reg) {
+			case 0x2B7:
+			case 0x2BF:
+			case 0x2E7:
+				return 0;
+			default:
+				break;
+		}
+	}
 /*
 	if (reg == 0x1AE)
 		pr_info("%s: HPH Left PA write: %u\n", __func__, (u8 *)src);
@@ -181,58 +173,42 @@ static int __wcd9xxx_reg_write(struct wcd9xxx *wcd9xxx,
 	int ret;
 	bool need_fixup = false;
 
-	mutex_lock(&wcd9xxx->sound_control_lock);
-	if (!sound_control_override) {
-		mutex_unlock(&wcd9xxx->sound_control_lock);
-		if (is_soundcontrol_reg(reg))
-			need_fixup = true;
+	mutex_lock(&wcd9xxx->io_lock);
+	if ((!sound_control_override) &&
+	   (reg == 0x2E7 || reg == 0x2B7 || reg == 0x2BF)) {
+		mutex_unlock(&wcd9xxx->io_lock);
+		need_fixup = true;
 	} else {
-		mutex_unlock(&wcd9xxx->sound_control_lock);
-		mutex_lock(&wcd9xxx->io_lock);
 		ret = wcd9xxx_write(wcd9xxx, reg, 1, &val, false);
 		mutex_unlock(&wcd9xxx->io_lock);
-		return ret;
 	}
 
 	if (need_fixup) {
 		lock_sound_control(&wcd9xxx->core_res, 1);
+		mutex_lock(&wcd9xxx->io_lock);
 		switch (reg) {
 			case 0x2B7:
-				if (val == 172) {
-					mutex_lock(&wcd9xxx->io_lock);
+				if (val == 172)
 					ret = wcd9xxx_write(wcd9xxx, reg, 1, &val, false);
-					mutex_unlock(&wcd9xxx->io_lock);
-				} else {
-					mutex_lock(&wcd9xxx->io_lock);
+				else
 					ret = wcd9xxx_write(wcd9xxx, reg, 1, &hphl_cached_gain, false);
-					mutex_unlock(&wcd9xxx->io_lock);
-				}
 				break;
 			case 0x2BF:
-				if (val == 172) {
-					mutex_lock(&wcd9xxx->io_lock);
+				if (val == 172)
 					ret = wcd9xxx_write(wcd9xxx, reg, 1, &val, false);
-					mutex_unlock(&wcd9xxx->io_lock);
-				} else {
-					mutex_lock(&wcd9xxx->io_lock);
+				else
 					ret = wcd9xxx_write(wcd9xxx, reg, 1, &hphr_cached_gain, false);
-					mutex_unlock(&wcd9xxx->io_lock);
-				}
 				break;
 			case 0x2E7:
-				if (val == 172) {
-					mutex_lock(&wcd9xxx->io_lock);
+				if (val == 172)
 					ret = wcd9xxx_write(wcd9xxx, reg, 1, &val, false);
-					mutex_unlock(&wcd9xxx->io_lock);
-				} else {
-					mutex_lock(&wcd9xxx->io_lock);
+				else
 					ret = wcd9xxx_write(wcd9xxx, reg, 1, &speaker_cached_gain, false);
-					mutex_unlock(&wcd9xxx->io_lock);
-				}
 				break;
 			default:
 				break;
 		}
+		mutex_unlock(&wcd9xxx->io_lock);
 		lock_sound_control(&wcd9xxx->core_res, 0);
 	}
 
@@ -663,7 +639,6 @@ static int wcd9xxx_device_init(struct wcd9xxx *wcd9xxx)
 
 	mutex_init(&wcd9xxx->io_lock);
 	mutex_init(&wcd9xxx->xfer_lock);
-	mutex_init(&wcd9xxx->sound_control_lock);
 
 	dev_set_drvdata(wcd9xxx->dev, wcd9xxx);
 	wcd9xxx_bring_up(wcd9xxx);
@@ -719,7 +694,6 @@ err:
 	wcd9xxx_core_res_deinit(&wcd9xxx->core_res);
 	mutex_destroy(&wcd9xxx->io_lock);
 	mutex_destroy(&wcd9xxx->xfer_lock);
-	mutex_destroy(&wcd9xxx->sound_control_lock);
 	return ret;
 }
 
@@ -732,7 +706,6 @@ static void wcd9xxx_device_exit(struct wcd9xxx *wcd9xxx)
 	wcd9xxx_core_res_deinit(&wcd9xxx->core_res);
 	mutex_destroy(&wcd9xxx->io_lock);
 	mutex_destroy(&wcd9xxx->xfer_lock);
-	mutex_destroy(&wcd9xxx->sound_control_lock);
 	if (wcd9xxx_get_intf_type() == WCD9XXX_INTERFACE_TYPE_SLIMBUS)
 		slim_remove_device(wcd9xxx->slim_slave);
 	kfree(wcd9xxx);
