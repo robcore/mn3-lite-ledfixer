@@ -6580,9 +6580,8 @@ static const struct wcd9xxx_reg_mask_val taiko_reg_defaults[] = {
 	TAIKO_REG_VAL(TAIKO_A_CDC_CONN_MAD, 0x01),
 
 	/* Set HPH Path to low power mode */
-#if 0
-	TAIKO_REG_VAL(TAIKO_A_RX_HPH_BIAS_PA, 0x55),
-#endif
+	TAIKO_REG_VAL(TAIKO_A_RX_HPH_BIAS_PA, 0x57),
+
 	/* BUCK default */
 	TAIKO_REG_VAL(WCD9XXX_A_BUCK_CTRL_CCL_4, 0x51),
 	TAIKO_REG_VAL(WCD9XXX_A_BUCK_CTRL_CCL_1, 0x5B),
@@ -6612,9 +6611,7 @@ static const struct wcd9xxx_reg_mask_val taiko_1_0_reg_defaults[] = {
 	/*Reduce EAR DAC bias to 70% */
 	TAIKO_REG_VAL(TAIKO_A_RX_EAR_BIAS_PA, 0x76),
 	/* Reduce LINE DAC bias to 70% */
-	TAIKO_REG_VAL(TAIKO_A_RX_LINE_BIAS_PA, 0x7A),
-	/* Reduce HPH DAC bias to 70% */
-	TAIKO_REG_VAL(TAIKO_A_RX_HPH_BIAS_PA, 0x7A),
+	TAIKO_REG_VAL(TAIKO_A_RX_LINE_BIAS_PA, 0x78),
 
 	/*
 	 * There is a diode to pull down the micbias while doing
@@ -6652,13 +6649,12 @@ static const struct wcd9xxx_reg_mask_val taiko_2_0_reg_defaults[] = {
 	TAIKO_REG_VAL(TAIKO_A_BUCK_CTRL_CCL_4, 0x51),
 	TAIKO_REG_VAL(TAIKO_A_NCP_DTEST, 0x10),
 	TAIKO_REG_VAL(TAIKO_A_RX_HPH_CHOP_CTL, 0xA4),
-	TAIKO_REG_VAL(TAIKO_A_RX_HPH_BIAS_PA, 0x7A),
 	TAIKO_REG_VAL(TAIKO_A_RX_HPH_OCP_CTL, 0x6B),
 	TAIKO_REG_VAL(TAIKO_A_RX_HPH_CNP_WG_CTL, 0xDA),
 	TAIKO_REG_VAL(TAIKO_A_RX_HPH_CNP_WG_TIME, 0x15),
 	TAIKO_REG_VAL(TAIKO_A_RX_EAR_BIAS_PA, 0x76),
 	TAIKO_REG_VAL(TAIKO_A_RX_EAR_CNP, 0xC0),
-	TAIKO_REG_VAL(TAIKO_A_RX_LINE_BIAS_PA, 0x7A),
+	TAIKO_REG_VAL(TAIKO_A_RX_LINE_BIAS_PA, 0x78),
 	TAIKO_REG_VAL(TAIKO_A_RX_LINE_1_TEST, 0x2),
 	TAIKO_REG_VAL(TAIKO_A_RX_LINE_2_TEST, 0x2),
 	TAIKO_REG_VAL(TAIKO_A_RX_LINE_3_TEST, 0x2),
@@ -6793,17 +6789,10 @@ static void taiko_codec_init_reg(struct snd_soc_codec *codec)
 {
 	u32 i;
 
-	for (i = 0; i < ARRAY_SIZE(taiko_codec_reg_init_val); i++) {
-#if 0
-		 pr_debug("Taiko Init: Reg: %u Mask: %u Val: %u ",
-		 taiko_codec_reg_init_val[i].reg,
-		 taiko_codec_reg_init_val[i].mask,
-		 taiko_codec_reg_init_val[i].val);
-#endif
+	for (i = 0; i < ARRAY_SIZE(taiko_codec_reg_init_val); i++)
 		snd_soc_update_bits(codec, taiko_codec_reg_init_val[i].reg,
 				taiko_codec_reg_init_val[i].mask,
 				taiko_codec_reg_init_val[i].val);
-	}
 }
 
 static void taiko_slim_interface_init_reg(struct snd_soc_codec *codec)
