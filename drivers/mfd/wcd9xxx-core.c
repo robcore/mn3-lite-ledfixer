@@ -160,7 +160,6 @@ static int wcd9xxx_write(struct wcd9xxx *wcd9xxx, unsigned short reg,
 
 	if (!sound_control_override && is_soundcontrol_reg(reg))
 			return 0;
-	}
 /*
 	if (reg == 0x1AE)
 		pr_info("%s: HPH Left PA write: %u\n", __func__, (u8 *)src);
