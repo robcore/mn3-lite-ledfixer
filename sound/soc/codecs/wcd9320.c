@@ -7458,6 +7458,11 @@ static ssize_t speaker_gain_store(struct kobject *kobj,
 	return count;
 }
 
+static ssize_t high_perf_mode_show(struct kobject *kobj,
+		struct kobj_attribute *attr, char *buf) {
+	return sprintf(buf, "%u\n", high_perf_mode);
+}
+
 static ssize_t high_perf_mode_store(struct kobject *kobj,
 			   struct kobj_attribute *attr, const char *buf, size_t count) {
 	int uval;
