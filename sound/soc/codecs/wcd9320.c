@@ -271,6 +271,7 @@ static unsigned int hph_pa_enabled = 0;
 #endif
 
 static unsigned int high_perf_mode = 0;
+static unsigned int interpolator_boost = 0;
 //static unsigned int uhqa_mode = 0;
 u8 hphl_cached_gain = 0;
 u8 hphr_cached_gain = 0;
@@ -310,6 +311,7 @@ static void set_high_perf_mode(unsigned int enable) {
 			wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_BIAS_PA) == 0xAA);
 }
 #endif
+#if 0
 static void set_uhqa_mode(unsigned int enable) {
 	if (!enable) {
 		if (snd_soc_update_bits(direct_codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20) > 0)
@@ -319,6 +321,7 @@ static void set_uhqa_mode(unsigned int enable) {
 			pr_info("%s: uhqa_mode override disabled\n", __func__);
 	}
 }
+#endif
 
 #define WCD9320_RATES (SNDRV_PCM_RATE_8000 | SNDRV_PCM_RATE_16000 |\
 			SNDRV_PCM_RATE_32000 | SNDRV_PCM_RATE_48000 |\
@@ -1055,7 +1058,7 @@ static int taiko_config_compander(struct snd_soc_dapm_widget *w,
 	    &comp_samp_params[rate];
 	enum wcd9xxx_buck_volt buck_mv;
 
-	pr_debug("%s: %s event %d compander %d, enabled %d", __func__,
+	pr_info("%s: %s event %d compander %d, enabled %d", __func__,
 		 w->name, event, comp, taiko->comp_enabled[comp]);
 
 	if (!taiko->comp_enabled[comp])
@@ -1104,11 +1107,18 @@ static int taiko_config_compander(struct snd_soc_dapm_widget *w,
 		taiko_discharge_comp(codec, comp);
 
 		/* Set sample rate dependent paramater */
-		snd_soc_write(codec, TAIKO_A_CDC_COMP0_B3_CTL + (comp * 8),
-			      comp_params->rms_meter_resamp_fact);
-		snd_soc_update_bits(codec,
-				    TAIKO_A_CDC_COMP0_B2_CTL + (comp * 8),
-				    0xF0, comp_params->rms_meter_div_fact << 4);
+		if (interpolator_boost && comp == 1 && rate == 3) { 
+			snd_soc_write(codec, TAIKO_A_CDC_COMP0_B3_CTL + (comp * 8), 60);
+			snd_soc_update_bits(codec,
+					    TAIKO_A_CDC_COMP0_B2_CTL + (comp * 8),
+					    0xF0, 192);
+		} else {
+			snd_soc_write(codec, TAIKO_A_CDC_COMP0_B3_CTL + (comp * 8),
+				      comp_params->rms_meter_resamp_fact);
+			snd_soc_update_bits(codec,
+					    TAIKO_A_CDC_COMP0_B2_CTL + (comp * 8),
+					    0xF0, comp_params->rms_meter_div_fact << 4);
+		}
 		snd_soc_update_bits(codec,
 					TAIKO_A_CDC_COMP0_B2_CTL + (comp * 8),
 					0x0F, comp_params->peak_det_timeout);
@@ -4360,15 +4370,13 @@ static int taiko_prepare(struct snd_pcm_substream *substream,
 			taiko_p->dai[dai->id].bit_width,
 			taiko_p->comp_enabled[COMPANDER_1]);
 
-	if (!high_perf_mode) {
-		if ((!(taiko_p->dai[dai->id].rate == 192000 ||
-			taiko_p->dai[dai->id].rate == 96000)) ||
-			(taiko_p->dai[dai->id].bit_width != 24) ||
-			!taiko_p->comp_enabled[COMPANDER_1]) {
-				taiko_p->clsh_d.hs_perf_mode_enabled = false;
-				snd_soc_update_bits(codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20);
-				return 0;
-		}
+	if ((!(taiko_p->dai[dai->id].rate == 192000 ||
+		taiko_p->dai[dai->id].rate == 96000)) ||
+		(taiko_p->dai[dai->id].bit_width != 24) ||
+		!taiko_p->comp_enabled[COMPANDER_1] || !high_perf_mode) {
+			taiko_p->clsh_d.hs_perf_mode_enabled = false;
+			snd_soc_update_bits(codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20);
+			return 0;
 	}
 
 	paths = snd_soc_dapm_codec_dai_get_playback_connected_widgets(dai, &wlist);
@@ -4400,20 +4408,24 @@ static int taiko_prepare(struct snd_pcm_substream *substream,
 			taiko_p->dai[dai->id].bit_width,
 			taiko_p->comp_enabled[COMPANDER_1]);
 
-	if (high_perf_mode) {
-		pr_info("%s(): HS peformance mode enabled", __func__);
+	if (taiko_p->comp_enabled[COMPANDER_1] && high_perf_mode) {
 		taiko_p->clsh_d.hs_perf_mode_enabled = true;
-		snd_soc_update_bits(codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x00);
+		pr_info("%s(): HS peformance mode enabled", __func__);
+		if (snd_soc_update_bits(codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x00) > 0)
+			pr_info("%s: uhqa_mode enabled\n", __func__);
 	} else if ((taiko_p->dai[dai->id].rate == 192000 ||
 		taiko_p->dai[dai->id].rate == 96000) &&
 	    (taiko_p->dai[dai->id].bit_width == 24) &&
 	    (taiko_p->comp_enabled[COMPANDER_1])) {
-		pr_info("%s(): HS peformance mode enabled", __func__);
 		taiko_p->clsh_d.hs_perf_mode_enabled = true;
-		snd_soc_update_bits(codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x00);
+		pr_info("%s(): HS peformance mode enabled", __func__);
+		if (snd_soc_update_bits(codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x00) > 0)
+			pr_info("%s: uhqa_mode enabled\n", __func__);
 	} else {
 		taiko_p->clsh_d.hs_perf_mode_enabled = false;
-		snd_soc_update_bits(codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20);
+		pr_info("%s(): HS peformance mode disabled", __func__);
+		if (snd_soc_update_bits(codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20) == 0)
+			pr_info("%s: uhqa_mode disabled\n", __func__);
 	}
 
 	return 0;
@@ -7471,7 +7483,26 @@ static ssize_t high_perf_mode_store(struct kobject *kobj,
 		uval = 1;
 
 	high_perf_mode = uval;
-	set_uhqa_mode(high_perf_mode);
+	return count;
+}
+
+static ssize_t interpolator_boost_show(struct kobject *kobj,
+		struct kobj_attribute *attr, char *buf) {
+	return sprintf(buf, "%u\n", interpolator_boost);
+}
+
+static ssize_t interpolator_boost_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count) {
+	int uval;
+
+	sscanf(buf, "%d", &uval);
+
+	if (uval < 0)
+		uval = 0;
+	if (uval > 1)
+		uval = 1;
+
+	interpolator_boost = uval;
 	return count;
 }
 
@@ -7539,10 +7570,16 @@ static struct kobj_attribute speaker_gain_attribute =
 	__ATTR(speaker_gain, 0644,
 		speaker_gain_show,
 		speaker_gain_store);
+
 static struct kobj_attribute high_perf_mode_attribute =
 	__ATTR(high_perf_mode, 0644,
 		high_perf_mode_show,
 		high_perf_mode_store);
+
+static struct kobj_attribute interpolator_boost_attribute =
+	__ATTR(interpolator_boost, 0644,
+		interpolator_boost_show,
+		interpolator_boost_store);
 
 #if 0
 static struct kobj_attribute headphone_pa_gain_attribute =
@@ -7560,6 +7597,7 @@ static struct attribute *sound_control_attrs[] = {
 		&headphone_gain_attribute.attr,
 		&speaker_gain_attribute.attr,
 		&high_perf_mode_attribute.attr,
+		&interpolator_boost_attribute.attr,
 #if 0
 		&headphone_pa_gain_attribute.attr,
 #endif

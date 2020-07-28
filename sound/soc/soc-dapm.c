@@ -1337,13 +1337,10 @@ static void dapm_seq_run(struct snd_soc_dapm_context *dapm,
 	int ret, i;
 	int *sort;
 
-	if (power_up) {
+	if (power_up)
 		sort = dapm_up_seq;
-		pr_info("%s: Running dapm_up_sequence\n", __func__);
-	} else {
+	else
 		sort = dapm_down_seq;
-		pr_info("%s: Running dapm_down_sequence\n", __func__);
-	}
 
 	list_for_each_entry_safe(w, n, list, power_list) {
 		ret = 0;
