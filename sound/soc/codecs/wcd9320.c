@@ -293,6 +293,7 @@ static void update_headphone_gain(void) {
 
 static int read_hph_poweramp_gain(unsigned short reg)
 {
+	unsigned int hph_pa_mask = (1 << fls(hph_pa_max)) - 1;
 	int rawval, outval;
 
 	switch (reg) {
