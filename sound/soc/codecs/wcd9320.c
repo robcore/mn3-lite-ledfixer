@@ -309,17 +309,17 @@ static void set_high_perf_mode(unsigned int enable) {
 			wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_R_PA_CTL) == 0x48,
 			wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_BIAS_PA) == 0xAA);
 }
-
+#endif
 static void set_uhqa_mode(unsigned int enable) {
 	if (!enable) {
-		snd_soc_update_bits(direct_codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20);
+		if (snd_soc_update_bits(direct_codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20) > 0)
+			pr_info("%s: uhqa_mode override enabled\n", __func__);
 	} else {
-		if (uhqa_mode && hpwidget)
-			snd_soc_update_bits(direct_codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x00);
+		if (snd_soc_update_bits(direct_codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x00) == 0)
+			pr_info("%s: uhqa_mode override disabled\n", __func__);
 	}
-	pr_info("%s: uhqa_mode %d\n", __func__, snd_soc_test_bits(direct_codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20));
 }
-#endif
+
 #define WCD9320_RATES (SNDRV_PCM_RATE_8000 | SNDRV_PCM_RATE_16000 |\
 			SNDRV_PCM_RATE_32000 | SNDRV_PCM_RATE_48000 |\
 			SNDRV_PCM_RATE_96000 | SNDRV_PCM_RATE_192000)
@@ -4360,17 +4360,15 @@ static int taiko_prepare(struct snd_pcm_substream *substream,
 			taiko_p->dai[dai->id].bit_width,
 			taiko_p->comp_enabled[COMPANDER_1]);
 
-	if (taiko_p->comp_enabled[COMPANDER_1] && high_perf_mode)
-		dev_info(dai->dev ,"%s(): high performnce mode override\n", __func__);
-	else if ((!(taiko_p->dai[dai->id].rate == 192000 ||
-		 taiko_p->dai[dai->id].rate == 96000)) ||
-	    (taiko_p->dai[dai->id].bit_width != 24) ||
-	    (!taiko_p->comp_enabled[COMPANDER_1] && !high_perf_mode)) {
-			taiko_p->clsh_d.hs_perf_mode_enabled = false;
-			snd_soc_update_bits(codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20);
-			dev_info(dai->dev ,"%s(): high performnce mode not needed\n",
-							__func__);
-			return 0;
+	if (!high_perf_mode) {
+		if ((!(taiko_p->dai[dai->id].rate == 192000 ||
+			taiko_p->dai[dai->id].rate == 96000)) ||
+			(taiko_p->dai[dai->id].bit_width != 24) ||
+			!taiko_p->comp_enabled[COMPANDER_1]) {
+				taiko_p->clsh_d.hs_perf_mode_enabled = false;
+				snd_soc_update_bits(codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20);
+				return 0;
+		}
 	}
 
 	paths = snd_soc_dapm_codec_dai_get_playback_connected_widgets(dai, &wlist);
@@ -4402,7 +4400,7 @@ static int taiko_prepare(struct snd_pcm_substream *substream,
 			taiko_p->dai[dai->id].bit_width,
 			taiko_p->comp_enabled[COMPANDER_1]);
 
-	if (taiko_p->comp_enabled[COMPANDER_1] && high_perf_mode) {
+	if (high_perf_mode) {
 		pr_info("%s(): HS peformance mode enabled", __func__);
 		taiko_p->clsh_d.hs_perf_mode_enabled = true;
 		snd_soc_update_bits(codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x00);
@@ -5187,20 +5185,6 @@ static struct snd_soc_dai_driver taiko_dai[] = {
 		.ops = &taiko_dai_ops,
 	},
 	{
-		.name = "taiko_tx3",
-		.id = AIF3_CAP,
-		.capture = {
-			.stream_name = "AIF3 Capture",
-			.rates = WCD9320_RATES,
-			.formats = TAIKO_FORMATS,
-			.rate_max = 48000,
-			.rate_min = 8000,
-			.channels_min = 1,
-			.channels_max = 2,
-		},
-		.ops = &taiko_dai_ops,
-	},
-	{
 		.name = "taiko_rx3",
 		.id = AIF3_PB,
 		.playback = {
@@ -5209,6 +5193,20 @@ static struct snd_soc_dai_driver taiko_dai[] = {
 			.formats = TAIKO_FORMATS_S16_S24_LE,
 			.rate_min = 8000,
 			.rate_max = 192000,
+			.channels_min = 1,
+			.channels_max = 2,
+		},
+		.ops = &taiko_dai_ops,
+	},
+	{
+		.name = "taiko_tx3",
+		.id = AIF3_CAP,
+		.capture = {
+			.stream_name = "AIF3 Capture",
+			.rates = WCD9320_RATES,
+			.formats = TAIKO_FORMATS,
+			.rate_max = 48000,
+			.rate_min = 8000,
 			.channels_min = 1,
 			.channels_max = 2,
 		},
@@ -7473,6 +7471,7 @@ static ssize_t high_perf_mode_store(struct kobject *kobj,
 		uval = 1;
 
 	high_perf_mode = uval;
+	set_uhqa_mode(high_perf_mode);
 	return count;
 }
 

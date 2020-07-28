@@ -1337,10 +1337,13 @@ static void dapm_seq_run(struct snd_soc_dapm_context *dapm,
 	int ret, i;
 	int *sort;
 
-	if (power_up)
+	if (power_up) {
 		sort = dapm_up_seq;
-	else
+		pr_info("%s: Running dapm_up_sequence\n", __func__);
+	} else {
 		sort = dapm_down_seq;
+		pr_info("%s: Running dapm_down_sequence\n", __func__);
+	}
 
 	list_for_each_entry_safe(w, n, list, power_list) {
 		ret = 0;
@@ -1372,12 +1375,15 @@ static void dapm_seq_run(struct snd_soc_dapm_context *dapm,
 				list_for_each_entry_safe_continue(w, n, list,
 								  power_list);
 
-			if (event == SND_SOC_DAPM_STREAM_START)
+			if (event == SND_SOC_DAPM_STREAM_START) {
+				pr_info("%s: SND_SOC_DAPM_STREAM_START : SND_SOC_DAPM_PRE_PMU\n", __func__);
 				ret = w->event(w,
 					       NULL, SND_SOC_DAPM_PRE_PMU);
-			else if (event == SND_SOC_DAPM_STREAM_STOP)
+			} else if (event == SND_SOC_DAPM_STREAM_STOP) {
+				pr_info("%s: SND_SOC_DAPM_STREAM_STOP : SND_SOC_DAPM_PRE_PMD\n", __func__);
 				ret = w->event(w,
 					       NULL, SND_SOC_DAPM_PRE_PMD);
+			}
 			break;
 
 		case snd_soc_dapm_post:
@@ -1385,12 +1391,15 @@ static void dapm_seq_run(struct snd_soc_dapm_context *dapm,
 				list_for_each_entry_safe_continue(w, n, list,
 								  power_list);
 
-			if (event == SND_SOC_DAPM_STREAM_START)
+			if (event == SND_SOC_DAPM_STREAM_START) {
+				pr_info("%s: SND_SOC_DAPM_STREAM_START : SND_SOC_DAPM_POST_PMU\n", __func__);
 				ret = w->event(w,
 					       NULL, SND_SOC_DAPM_POST_PMU);
-			else if (event == SND_SOC_DAPM_STREAM_STOP)
+			} else if (event == SND_SOC_DAPM_STREAM_STOP) {
+				pr_info("%s: SND_SOC_DAPM_STREAM_STOP : SND_SOC_DAPM_POST_PMD\n", __func__);
 				ret = w->event(w,
 					       NULL, SND_SOC_DAPM_POST_PMD);
+			}
 			break;
 
 		default:

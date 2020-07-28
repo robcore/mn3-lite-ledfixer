@@ -1009,16 +1009,19 @@ static int slim0_rx_sample_rate_put(struct snd_kcontrol *kcontrol,
 	switch (ucontrol->value.integer.value[0]) {
 	case 2:
 		slim0_rx_sample_rate = SAMPLING_RATE_192KHZ;
+		pr_info("%s: Setting slim0_rx_sample_rate to 192KHZ\n", __func__);
 		break;
 	case 1:
 		slim0_rx_sample_rate = SAMPLING_RATE_96KHZ;
+		pr_info("%s: Setting slim0_rx_sample_rate to 96KHZ\n", __func__);
 		break;
 	case 0:
 	default:
 		slim0_rx_sample_rate = SAMPLING_RATE_48KHZ;
+		pr_info("%s: Setting slim0_rx_sample_rate to 48KHZ\n", __func__);
 	}
 
-	pr_info("%s: slim0_rx_sample_rate = %d\n", __func__,
+	pr_debug("%s: slim0_rx_sample_rate = %d\n", __func__,
 			slim0_rx_sample_rate);
 
 	return 0;
@@ -1031,11 +1034,13 @@ static int slim0_rx_bit_format_get(struct snd_kcontrol *kcontrol,
 	switch (slim0_rx_bit_format) {
 	case SNDRV_PCM_FORMAT_S24_LE:
 		ucontrol->value.integer.value[0] = 1;
+		pr_info("%s: slim0_rx_bit_format = 24 bit\n", __func__);
 		break;
 
 	case SNDRV_PCM_FORMAT_S16_LE:
 	default:
 		ucontrol->value.integer.value[0] = 0;
+		pr_info("%s: slim0_rx_bit_format = 16 bit\n", __func__);
 		break;
 	}
 
@@ -1312,7 +1317,12 @@ static int main_mic_delay_put(struct snd_kcontrol *kcontrol,
 static int speaker_status_get(struct snd_kcontrol *kcontrol,
 	struct snd_ctl_elem_value *ucontrol)
 {
-	pr_info("%s: speaker_status = %d\n", __func__, speaker_status);
+	if (speaker_status)
+		pr_info("%s: speaker_status: enabled (%d)\n",
+				 __func__, speaker_status);
+	else
+		pr_info("%s: speaker_status: disabled (%d)\n",
+				 __func__, speaker_status);	
 	ucontrol->value.integer.value[0] = speaker_status;
 	return 0;
 }
@@ -1320,8 +1330,13 @@ static int speaker_status_get(struct snd_kcontrol *kcontrol,
 static int speaker_status_put(struct snd_kcontrol *kcontrol,
 	struct snd_ctl_elem_value *ucontrol)
 {
+	if (ucontrol->value.integer.value[0])
+		pr_info("%s: Setting speaker_status: enabled (%ld)\n",
+				 __func__, ucontrol->value.integer.value[0]);
+	else
+		pr_info("%s: Setting speaker_status: disabled (%ld)\n",
+				 __func__, ucontrol->value.integer.value[0]);
 	speaker_status = ucontrol->value.integer.value[0];
-	pr_info("%s: speaker_status = %d\n", __func__, speaker_status);
 	return 1;
 }
 #endif
