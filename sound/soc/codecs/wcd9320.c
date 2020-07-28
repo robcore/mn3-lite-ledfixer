@@ -272,8 +272,8 @@ static unsigned int interpolator_boost = 0;
 //static unsigned int uhqa_mode = 0;
 u8 hphl_cached_gain = 0;
 u8 hphr_cached_gain = 0;
-//u8 hphl_pa_gain;
-//u8 hphr_pa_gain;
+u8 hphl_pa_cached_gain = 20;
+u8 hphr_pa_cached_gain = 20;
 u8 speaker_cached_gain = 0;
 static bool hpwidget = false;
 static bool spkwidget = false;
@@ -290,6 +290,102 @@ static void update_headphone_gain(void) {
 	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX2_VOL_CTL_B2_CTL, hphr_cached_gain);
 	lock_sound_control(&sound_control_codec_ptr->core_res, 0);
 }
+
+static int read_hph_poweramp_gain(unsigned short reg)
+{
+	int rawval, outval;
+
+	switch (reg) {
+		case WCD9XXX_A_RX_HPH_L_GAIN:
+			rawval = (wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, WCD9XXX_A_RX_HPH_L_GAIN) >> hph_pa_shift) & hph_pa_mask;
+			outval = HPH_RX_GAIN_MAX - rawval;
+			if (outval)
+				return outval;
+			else
+				return hphl_pa_cached_gain;
+			break;
+		case WCD9XXX_A_RX_HPH_R_GAIN:
+			rawval = (wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, WCD9XXX_A_RX_HPH_R_GAIN) >> hph_pa_shift) & hph_pa_mask;
+			outval = HPH_RX_GAIN_MAX - rawval;
+			if (outval)
+				return outval;
+			else
+				return hphr_pa_cached_gain;
+			break;
+		default:
+			break;
+	}
+	return -EINVAL;
+}
+
+#if 0
+static void write_hph_poweramp_gain(unsigned short reg) {
+	struct taiko_priv *priv;
+	struct snd_soc_codec *codec;
+
+	priv = (struct taiko_priv *)atomic_read(&kp_taiko_priv);
+	if (!priv)
+		return;
+
+	codec = priv->codec;
+	if (!codec)
+		return;
+
+	val = (ucontrol->value.integer.value[0] & mask);
+	if (invert)
+		val = max - val;
+	val_mask = mask << shift;
+	val = val << shift;
+	if (snd_soc_volsw_is_stereo(mc)) {
+		val2 = (ucontrol->value.integer.value[1] & mask);
+		if (invert)
+			val2 = max - val2;
+		if (reg == reg2) {
+			val_mask |= mask << rshift;
+			val |= val2 << rshift;
+		} else {
+			val2 = val2 << shift;
+			type_2r = 1;
+		}
+	}
+	err = snd_soc_update_bits_locked(codec, reg, val_mask, val);
+	if (err < 0)
+		return err;
+
+	mutex_lock(&codec->mutex);
+	old = spkr_drv_wrnd;
+	ret = param_set_int(val, kp);
+	if (ret) {
+		mutex_unlock(&codec->mutex);
+		return ret;
+	}
+
+	pr_debug("%s: spkr_drv_wrnd %d -> %d\n", __func__, old, spkr_drv_wrnd);
+	if ((old == -1 || old == 0) && spkr_drv_wrnd == 1) {
+		WCD9XXX_BG_CLK_LOCK(&priv->resmgr);
+		wcd9xxx_resmgr_get_bandgap(&priv->resmgr,
+					   WCD9XXX_BANDGAP_AUDIO_MODE);
+		WCD9XXX_BG_CLK_UNLOCK(&priv->resmgr);
+		snd_soc_update_bits(codec, TAIKO_A_SPKR_DRV_EN, 0x80, 0x80);
+	} else if (old == 1 && spkr_drv_wrnd == 0) {
+		WCD9XXX_BG_CLK_LOCK(&priv->resmgr);
+		wcd9xxx_resmgr_put_bandgap(&priv->resmgr,
+					   WCD9XXX_BANDGAP_AUDIO_MODE);
+		WCD9XXX_BG_CLK_UNLOCK(&priv->resmgr);
+		if (!priv->spkr_pa_widget_on)
+			snd_soc_update_bits(codec, TAIKO_A_SPKR_DRV_EN, 0x80,
+					    0x00);
+	}
+	mutex_unlock(&codec->mutex);
+
+	return 0;
+	lock_sound_control(&sound_control_codec_ptr->core_res, 1);
+	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX1_VOL_CTL_B2_CTL, hphl_pa_cached_gain);
+	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX2_VOL_CTL_B2_CTL, hphr_pa_cached_gain);
+	lock_sound_control(&sound_control_codec_ptr->core_res, 0);
+}
+#endif
+
 #define WCD9320_RATES (SNDRV_PCM_RATE_8000 | SNDRV_PCM_RATE_16000 |\
 			SNDRV_PCM_RATE_32000 | SNDRV_PCM_RATE_48000 |\
 			SNDRV_PCM_RATE_96000 | SNDRV_PCM_RATE_192000)
@@ -4320,9 +4416,10 @@ static int taiko_prepare(struct snd_pcm_substream *substream,
 	struct taiko_priv *taiko_p = snd_soc_codec_get_drvdata(codec);
 	int found_hs_pa = 0;
 
-	if (substream->stream)
+	if (substream->stream) {
+		taiko_p->clsh_d.hs_perf_mode_enabled = false;
 		return 0;
-
+	}
 	pr_info("%s(): substream = %s. stream = %d. dai->name = %s."
 		" dai->driver->name = %s. dai stream_name = %s\n",
 		__func__, substream->name, substream->stream,
@@ -4337,12 +4434,10 @@ static int taiko_prepare(struct snd_pcm_substream *substream,
 			taiko_p->dai[dai->id].bit_width,
 			taiko_p->comp_enabled[COMPANDER_1]);
 
-	if ((!(taiko_p->dai[dai->id].rate == 192000 ||
-		taiko_p->dai[dai->id].rate == 96000)) ||
-		(taiko_p->dai[dai->id].bit_width != 24) ||
-		!taiko_p->comp_enabled[COMPANDER_1] || !high_perf_mode) {
+	if (!taiko_p->comp_enabled[COMPANDER_1]) {
 			taiko_p->clsh_d.hs_perf_mode_enabled = false;
 			snd_soc_update_bits(codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20);
+			pr_info("%s(): HS peformance mode Disabled - No Headphone Playback", __func__);
 			return 0;
 	}
 
@@ -4378,7 +4473,7 @@ static int taiko_prepare(struct snd_pcm_substream *substream,
 	if (taiko_p->comp_enabled[COMPANDER_1] && high_perf_mode) {
 		taiko_p->clsh_d.hs_perf_mode_enabled = true;
 		pr_info("%s(): HS peformance mode enabled", __func__);
-		if (snd_soc_update_bits(codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x00) > 0)
+		if (snd_soc_update_bits(codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x00) >= 0)
 			pr_info("%s: uhqa_mode enabled\n", __func__);
 	} else if ((taiko_p->dai[dai->id].rate == 192000 ||
 		taiko_p->dai[dai->id].rate == 96000) &&
@@ -4386,12 +4481,12 @@ static int taiko_prepare(struct snd_pcm_substream *substream,
 	    (taiko_p->comp_enabled[COMPANDER_1])) {
 		taiko_p->clsh_d.hs_perf_mode_enabled = true;
 		pr_info("%s(): HS peformance mode enabled", __func__);
-		if (snd_soc_update_bits(codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x00) > 0)
+		if (snd_soc_update_bits(codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x00) >= 0)
 			pr_info("%s: uhqa_mode enabled\n", __func__);
 	} else {
 		taiko_p->clsh_d.hs_perf_mode_enabled = false;
 		pr_info("%s(): HS peformance mode disabled", __func__);
-		if (snd_soc_update_bits(codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20) == 0)
+		if (snd_soc_update_bits(codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20) >= 0)
 			pr_info("%s: uhqa_mode disabled\n", __func__);
 	}
 
@@ -7473,28 +7568,19 @@ static ssize_t interpolator_boost_store(struct kobject *kobj,
 	return count;
 }
 
-/*
-#define HPH_RX_GAIN_MAX 20
-unsigned int hph_pa_shift = 0;
-int hph_pa_max = HPH_RX_GAIN_MAX;
-*/
-static ssize_t headphone_pa_gain_show(struct kobject *kobj,
+static ssize_t hph_poweramp_gain_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf)
 {
-	int hphl_pa_raw, hphr_pa_raw, hphl_real, hphr_real;
-	int hph_pa_mask = (1 << fls(hph_pa_max)) - 1;
-	
-	hphl_pa_raw = (wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, WCD9XXX_A_RX_HPH_L_GAIN) >> hph_pa_shift) & hph_pa_mask;
-	hphl_real = HPH_RX_GAIN_MAX - hphl_pa_raw;
+	int leftval, rightval;
 
-	hphr_pa_raw = (wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, WCD9XXX_A_RX_HPH_R_GAIN) >> hph_pa_shift) & hph_pa_mask;
-	hphr_real = HPH_RX_GAIN_MAX - hphr_pa_raw;
+	leftval = read_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN);
+	rightval = read_hph_poweramp_gain(WCD9XXX_A_RX_HPH_R_GAIN);
 
-	return sprintf(buf, "%d %d\n", hphl_real, hphr_real);
+	return sprintf(buf, "%d %d\n", leftval, rightval);
 }
 
 #if 0
-static ssize_t headphone_pa_gain_store(struct kobject *kobj,
+static ssize_t hph_poweramp_gain_store(struct kobject *kobj,
 		struct kobj_attribute *attr, const char *buf, size_t count)
 {
 
@@ -7526,15 +7612,6 @@ static ssize_t headphone_pa_gain_store(struct kobject *kobj,
 }
 #endif
 
-static ssize_t headphone_pa_gain_raw_show(struct kobject *kobj,
-		struct kobj_attribute *attr, char *buf) {
-	int wcd_hphl, wcd_hphr;
-
-	wcd_hphl = wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, WCD9XXX_A_RX_HPH_L_GAIN);
-	wcd_hphr = wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, WCD9XXX_A_RX_HPH_R_GAIN);
-	return sprintf(buf, "%d %d\n", wcd_hphl, wcd_hphr);
-}
-
 static struct kobj_attribute headphone_gain_attribute =
 	__ATTR(headphone_gain, 0644,
 		headphone_gain_show,
@@ -7555,28 +7632,21 @@ static struct kobj_attribute interpolator_boost_attribute =
 		interpolator_boost_show,
 		interpolator_boost_store);
 
-static struct kobj_attribute headphone_pa_gain_attribute =
-	__ATTR(headphone_pa_gain, 0444,
-		headphone_pa_gain_show,
+static struct kobj_attribute hph_poweramp_gain_attribute =
+	__ATTR(hph_poweramp_gain, 0444,
+		hph_poweramp_gain_show,
 #if 0
-		headphone_pa_gain_store);
+		hph_poweramp_gain_store);
 #else
 		NULL);
 #endif
 
-static struct kobj_attribute headphone_pa_gain_raw_attribute =
-	__ATTR(headphone_pa_gain_raw, 0444,
-		headphone_pa_gain_raw_show,
-		NULL);
-
 static struct attribute *sound_control_attrs[] = {
 		&headphone_gain_attribute.attr,
 		&speaker_gain_attribute.attr,
+		&hph_poweramp_gain_attribute.attr,
 		&high_perf_mode_attribute.attr,
 		&interpolator_boost_attribute.attr,
-		&headphone_pa_gain_attribute.attr,
-		&headphone_pa_gain_raw_attribute.attr,
-
 		NULL,
 };
 
