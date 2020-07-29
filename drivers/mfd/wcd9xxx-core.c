@@ -209,7 +209,6 @@ static int __wcd9xxx_reg_write(struct wcd9xxx *wcd9xxx,
 				else
 					ret = wcd9xxx_write(wcd9xxx, reg, 1, &speaker_cached_gain, false);
 				break;
-					0x1AE
 			default:
 				break;
 		}
