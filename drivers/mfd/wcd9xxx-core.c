@@ -167,8 +167,6 @@ static int wcd9xxx_write(struct wcd9xxx *wcd9xxx, unsigned short reg,
 }
 extern u8 hphl_cached_gain;
 extern u8 hphr_cached_gain;
-extern u8 hphl_pa_cached_gain;
-extern u8 hphr_pa_cached_gain;
 extern u8 speaker_cached_gain;
 
 static int __wcd9xxx_reg_write(struct wcd9xxx *wcd9xxx,
