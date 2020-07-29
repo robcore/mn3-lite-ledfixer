@@ -175,16 +175,20 @@ static int __wcd9xxx_reg_write(struct wcd9xxx *wcd9xxx,
 	bool need_fixup = false;
 
 	mutex_lock(&wcd9xxx->io_lock);
-	if ((!sound_control_override) &&
-	   (reg == 0x2E7 || reg == 0x2B7 ||
-		reg == 0x2BF)) {
-		mutex_unlock(&wcd9xxx->io_lock);
-		need_fixup = true;
-	} else {
+	if (sound_control_override) {
 		ret = wcd9xxx_write(wcd9xxx, reg, 1, &val, false);
 		mutex_unlock(&wcd9xxx->io_lock);
+		return ret;
+	} else {
+		if (reg == 0x2E7 || reg == 0x2B7 || reg == 0x2BF) {
+			mutex_unlock(&wcd9xxx->io_lock);
+			need_fixup = true;
+		} else {
+			ret = wcd9xxx_write(wcd9xxx, reg, 1, &val, false);
+			mutex_unlock(&wcd9xxx->io_lock);
+			return ret;
+		}
 	}
-
 	if (need_fixup) {
 		lock_sound_control(&wcd9xxx->core_res, 1);
 		mutex_lock(&wcd9xxx->io_lock);
