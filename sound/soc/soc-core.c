@@ -2091,20 +2091,56 @@ int snd_soc_update_bits(struct snd_soc_codec *codec, unsigned short reg,
 	bool change;
 	unsigned int old, new;
 	int ret;
+	unsigned int mxhphl, mxhphr;
+
+	if (reg == 0x1AE)
+		mxhphl = reg;
+	if (reg == 0x1B4)
+		mxhphr = reg;
 
 	if (codec->using_regmap) {
 		ret = regmap_update_bits_check(codec->control_data, reg,
 					       mask, value, &change);
 	} else {
-		ret = snd_soc_read(codec, reg);
-		if (ret < 0)
-			return ret;
+		if (mxhphl) {
+			pr_info("%s: WCD9XXX_A_RX_HPH_L_GAIN inputs: mask = %d value = %d\n", __func__, mask, value);
+			ret = snd_soc_read(codec, reg);
+			if (ret < 0)
+				return ret;
 
-		old = ret;
-		new = (old & ~mask) | (value & mask);
-		change = old != new;
-		if (change)
-			ret = snd_soc_write(codec, reg, new);
+			old = ret;
+			new = (old & ~mask) | (value & mask);
+			pr_info("%s: WCD9XXX_A_RX_HPH_L_GAIN old = %d new = %d\n", __func__, old, new);
+			change = old != new;
+			if (change) {
+				pr_info("%s: WCD9XXX_A_RX_HPH_L_GAIN writing new value to reg\n", __func__);
+				ret = snd_soc_write(codec, reg, new);
+			}
+		} else if (mxhphr) {
+			pr_info("%s: WCD9XXX_A_RX_HPH_R_GAIN inputs: mask = %d value = %d\n", __func__, mask, value);
+			ret = snd_soc_read(codec, reg);
+			if (ret < 0)
+				return ret;
+
+			old = ret;
+			new = (old & ~mask) | (value & mask);
+			pr_info("%s: WCD9XXX_A_RX_HPH_R_GAIN old = %d new = %d\n", __func__, old, new);
+			change = old != new;
+			if (change) {
+				pr_info("%s: WCD9XXX_A_RX_HPH_R_GAIN writing new value to reg\n", __func__);
+				ret = snd_soc_write(codec, reg, new);
+			}
+		} else {
+			ret = snd_soc_read(codec, reg);
+			if (ret < 0)
+				return ret;
+
+			old = ret;
+			new = (old & ~mask) | (value & mask);
+			change = old != new;
+			if (change)
+				ret = snd_soc_write(codec, reg, new);
+		}
 	}
 
 	if (ret < 0)

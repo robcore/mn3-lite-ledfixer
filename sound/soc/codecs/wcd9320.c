@@ -571,12 +571,6 @@ static unsigned int interpolator_boost = 0;
 static bool hpwidget = false;
 static bool spkwidget = false;
 
-static void update_speaker_gain(void) {
-	lock_sound_control(&sound_control_codec_ptr->core_res, 1);
-	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX7_VOL_CTL_B2_CTL, speaker_cached_gain);
-	lock_sound_control(&sound_control_codec_ptr->core_res, 0);
-}
-
 static void update_headphone_gain(void) {
 	lock_sound_control(&sound_control_codec_ptr->core_res, 1);
 	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX1_VOL_CTL_B2_CTL, hphl_cached_gain);
@@ -680,6 +674,12 @@ static void write_hphr_poweramp_gain(void)
 		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, WCD9XXX_A_RX_HPH_R_GAIN, new);
 	mutex_unlock(&codec->mutex);
 	lock_sound_control(&sound_control_codec_ptr->core_res, 0);	
+}
+
+static void update_speaker_gain(void) {
+	lock_sound_control(&sound_control_codec_ptr->core_res, 1);
+	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX7_VOL_CTL_B2_CTL, speaker_cached_gain);
+	lock_sound_control(&sound_control_codec_ptr->core_res, 0);
 }
 
 static int spkr_drv_wrnd_param_set(const char *val,
@@ -3525,9 +3525,6 @@ static int taiko_hph_pa_event(struct snd_soc_dapm_widget *w,
 		return -EINVAL;
 	}
 
-	if (taiko->comp_enabled[COMPANDER_1])
-		pa_settle_time = TAIKO_HPH_PA_SETTLE_COMP_ON;
-
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
 		/* Let MBHC module know PA is turning on */
@@ -4473,22 +4470,19 @@ static int taiko_prepare(struct snd_pcm_substream *substream,
 
 	if (taiko_p->comp_enabled[COMPANDER_1] && high_perf_mode) {
 		taiko_p->clsh_d.hs_perf_mode_enabled = true;
-		pr_info("%s(): HS peformance mode enabled", __func__);
 		if (snd_soc_update_bits(codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x00) >= 0)
-			pr_info("%s: uhqa_mode enabled\n", __func__);
+			pr_info("%s: high_perf_mode enabled", __func__);
 	} else if ((taiko_p->dai[dai->id].rate == 192000 ||
 		taiko_p->dai[dai->id].rate == 96000) &&
 	    (taiko_p->dai[dai->id].bit_width == 24) &&
 	    (taiko_p->comp_enabled[COMPANDER_1])) {
 		taiko_p->clsh_d.hs_perf_mode_enabled = true;
-		pr_info("%s(): HS peformance mode enabled", __func__);
 		if (snd_soc_update_bits(codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x00) >= 0)
-			pr_info("%s: uhqa_mode enabled\n", __func__);
+			pr_info("%s: high_perf_mode enabled", __func__);
 	} else {
 		taiko_p->clsh_d.hs_perf_mode_enabled = false;
-		pr_info("%s(): HS peformance mode disabled", __func__);
 		if (snd_soc_update_bits(codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20) >= 0)
-			pr_info("%s: uhqa_mode disabled\n", __func__);
+			pr_info("%s: high_perf_mode disabled", __func__);
 	}
 
 	return 0;
@@ -7504,7 +7498,7 @@ static ssize_t hph_poweramp_gain_show(struct kobject *kobj,
 
 	return sprintf(buf, "%d %d\n", leftval, rightval);
 }
-
+#if 0
 static ssize_t hph_poweramp_gain_store(struct kobject *kobj,
 		struct kobj_attribute *attr, const char *buf, size_t count)
 {
@@ -7536,7 +7530,7 @@ static ssize_t hph_poweramp_gain_store(struct kobject *kobj,
 	write_hphr_poweramp_gain();
 	return count;
 }
-
+#endif
 static ssize_t speaker_gain_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf) {
 	int spkval, tempval;
@@ -7618,10 +7612,13 @@ static struct kobj_attribute headphone_gain_attribute =
 		headphone_gain_store);
 
 static struct kobj_attribute hph_poweramp_gain_attribute =
-	__ATTR(hph_poweramp_gain, 0644,
+	__ATTR(hph_poweramp_gain, 0444,
 		hph_poweramp_gain_show,
+#if 0
 		hph_poweramp_gain_store);
-
+#else
+		NULL);
+#endif
 static struct kobj_attribute speaker_gain_attribute =
 	__ATTR(speaker_gain, 0644,
 		speaker_gain_show,

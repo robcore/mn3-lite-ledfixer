@@ -135,6 +135,8 @@ void lock_sound_control(struct wcd9xxx_core_resource *core_res,
 						unsigned int lockval);
 extern u8 hphl_cached_gain;
 extern u8 hphr_cached_gain;
+extern u8 hphl_pa_cached_gain;
+extern u8 hphr_pa_cached_gain;
 extern u8 speaker_cached_gain;
 
 int wcd9xxx_irq_init(struct wcd9xxx_core_resource *);

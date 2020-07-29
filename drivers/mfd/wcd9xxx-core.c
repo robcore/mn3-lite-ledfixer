@@ -167,7 +167,10 @@ static int wcd9xxx_write(struct wcd9xxx *wcd9xxx, unsigned short reg,
 }
 extern u8 hphl_cached_gain;
 extern u8 hphr_cached_gain;
+extern u8 hphl_pa_cached_gain;
+extern u8 hphr_pa_cached_gain;
 extern u8 speaker_cached_gain;
+
 static int __wcd9xxx_reg_write(struct wcd9xxx *wcd9xxx,
 							   unsigned short reg, u8 val) {
 	int ret;
@@ -175,7 +178,8 @@ static int __wcd9xxx_reg_write(struct wcd9xxx *wcd9xxx,
 
 	mutex_lock(&wcd9xxx->io_lock);
 	if ((!sound_control_override) &&
-	   (reg == 0x2E7 || reg == 0x2B7 || reg == 0x2BF)) {
+	   (reg == 0x2E7 || reg == 0x2B7 ||
+		reg == 0x2BF)) {
 		mutex_unlock(&wcd9xxx->io_lock);
 		need_fixup = true;
 	} else {
@@ -205,6 +209,7 @@ static int __wcd9xxx_reg_write(struct wcd9xxx *wcd9xxx,
 				else
 					ret = wcd9xxx_write(wcd9xxx, reg, 1, &speaker_cached_gain, false);
 				break;
+					0x1AE
 			default:
 				break;
 		}
