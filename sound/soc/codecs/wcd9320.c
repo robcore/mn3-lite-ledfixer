@@ -75,9 +75,6 @@
 
 /* RX_HPH_CNP_WG_TIME increases by 0.24ms */
 #define TAIKO_WG_TIME_FACTOR_US	240
-#define HPH_RX_GAIN_MAX 20
-unsigned int hph_pa_shift = 0;
-int hph_pa_max = HPH_RX_GAIN_MAX;
 
 static atomic_t kp_taiko_priv;
 static int spkr_drv_wrnd_param_set(const char *val,
@@ -262,132 +259,6 @@ static struct afe_param_id_clip_bank_sel clip_bank_sel = {
 module_param_cb(spkr_drv_wrnd, &spkr_drv_wrnd_param_ops, &spkr_drv_wrnd, 0644);
 MODULE_PARM_DESC(spkr_drv_wrnd,
 	       "Run software workaround to avoid leakage on the speaker drive");
-
-static struct wcd9xxx *sound_control_codec_ptr;
-//static struct snd_soc_codec *direct_codec;
-static unsigned int wcd9xxx_hw_revision;
-
-static unsigned int high_perf_mode = 0;
-static unsigned int interpolator_boost = 0;
-//static unsigned int uhqa_mode = 0;
-u8 hphl_cached_gain = 0;
-u8 hphr_cached_gain = 0;
-u8 hphl_pa_cached_gain = 20;
-u8 hphr_pa_cached_gain = 20;
-u8 speaker_cached_gain = 0;
-static bool hpwidget = false;
-static bool spkwidget = false;
-
-static void update_speaker_gain(void) {
-	lock_sound_control(&sound_control_codec_ptr->core_res, 1);
-	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX7_VOL_CTL_B2_CTL, speaker_cached_gain);
-	lock_sound_control(&sound_control_codec_ptr->core_res, 0);
-}
-
-static void update_headphone_gain(void) {
-	lock_sound_control(&sound_control_codec_ptr->core_res, 1);
-	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX1_VOL_CTL_B2_CTL, hphl_cached_gain);
-	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX2_VOL_CTL_B2_CTL, hphr_cached_gain);
-	lock_sound_control(&sound_control_codec_ptr->core_res, 0);
-}
-
-static int read_hph_poweramp_gain(unsigned short reg)
-{
-	unsigned int hph_pa_mask = (1 << fls(hph_pa_max)) - 1;
-	int rawval, outval;
-
-	switch (reg) {
-		case WCD9XXX_A_RX_HPH_L_GAIN:
-			rawval = (wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, WCD9XXX_A_RX_HPH_L_GAIN) >> hph_pa_shift) & hph_pa_mask;
-			outval = HPH_RX_GAIN_MAX - rawval;
-			if (outval)
-				return outval;
-			else
-				return hphl_pa_cached_gain;
-			break;
-		case WCD9XXX_A_RX_HPH_R_GAIN:
-			rawval = (wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, WCD9XXX_A_RX_HPH_R_GAIN) >> hph_pa_shift) & hph_pa_mask;
-			outval = HPH_RX_GAIN_MAX - rawval;
-			if (outval)
-				return outval;
-			else
-				return hphr_pa_cached_gain;
-			break;
-		default:
-			break;
-	}
-	return -EINVAL;
-}
-
-static void write_hphl_poweramp_gain(void)
-{
-	struct taiko_priv *priv;
-	struct snd_soc_codec *codec;
-	unsigned int old, new;
-	unsigned int hph_pa_mask = (1 << fls(HPH_RX_GAIN_MAX)) - 1;
-	unsigned int rawval, val_mask;
-
-	priv = (struct taiko_priv *)atomic_read(&kp_taiko_priv);
-	if (!priv)
-		return;
-
-	codec = priv->codec;
-	if (!codec)
-		return;
-
-	rawval = (hphl_pa_cached_gain & hph_pa_mask);
-	rawval = HPH_RX_GAIN_MAX - rawval;
-	val_mask = hph_pa_mask << hph_pa_shift;
-	rawval = rawval << hph_pa_shift;
-
-	lock_sound_control(&sound_control_codec_ptr->core_res, 1);
-	mutex_lock(&codec->mutex);
-	old = wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, WCD9XXX_A_RX_HPH_L_GAIN)
-	if (old < 0) {
-		mutex_unlock(&codec->mutex);
-		return;
-	}
-	new = (old & ~hph_pa_mask) | (rawval & hph_pa_mask);
-	if (old != new;)
-		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, WCD9XXX_A_RX_HPH_L_GAIN, new);
-	mutex_unlock(&codec->mutex);
-	lock_sound_control(&sound_control_codec_ptr->core_res, 0);	
-}
-
-static void write_hphr_poweramp_gain(void)
-{
-	struct taiko_priv *priv;
-	struct snd_soc_codec *codec;
-	unsigned int old, new;
-	unsigned int hph_pa_mask = (1 << fls(HPH_RX_GAIN_MAX)) - 1;
-	unsigned int rawval, val_mask;
-
-	priv = (struct taiko_priv *)atomic_read(&kp_taiko_priv);
-	if (!priv)
-		return;
-
-	codec = priv->codec;
-	if (!codec)
-		return;
-
-	rawval = (hphr_pa_cached_gain & hph_pa_mask);
-	rawval = HPH_RX_GAIN_MAX - rawval;
-	val_mask = hph_pa_mask << hph_pa_shift;
-	rawval = rawval << hph_pa_shift;
-
-	lock_sound_control(&sound_control_codec_ptr->core_res, 1);
-	mutex_lock(&codec->mutex);
-	old = wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, WCD9XXX_A_RX_HPH_R_GAIN)
-	if (old < 0) {
-		mutex_unlock(&codec->mutex);
-		return;
-	}
-	new = (old & ~hph_pa_mask) | (rawval & hph_pa_mask);
-	if (old != new;)
-		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, WCD9XXX_A_RX_HPH_R_GAIN, new);
-	mutex_unlock(&codec->mutex);
-	lock_sound_control(&sound_control_codec_ptr->core_res, 0);	
-}
 
 #define WCD9320_RATES (SNDRV_PCM_RATE_8000 | SNDRV_PCM_RATE_16000 |\
 			SNDRV_PCM_RATE_32000 | SNDRV_PCM_RATE_48000 |\
@@ -683,6 +554,133 @@ static unsigned short tx_digital_gain_reg[] = {
 	TAIKO_A_CDC_TX9_VOL_CTL_GAIN,
 	TAIKO_A_CDC_TX10_VOL_CTL_GAIN,
 };
+
+static struct wcd9xxx *sound_control_codec_ptr;
+//static struct snd_soc_codec *direct_codec;
+static unsigned int wcd9xxx_hw_revision;
+#define HPH_RX_GAIN_MAX 20
+unsigned int hph_pa_shift = 0;
+int hph_pa_max = HPH_RX_GAIN_MAX;
+u8 hphl_cached_gain = 0;
+u8 hphr_cached_gain = 0;
+u8 hphl_pa_cached_gain = 20;
+u8 hphr_pa_cached_gain = 20;
+u8 speaker_cached_gain = 0;
+static unsigned int high_perf_mode = 0;
+static unsigned int interpolator_boost = 0;
+static bool hpwidget = false;
+static bool spkwidget = false;
+
+static void update_speaker_gain(void) {
+	lock_sound_control(&sound_control_codec_ptr->core_res, 1);
+	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX7_VOL_CTL_B2_CTL, speaker_cached_gain);
+	lock_sound_control(&sound_control_codec_ptr->core_res, 0);
+}
+
+static void update_headphone_gain(void) {
+	lock_sound_control(&sound_control_codec_ptr->core_res, 1);
+	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX1_VOL_CTL_B2_CTL, hphl_cached_gain);
+	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX2_VOL_CTL_B2_CTL, hphr_cached_gain);
+	lock_sound_control(&sound_control_codec_ptr->core_res, 0);
+}
+
+static int read_hph_poweramp_gain(unsigned short reg)
+{
+	unsigned int hph_pa_mask = (1 << fls(hph_pa_max)) - 1;
+	int rawval, outval;
+
+	switch (reg) {
+		case WCD9XXX_A_RX_HPH_L_GAIN:
+			rawval = (wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, WCD9XXX_A_RX_HPH_L_GAIN) >> hph_pa_shift) & hph_pa_mask;
+			outval = HPH_RX_GAIN_MAX - rawval;
+			if (outval)
+				return outval;
+			else
+				return hphl_pa_cached_gain;
+			break;
+		case WCD9XXX_A_RX_HPH_R_GAIN:
+			rawval = (wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, WCD9XXX_A_RX_HPH_R_GAIN) >> hph_pa_shift) & hph_pa_mask;
+			outval = HPH_RX_GAIN_MAX - rawval;
+			if (outval)
+				return outval;
+			else
+				return hphr_pa_cached_gain;
+			break;
+		default:
+			break;
+	}
+	return -EINVAL;
+}
+
+static void write_hphl_poweramp_gain(void)
+{
+	struct taiko_priv *priv;
+	struct snd_soc_codec *codec;
+	unsigned int old, new;
+	unsigned int hph_pa_mask = (1 << fls(HPH_RX_GAIN_MAX)) - 1;
+	unsigned int rawval, val_mask;
+
+	priv = (struct taiko_priv *)atomic_read(&kp_taiko_priv);
+	if (!priv)
+		return;
+
+	codec = priv->codec;
+	if (!codec)
+		return;
+
+	rawval = (hphl_pa_cached_gain & hph_pa_mask);
+	rawval = HPH_RX_GAIN_MAX - rawval;
+	val_mask = hph_pa_mask << hph_pa_shift;
+	rawval = rawval << hph_pa_shift;
+
+	lock_sound_control(&sound_control_codec_ptr->core_res, 1);
+	mutex_lock(&codec->mutex);
+	old = wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, WCD9XXX_A_RX_HPH_L_GAIN);
+	if (old < 0) {
+		mutex_unlock(&codec->mutex);
+		return;
+	}
+	new = (old & ~hph_pa_mask) | (rawval & hph_pa_mask);
+	if (old != new)
+		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, WCD9XXX_A_RX_HPH_L_GAIN, new);
+	mutex_unlock(&codec->mutex);
+	lock_sound_control(&sound_control_codec_ptr->core_res, 0);	
+}
+
+static void write_hphr_poweramp_gain(void)
+{
+	struct taiko_priv *priv;
+	struct snd_soc_codec *codec;
+	unsigned int old, new;
+	unsigned int hph_pa_mask = (1 << fls(HPH_RX_GAIN_MAX)) - 1;
+	unsigned int rawval, val_mask;
+
+	priv = (struct taiko_priv *)atomic_read(&kp_taiko_priv);
+	if (!priv)
+		return;
+
+	codec = priv->codec;
+	if (!codec)
+		return;
+
+	rawval = (hphr_pa_cached_gain & hph_pa_mask);
+	rawval = HPH_RX_GAIN_MAX - rawval;
+	val_mask = hph_pa_mask << hph_pa_shift;
+	rawval = rawval << hph_pa_shift;
+
+	lock_sound_control(&sound_control_codec_ptr->core_res, 1);
+	mutex_lock(&codec->mutex);
+	old = wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, WCD9XXX_A_RX_HPH_R_GAIN);
+	if (old < 0) {
+		mutex_unlock(&codec->mutex);
+		return;
+	}
+	new = (old & ~hph_pa_mask) | (rawval & hph_pa_mask);
+	if (old != new)
+		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, WCD9XXX_A_RX_HPH_R_GAIN, new);
+	mutex_unlock(&codec->mutex);
+	lock_sound_control(&sound_control_codec_ptr->core_res, 0);	
+}
 
 static int spkr_drv_wrnd_param_set(const char *val,
 				   const struct kernel_param *kp)
