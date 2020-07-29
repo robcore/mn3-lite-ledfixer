@@ -379,7 +379,7 @@ static int dolby_dap_send_end_point(int port_id)
 	pr_debug("%s\n", __func__);
 	params_value = kzalloc(params_length, GFP_KERNEL);
 	if (!params_value) {
-		pr_err("%s, params memory alloc failed", __func__);
+		pr_debug("%s, params memory alloc failed", __func__);
 		return -ENOMEM;
 	}
 	update_params_value = (int *)params_value;
@@ -390,7 +390,7 @@ static int dolby_dap_send_end_point(int port_id)
 		 map_device_to_dolby_endpoint(dolby_dap_params_states.device);
 	rc = adm_dolby_dap_send_params(port_id, params_value, params_length);
 	if (rc) {
-		pr_err("%s: send dolby params failed\n", __func__);
+		pr_debug("%s: send dolby params failed\n", __func__);
 		rc = -EINVAL;
 	}
 	kfree(params_value);
@@ -410,7 +410,7 @@ static int dolby_dap_send_enddep_params(int port_id, int device_channels)
 	pr_debug("%s\n", __func__);
 	params_value = kzalloc(params_length, GFP_KERNEL);
 	if (!params_value) {
-		pr_err("%s, params memory alloc failed", __func__);
+		pr_debug("%s, params memory alloc failed", __func__);
 		return -ENOMEM;
 	}
 	update_params_value = (int *)params_value;
@@ -428,7 +428,7 @@ static int dolby_dap_send_enddep_params(int port_id, int device_channels)
 		}
 	}
 	if (idx >= NUM_DOLBY_ENDP_DEVICE) {
-		pr_err("%s: device is not set accordingly\n", __func__);
+		pr_debug("%s: device is not set accordingly\n", __func__);
 		kfree(params_value);
 		return -EINVAL;
 	}
@@ -446,7 +446,7 @@ static int dolby_dap_send_enddep_params(int port_id, int device_channels)
 	}
 	rc = adm_dolby_dap_send_params(port_id, params_value, params_length);
 	if (rc) {
-		pr_err("%s: send dolby params failed\n", __func__);
+		pr_debug("%s: send dolby params failed\n", __func__);
 		rc = -EINVAL;
 	}
 	kfree(params_value);
@@ -464,7 +464,7 @@ static int dolby_dap_send_cached_params(int port_id, int commit)
 
 	params_value = kzalloc(params_length, GFP_KERNEL);
 	if (!params_value) {
-		pr_err("%s, params memory alloc failed\n", __func__);
+		pr_debug("%s, params memory alloc failed\n", __func__);
 		return -ENOMEM;
 	}
 	update_params_value = (int *)params_value;
@@ -491,7 +491,7 @@ static int dolby_dap_send_cached_params(int port_id, int commit)
 		rc = adm_dolby_dap_send_params(port_id, params_value,
 						params_length);
 		if (rc) {
-			pr_err("%s: send dolby params failed\n", __func__);
+			pr_debug("%s: send dolby params failed\n", __func__);
 			kfree(params_value);
 			return -EINVAL;
 		}
@@ -520,14 +520,14 @@ int dolby_dap_init(int port_id, int channels)
 		if (dolby_dap_params_states.auto_endp) {
 			ret = dolby_dap_send_end_point(port_id);
 			if (ret) {
-				pr_err("%s: err sending endppoint\n", __func__);
+				pr_debug("%s: err sending endppoint\n", __func__);
 				return ret;
 			}
 		}
 		if (dolby_dap_params_states.use_cache) {
 			ret = dolby_dap_send_cached_params(port_id, 0);
 			if (ret) {
-				pr_err("%s: err sending cached params\n",
+				pr_debug("%s: err sending cached params\n",
 					__func__);
 				return ret;
 			}
@@ -536,7 +536,7 @@ int dolby_dap_init(int port_id, int channels)
 			dolby_dap_send_enddep_params(port_id,
 				channels);
 			if (ret) {
-				pr_err("%s: err sending endp dependent params\n",
+				pr_debug("%s: err sending endp dependent params\n",
 					__func__);
 				return ret;
 			}
@@ -599,7 +599,7 @@ int msm_routing_put_dolby_dap_param_to_set_control(
 			break;
 	}
 	if (idx > ALL_DOLBY_PARAMS-1) {
-		pr_err("%s: invalid param id 0x%x to set\n", __func__,
+		pr_debug("%s: invalid param id 0x%x to set\n", __func__,
 			param_id);
 		return -EINVAL;
 	}
@@ -672,12 +672,12 @@ int msm_routing_get_dolby_dap_param_to_get_control(
 	int port_id = dolby_dap_params_states.port_id;
 
 	if (port_id == DOLBY_INVALID_PORT_ID) {
-		pr_err("%s, port_id not set, returning error", __func__);
+		pr_debug("%s, port_id not set, returning error", __func__);
 		return -EINVAL;
 	}
 	params_value = kzalloc(params_length, GFP_KERNEL);
 	if (!params_value) {
-		pr_err("%s, params memory alloc failed\n", __func__);
+		pr_debug("%s, params memory alloc failed\n", __func__);
 		return -ENOMEM;
 	}
 	if (DOLBY_PARAM_ID_VER == dolby_dap_params_get.param_id) {
@@ -693,7 +693,7 @@ int msm_routing_get_dolby_dap_param_to_get_control(
 				dolby_dap_params_get.param_id)
 				break;
 		if (i > MAX_DOLBY_PARAMS-1) {
-			pr_err("%s: invalid param id to set", __func__);
+			pr_debug("%s: invalid param id to set", __func__);
 			rc = -EINVAL;
 		} else {
 			params_length = (dolby_dap_params_length[i] +
@@ -709,7 +709,7 @@ int msm_routing_get_dolby_dap_param_to_get_control(
 		}
 	}
 	if (rc) {
-		pr_err("%s: get parameters failed\n", __func__);
+		pr_debug("%s: get parameters failed\n", __func__);
 		kfree(params_value);
 		return -EINVAL;
 	}
@@ -771,7 +771,7 @@ int msm_routing_get_dolby_dap_param_visualizer_control(
 	}
 	visualizer_data = kzalloc(params_length, GFP_KERNEL);
 	if (!visualizer_data) {
-		pr_err("%s, params memory alloc failed\n", __func__);
+		pr_debug("%s, params memory alloc failed\n", __func__);
 		return -ENOMEM;
 	}
 	offset = 0;
@@ -782,7 +782,7 @@ int msm_routing_get_dolby_dap_param_visualizer_control(
 					params_length + param_payload_len,
 					visualizer_data + offset);
 	if (rc) {
-		pr_err("%s: get parameters failed\n", __func__);
+		pr_debug("%s: get parameters failed\n", __func__);
 		kfree(visualizer_data);
 		return -EINVAL;
 	}
@@ -794,7 +794,7 @@ int msm_routing_get_dolby_dap_param_visualizer_control(
 					params_length + param_payload_len,
 					visualizer_data + offset);
 	if (rc) {
-		pr_err("%s: get parameters failed\n", __func__);
+		pr_debug("%s: get parameters failed\n", __func__);
 		kfree(visualizer_data);
 		return -EINVAL;
 	}
