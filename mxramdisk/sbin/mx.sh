@@ -35,22 +35,23 @@ export PATH=${PATH}:/sbin:/system/bin:/system/xbin
 #	/system/xbin/daemonsu --daemon &
 #fi
 
-#if [ ! -L "/root/ueventd" ] || [ ! -L "/root/watchdogd" ]
-#then
-#	mount -o remount,rw -t auto /
-#fi
+#if [ ! -L "/sbin/ueventd" ] && [ ! -L "/root/ueventd" ] || [ ! -L "/sbin/watchdogd" ] && [ ! -L "/root/watchdogd" ]
+if [ ! -L "/root/ueventd" ] || [ ! -L "/root/watchdogd" ]
+then
+	mount -o remount,rw -t auto /
+fi
 
-#if [ ! -L "/root/ueventd" ]
-#then
+if [ ! -L "/root/ueventd" ]
+then
 	#ln -s /init /sbin/ueventd
-#	ln -s /init /root/ueventd
-#fi
+	ln -s /init /root/ueventd
+fi
 
-#if [ ! -L "/root/watchdogd" ]
-#then
+if [ ! -L "/root/watchdogd" ]
+then
 	#ln -s /init /sbin/watchdogd
-#	ln -s /init /root/watchdogd
-#fi
+	ln -s /init /root/watchdogd
+fi
 #mount -o remount,rw -t auto /
 #mount -t rootfs -o remount,rw rootfs
 #mount -o remount,rw /system
@@ -58,8 +59,7 @@ if [ -f "/root/sqlite3" ]
 then
 	chown 0:0 "/root/sqlite3"
 	chmod 755 "/root/sqlite3"
-fi
-if [ -f "/sbin/sqlite3" ]
+elif [ -f "/sbin/sqlite3" ]
 then
 	chown 0:0 "/sbin/sqlite3"
 	chmod 755 "/sbin/sqlite3"
@@ -68,17 +68,16 @@ if [ -f "/root/zip" ]
 then
 	chown 0:0 "/root/zip"
 	chmod 755 "/root/zip"
-fi
-if [ -f "/sbin/zip" ]
+elif [ -f "/sbin/zip" ]
 then
 	chown 0:0 "/sbin/zip"
 	chmod 755 "/sbin/zip"
 fi
 
-#echo '1267200' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
-#echo '1267200' > /sys/devices/system/cpu/cpu1/cpufreq/scaling_min_freq
-#echo '1267200' > /sys/devices/system/cpu/cpu2/cpufreq/scaling_min_freq
-#echo '1267200' > /sys/devices/system/cpu/cpu3/cpufreq/scaling_min_freq
+echo '1267200' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
+echo '1267200' > /sys/devices/system/cpu/cpu1/cpufreq/scaling_min_freq
+echo '1267200' > /sys/devices/system/cpu/cpu2/cpufreq/scaling_min_freq
+echo '1267200' > /sys/devices/system/cpu/cpu3/cpufreq/scaling_min_freq
 
 #busybox ln -sf $(pwd)/sbin/uci $(pwd)/res/synapse/uci
 
@@ -262,7 +261,7 @@ setprop ro.ril.enable.amr.wideband 1
 chown -R 0:0 /system/etc/init.d/
 chmod -R 755 /system/etc/init.d/
 chmod 755 /sys
-supolicy --live "permissive mediaserver"
+supolicy --live "permissive audioserver"
 supolicy --live "permissive default_prop"
 supolicy --live "permissive *"
 
@@ -362,6 +361,10 @@ echo '1' > /sys/class/mdnie/mdnie/mode
 echo '1' > /sys/kernel/mdnie_control/hijack
 echo '0' > /sys/kernel/mdnie_control/offset_mode
 echo '1' > /sys/kernel/mdnie_control/bypass
+echo '0' > /sys/kernel/mdnie_control/sharpen_dark
+echo '0' > /sys/kernel/mdnie_control/sharpen_light
+echo '0' > /sys/kernel/mdnie_control/gamma
+echo '0' > /sys/kernel/mdnie_control/chroma
 #echo '30 25 20' > /sys/kernel/mdnie_control/override/black
 #echo '20 20 15' > /sys/kernel/mdnie_control/override/black
 echo '0' > /sys/devices/platform/kcal_ctrl.0/kcal_enable
@@ -375,8 +378,8 @@ chmod 400 /sys/devices/virtual/graphics/fb0/csc_cfg
 echo 'deadline' > /sys/block/mmcblk0/queue/scheduler
 echo 'deadline' > /sys/block/mmcblk1/queue/scheduler
 echo '0' > /sys/devices/virtual/lcd/panel/temperature
-#echo '1' > /sys/kernel/mdnie_control/bypass
-#echo 'y' > /sys/module/mdss_hdmi_tx/parameters/hdcp
+echo '1' > /sys/kernel/mdnie_control/bypass
+echo 'y' > /sys/module/mdss_hdmi_tx/parameters/hdcp
 echo "init.d complete on $(date)" >> /mnt/sdcard/initdlog.txt
 echo ' ' | tee /dev/kmsg
 echo 'MACHIN3X INIT.D COMPLETED' | tee /dev/kmsg
