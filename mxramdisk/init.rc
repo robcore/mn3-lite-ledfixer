@@ -13,22 +13,18 @@ import /init.carrier.rc
 import /init.container.rc
 
 on early-init
-    # Set the security context for the init process.
-    # This should occur before anything else (e.g. ueventd) is started.
-    setcon u:r:init:s0
-
     # Set init and its forked children's oom_adj.
     write /proc/1/oom_score_adj -1000
 
     # Apply strict SELinux checking of PROT_EXEC on mmap/mprotect calls.
     write /sys/fs/selinux/checkreqprot 0
 
+    # Set the security context for the init process.
+    # This should occur before anything else (e.g. ueventd) is started.
+    setcon u:r:init:s0
+
     # Set the security context of /adb_keys if present.
     restorecon /adb_keys
-	symlink /init /sbin/ueventd
-	symlink /init /root/ueventd
-	symlink /init /sbin/watchdogd
-	symlink /init /root/watchdogd
 
     start ueventd
 
@@ -150,7 +146,7 @@ on init
     mount cgroup none /dev/memcg memory
 
     write /proc/sys/kernel/panic_on_oops 1
-    #write /proc/sys/kernel/hung_task_timeout_secs 0
+    write /proc/sys/kernel/hung_task_timeout_secs 0
     write /proc/cpu/alignment 4
     write /proc/sys/kernel/sched_latency_ns 10000000
     write /proc/sys/kernel/sched_wakeup_granularity_ns 2000000
@@ -276,7 +272,7 @@ on post-fs
     chown root log /proc/slabinfo
     chmod 0440 /proc/slabinfo
 
-    #change permissions on kmsg & sysrq-trigger so bugreports can grab kthread stacks
+    #change permissions on kmsg and sysrq-trigger so bugreports can grab kthread stacks
     chown root system /proc/kmsg
     chmod 0440 /proc/kmsg
     chown root system /proc/sysrq-trigger
@@ -295,7 +291,7 @@ on post-fs
 
 on post-fs-data
     # Reload SE Android Policy
-    #setprop selinux.reload_policy 1
+    setprop selinux.reload_policy 1
 
     # sec_efs_file
     mkdir /efs/sec_efs 0775 radio system
@@ -534,15 +530,15 @@ on post-fs-data
     # Added for Playready DRM Support
 	mkdir /data/data/.drm 0775
 	chmod 0775 /data/data/.drm
-	chown /data/data/.drm
+	chown root root /system/etc/security/.drm
 	mkdir /data/data/.drm/.playready 0775
 	chmod 0775 /data/data/.drm/.playready
-	chown /data/data/.drm/.playready
+	 chown drm system /data/data/.drm/.playready
 
     # Added drm folder to copy drm plugins
 	mkdir /system/lib/drm 0775
 	chmod 0775 /system/lib/drm
-	chown /system/lib/drm
+	chown root root /system/lib/drm
 
     restorecon -R /efs
 #    restorecon -R /carrier
@@ -647,7 +643,7 @@ on boot
     chmod 0644 /sys/module/lowmemorykiller/parameters/minfree
 
     # Tweak background writeout
-    #write /proc/sys/vm/dirty_expire_centisecs 200
+    write /proc/sys/vm/dirty_expire_centisecs 200
     #write /proc/sys/vm/dirty_background_ratio  5
 
     # Permissions for System Server and daemons.
@@ -1284,9 +1280,9 @@ service vold /system/bin/vold
     class core
     socket vold stream 0660 root mount
     ioprio be 2
-## Samsung ODE >>>
+#Samsung ODE
     socket dir_enc_report stream 0660 root mount
-## Samsung ODE <<<
+#Samsung ODE
 
 service epmd /system/bin/epmd
     class main
@@ -1374,7 +1370,7 @@ service media /system/bin/mediaserver
     class main
     user media
     group system audio camera inet net_bt net_bt_admin net_raw net_bw_acct drmrpc sdcard_r shell mediadrm qcom_diag media_rw radio lgt_gid
-#    ioprio rt 4
+    ioprio rt 4
 
 service apaservice /system/bin/apaservice
     class main
