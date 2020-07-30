@@ -1081,6 +1081,10 @@ static int taiko_config_gain_compander(struct snd_soc_codec *codec,
 				    1 << 5, !enable << 5);
 		snd_soc_update_bits(codec, WCD9XXX_A_RX_HPH_R_GAIN,
 				    1 << 5, !enable << 5);
+		pr_info("%s: hph l gain: %d\n", __func__,
+				read_hph_poweramp_gain_register(WCD9XXX_A_RX_HPH_L_GAIN);
+		pr_info("%s: hph r gain: %d\n", __func__,
+				read_hph_poweramp_gain_register(WCD9XXX_A_RX_HPH_R_GAIN);
 		break;
 	case COMPANDER_2:
 		snd_soc_update_bits(codec, TAIKO_A_RX_LINE_1_GAIN,
@@ -1094,6 +1098,7 @@ static int taiko_config_gain_compander(struct snd_soc_codec *codec,
 		break;
 	default:
 		ret = -EINVAL;
+		break;
 	}
 
 	return ret;
