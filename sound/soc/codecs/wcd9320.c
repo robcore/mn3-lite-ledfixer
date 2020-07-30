@@ -566,6 +566,7 @@ u8 hphr_cached_gain = 0;
 u8 hphl_pa_cached_gain = 20;
 u8 hphr_pa_cached_gain = 20;
 u8 speaker_cached_gain = 0;
+unsigned int hph_poweramp_mask;
 static unsigned int high_perf_mode = 0;
 static unsigned int interpolator_boost = 0;
 static bool hpwidget = false;
@@ -583,26 +584,49 @@ static int read_hph_poweramp_gain(unsigned short reg)
 	unsigned int hph_pa_mask = (1 << fls(hph_pa_max)) - 1;
 	int rawval, outval;
 
-	switch (reg) {
-		case WCD9XXX_A_RX_HPH_L_GAIN:
+	hph_poweramp_mask = hph_pa_mask;
+
+	if (reg != WCD9XXX_A_RX_HPH_L_GAIN && reg != WCD9XXX_A_RX_HPH_R_GAIN)
+		return -EINVAL;
+
+	if (reg == WCD9XXX_A_RX_HPH_L_GAIN) {
 			rawval = (wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, WCD9XXX_A_RX_HPH_L_GAIN) >> hph_pa_shift) & hph_pa_mask;
 			outval = HPH_RX_GAIN_MAX - rawval;
 			if (outval)
 				return outval;
 			else
 				return hphl_pa_cached_gain;
-			break;
-		case WCD9XXX_A_RX_HPH_R_GAIN:
+	} else if (reg == WCD9XXX_A_RX_HPH_R_GAIN) {
 			rawval = (wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, WCD9XXX_A_RX_HPH_R_GAIN) >> hph_pa_shift) & hph_pa_mask;
 			outval = HPH_RX_GAIN_MAX - rawval;
 			if (outval)
 				return outval;
 			else
 				return hphr_pa_cached_gain;
-			break;
-		default:
-			break;
 	}
+	return -EINVAL;
+}
+
+static int read_hph_poweramp_gain_register(unsigned short reg)
+{
+	unsigned int hph_pa_mask = (1 << fls(hph_pa_max)) - 1;
+	int rawval, outval;
+
+	hph_poweramp_mask = hph_pa_mask;
+
+	if (reg != WCD9XXX_A_RX_HPH_L_GAIN && reg != WCD9XXX_A_RX_HPH_R_GAIN)
+		return -EINVAL;
+
+	if (reg == WCD9XXX_A_RX_HPH_L_GAIN) {
+		rawval = (wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, WCD9XXX_A_RX_HPH_L_GAIN) >> hph_pa_shift) & hph_pa_mask;
+		outval = HPH_RX_GAIN_MAX - rawval;
+		return outval;
+	} else if (reg == WCD9XXX_A_RX_HPH_R_GAIN) {
+		rawval = (wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, WCD9XXX_A_RX_HPH_R_GAIN) >> hph_pa_shift) & hph_pa_mask;
+		outval = HPH_RX_GAIN_MAX - rawval;
+		return outval;
+	}
+
 	return -EINVAL;
 }
 
@@ -611,7 +635,7 @@ static void write_hphl_poweramp_gain(void)
 	struct taiko_priv *priv;
 	struct snd_soc_codec *codec;
 	unsigned int old, new;
-	unsigned int hph_pa_mask = (1 << fls(HPH_RX_GAIN_MAX)) - 1;
+	unsigned int hph_pa_mask = (1 << fls(hph_pa_max)) - 1;
 	unsigned int rawval, val_mask;
 
 	priv = (struct taiko_priv *)atomic_read(&kp_taiko_priv);
@@ -1053,9 +1077,9 @@ static int taiko_config_gain_compander(struct snd_soc_codec *codec,
 				    1 << 2, !enable << 2);
 		break;
 	case COMPANDER_1:
-		snd_soc_update_bits(codec, TAIKO_A_RX_HPH_L_GAIN,
+		snd_soc_update_bits(codec, WCD9XXX_A_RX_HPH_L_GAIN,
 				    1 << 5, !enable << 5);
-		snd_soc_update_bits(codec, TAIKO_A_RX_HPH_R_GAIN,
+		snd_soc_update_bits(codec, WCD9XXX_A_RX_HPH_R_GAIN,
 				    1 << 5, !enable << 5);
 		break;
 	case COMPANDER_2:
@@ -1606,9 +1630,9 @@ static const struct snd_kcontrol_new taiko_1_x_analog_gain_controls[] = {
 	SOC_ENUM_EXT("EAR PA Gain", taiko_1_x_ear_pa_gain_enum,
 		taiko_pa_gain_get, taiko_pa_gain_put),
 
-	SOC_SINGLE_TLV("HPHL Volume", TAIKO_A_RX_HPH_L_GAIN, 0, 20, 1,
+	SOC_SINGLE_TLV("HPHL Volume", WCD9XXX_A_RX_HPH_L_GAIN, 0, 20, 1,
 		line_gain),
-	SOC_SINGLE_TLV("HPHR Volume", TAIKO_A_RX_HPH_R_GAIN, 0, 20, 1,
+	SOC_SINGLE_TLV("HPHR Volume", WCD9XXX_A_RX_HPH_R_GAIN, 0, 20, 1,
 		line_gain),
 
 	SOC_SINGLE_TLV("LINEOUT1 Volume", TAIKO_A_RX_LINE_1_GAIN, 0, 20, 1,
@@ -1645,9 +1669,9 @@ static const struct snd_kcontrol_new taiko_2_x_analog_gain_controls[] = {
 	SOC_ENUM_EXT("EAR PA Gain", taiko_2_x_ear_pa_gain_enum,
 		taiko_pa_gain_get, taiko_pa_gain_put),
 
-	SOC_SINGLE_TLV("HPHL Volume", TAIKO_A_RX_HPH_L_GAIN, 0, 20, 1,
+	SOC_SINGLE_TLV("HPHL Volume", WCD9XXX_A_RX_HPH_L_GAIN, 0, 20, 1,
 		line_gain),
-	SOC_SINGLE_TLV("HPHR Volume", TAIKO_A_RX_HPH_R_GAIN, 0, 20, 1,
+	SOC_SINGLE_TLV("HPHR Volume", WCD9XXX_A_RX_HPH_R_GAIN, 0, 20, 1,
 		line_gain),
 
 	SOC_SINGLE_TLV("LINEOUT1 Volume", TAIKO_A_RX_LINE_1_GAIN, 0, 20, 1,
@@ -6833,8 +6857,8 @@ static const struct wcd9xxx_reg_mask_val taiko_codec_reg_init_val[] = {
 	{TAIKO_A_RX_HPH_R_TEST, 0x01, 0x01},
 
 	/* Initialize gain registers to use register gain */
-	{TAIKO_A_RX_HPH_L_GAIN, 0x20, 0x20},
-	{TAIKO_A_RX_HPH_R_GAIN, 0x20, 0x20},
+	{WCD9XXX_A_RX_HPH_L_GAIN, 0x20, 0x20},
+	{WCD9XXX_A_RX_HPH_R_GAIN, 0x20, 0x20},
 	{TAIKO_A_RX_LINE_1_GAIN, 0x20, 0x20},
 	{TAIKO_A_RX_LINE_2_GAIN, 0x20, 0x20},
 	{TAIKO_A_RX_LINE_3_GAIN, 0x20, 0x20},
@@ -7020,10 +7044,10 @@ static int wcd9xxx_prepare_static_pa(struct wcd9xxx_mbhc *mbhc,
 		{WCD9XXX_A_CDC_RX1_B6_CTL, 0xff, 0x81},
 		{WCD9XXX_A_CDC_CLK_RX_B1_CTL, 0x01, 0x01},
 		{WCD9XXX_A_RX_HPH_CHOP_CTL, 0xff, 0xA4},
-		{WCD9XXX_A_RX_HPH_L_GAIN, 0xff, 0x2C},
+//		{WCD9XXX_A_RX_HPH_L_GAIN, 0xff, 0x2C},
 		{WCD9XXX_A_CDC_RX2_B6_CTL, 0xff, 0x81},
 		{WCD9XXX_A_CDC_CLK_RX_B1_CTL, 0x02, 0x02},
-		{WCD9XXX_A_RX_HPH_R_GAIN, 0xff, 0x2C},
+//		{WCD9XXX_A_RX_HPH_R_GAIN, 0xff, 0x2C},
 		{WCD9XXX_A_NCP_CLK, 0xff, 0xFC},
 		{WCD9XXX_A_BUCK_CTRL_CCL_3, 0xff, 0x60},
 		{WCD9XXX_A_RX_COM_BIAS, 0xff, 0x80},
@@ -7498,6 +7522,24 @@ static ssize_t hph_poweramp_gain_show(struct kobject *kobj,
 
 	return sprintf(buf, "%d %d\n", leftval, rightval);
 }
+
+static ssize_t hph_poweramp_gain_reg_show(struct kobject *kobj,
+		struct kobj_attribute *attr, char *buf)
+{
+	int leftval, rightval;
+
+	leftval = read_hph_poweramp_gain_register(WCD9XXX_A_RX_HPH_L_GAIN);
+	rightval = read_hph_poweramp_gain_register(WCD9XXX_A_RX_HPH_R_GAIN);
+
+	return sprintf(buf, "%d %d\n", leftval, rightval);
+}
+
+static ssize_t hph_poweramp_mask_show(struct kobject *kobj,
+		struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%d\n", hph_poweramp_mask);
+}
+
 #if 0
 static ssize_t hph_poweramp_gain_store(struct kobject *kobj,
 		struct kobj_attribute *attr, const char *buf, size_t count)
@@ -7619,6 +7661,16 @@ static struct kobj_attribute hph_poweramp_gain_attribute =
 #else
 		NULL);
 #endif
+static struct kobj_attribute hph_poweramp_gain_reg_attribute =
+	__ATTR(hph_poweramp_gain_reg, 0444,
+		hph_poweramp_gain_reg_show,
+		NULL);
+
+static struct kobj_attribute hph_poweramp_mask_attribute =
+	__ATTR(hph_poweramp_mask, 0444,
+		hph_poweramp_mask_show,
+		NULL);
+
 static struct kobj_attribute speaker_gain_attribute =
 	__ATTR(speaker_gain, 0644,
 		speaker_gain_show,
@@ -7637,6 +7689,8 @@ static struct kobj_attribute interpolator_boost_attribute =
 static struct attribute *sound_control_attrs[] = {
 		&headphone_gain_attribute.attr,
 		&hph_poweramp_gain_attribute.attr,
+		&hph_poweramp_gain_reg_attribute.attr,
+		&hph_poweramp_mask_attribute.attr,
 		&speaker_gain_attribute.attr,
 		&high_perf_mode_attribute.attr,
 		&interpolator_boost_attribute.attr,
@@ -7856,6 +7910,14 @@ static int taiko_codec_probe(struct snd_soc_codec *codec)
 	} else {
 		pr_warn("%s kobject create failed!\n", __func__);
 	}
+
+	
+	
+
+	pr_info("%s: hph pa left:%d hph pa right:%d\n", __func__,
+			read_hph_poweramp_gain_register(WCD9XXX_A_RX_HPH_L_GAIN),
+			read_hph_poweramp_gain_register(WCD9XXX_A_RX_HPH_R_GAIN));
+
 	return ret;
 
 err_irq:

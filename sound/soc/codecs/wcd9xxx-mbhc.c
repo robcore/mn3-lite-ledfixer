@@ -1324,6 +1324,7 @@ static void wcd9xxx_codec_hphr_gnd_switch(struct snd_soc_codec *codec, bool on)
 	snd_soc_update_bits(codec, WCD9XXX_A_MBHC_HPH, 0x01, on);
 	if (on)
 		usleep_range(5000, 5100);
+	pr_info("%s: hphr ground switch : %d\n", __func__, on);
 }
 
 static void wcd9xxx_onoff_vddio_switch(struct wcd9xxx_mbhc *mbhc, bool on)
@@ -1363,11 +1364,14 @@ static int wcd9xxx_hphl_status(struct wcd9xxx_mbhc *mbhc)
 
 	WCD9XXX_BCL_ASSERT_LOCKED(mbhc->resmgr);
 	hph = snd_soc_read(codec, WCD9XXX_A_MBHC_HPH);
+	pr_info("%s: WCD9XXX_A_MBHC_HPH initial : %d\n", __func__, hph);
 	snd_soc_update_bits(codec, WCD9XXX_A_MBHC_HPH, 0x12, 0x02);
 	usleep_range(WCD9XXX_HPHL_STATUS_READY_WAIT_US,
 		     WCD9XXX_HPHL_STATUS_READY_WAIT_US +
 		     WCD9XXX_USLEEP_RANGE_MARGIN_US);
 	status = snd_soc_read(codec, WCD9XXX_A_RX_HPH_L_STATUS);
+	pr_info("%s: WCD9XXX_A_RX_HPH_L_STATUS : %d\n", __func__, status);
+	pr_info("%s: WCD9XXX_A_MBHC_HPH finished : %d\n", __func__, hph);
 	snd_soc_write(codec, WCD9XXX_A_MBHC_HPH, hph);
 	return status;
 }
@@ -4825,12 +4829,12 @@ static int wcd9xxx_detect_impedance(struct wcd9xxx_mbhc *mbhc, uint32_t *zl,
 					true : false;
 	if (!override_en)
 		wcd9xxx_turn_onoff_override(mbhc, true);
-	pr_debug("%s: Setting impedance detection\n", __func__);
+	pr_info("%s: Setting impedance detection\n", __func__);
 
 	/* Codec specific setup for L0, R0, L1 and R1 measurements */
 	mbhc->mbhc_cb->setup_zdet(mbhc, PRE_MEAS);
 
-	pr_debug("%s: Performing impedance detection\n", __func__);
+	pr_info("%s: Performing impedance detection\n", __func__);
 	for (i = 0; i < ARRAY_SIZE(reg_set_mux) - 2; i++) {
 		snd_soc_update_bits(codec, reg_set_mux[i].reg,
 				    reg_set_mux[i].mask,
@@ -4882,8 +4886,8 @@ static int wcd9xxx_detect_impedance(struct wcd9xxx_mbhc *mbhc, uint32_t *zl,
 	pr_debug("%s: R0: 0x%x(%d), R1: 0x%x(%d), R2: 0x%x(%d)\n",
 		 __func__,
 		 r[0] & 0xffff, r[0], r[1] & 0xffff, r[1], r[2] & 0xffff, r[2]);
-	pr_debug("%s: RL %d milliohm, RR %d milliohm\n", __func__, *zl, *zr);
-	pr_debug("%s: Impedance detection completed\n", __func__);
+	pr_info("%s: RL %d milliohm, RR %d milliohm\n", __func__, *zl, *zr);
+	pr_info("%s: Impedance detection completed\n", __func__);
 
 	return ret;
 }
