@@ -639,12 +639,12 @@ static void write_hph_poweramp_gain(unsigned short reg)
 		return;
 
 	if (reg == WCD9XXX_A_RX_HPH_L_GAIN) {
-		snd_soc_update_bits(codec, WCD9XXX_A_RX_HPH_L_GAIN,
+		snd_soc_update_bits(direct_codec, WCD9XXX_A_RX_HPH_L_GAIN,
 				    1 << 5, 1 << 5);
 		local_cached_gain = hphl_pa_cached_gain;
 		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_L_PA_CTL, 0x48);
 	} else if (reg == WCD9XXX_A_RX_HPH_R_GAIN) {
-			snd_soc_update_bits(codec, WCD9XXX_A_RX_HPH_R_GAIN,
+			snd_soc_update_bits(direct_codec, WCD9XXX_A_RX_HPH_R_GAIN,
 					    1 << 5, 1 << 5);
 		local_cached_gain = hphr_pa_cached_gain;
 		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_R_PA_CTL, 0x48);
