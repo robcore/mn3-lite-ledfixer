@@ -7528,6 +7528,9 @@ static ssize_t hph_poweramp_gain_store(struct kobject *kobj,
 		hphr_pa_cached_gain = (u8)dualinput;
 	}
 
+	write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN);
+	write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_R_GAIN);
+
 	return count;
 }
 
