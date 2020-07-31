@@ -1060,7 +1060,7 @@ static void taiko_discharge_comp(struct snd_soc_codec *codec, int comp)
 	snd_soc_write(codec, TAIKO_A_CDC_COMP0_B3_CTL + (comp * 8), 0x01);
 
 	/* Worst case timeout for compander CnP sleep timeout */
-	usleep_range(3000, 3000);
+	usleep_range(5000, 5000);
 }
 
 static enum wcd9xxx_buck_volt taiko_codec_get_buck_mv(
@@ -7504,9 +7504,6 @@ static ssize_t hph_poweramp_gain_store(struct kobject *kobj,
 		hphl_pa_cached_gain = (u8)dualinput;
 		hphr_pa_cached_gain = (u8)dualinput;
 	}
-
-	write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN);
-	write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_R_GAIN);
 
 	return count;
 }
