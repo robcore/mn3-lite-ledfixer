@@ -38,10 +38,11 @@
 #define SNDRV_CTL_TLVT_DB_MINMAX 4	/* dB scale with min/max */
 #define SNDRV_CTL_TLVT_DB_MINMAX_MUTE 5	/* dB scale with min/max with mute */
 
-#define TLV_ITEM(type, ...) \
-	(type), TLV_LENGTH(__VA_ARGS__), __VA_ARGS__
 #define TLV_LENGTH(...) \
 	((unsigned int)sizeof((const unsigned int[]) { __VA_ARGS__ }))
+
+#define TLV_ITEM(type, ...) \
+	(type), TLV_LENGTH(__VA_ARGS__), __VA_ARGS__
 
 #define TLV_DB_SCALE_MASK	0xffff
 #define TLV_DB_SCALE_MUTE	0x10000
