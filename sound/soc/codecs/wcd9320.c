@@ -563,7 +563,7 @@ static int taiko_write(struct snd_soc_codec *codec, unsigned int reg,
 	unsigned int value);
 static unsigned int wcd9xxx_hw_revision;
 
-static unsigned int hp_pa_enabled = 0;
+static unsigned int hph_pa_enabled = 0;
 u8 hphl_cached_gain = 0;
 u8 hphr_cached_gain = 0;
 static u8 hphl_pa_cached_gain = 20;
@@ -617,7 +617,7 @@ static void write_hph_poweramp_gain(unsigned short reg)
 	bool change;
 	unsigned int local_cached_gain;
 
-	if (!hp_pa_enabled)
+	if (!hph_pa_enabled)
 		return;
 
 	if (reg == WCD9XXX_A_RX_HPH_L_GAIN) {
@@ -1028,7 +1028,7 @@ static int taiko_config_gain_compander(struct snd_soc_codec *codec,
 				    1 << 2, !enable << 2);
 		break;
 	case COMPANDER_1:
-		if (hp_pa_enabled) {
+		if (hph_pa_enabled) {
 			if (enable) {
 				write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN);
 				write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_R_GAIN);
