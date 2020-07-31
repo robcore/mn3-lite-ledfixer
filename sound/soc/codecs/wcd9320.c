@@ -621,12 +621,8 @@ static void write_hph_poweramp_gain(unsigned short reg)
 		return;
 
 	if (reg == WCD9XXX_A_RX_HPH_L_GAIN) {
-		snd_soc_update_bits(direct_codec, WCD9XXX_A_RX_HPH_L_GAIN,
-				    1 << 5, 1 << 5);
 		local_cached_gain = hphl_pa_cached_gain;
 	} else if (reg == WCD9XXX_A_RX_HPH_R_GAIN) {
-			snd_soc_update_bits(direct_codec, WCD9XXX_A_RX_HPH_R_GAIN,
-					    1 << 5, 1 << 5);
 		local_cached_gain = hphr_pa_cached_gain;
 	} else
 		return;
@@ -1028,22 +1024,14 @@ static int taiko_config_gain_compander(struct snd_soc_codec *codec,
 				    1 << 2, !enable << 2);
 		break;
 	case COMPANDER_1:
-		if (hph_pa_enabled) {
-			if (enable) {
+		if (hph_pa_enabled && enable) {
 				write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN);
 				write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_R_GAIN);
-			} else {
-				snd_soc_update_bits(codec, WCD9XXX_A_RX_HPH_L_GAIN,
-						    1 << 5, !enable << 5);
-				snd_soc_update_bits(codec, WCD9XXX_A_RX_HPH_R_GAIN,
-						    1 << 5, !enable << 5);
-			}
-		} else {
-			snd_soc_update_bits(codec, WCD9XXX_A_RX_HPH_L_GAIN,
-					    1 << 5, !enable << 5);
-			snd_soc_update_bits(codec, WCD9XXX_A_RX_HPH_R_GAIN,
-					    1 << 5, !enable << 5);
 		}
+		snd_soc_update_bits(codec, WCD9XXX_A_RX_HPH_L_GAIN,
+				    1 << 5, !enable << 5);
+		snd_soc_update_bits(codec, WCD9XXX_A_RX_HPH_R_GAIN,
+				    1 << 5, !enable << 5);
 		break;
 	case COMPANDER_2:
 		snd_soc_update_bits(codec, TAIKO_A_RX_LINE_1_GAIN,
