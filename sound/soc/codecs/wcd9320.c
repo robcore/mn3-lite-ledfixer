@@ -576,7 +576,7 @@ static bool hpwidget = false;
 static bool spkwidget = false;
 
 static void update_headphone_gain(void) {
-	if (!hpwidget && hphl_cached_gain != 172 && hphr_cached_gain != 172)
+	if (!hpwidget)
 		return;
 	lock_sound_control(&sound_control_codec_ptr->core_res, 1);
 	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX1_VOL_CTL_B2_CTL, hphl_cached_gain);
@@ -635,16 +635,20 @@ static void write_hph_poweramp_gain(unsigned short reg)
 	bool change;
 	unsigned int local_cached_gain;
 
+	if (!hpwidget)
+		return;
+
 	if (reg == WCD9XXX_A_RX_HPH_L_GAIN) {
+		snd_soc_update_bits(codec, WCD9XXX_A_RX_HPH_L_GAIN,
+				    1 << 5, 1 << 5);
 		local_cached_gain = hphl_pa_cached_gain;
 		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_L_PA_CTL, 0x48);
 	} else if (reg == WCD9XXX_A_RX_HPH_R_GAIN) {
+			snd_soc_update_bits(codec, WCD9XXX_A_RX_HPH_R_GAIN,
+					    1 << 5, 1 << 5);
 		local_cached_gain = hphr_pa_cached_gain;
 		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_R_PA_CTL, 0x48);
 	} else
-		return;
-
-	if (!hpwidget && local_cached_gain != 0)
 		return;
 
 	val = (local_cached_gain & hph_poweramp_mask);
@@ -666,7 +670,7 @@ static void write_hph_poweramp_gain(unsigned short reg)
 }
 
 static void update_speaker_gain(void) {
-	if (!spkwidget && speaker_cached_gain != 172)
+	if (!spkwidget)
 		return;
 	lock_sound_control(&sound_control_codec_ptr->core_res, 1);
 	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX7_VOL_CTL_B2_CTL, speaker_cached_gain);
@@ -1044,14 +1048,15 @@ static int taiko_config_gain_compander(struct snd_soc_codec *codec,
 				    1 << 2, !enable << 2);
 		break;
 	case COMPANDER_1:
-		snd_soc_update_bits(codec, WCD9XXX_A_RX_HPH_L_GAIN,
-				    1 << 5, !enable << 5);
-		snd_soc_update_bits(codec, WCD9XXX_A_RX_HPH_R_GAIN,
-				    1 << 5, !enable << 5);
-		if (enable)
-			pr_info("%s: Compander 1 enabled\n", __func__);
-		else
-			pr_info("%s: Compander 1 disabled\n", __func__);
+		if (enable) {
+			write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN);
+			write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_R_GAIN);
+		} else {
+			snd_soc_update_bits(codec, WCD9XXX_A_RX_HPH_L_GAIN,
+					    1 << 5, !enable << 5);
+			snd_soc_update_bits(codec, WCD9XXX_A_RX_HPH_R_GAIN,
+					    1 << 5, !enable << 5);
+		}
 		break;
 	case COMPANDER_2:
 		snd_soc_update_bits(codec, TAIKO_A_RX_LINE_1_GAIN,
@@ -3505,9 +3510,8 @@ static int taiko_hph_pa_event(struct snd_soc_dapm_widget *w,
 	struct taiko_priv *taiko = snd_soc_codec_get_drvdata(codec);
 	enum wcd9xxx_notify_event e_pre_on, e_post_off;
 	u8 req_clsh_state;
-	u32 pa_settle_time = TAIKO_HPH_PA_SETTLE_COMP_OFF;
 
-	pr_info("%s: %s event = %d\n", __func__, w->name, event);
+	pr_debug("%s: %s event = %d\n", __func__, w->name, event);
 	if (w->shift == 5) {
 		e_pre_on = WCD9XXX_EVENT_PRE_HPHL_PA_ON;
 		e_post_off = WCD9XXX_EVENT_POST_HPHL_PA_OFF;
@@ -3524,29 +3528,29 @@ static int taiko_hph_pa_event(struct snd_soc_dapm_widget *w,
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
 		/* Let MBHC module know PA is turning on */
-		pr_info("%s: PA pre on\n", __func__);
 		wcd9xxx_resmgr_notifier_call(&taiko->resmgr, e_pre_on);
 		break;
 
 	case SND_SOC_DAPM_POST_PMU:
 		usleep_range(5000, 5000);
-		pr_debug("%s: sleep 5000us after %s PA enable\n", __func__, w->name);
-		wcd9xxx_clsh_fsm(codec, &taiko->clsh_d,
-						 req_clsh_state,
-						 WCD9XXX_CLSH_REQ_ENABLE,
-						 WCD9XXX_CLSH_EVENT_POST_PA);
-		pr_info("%s: PA post on\n", __func__);
+//		pr_debug("%s: sleep 5000us after %s PA enable\n", __func__, w->name);
 		hpwidget = true;
 		write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN);
 		write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_R_GAIN);
 		update_headphone_gain();
+		wcd9xxx_clsh_fsm(codec, &taiko->clsh_d,
+						 req_clsh_state,
+						 WCD9XXX_CLSH_REQ_ENABLE,
+						 WCD9XXX_CLSH_EVENT_POST_PA);
+		pr_info("%s: hpwidget enabled\n", __func__);
+
 		break;
 
 	case SND_SOC_DAPM_POST_PMD:
-		pr_info("%s: PA post off\n", __func__);
 		hpwidget = false;
 		usleep_range(13000, 13000);
-		pr_debug("%s: sleep 13000us after %s PA disable\n", __func__, w->name);
+//		pr_debug("%s: sleep 13000us after %s PA disable\n", __func__, w->name);
+		pr_info("%s: hpwidget disabled\n", __func__);
 
 		/* Let MBHC module know PA turned off */
 		wcd9xxx_resmgr_notifier_call(&taiko->resmgr, e_post_off);
@@ -4275,6 +4279,10 @@ static int taiko_volatile(struct snd_soc_codec *ssc, unsigned int reg)
 
 	/* HPH status registers */
 	if (reg == TAIKO_A_RX_HPH_L_STATUS || reg == TAIKO_A_RX_HPH_R_STATUS)
+		return 1;
+
+	/* HPH L and R Gain for Sound Control */
+	if (reg == WCD9XXX_A_RX_HPH_L_GAIN || reg == WCD9XXX_A_RX_HPH_R_GAIN)
 		return 1;
 
 	/* HPH PA Enable */
