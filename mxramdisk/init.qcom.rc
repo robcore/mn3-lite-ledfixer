@@ -73,17 +73,17 @@ on init
     chmod 0555 /storage/emulated
     chown root root /storage/emulated
 
+    export EXTERNAL_STORAGE /storage/emulated/legacy
+    export EMULATED_STORAGE_SOURCE /mnt/shell/emulated
+    export EMULATED_STORAGE_TARGET /storage/emulated
+    export SECONDARY_STORAGE /storage/extSdCard
+    mkdir /storage/extSdCard 0555 root root
+
     # Support legacy paths
     symlink /storage/emulated/legacy /sdcard
     symlink /storage/emulated/legacy /mnt/sdcard
     symlink /storage/emulated/legacy /storage/sdcard0
     symlink /mnt/shell/emulated/0 /storage/emulated/legacy
-
-    export EXTERNAL_STORAGE /storage/emulated/legacy
-    export EMULATED_STORAGE_SOURCE /mnt/shell/emulated
-    export EMULATED_STORAGE_TARGET /storage/emulated
-    export SECONDARY_STORAGE /storage/extSdCard
-    #mkdir /storage/extSdCard 0555 root root
 		
     # map "real" external storages paths also in same way. backwards compatibility.
     symlink /storage/extSdCard /mnt/extSdCard
@@ -186,7 +186,7 @@ on boot
 #   Define TCP buffer sizes for various networks
 #   ReadMin, ReadInitial, ReadMax, WriteMin, WriteInitial, WriteMax,
     setprop net.tcp.buffersize.lte      524288,1048576,2560000,524288,1048576,2560000
-#    setprop net.tcp.buffersize.wifi     524288,1048576,4525824,524288,1048576,4525824
+    setprop net.tcp.buffersize.wifi     524288,1048576,4525824,524288,1048576,4525824
 
 
     setprop ro.telephony.call_ring.multiple false
@@ -210,29 +210,29 @@ on boot
 
 #   Define TCP buffer sizes for various networks
 #   ReadMin, ReadInitial, ReadMax, WriteMin, WriteInitial, WriteMax,
-#    setprop net.tcp.buffersize.default 4096,87380,110208,4096,16384,110208
-#    setprop net.tcp.buffersize.lte     524288,1048576,2097152,262144,524288,1048576
-#    setprop net.tcp.buffersize.umts    4094,87380,110208,4096,16384,110208
-#    setprop net.tcp.buffersize.hspa    4094,87380,1220608,4096,16384,1220608
-#    setprop net.tcp.buffersize.hsupa   4094,87380,1220608,4096,16384,1220608
-#    setprop net.tcp.buffersize.hsdpa   4094,87380,1220608,4096,16384,1220608
-#    setprop net.tcp.buffersize.hspap   4094,87380,1220608,4096,16384,1220608
-#    setprop net.tcp.buffersize.edge    4093,26280,35040,4096,16384,35040
-#    setprop net.tcp.buffersize.gprs    4092,8760,11680,4096,8760,11680
-#    setprop net.tcp.buffersize.evdo    4094,87380,262144,4096,16384,262144
+    setprop net.tcp.buffersize.default 4096,87380,110208,4096,16384,110208
+    setprop net.tcp.buffersize.lte     524288,1048576,2097152,262144,524288,1048576
+    setprop net.tcp.buffersize.umts    4094,87380,110208,4096,16384,110208
+    setprop net.tcp.buffersize.hspa    4094,87380,1220608,4096,16384,1220608
+    setprop net.tcp.buffersize.hsupa   4094,87380,1220608,4096,16384,1220608
+    setprop net.tcp.buffersize.hsdpa   4094,87380,1220608,4096,16384,1220608
+    setprop net.tcp.buffersize.hspap   4094,87380,1220608,4096,16384,1220608
+    setprop net.tcp.buffersize.edge    4093,26280,35040,4096,16384,35040
+    setprop net.tcp.buffersize.gprs    4092,8760,11680,4096,8760,11680
+    setprop net.tcp.buffersize.evdo    4094,87380,262144,4096,16384,262144
 
-# Define TCP delayed ack settings for WiFi & LTE
-#    setprop net.tcp.delack.default     1
-#    setprop net.tcp.delack.wifi        20
-#    setprop net.tcp.delack.lte         8
-#    setprop net.tcp.usercfg.default    0
-#    setprop net.tcp.usercfg.wifi       1
-#    setprop net.tcp.usercfg.lte        1
+# Define TCP delayed ack settings for WiFi LTE
+    setprop net.tcp.delack.default     1
+    setprop net.tcp.delack.wifi        20
+    setprop net.tcp.delack.lte         8
+    setprop net.tcp.usercfg.default    0
+    setprop net.tcp.usercfg.wifi       1
+    setprop net.tcp.usercfg.lte        1
 
 #   Assign TCP buffer thresholds to be ceiling value of technology maximums
 #   Increased technology maximums should be reflected here.
-#    write /proc/sys/net/core/rmem_max  2097152
-#    write /proc/sys/net/core/wmem_max  2097152
+    write /proc/sys/net/core/rmem_max  2097152
+    write /proc/sys/net/core/wmem_max  2097152
 
     #To allow interfaces to get v6 address when tethering is enabled
     write /proc/sys/net/ipv6/conf/rmnet0/accept_ra 2
@@ -272,7 +272,7 @@ on boot
     chmod 0770 /data/nfc/param
     chown nfc nfc /data/nfc/param
 
-    # Set the console loglevel to < KERN_INFO
+    # Set the console loglevel to KERN_INFO
     # Set the default message loglevel to KERN_INFO
     write /proc/sys/kernel/printk "6 6 1 7"
 
@@ -652,7 +652,7 @@ on property:ro.use_data_netmgrd=false
 # Adjust socket buffer to enlarge TCP receive window for high bandwidth
 # but only if ro.data.large_tcp_window_size property is set.
 on property:ro.data.large_tcp_window_size=true
-#    write /proc/sys/net/ipv4/tcp_adv_win_scale  2
+    write /proc/sys/net/ipv4/tcp_adv_win_scale  2
 
 service btwlancoex /system/bin/sh /system/etc/init.qcom.coex.sh
     class late_start
@@ -894,9 +894,9 @@ service ims_regmanager /system/bin/exe-ims-regmanagerprocessnative
 on property:persist.ims.regmanager.mode=1
     start ims_regmanager
 
-#on property:ro.data.large_tcp_window_size=true
+on property:ro.data.large_tcp_window_size=true
     # Adjust socket buffer to enlarge TCP receive window for high bandwidth (e.g. DO-RevB)
-#    write /proc/sys/net/ipv4/tcp_adv_win_scale  2
+    write /proc/sys/net/ipv4/tcp_adv_win_scale  2
 
 service battery_monitor /system/bin/battery_monitor
     user system
@@ -984,9 +984,9 @@ service fuse_UsbDriveF /system/bin/sdcard -u 1023 -g 1023 -d -f /mnt/media_rw/Us
     oneshot
 
 # Binding fuse mount point to /storage/emulated/legacy
-on property:init.svc.sdcard=running
-    wait /mnt/shell/emulated/0
-    mount none /mnt/shell/emulated/0 /storage/emulated/legacy bind
+#on property:init.svc.sdcard=running
+#    wait /mnt/shell/emulated/0
+#    mount none /mnt/shell/emulated/0 /storage/emulated/legacy bind
 
 service hcidump /system/bin/sh /system/etc/hcidump.sh
     user bluetooth

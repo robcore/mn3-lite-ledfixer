@@ -26,7 +26,7 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-export PATH="$PATH:/system/bin:/system/xbin:/sbin"
+export PATH=$PATH:/system/bin:/system/xbin:/sbin
 
 # Set platform variables
 if [ -f /sys/devices/soc0/hw_platform ]; then
