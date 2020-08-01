@@ -564,6 +564,8 @@ static int taiko_write(struct snd_soc_codec *codec, unsigned int reg,
 static unsigned int wcd9xxx_hw_revision;
 
 static unsigned int hph_pa_enabled = 0;
+static int compander1_enabled = 0;
+static bool compander1_clock_enabled = false;
 u8 hphl_cached_gain = 0;
 u8 hphr_cached_gain = 0;
 static u8 hphl_pa_cached_gain = 20;
@@ -574,6 +576,11 @@ static unsigned int high_perf_mode = 0;
 static unsigned int interpolator_boost = 0;
 static bool hpwidget = false;
 static bool spkwidget = false;
+
+static bool is_hph_pa_enabled(void)
+{
+	return (hph_pa_enabled && !compander1_enabled && !compander1_clock_enabled);
+}
 
 static void update_headphone_gain(void) {
 	if (!hpwidget)
@@ -617,13 +624,17 @@ static void write_hph_poweramp_gain(unsigned short reg)
 	bool change;
 	unsigned int local_cached_gain;
 
-	if (!hph_pa_enabled)
+	if (!is_hph_pa_enabled())
 		return;
 
 	if (reg == WCD9XXX_A_RX_HPH_L_GAIN) {
 		local_cached_gain = hphl_pa_cached_gain;
+		snd_soc_update_bits(codec, WCD9XXX_A_RX_HPH_L_GAIN,
+				    1 << 5, 1 << 5);
 	} else if (reg == WCD9XXX_A_RX_HPH_R_GAIN) {
 		local_cached_gain = hphr_pa_cached_gain;
+		snd_soc_update_bits(codec, WCD9XXX_A_RX_HPH_R_GAIN,
+				    1 << 5, 1 << 5);
 	} else
 		return;
 
@@ -963,7 +974,7 @@ static int taiko_get_compander(struct snd_kcontrol *kcontrol,
 	int comp = ((struct soc_multi_mixer_control *)
 		    kcontrol->private_value)->shift;
 	struct taiko_priv *taiko = snd_soc_codec_get_drvdata(codec);
-
+	
 	ucontrol->value.integer.value[0] = taiko->comp_enabled[comp];
 	return 0;
 }
@@ -977,10 +988,34 @@ static int taiko_set_compander(struct snd_kcontrol *kcontrol,
 		    kcontrol->private_value)->shift;
 	int value = ucontrol->value.integer.value[0];
 
-	pr_debug("%s: Compander %d enable current %d, new %d\n",
-		 __func__, comp, taiko->comp_enabled[comp], value);
-	taiko->comp_enabled[comp] = value;
-
+	if (hph_pa_enabled && comp == COMPANDER_1) {
+		if (taiko->comp_enabled[comp] == 1 && value == 0) {
+			taiko->comp_enabled[comp] = 0;
+			compander1_enabled = taiko->comp_enabled[comp];
+			/* Wavegen to 20 msec */
+			snd_soc_write(codec, TAIKO_A_RX_HPH_CNP_WG_CTL, 0xDB);
+			snd_soc_write(codec, TAIKO_A_RX_HPH_CNP_WG_TIME, 0x58);
+			snd_soc_write(codec, TAIKO_A_RX_HPH_BIAS_WG_OCP, 0x1A);
+			/* Disable CHOPPER block */
+			snd_soc_update_bits(codec,
+				TAIKO_A_RX_HPH_CHOP_CTL, 0x80, 0x00);
+			snd_soc_write(codec, TAIKO_A_NCP_DTEST, 0x10);
+			pr_info("%s: SoundControl force disabled compander 1 : %d\n",
+			 __func__, taiko->comp_enabled[comp]);
+			return 0;
+		} else if (taiko->comp_enabled[comp] == 0 && value == 1) {
+			compander1_enabled = taiko->comp_enabled[comp];
+			write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN);
+			write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_R_GAIN);
+			return 0;
+		}
+	} else {
+		pr_info("%s: Compander %d enable current %d, new %d\n",
+			 __func__, comp, taiko->comp_enabled[comp], value);
+		taiko->comp_enabled[comp] = value;
+		if (comp == COMPANDER_1)
+			compander1_enabled = taiko->comp_enabled[comp];
+	}
 	if (comp == COMPANDER_1 &&
 			taiko->comp_enabled[comp] == 1) {
 		/* Wavegen to 5 msec */
@@ -1024,10 +1059,6 @@ static int taiko_config_gain_compander(struct snd_soc_codec *codec,
 				    1 << 2, !enable << 2);
 		break;
 	case COMPANDER_1:
-		if (hph_pa_enabled && enable) {
-				write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN);
-				write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_R_GAIN);
-		}
 		snd_soc_update_bits(codec, WCD9XXX_A_RX_HPH_L_GAIN,
 				    1 << 5, !enable << 5);
 		snd_soc_update_bits(codec, WCD9XXX_A_RX_HPH_R_GAIN,
@@ -1101,6 +1132,31 @@ static int taiko_config_compander(struct snd_soc_dapm_widget *w,
 	pr_info("%s: %s event %d compander %d, enabled %d", __func__,
 		 w->name, event, comp, taiko->comp_enabled[comp]);
 
+	if (hph_pa_enabled && comp == COMPANDER_1 &&
+		compander1_clock_enabled && event == SND_SOC_DAPM_PRE_PMD) {
+		/* Disable compander */
+		snd_soc_update_bits(codec,
+				    TAIKO_A_CDC_COMP0_B1_CTL + (comp * 8),
+				    enable_mask, 0x00);
+
+		/* Toggle compander reset bits */
+		snd_soc_update_bits(codec, TAIKO_A_CDC_CLK_OTHR_RESET_B2_CTL,
+				    mask << comp_shift[comp],
+				    mask << comp_shift[comp]);
+		snd_soc_update_bits(codec, TAIKO_A_CDC_CLK_OTHR_RESET_B2_CTL,
+				    mask << comp_shift[comp], 0);
+
+		/* Turn off the clock for compander in pair */
+		snd_soc_update_bits(codec, TAIKO_A_CDC_CLK_RX_B2_CTL,
+				    mask << comp_shift[comp], 0);
+
+		/* Set gain source to register */
+		taiko_config_gain_compander(codec, comp, false);
+		if (comp == COMPANDER_1)
+			compander1_clock_enabled = false;
+		return 0;
+	}
+
 	if (!taiko->comp_enabled[comp])
 		return 0;
 
@@ -1111,6 +1167,8 @@ static int taiko_config_compander(struct snd_soc_dapm_widget *w,
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
+		if (compander1_clock_enabled)
+			return 0;
 		/* Set compander Sample rate */
 		snd_soc_update_bits(codec,
 				    TAIKO_A_CDC_COMP0_FS_CFG + (comp * 8),
@@ -1162,6 +1220,8 @@ static int taiko_config_compander(struct snd_soc_dapm_widget *w,
 		snd_soc_update_bits(codec,
 					TAIKO_A_CDC_COMP0_B2_CTL + (comp * 8),
 					0x0F, comp_params->peak_det_timeout);
+		if (comp == COMPANDER_1)
+			compander1_clock_enabled = true;
 		break;
 	case SND_SOC_DAPM_PRE_PMD:
 		/* Disable compander */
@@ -1182,6 +1242,8 @@ static int taiko_config_compander(struct snd_soc_dapm_widget *w,
 
 		/* Set gain source to register */
 		taiko_config_gain_compander(codec, comp, false);
+		if (comp == COMPANDER_1)
+			compander1_clock_enabled = false;
 		break;
 	}
 	return 0;
@@ -4671,8 +4733,7 @@ static int taiko_set_interpolator_rate(struct snd_soc_dai *dai,
 						0xE0, rx_fs_rate_reg_val);
 
 				if (comp_rx_path[j] < COMPANDER_MAX)
-					taiko->comp_fs[comp_rx_path[j]]
-					= compander_fs;
+					taiko->comp_fs[comp_rx_path[j]] = compander_fs;
 			}
 			if (j < 2)
 				rx_mix_1_reg_1 += 3;
