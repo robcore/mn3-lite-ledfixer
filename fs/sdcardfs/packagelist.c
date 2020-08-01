@@ -146,13 +146,8 @@ int check_caller_access_to_name(struct inode *parent_node, const char* name,
 
 	/* If asking to write, verify that caller either owns the
 	 * parent or holds sdcard_rw. */
-	if (w_ok) {
-		if (parent_node &&
-			(current_fsuid() == SDCARDFS_I(parent_node)->d_uid)) {
+	if (w_ok || parent_node && (current_fsuid() == SDCARDFS_I(parent_node)->d_uid))
 			return 1;
-		}
-		return has_rw;
-	}
 
 	/* No extra permissions to enforce */
 	return 1;
