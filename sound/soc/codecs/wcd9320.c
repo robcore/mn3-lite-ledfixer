@@ -248,10 +248,6 @@ static struct afe_param_id_clip_bank_sel clip_bank_sel = {
 	.bank_map = {0, 1, 2, 3},
 };
 
-module_param_cb(spkr_drv_wrnd, &spkr_drv_wrnd_param_ops, &spkr_drv_wrnd, 0644);
-MODULE_PARM_DESC(spkr_drv_wrnd,
-	       "Run software workaround to avoid leakage on the speaker drive");
-
 #define WCD9320_RATES (SNDRV_PCM_RATE_8000 | SNDRV_PCM_RATE_16000 |\
 			SNDRV_PCM_RATE_32000 | SNDRV_PCM_RATE_48000 |\
 			SNDRV_PCM_RATE_96000 | SNDRV_PCM_RATE_192000)
@@ -705,6 +701,10 @@ static struct kernel_param_ops spkr_drv_wrnd_param_ops = {
 	.set = spkr_drv_wrnd_param_set,
 	.get = param_get_int,
 };
+
+module_param_cb(spkr_drv_wrnd, &spkr_drv_wrnd_param_ops, &spkr_drv_wrnd, 0644);
+MODULE_PARM_DESC(spkr_drv_wrnd,
+	       "Run software workaround to avoid leakage on the speaker drive");
 
 static int taiko_get_anc_slot(struct snd_kcontrol *kcontrol,
 	struct snd_ctl_elem_value *ucontrol)
