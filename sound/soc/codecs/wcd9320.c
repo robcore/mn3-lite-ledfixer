@@ -617,11 +617,11 @@ static void write_hph_poweramp_gain(unsigned short reg)
 
 	if (reg == WCD9XXX_A_RX_HPH_L_GAIN) {
 		local_cached_gain = hphl_pa_cached_gain;
-		snd_soc_update_bits(codec, WCD9XXX_A_RX_HPH_L_GAIN,
+		snd_soc_update_bits(direct_codec, WCD9XXX_A_RX_HPH_L_GAIN,
 				    1 << 5, 1 << 5);
 	} else if (reg == WCD9XXX_A_RX_HPH_R_GAIN) {
 		local_cached_gain = hphr_pa_cached_gain;
-		snd_soc_update_bits(codec, WCD9XXX_A_RX_HPH_R_GAIN,
+		snd_soc_update_bits(direct_codec, WCD9XXX_A_RX_HPH_R_GAIN,
 				    1 << 5, 1 << 5);
 	} else
 		return;
@@ -1003,6 +1003,7 @@ static int taiko_set_compander(struct snd_kcontrol *kcontrol,
 			 __func__, taiko->comp_enabled[comp]);
 			return 0;
 		} else if (taiko->comp_enabled[comp] == 0 && value == 1) {
+			taiko->comp_enabled[comp] = 0;
 			compander1_enabled = taiko->comp_enabled[comp];
 			write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN);
 			write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_R_GAIN);
