@@ -77,14 +77,6 @@
 #define TAIKO_WG_TIME_FACTOR_US	240
 
 static atomic_t kp_taiko_priv;
-static int spkr_drv_wrnd_param_set(const char *val,
-				   const struct kernel_param *kp);
-static int spkr_drv_wrnd = 1;
-
-static struct kernel_param_ops spkr_drv_wrnd_param_ops = {
-	.set = spkr_drv_wrnd_param_set,
-	.get = param_get_int,
-};
 
 static struct afe_param_slimbus_slave_port_cfg taiko_slimbus_slave_port_cfg = {
 	.minor_version = 1,
@@ -664,6 +656,8 @@ static void update_speaker_gain(void) {
 	lock_sound_control(&sound_control_codec_ptr->core_res, 0);
 }
 
+static int spkr_drv_wrnd = 1;
+
 static int spkr_drv_wrnd_param_set(const char *val,
 				   const struct kernel_param *kp)
 {
@@ -706,6 +700,11 @@ static int spkr_drv_wrnd_param_set(const char *val,
 
 	return 0;
 }
+
+static struct kernel_param_ops spkr_drv_wrnd_param_ops = {
+	.set = spkr_drv_wrnd_param_set,
+	.get = param_get_int,
+};
 
 static int taiko_get_anc_slot(struct snd_kcontrol *kcontrol,
 	struct snd_ctl_elem_value *ucontrol)
