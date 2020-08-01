@@ -399,10 +399,9 @@ static inline void sdcardfs_put_real_lower(const struct dentry *dent,
 /* for packagelist.c */
 extern int get_caller_has_rw_locked(void *pkgl_id, derive_t derive);
 extern appid_t get_appid(void *pkgl_id, const char *app_name);
-extern int check_caller_access_to_name(struct inode *parent_node, const char* name,
-                                        derive_t derive, int w_ok, int has_rw);
+extern int check_caller_access_to_name(struct inode *parent_node, const char* name);
 extern int open_flags_to_access_mode(int open_flags);
-extern void * packagelist_create(gid_t write_gid);
+extern void *packagelist_create(void);
 extern void packagelist_destroy(void *pkgl_id);
 extern int packagelist_init(void);
 extern void packagelist_exit(void);

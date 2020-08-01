@@ -240,7 +240,7 @@ static int sdcardfs_read_super(struct super_block *sb, const char *dev_name,
 	}
 
 	if (sb_info->options.derive != DERIVE_NONE) {
-		pkgl_id = packagelist_create(sb_info->options.write_gid);
+		pkgl_id = pkgl_id = packagelist_create();
 		if(IS_ERR(pkgl_id))
 			goto out_freesbi;
 		else
@@ -322,7 +322,7 @@ static int sdcardfs_read_super(struct super_block *sb, const char *dev_name,
 
 		sb_info->devpath = kzalloc(PATH_MAX, GFP_KERNEL);
 		if(sb_info->devpath && dev_name)
-			memcpy(sb_info->devpath, dev_name, PATH_MAX);
+			strncpy(sb_info->devpath, dev_name, strlen(dev_name));
 		
 		if (!silent && !err)
 			printk(KERN_INFO "sdcardfs: mounted on top of %s type %s\n",
