@@ -514,14 +514,6 @@ create_zip() {
 	timerdiff
 	if [ -s "$RDIR/$MX_KERNEL_VERSION.zip" ]
 	then
-#		echo "Uploading $MX_KERNEL_VERSION.zip to Google Drive"
-#		/bin/bash /root/google-drive-upload/upload.sh "$RDIR/$MX_KERNEL_VERSION.zip"
-#		if [ "$?" -eq "0" ]
-#		then
-#			echo "$RDIR/$MX_KERNEL_VERSION.zip upload SUCCESS!"
-#		else
-#			echo "$RDIR/$MX_KERNEL_VERSION.zip upload FAILED!"
-#		fi
 		echo -n "$MX_KERNEL_VERSION.zip" > "$RDIR/.lastzip"
 		echo "Starting ADB as root."
 		adb root
@@ -571,6 +563,14 @@ create_zip() {
 			fi
 		else
 			echo "Device not Connected.  Skipping adb transfer."
+			echo "Uploading $MX_KERNEL_VERSION.zip to Google Drive Instead."
+			/bin/bash /root/google-drive-upload/upload.sh "$RDIR/$MX_KERNEL_VERSION.zip"
+			if [ "$?" -eq "0" ]
+			then
+				echo "$RDIR/$MX_KERNEL_VERSION.zip upload SUCCESS!"
+			else
+				echo "$RDIR/$MX_KERNEL_VERSION.zip upload FAILED!"
+			fi
 		fi
 	else
 		warnandfail "$RDIR/$MX_KERNEL_VERSION.zip is 0 bytes, something is wrong!"
