@@ -559,6 +559,8 @@ u8 hphl_cached_gain = 0;
 u8 hphr_cached_gain = 0;
 static u8 hphl_pa_cached_gain = 20;
 static u8 hphr_pa_cached_gain = 20;
+static u8 hphl_simple_pa_gain;
+static u8 hphr_simple_pa_gain;
 u8 speaker_cached_gain = 0;
 unsigned int hph_poweramp_mask = 31; /* (1 << fls(max)) - 1 */
 static unsigned int high_perf_mode = 0;
@@ -657,6 +659,22 @@ static void update_speaker_gain(void) {
 	lock_sound_control(&sound_control_codec_ptr->core_res, 0);
 }
 
+static void set_simple_pa_gain(unsigned short reg)
+{
+	int gain;
+
+	if (reg != hphl_simple_pa_gain && reg != hphr_simple_pa_gain)
+		return;
+
+	if (reg == WCD9XXX_A_RX_HPH_L_GAIN)
+		snd_soc_update_bits(direct_codec, WCD9XXX_A_RX_HPH_L_GAIN, 0x0F,
+					(HPH_RAMP_RX_GAIN_MAX - hphl_simple_pa_gain));
+	else if (reg == WCD9XXX_A_RX_HPH_R_GAIN)
+		snd_soc_update_bits(direct_codec, WCD9XXX_A_RX_HPH_R_GAIN, 0x0F,
+					(HPH_RAMP_RX_GAIN_MAX - hphr_simple_pa_gain));
+}
+
+/*
 static void audio_vol_ramping_func(void)
 {
 	int vol_gain, vol_control, level;
@@ -667,9 +685,9 @@ static void audio_vol_ramping_func(void)
 
 	if (vol_gain == vol_control){
 		pr_info("%s, force volume set without ramping value =%d\n", __func__, vol_control);
-		snd_soc_update_bits(direct_codec, TAIKO_A_RX_HPH_L_GAIN, 0x0F,
+		snd_soc_update_bits(direct_codec, WCD9XXX_A_RX_HPH_L_GAIN, 0x0F,
 					(HPH_RAMP_RX_GAIN_MAX - vol_control));
-		snd_soc_update_bits(direct_codec, TAIKO_A_RX_HPH_R_GAIN, 0x0F,
+		snd_soc_update_bits(direct_codec, WCD9XXX_A_RX_HPH_R_GAIN, 0x0F,
 					(HPH_RAMP_RX_GAIN_MAX - vol_control));
 		return;
 	}
@@ -683,9 +701,9 @@ static void audio_vol_ramping_func(void)
 		else
 			vol_control--;
 
-		snd_soc_update_bits(direct_codec, TAIKO_A_RX_HPH_L_GAIN, 0x0F,
+		snd_soc_update_bits(direct_codec, WCD9XXX_A_RX_HPH_L_GAIN, 0x0F,
 				(HPH_RAMP_RX_GAIN_MAX - vol_control));
-		snd_soc_update_bits(direct_codec, TAIKO_A_RX_HPH_R_GAIN, 0x0F,
+		snd_soc_update_bits(direct_codec, WCD9XXX_A_RX_HPH_R_GAIN, 0x0F,
 				(HPH_RAMP_RX_GAIN_MAX - vol_control));
 		usleep_range(10000, 10000);
 	}
@@ -693,7 +711,7 @@ static void audio_vol_ramping_func(void)
 	hp_ramp_vol_control = vol_control;
 	pr_info("%s, volume value =%d\n", __func__, hp_ramp_vol_control);
 }
-
+*/
 static int spkr_drv_wrnd = 1;
 
 static struct kernel_param_ops spkr_drv_wrnd_param_ops;
@@ -7621,6 +7639,46 @@ static ssize_t hph_poweramp_gain_reg_show(struct kobject *kobj,
 	return sprintf(buf, "%d %d\n", leftval, rightval);
 }
 
+static ssize_t simple_pa_gain_show(struct kobject *kobj,
+		struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%d %d\n", hphl_simple_pa_gain, hphr_simple_pa_gain);
+}
+
+static ssize_t simple_pa_gain_store(struct kobject *kobj,
+		struct kobj_attribute *attr, const char *buf, size_t count)
+{
+
+	int leftinput;
+	int rightinput;
+	int dualinput;
+
+	if (sscanf(buf, "%d %d", &leftinput, &rightinput) == 2) {
+		if (leftinput < 0)
+			leftinput = 0;
+		if (leftinput > 12)
+			leftinput = 12;
+		if (rightinput < 0)
+			rightinput = 0;
+		if (rightinput > 12)
+			rightinput = 12;
+		hphl_simple_pa_gain = (u8)leftinput;
+		hphr_simple_pa_gain = (u8)rightinput;
+	} else if (sscanf(buf, "%d", &dualinput) == 1) {
+		if (dualinput < 0)
+			dualinput = 0;
+		if (dualinput > 12)
+			dualinput = 12;
+		hphl_simple_pa_gain = (u8)dualinput;
+		hphr_simple_pa_gain = (u8)dualinput;
+	}
+
+	set_simple_pa_gain(WCD9XXX_A_RX_HPH_L_GAIN);
+	set_simple_pa_gain(WCD9XXX_A_RX_HPH_R_GAIN);
+
+	return count;
+}
+
 static ssize_t speaker_gain_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf) {
 	int spkval, tempval;
@@ -7727,6 +7785,11 @@ static struct kobj_attribute hph_poweramp_gain_attribute =
 		hph_poweramp_gain_show,
 		hph_poweramp_gain_store);
 
+static struct kobj_attribute simple_pa_gain_attribute =
+	__ATTR(simple_pa_gain, 0644,
+		simple_pa_gain_show,
+		simple_pa_gain_store);
+
 static struct kobj_attribute hph_poweramp_gain_reg_attribute =
 	__ATTR(hph_poweramp_gain_reg, 0444,
 		hph_poweramp_gain_reg_show,
@@ -7755,6 +7818,7 @@ static struct kobj_attribute hph_pa_enabled_attribute =
 static struct attribute *sound_control_attrs[] = {
 		&headphone_gain_attribute.attr,
 		&hph_poweramp_gain_attribute.attr,
+		&simple_pa_gain_attribute.attr,
 		&hph_poweramp_gain_reg_attribute.attr,
 		&speaker_gain_attribute.attr,
 		&high_perf_mode_attribute.attr,
