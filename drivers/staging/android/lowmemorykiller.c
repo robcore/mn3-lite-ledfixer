@@ -273,7 +273,6 @@ static int lowmem_shrink(struct shrinker *s, struct shrink_control *sc)
 #ifdef CONFIG_SAMP_HOTNESS
 		int hotness_adj = 0;
 #endif
-
 		if (tsk->flags & PF_KTHREAD)
 			continue;
 
@@ -356,108 +355,48 @@ static int lowmem_shrink(struct shrinker *s, struct shrink_control *sc)
 		}
 #else
 		if (selected) {
-#ifdef CONFIG_SAMP_HOTNESS
-			if (min_score_adj <= lowmem_adj[4]) {
-#endif
 			if (oom_score_adj < selected_oom_score_adj)
 				continue;
 			if (oom_score_adj == selected_oom_score_adj &&
 			    tasksize <= selected_tasksize)
 				continue;
-#ifdef CONFIG_SAMP_HOTNESS
-			} else {
-				if (hotness_adj > selected_hotness_adj)
-					continue;
-				if (hotness_adj == selected_hotness_adj && tasksize <= selected_tasksize)
-					continue;
-			}
-#endif
 		}
 		selected = p;
 		selected_tasksize = tasksize;
 		selected_oom_score_adj = oom_score_adj;
-#ifdef CONFIG_SAMP_HOTNESS
-		selected_hotness_adj = hotness_adj;
-#endif
 		lowmem_print(2, "select %d (%s), adj %d, size %d, to kill\n",
 			     p->pid, p->comm, oom_score_adj, tasksize);
+#endif
 	}
 #ifdef ENHANCED_LMK_ROUTINE
 	for (i = 0; i < LOWMEM_DEATHPENDING_DEPTH; i++) {
-	if (selected) {
-#if defined(CONFIG_CMA_PAGE_COUNTING)
-#ifdef CONFIG_SAMP_HOTNESS
-		lowmem_print(1, "send sigkill to %d (%s), adj %d, size %d, "
-			"ofree %d, ofile %d(%c), is_kswapd %d - "
-			"cma_free %lu priority %d cma_i_file %lu cma_a_file %lu, hotness %d\n",
-			selected->pid, selected->comm,
-			selected_oom_score_adj, selected_tasksize,
-			other_free, other_file, flag ? '-' : '+',
-			!!current_is_kswapd(),
-			nr_cma_free, sc->priority,
-			nr_cma_inactive_file, nr_cma_active_file, selected_hotness_adj);
-#else
-		lowmem_print(1, "send sigkill to %d (%s), adj %d, size %d, "
-			"ofree %d, ofile %d(%c), is_kswapd %d - "
-			"cma_free %lu priority %d cma_i_file %lu cma_a_file %lu\n",
-			selected->pid, selected->comm,
-			selected_oom_score_adj, selected_tasksize,
-			other_free, other_file, flag ? '-' : '+',
-			!!current_is_kswapd(),
-			nr_cma_free, sc->priority,
-			nr_cma_inactive_file, nr_cma_active_file);
+		if (selected[i]) {
+			lowmem_deathpending_timeout = jiffies + HZ;
+			send_sig(SIGKILL, selected[i], 0);
+			set_tsk_thread_flag(selected[i], TIF_MEMDIE);
+			rem -= selected_tasksize[i];
+			if(reclaim_state)
+				reclaim_state->reclaimed_slab += selected_tasksize[i];
+#ifdef LMK_COUNT_READ
+			lmk_count++;
 #endif
-
+		}
+	}
 #else
 	if (selected) {
-#ifdef CONFIG_SAMP_HOTNESS
-		lowmem_print(1, "send sigkill to %d (%s), adj %d, size %d, "
-				"free memory = %d, reclaimable memory = %d "
-				"is_kswapd %d cma_free %lu priority %d, hotness %d\n",
-				selected->pid, selected->comm,
-				selected_oom_score_adj, selected_tasksize,
-				other_free, other_file,
-				!!current_is_kswapd(),
-				nr_cma_free, sc->priority, selected_hotness_adj);
-#else
-		lowmem_print(1, "send sigkill to %d (%s), adj %d, size %d, "
-				"free memory = %d, reclaimable memory = %d "
-				"is_kswapd %d cma_free %lu priority %d\n",
-				selected->pid, selected->comm,
-				selected_oom_score_adj, selected_tasksize,
-				other_free, other_file,
-				!!current_is_kswapd(),
-				nr_cma_free, sc->priority);
-#endif
-#endif
 		lowmem_deathpending_timeout = jiffies + HZ;
 		send_sig(SIGKILL, selected, 0);
 		set_tsk_thread_flag(selected, TIF_MEMDIE);
 		rem -= selected_tasksize;
-		rcu_read_unlock();
-#ifdef LMK_COUNT_READ
-                lmk_count++;
-#endif
-	}
-#endif
-#ifdef CONFIG_SEC_DEBUG_LMK_MEMINFO
-		if ((selected_oom_score_adj < lowmem_adj[5]) && __ratelimit(&lmk_rs)) {
-			lowmem_print(1, "lowmem_shrink %lu, %x, ofree %d %d, ma %d\n",
-					nr_to_scan, sc->gfp_mask, other_free,
-					other_file, min_score_adj);
-			show_mem(SHOW_MEM_FILTER_NODES);
-			dump_tasks_info();
-		}
-#endif
-		/* give the system time to free up the memory */
-		msleep_interruptible(20);
 		if(reclaim_state)
 			reclaim_state->reclaimed_slab = selected_tasksize;
-	} else
-		rcu_read_unlock();
+#ifdef LMK_COUNT_READ
+		lmk_count++;
+#endif /*LMK_COUNT_READ*/
+	}
+#endif
 
-	lowmem_print(4, "lowmem_shrink %lu, %x, return %d\n",
-		     nr_to_scan, sc->gfp_mask, rem);
+	rcu_read_unlock();
 	mutex_unlock(&scan_mutex);
 	return rem;
 }
