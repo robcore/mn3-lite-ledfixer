@@ -452,6 +452,8 @@ struct taiko_priv {
 	/* class h specific data */
 	struct wcd9xxx_clsh_cdc_data clsh_d;
 
+	struct htc_ramp_work audio_vol_ramp_work;
+
 	int (*machine_codec_event_cb)(struct snd_soc_codec *codec,
 			enum wcd9xxx_codec_event);
 
@@ -463,8 +465,9 @@ struct taiko_priv {
 	struct pm_qos_request pm_qos_req;
 };
 
+/* Compander 0's clock source is on interpolator 7 */
 static const u32 comp_shift[] = {
-	4, /* Compander 0's clock source is on interpolator 7 */
+	4,
 	0,
 	2,
 };
@@ -565,6 +568,10 @@ static unsigned int interpolator_boost = 0;
 static bool hpwidget = false;
 static bool spkwidget = false;
 
+#define HPH_RX_GAIN_MAX 12
+int hp_ramp_vol_control;
+int hp_ramp_vol_gain;
+
 static bool is_hph_pa_enabled(void)
 {
 	return (hph_pa_enabled && !compander1_enabled && !compander1_clock_enabled);
@@ -652,7 +659,47 @@ static void update_speaker_gain(void) {
 	lock_sound_control(&sound_control_codec_ptr->core_res, 0);
 }
 
+static void audio_vol_ramping_func(void)
+{
+	int vol_gain, vol_control, level;
+	int i, index;
+
+	vol_gain = hp_ramp_vol_gain;
+	vol_control = hp_ramp_vol_control;
+
+	if (vol_gain == vol_control){
+		pr_info("%s, force volume set without ramping value =%d\n", __func__, vol_control);
+		snd_soc_update_bits(codec, TAIKO_A_RX_HPH_L_GAIN, 0x0F,
+					(HPH_RX_GAIN_MAX - vol_control));
+		snd_soc_update_bits(codec, TAIKO_A_RX_HPH_R_GAIN, 0x0F,
+					(HPH_RX_GAIN_MAX- vol_control));
+		return;
+	}
+
+	level = vol_gain - vol_control;
+	index = level > 0 ? level: -level;
+
+	for (i = 0; i < index; i++) {
+		if (level > 0)
+			vol_control++;
+		else
+			vol_control--;
+
+		snd_soc_update_bits(codec, TAIKO_A_RX_HPH_L_GAIN, 0x0F,
+				(HPH_RX_GAIN_MAX - vol_control));
+		snd_soc_update_bits(codec, TAIKO_A_RX_HPH_R_GAIN, 0x0F,
+				(HPH_RX_GAIN_MAX- vol_control));
+		usleep_range(10000, 10000);
+	}
+
+	hp_ramp_vol_control = vol_control;
+	pr_info("%s, volume value =%d\n", __func__, hp_ramp_vol_control);
+}
+
 static int spkr_drv_wrnd = 1;
+
+static struct kernel_param_ops spkr_drv_wrnd_param_ops;
+module_param_cb(spkr_drv_wrnd, &spkr_drv_wrnd_param_ops, &spkr_drv_wrnd, 0644);
 
 static int spkr_drv_wrnd_param_set(const char *val,
 				   const struct kernel_param *kp)
@@ -701,10 +748,6 @@ static struct kernel_param_ops spkr_drv_wrnd_param_ops = {
 	.set = spkr_drv_wrnd_param_set,
 	.get = param_get_int,
 };
-
-module_param_cb(spkr_drv_wrnd, &spkr_drv_wrnd_param_ops, &spkr_drv_wrnd, 0644);
-MODULE_PARM_DESC(spkr_drv_wrnd,
-	       "Run software workaround to avoid leakage on the speaker drive");
 
 static int taiko_get_anc_slot(struct snd_kcontrol *kcontrol,
 	struct snd_ctl_elem_value *ucontrol)
