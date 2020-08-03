@@ -452,8 +452,6 @@ struct taiko_priv {
 	/* class h specific data */
 	struct wcd9xxx_clsh_cdc_data clsh_d;
 
-	struct htc_ramp_work audio_vol_ramp_work;
-
 	int (*machine_codec_event_cb)(struct snd_soc_codec *codec,
 			enum wcd9xxx_codec_event);
 
