@@ -566,7 +566,7 @@ static unsigned int interpolator_boost = 0;
 static bool hpwidget = false;
 static bool spkwidget = false;
 
-#define HPH_RX_GAIN_MAX 12
+#define HPH_RAMP_RX_GAIN_MAX 12
 int hp_ramp_vol_control;
 int hp_ramp_vol_gain;
 
@@ -668,9 +668,9 @@ static void audio_vol_ramping_func(void)
 	if (vol_gain == vol_control){
 		pr_info("%s, force volume set without ramping value =%d\n", __func__, vol_control);
 		snd_soc_update_bits(codec, TAIKO_A_RX_HPH_L_GAIN, 0x0F,
-					(HPH_RX_GAIN_MAX - vol_control));
+					(HPH_RAMP_RX_GAIN_MAX - vol_control));
 		snd_soc_update_bits(codec, TAIKO_A_RX_HPH_R_GAIN, 0x0F,
-					(HPH_RX_GAIN_MAX- vol_control));
+					(HPH_RAMP_RX_GAIN_MAX - vol_control));
 		return;
 	}
 
@@ -684,9 +684,9 @@ static void audio_vol_ramping_func(void)
 			vol_control--;
 
 		snd_soc_update_bits(codec, TAIKO_A_RX_HPH_L_GAIN, 0x0F,
-				(HPH_RX_GAIN_MAX - vol_control));
+				(HPH_RAMP_RX_GAIN_MAX - vol_control));
 		snd_soc_update_bits(codec, TAIKO_A_RX_HPH_R_GAIN, 0x0F,
-				(HPH_RX_GAIN_MAX- vol_control));
+				(HPH_RAMP_RX_GAIN_MAX - vol_control));
 		usleep_range(10000, 10000);
 	}
 
