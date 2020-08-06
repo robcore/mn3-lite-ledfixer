@@ -1201,20 +1201,24 @@ static int taiko_config_compander(struct snd_soc_dapm_widget *w,
 
 		/* Set sample rate dependent paramater */
 		if (interpolator_boost && comp == 1 && rate == 3) { 
-			snd_soc_write(codec, TAIKO_A_CDC_COMP0_B3_CTL + (comp * 8), 60);
+			snd_soc_write(codec, TAIKO_A_CDC_COMP0_B3_CTL + (comp * 8), 0x50);
 			snd_soc_update_bits(codec,
 					    TAIKO_A_CDC_COMP0_B2_CTL + (comp * 8),
-					    0xF0, 192);
+					    0xF0, 0xC << 4);
+			snd_soc_update_bits(codec,
+						TAIKO_A_CDC_COMP0_B2_CTL + (comp * 8),
+						0x0F, 0x0B);
 		} else {
 			snd_soc_write(codec, TAIKO_A_CDC_COMP0_B3_CTL + (comp * 8),
 				      comp_params->rms_meter_resamp_fact);
 			snd_soc_update_bits(codec,
 					    TAIKO_A_CDC_COMP0_B2_CTL + (comp * 8),
 					    0xF0, comp_params->rms_meter_div_fact << 4);
+			snd_soc_update_bits(codec,
+						TAIKO_A_CDC_COMP0_B2_CTL + (comp * 8),
+						0x0F, comp_params->peak_det_timeout);
 		}
-		snd_soc_update_bits(codec,
-					TAIKO_A_CDC_COMP0_B2_CTL + (comp * 8),
-					0x0F, comp_params->peak_det_timeout);
+
 		break;
 	case SND_SOC_DAPM_PRE_PMD:
 		/* Disable compander */
@@ -3158,7 +3162,7 @@ static int taiko_codec_enable_dec(struct snd_soc_dapm_widget *w,
 
 		if ((dec_hpf_cut_of_freq != CF_MIN_3DB_150HZ)) {
 
-			/* set cut of freq to CF_MIN_3DB_150HZ (0x1); */
+			/* set cut of freq to CF_MIN_3DB_150HZ (0x2); */
 			snd_soc_update_bits(codec, tx_mux_ctl_reg, 0x30,
 					    CF_MIN_3DB_150HZ << 4);
 		}
@@ -6664,7 +6668,7 @@ static const struct wcd9xxx_reg_mask_val taiko_reg_defaults[] = {
 	/* EAR PA deafults  */
 	TAIKO_REG_VAL(TAIKO_A_RX_EAR_CMBUFF, 0x05),
 
-	/* RX deafults */
+	/* RX defaults */
 	TAIKO_REG_VAL(TAIKO_A_CDC_RX1_B5_CTL, 0x78),
 	TAIKO_REG_VAL(TAIKO_A_CDC_RX2_B5_CTL, 0x78),
 	TAIKO_REG_VAL(TAIKO_A_CDC_RX3_B5_CTL, 0x78),
