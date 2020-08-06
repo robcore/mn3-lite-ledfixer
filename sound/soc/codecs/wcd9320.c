@@ -1200,7 +1200,11 @@ static int taiko_config_compander(struct snd_soc_dapm_widget *w,
 		taiko_discharge_comp(codec, comp);
 
 		/* Set sample rate dependent paramater */
-		if (interpolator_boost && comp == 1 && rate == 3) { 
+/*		.peak_det_timeout = 0x0B,
+		.rms_meter_div_fact = 0xC,
+		.rms_meter_resamp_fact = 0x50,
+*/
+		if (interpolator_boost) { 
 			snd_soc_write(codec, TAIKO_A_CDC_COMP0_B3_CTL + (comp * 8), 0x50);
 			snd_soc_update_bits(codec,
 					    TAIKO_A_CDC_COMP0_B2_CTL + (comp * 8),
