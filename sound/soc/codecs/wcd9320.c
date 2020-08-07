@@ -1247,15 +1247,13 @@ static int taiko_config_compander(struct snd_soc_dapm_widget *w,
 	return 0;
 }
 
-
-
 static const char *taiko_anc_func_text[] = {"OFF", "ON"};
 static const struct soc_enum taiko_anc_func_enum =
 		SOC_ENUM_SINGLE_EXT(2, taiko_anc_func_text);
 
-static const char *tabla_ear_pa_gain_text[] = {"POS_6_DB", "POS_2_DB"};
-static const struct soc_enum tabla_ear_pa_gain_enum[] = {
-		SOC_ENUM_SINGLE_EXT(2, tabla_ear_pa_gain_text),
+static const char *taiko_ear_pa_gain_text[] = {"POS_6_DB", "POS_2_DB"};
+static const struct soc_enum taiko_ear_pa_gain_enum[] = {
+		SOC_ENUM_SINGLE_EXT(2, taiko_ear_pa_gain_text),
 };
 
 /*cut of frequency for high pass filter*/
@@ -5207,11 +5205,11 @@ static struct snd_soc_dai_ops taiko_dai_ops = {
 	.startup = taiko_startup,
 	.shutdown = taiko_shutdown,
 	.prepare = taiko_prepare,
-	.hw_params = taiko_es325_hw_params, /* tabla_hw_params, */
+	.hw_params = taiko_es325_hw_params, /* taiko_hw_params, */
 	.set_sysclk = taiko_set_dai_sysclk,
 	.set_fmt = taiko_set_dai_fmt,
-	.set_channel_map = taiko_set_channel_map, /* tabla_set_channel_map, */
-	.get_channel_map = taiko_es325_get_channel_map, /* tabla_get_channel_map, */
+	.set_channel_map = taiko_set_channel_map, /* taiko_set_channel_map, */
+	.get_channel_map = taiko_es325_get_channel_map, /* taiko_get_channel_map, */
 };
 
 static struct snd_soc_dai_ops taiko_es325_dai_ops = {
