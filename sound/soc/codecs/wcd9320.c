@@ -559,7 +559,7 @@ static u8 hphl_pa_cached_gain = 20;
 static u8 hphr_pa_cached_gain = 20;
 u8 speaker_cached_gain = 0;
 unsigned int hph_poweramp_mask = 31; /* (1 << fls(max)) - 1 */
-static unsigned int high_perf_mode = 0;
+static unsigned int uhqa_mode = 0;
 static unsigned int interpolator_boost = 0;
 static bool hpwidget = false;
 static bool spkwidget = false;
@@ -4498,21 +4498,21 @@ static int taiko_prepare(struct snd_pcm_substream *substream,
 			taiko_p->dai[dai->id].bit_width,
 			taiko_p->comp_enabled[COMPANDER_1]);
 
-	if (taiko_p->comp_enabled[COMPANDER_1] && high_perf_mode) {
+	if (taiko_p->comp_enabled[COMPANDER_1] && uhqa_mode) {
 		taiko_p->clsh_d.hs_perf_mode_enabled = true;
 		if (snd_soc_update_bits(codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x00) >= 0)
-			pr_info("%s: high_perf_mode enabled", __func__);
+			pr_info("%s: uhqa_mode enabled", __func__);
 	} else if ((taiko_p->dai[dai->id].rate == 192000 ||
 		taiko_p->dai[dai->id].rate == 96000) &&
 	    (taiko_p->dai[dai->id].bit_width == 24) &&
 	    (taiko_p->comp_enabled[COMPANDER_1])) {
 		taiko_p->clsh_d.hs_perf_mode_enabled = true;
 		if (snd_soc_update_bits(codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x00) >= 0)
-			pr_info("%s: high_perf_mode enabled", __func__);
+			pr_info("%s: uhqa_mode enabled", __func__);
 	} else {
 		taiko_p->clsh_d.hs_perf_mode_enabled = false;
 		if (snd_soc_update_bits(codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20) >= 0)
-			pr_info("%s: high_perf_mode disabled", __func__);
+			pr_info("%s: uhqa_mode disabled", __func__);
 	}
 
 	return 0;
@@ -7610,12 +7610,12 @@ static ssize_t speaker_gain_store(struct kobject *kobj,
 	return count;
 }
 
-static ssize_t high_perf_mode_show(struct kobject *kobj,
+static ssize_t uhqa_mode_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf) {
-	return sprintf(buf, "%u\n", high_perf_mode);
+	return sprintf(buf, "%u\n", uhqa_mode);
 }
 
-static ssize_t high_perf_mode_store(struct kobject *kobj,
+static ssize_t uhqa_mode_store(struct kobject *kobj,
 			   struct kobj_attribute *attr, const char *buf, size_t count) {
 	int uval;
 
@@ -7626,7 +7626,7 @@ static ssize_t high_perf_mode_store(struct kobject *kobj,
 	if (uval > 1)
 		uval = 1;
 
-	high_perf_mode = uval;
+	uhqa_mode = uval;
 	return count;
 }
 
@@ -7731,10 +7731,10 @@ static struct kobj_attribute speaker_gain_attribute =
 		speaker_gain_show,
 		speaker_gain_store);
 
-static struct kobj_attribute high_perf_mode_attribute =
-	__ATTR(high_perf_mode, 0644,
-		high_perf_mode_show,
-		high_perf_mode_store);
+static struct kobj_attribute uhqa_mode_attribute =
+	__ATTR(uhqa_mode, 0644,
+		uhqa_mode_show,
+		uhqa_mode_store);
 
 static struct kobj_attribute interpolator_boost_attribute =
 	__ATTR(interpolator_boost, 0644,
@@ -7761,7 +7761,7 @@ static struct attribute *sound_control_attrs[] = {
 		&hph_poweramp_gain_attribute.attr,
 		&hph_poweramp_gain_raw_attribute.attr,
 		&speaker_gain_attribute.attr,
-		&high_perf_mode_attribute.attr,
+		&uhqa_mode_attribute.attr,
 		&interpolator_boost_attribute.attr,
 		&hph_pa_enabled_attribute.attr,
 		&six_db_gain_lock_attribute.attr,
