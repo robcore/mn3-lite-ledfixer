@@ -1,14 +1,14 @@
 /*
  * DHD Bus Module for SDIO
  *
- * Copyright (C) 1999-2014, Broadcom Corporation
- * 
+ * Copyright (C) 1999-2015, Broadcom Corporation
+ *
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
  * under the terms of the GNU General Public License version 2 (the "GPL"),
  * available at http://www.broadcom.com/licenses/GPLv2.php, with the
  * following added to such license:
- * 
+ *
  *      As a special exception, the copyright holders of this software give you
  * permission to link this software with independent modules, and to copy and
  * distribute the resulting executable under terms of your choice, provided that
@@ -16,12 +16,12 @@
  * the license of that module.  An independent module is a module which is not
  * derived from this software.  The special exception does not apply to any
  * modifications of the software.
- * 
+ *
  *      Notwithstanding the above, under no circumstances may you combine this
  * software in any way with any other Broadcom software provided under a license
  * other than the GPL, without Broadcom's express prior written consent.
  *
- * $Id: dhd_sdio.c 510616 2014-10-26 14:18:37Z $
+ * $Id: dhd_sdio.c 557250 2015-05-18 08:52:07Z $
  */
 
 #include <typedefs.h>
@@ -172,7 +172,7 @@ DHD_SPINWAIT_SLEEP_INIT(sdioh_spinwait_sleep);
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 25))
 DEFINE_MUTEX(_dhd_sdio_mutex_lock_);
 #endif /* (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 25)) */
-#endif 
+#endif
 
 #ifdef DHD_DEBUG
 /* Device console log buffer state */
@@ -646,6 +646,9 @@ static int dhdsdio_download_code_array(dhd_bus_t *bus);
 static int dhdsdio_bussleep(dhd_bus_t *bus, bool sleep);
 static int dhdsdio_clkctl(dhd_bus_t *bus, uint target, bool pendok);
 static uint8 dhdsdio_sleepcsr_get(dhd_bus_t *bus);
+#ifdef SUPPORT_MULTIPLE_BOARD_REV_FROM_DT
+int dhd_get_system_rev(void);
+#endif /* SUPPORT_MULTIPLE_BOARD_REV_FROM_DT */
 
 #ifdef WLMEDIA_HTSF
 #include <htsf.h>
@@ -801,6 +804,7 @@ dhdsdio_sr_cap(dhd_bus_t *bus)
 		(bus->sih->chip == BCM4339_CHIP_ID) ||
 		(bus->sih->chip == BCM43349_CHIP_ID) ||
 		(bus->sih->chip == BCM4345_CHIP_ID) ||
+		(bus->sih->chip == BCM43454_CHIP_ID) ||
 		(bus->sih->chip == BCM4354_CHIP_ID) ||
 		(bus->sih->chip == BCM4356_CHIP_ID) ||
 		(bus->sih->chip == BCM4350_CHIP_ID)) {
@@ -819,6 +823,7 @@ dhdsdio_sr_cap(dhd_bus_t *bus)
 		(bus->sih->chip == BCM4339_CHIP_ID) ||
 		(bus->sih->chip == BCM43349_CHIP_ID) ||
 		(bus->sih->chip == BCM4345_CHIP_ID) ||
+		(bus->sih->chip == BCM43454_CHIP_ID) ||
 		(bus->sih->chip == BCM4354_CHIP_ID) ||
 		(bus->sih->chip == BCM4356_CHIP_ID) ||
 		(bus->sih->chip == BCM4350_CHIP_ID)) {
@@ -830,6 +835,7 @@ dhdsdio_sr_cap(dhd_bus_t *bus)
 
 		if ((bus->sih->chip == BCM4350_CHIP_ID) ||
 			(bus->sih->chip == BCM4345_CHIP_ID) ||
+			(bus->sih->chip == BCM43454_CHIP_ID) ||
 			(bus->sih->chip == BCM4356_CHIP_ID) ||
 			(bus->sih->chip == BCM4354_CHIP_ID))
 			enabval &= CC_CHIPCTRL3_SR_ENG_ENABLE;
@@ -2242,6 +2248,9 @@ dhdsdio_sendfromq(dhd_bus_t *bus, uint maxframes)
 
 	osh = dhd->osh;
 	tx_prec_map = ~bus->flowcontrol;
+#ifdef DHD_LOSSLESS_ROAMING
+	tx_prec_map &= dhd->dequeue_prec_map;
+#endif
 	for (cnt = 0; (cnt < maxframes) && DATAOK(bus);) {
 		int i;
 		int num_pkt = 1;
@@ -2255,7 +2264,14 @@ dhdsdio_sendfromq(dhd_bus_t *bus, uint maxframes)
 		}
 		num_pkt = MIN(num_pkt, pktq_mlen(&bus->txq, tx_prec_map));
 		for (i = 0; i < num_pkt; i++) {
-			pkts[i] = pktq_mdeq(&bus->txq, ~bus->flowcontrol, &prec_out);
+			pkts[i] = pktq_mdeq(&bus->txq, tx_prec_map, &prec_out);
+			if (!pkts[i]) {
+				DHD_ERROR(("%s: pktg_mlen non-zero when no pkt\n",
+					__FUNCTION__));
+				ASSERT(0);
+				break;
+			}
+			PKTORPHAN(pkts[i]);
 			datalen += PKTLEN(osh, pkts[i]);
 		}
 		dhd_os_sdunlock_txq(bus->dhd);
@@ -3359,7 +3375,7 @@ dhd_serialconsole(dhd_bus_t *bus, bool set, bool enable, int *bcmerror)
 
 	return (int_val & uart_enab);
 }
-#endif 
+#endif
 
 static int
 dhdsdio_doiovar(dhd_bus_t *bus, const bcm_iovar_t *vi, uint32 actionid, const char *name,
@@ -3667,7 +3683,7 @@ dhdsdio_doiovar(dhd_bus_t *bus, const bcm_iovar_t *vi, uint32 actionid, const ch
 
 		sd_ptr = (sdreg_t *)params;
 
-		addr = (ulong)bus->regs + sd_ptr->offset;
+		addr = (uint32)((ulong)bus->regs + sd_ptr->offset);
 		size = sd_ptr->func;
 		int_val = (int32)bcmsdh_reg_read(bus->sdh, addr, size);
 		if (bcmsdh_regfail(bus->sdh))
@@ -3683,7 +3699,7 @@ dhdsdio_doiovar(dhd_bus_t *bus, const bcm_iovar_t *vi, uint32 actionid, const ch
 
 		sd_ptr = (sdreg_t *)params;
 
-		addr = (ulong)bus->regs + sd_ptr->offset;
+		addr = (uint32)((ulong)bus->regs + sd_ptr->offset);
 		size = sd_ptr->func;
 		bcmsdh_reg_write(bus->sdh, addr, size, sd_ptr->value);
 		if (bcmsdh_regfail(bus->sdh))
@@ -3833,7 +3849,7 @@ dhdsdio_doiovar(dhd_bus_t *bus, const bcm_iovar_t *vi, uint32 actionid, const ch
 		bcmsdh_cfg_write(bus->sdh, SDIO_FUNC_1, SBSDIO_FUNC1_MESBUSYCTRL,
 			((uint8)mesbusyctrl | 0x80), NULL);
 		break;
-#endif 
+#endif
 
 
 	case IOV_GVAL(IOV_DONGLEISOLATION):
@@ -7059,7 +7075,7 @@ dhdsdio_chipmatch(uint16 chipid)
 		return TRUE;
 	if (chipid == BCM43349_CHIP_ID)
 		return TRUE;
-	if (chipid == BCM4345_CHIP_ID)
+	if (chipid == BCM4345_CHIP_ID || chipid == BCM43454_CHIP_ID)
 		return TRUE;
 	if (chipid == BCM4350_CHIP_ID)
 		return TRUE;
@@ -7089,7 +7105,7 @@ dhdsdio_probe(uint16 venid, uint16 devid, uint16 bus_no, uint16 slot,
 	}
 	mutex_lock(&_dhd_sdio_mutex_lock_);
 #endif /* (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 25)) */
-#endif 
+#endif
 
 	/* Init global variables at run-time, not as part of the declaration.
 	 * This is required to support init/de-init of the driver. Initialization
@@ -7273,7 +7289,7 @@ dhdsdio_probe(uint16 venid, uint16 devid, uint16 bus_no, uint16 slot,
 	mutex_unlock(&_dhd_sdio_mutex_lock_);
 	DHD_ERROR(("%s : the lock is released.\n", __FUNCTION__));
 #endif /* (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 27)) */
-#endif 
+#endif
 
 	return bus;
 
@@ -7286,7 +7302,7 @@ forcereturn:
 	mutex_unlock(&_dhd_sdio_mutex_lock_);
 	DHD_ERROR(("%s : the lock is released.\n", __FUNCTION__));
 #endif /* (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 27)) */
-#endif 
+#endif
 
 	return NULL;
 }
@@ -7729,7 +7745,9 @@ dhdsdio_probe_attach(struct dhd_bus *bus, osl_t *osh, void *sdh, void *regsva,
 				bus->dongle_ram_base = CR4_4360_RAM_BASE;
 				break;
 			case BCM4345_CHIP_ID:
-				bus->dongle_ram_base = CR4_4345_RAM_BASE;
+			case BCM43454_CHIP_ID:
+				bus->dongle_ram_base = (bus->sih->chiprev < 6)  /* from 4345C0 */
+					? CR4_4345_LT_C0_RAM_BASE : CR4_4345_GE_C0_RAM_BASE;
 				break;
 			default:
 				bus->dongle_ram_base = 0;
@@ -7814,8 +7832,9 @@ dhdsdio_probe_malloc(dhd_bus_t *bus, osl_t *osh, void *sdh)
 		DHD_ERROR(("%s: MALLOC of %d-byte databuf failed\n",
 			__FUNCTION__, MAX_DATA_BUF));
 		/* release rxbuf which was already located as above */
-		if (!bus->rxblen)
-			DHD_OS_PREFREE(bus->dhd, bus->rxbuf, bus->rxblen);
+		if (bus->rxbuf) {
+			DHD_OS_PREFREE(bus->dhd, DHD_PREALLOC_RXBUF, bus->rxbuf, bus->rxblen);
+		}
 		goto fail;
 	}
 
@@ -8097,7 +8116,7 @@ dhdsdio_disconnect(void *ptr)
 	}
 	mutex_lock(&_dhd_sdio_mutex_lock_);
 #endif /* (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 25)) */
-#endif 
+#endif
 
 
 	if (bus) {
@@ -8696,7 +8715,7 @@ dhd_bus_devreset(dhd_pub_t *dhdp, uint8 flag)
 #if !defined(IGNORE_ETH0_DOWN)
 						/* Restore flow control  */
 						dhd_txflowcontrol(bus->dhd, ALL_INTERFACES, OFF);
-#endif 
+#endif
 						dhd_os_wd_timer(dhdp, dhd_watchdog_ms);
 
 						DHD_TRACE(("%s: WLAN ON DONE\n", __FUNCTION__));
@@ -9095,6 +9114,31 @@ static int concate_revision_bcm43341(dhd_bus_t *bus,
 	return 0;
 }
 
+static int
+concate_revision_bcm43455(dhd_bus_t *bus,
+        char *fw_path, int fw_path_len, char *nv_path, int nv_path_len)
+{
+	char chipver_tag[10] = {0, };
+#ifdef SUPPORT_MULTIPLE_BOARD_REV_FROM_DT
+	int base_system_rev_for_nv = 0;
+#endif /* SUPPORT_MULTIPLE_BOARD_REV_FROM_DT */
+
+	DHD_TRACE(("%s: BCM43455 Multiple Revision Check\n", __FUNCTION__));
+	if (bus->sih->chip != BCM4345_CHIP_ID) {
+		DHD_ERROR(("%s:Chip is not BCM43455!\n", __FUNCTION__));
+		return -1;
+	}
+#ifdef SUPPORT_MULTIPLE_BOARD_REV_FROM_DT
+	base_system_rev_for_nv = dhd_get_system_rev();
+	if (base_system_rev_for_nv > 0) {
+		DHD_ERROR(("----- Board Rev  [%d]-----\n", base_system_rev_for_nv));
+		sprintf(chipver_tag, "_r%02d", base_system_rev_for_nv);
+	}
+#endif /* SUPPORT_MULTIPLE_BOARD_REV_FROM_DT */
+	strcat(nv_path, chipver_tag);
+	return 0;
+}
+
 int
 concate_revision(dhd_bus_t *bus, char *fw_path, int fw_path_len, char *nv_path, int nv_path_len)
 {
@@ -9145,7 +9189,9 @@ concate_revision(dhd_bus_t *bus, char *fw_path, int fw_path_len, char *nv_path, 
 	case BCM43341_CHIP_ID:
 		res = concate_revision_bcm43341(bus, fw_path, fw_path_len, nv_path, nv_path_len);
 		break;
-
+	case BCM4345_CHIP_ID:
+		res = concate_revision_bcm43455(bus, fw_path, fw_path_len, nv_path, nv_path_len);
+		break;
 
 	default:
 		DHD_ERROR(("REVISION SPECIFIC feature is not required\n"));

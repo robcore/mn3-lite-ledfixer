@@ -1,14 +1,14 @@
 /*
  * Driver O/S-independent utility routines
  *
- * Copyright (C) 1999-2014, Broadcom Corporation
- * 
+ * Copyright (C) 1999-2015, Broadcom Corporation
+ *
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
  * under the terms of the GNU General Public License version 2 (the "GPL"),
  * available at http://www.broadcom.com/licenses/GPLv2.php, with the
  * following added to such license:
- * 
+ *
  *      As a special exception, the copyright holders of this software give you
  * permission to link this software with independent modules, and to copy and
  * distribute the resulting executable under terms of your choice, provided that
@@ -16,11 +16,11 @@
  * the license of that module.  An independent module is a module which is not
  * derived from this software.  The special exception does not apply to any
  * modifications of the software.
- * 
+ *
  *      Notwithstanding the above, under no circumstances may you combine this
  * software in any way with any other Broadcom software provided under a license
  * other than the GPL, without Broadcom's express prior written consent.
- * $Id: bcmutils.c 461404 2014-03-12 01:59:36Z $
+ * $Id: bcmutils.c 551820 2015-04-24 08:43:23Z $
  */
 
 #include <bcm_cfg.h>
@@ -1209,7 +1209,7 @@ prpkt(const char *msg, osl_t *osh, void *p0)
 	for (p = p0; p; p = PKTNEXT(osh, p))
 		prhex(NULL, PKTDATA(osh, p), PKTLEN(osh, p));
 }
-#endif	
+#endif
 
 /* Takes an Ethernet frame and sets out-of-bound PKTPRIO.
  * Also updates the inplace vlan tag if requested.
@@ -1265,6 +1265,11 @@ pktsetprio(void *pkt, bool update_vtag)
 			evh->vlan_tag = hton16(vlan_tag);
 			rc |= PKTPRIO_UPD;
 		}
+#ifdef DHD_LOSSLESS_ROAMING
+	} else if (eh->ether_type == hton16(ETHER_TYPE_802_1X)) {
+		priority = PRIO_8021D_NC;
+		rc = PKTPRIO_DSCP;
+#endif /* DHD_LOSSLESS_ROAMING */
 	} else if (eh->ether_type == hton16(ETHER_TYPE_IP)) {
 		uint8 *ip_body = pktdata + sizeof(struct ether_header);
 		uint8 tos_tc = IP_TOS46(ip_body);
@@ -1297,6 +1302,89 @@ pktsetprio(void *pkt, bool update_vtag)
 	ASSERT(priority >= 0 && priority <= MAXPRIO);
 	PKTSETPRIO(pkt, priority);
 	return (rc | priority);
+}
+
+/* lookup user priority for specified DSCP */
+static uint8
+dscp2up(uint8 *up_table, uint8 dscp)
+{
+	uint8 up = 255;
+
+	/* lookup up from table if parameters valid */
+	if (up_table != NULL && dscp < UP_TABLE_MAX) {
+		up = up_table[dscp];
+	}
+
+	/* 255 is unused value so return up from dscp */
+	if (up == 255) {
+		up = dscp >> (IPV4_TOS_PREC_SHIFT - IPV4_TOS_DSCP_SHIFT);
+	}
+
+	return up;
+}
+
+/* set user priority by QoS Map Set table (UP table), table size is UP_TABLE_MAX */
+uint BCMFASTPATH
+pktsetprio_qms(void *pkt, int8* up_table, bool update_vtag)
+{
+	if (up_table) {
+		uint8 *pktdata;
+		uint pktlen;
+		uint8 dscp;
+		uint up = 0;
+		uint rc = 0;
+
+		pktdata = (uint8 *)PKTDATA(OSH_NULL, pkt);
+		pktlen = PKTLEN(OSH_NULL, pkt);
+
+		if (pktgetdscp(pktdata, pktlen, &dscp)) {
+			rc = PKTPRIO_DSCP;
+			up = dscp2up(up_table, dscp);
+			PKTSETPRIO(pkt, up);
+			printf("dscp=%d, up=%d\n", dscp, up);
+		}
+
+		return (rc | up);
+	}
+	else {
+		return pktsetprio(pkt, update_vtag);
+	}
+}
+
+/* Returns TRUE and DSCP if IP header found, FALSE otherwise.
+ */
+bool BCMFASTPATH
+pktgetdscp(uint8 *pktdata, uint pktlen, uint8 *dscp)
+{
+	struct ether_header *eh;
+	struct ethervlan_header *evh;
+	uint8 *ip_body;
+	bool rc = FALSE;
+
+	/* minimum length is ether header and IP header */
+	if (pktlen < sizeof(struct ether_header) + IPV4_MIN_HEADER_LEN)
+		return FALSE;
+
+	eh = (struct ether_header *) pktdata;
+
+	if (eh->ether_type == HTON16(ETHER_TYPE_IP)) {
+		ip_body = pktdata + sizeof(struct ether_header);
+		*dscp = IP_DSCP46(ip_body);
+		rc = TRUE;
+	}
+	else if (eh->ether_type == HTON16(ETHER_TYPE_8021Q)) {
+		evh = (struct ethervlan_header *)eh;
+
+		/* minimum length is ethervlan header and IP header */
+		if (pktlen >= sizeof(struct ethervlan_header) + IPV4_MIN_HEADER_LEN &&
+			evh->ether_type == HTON16(ETHER_TYPE_IP)) {
+			ip_body = pktdata + sizeof(struct ethervlan_header);
+			*dscp = IP_DSCP46(ip_body);
+			rc = TRUE;
+		}
+	}
+
+	return rc;
 }
 
 
@@ -1954,7 +2042,7 @@ bcm_format_hex(char *str, const void *bytes, int len)
 	}
 	return (int)(p - str);
 }
-#endif 
+#endif
 
 /* pretty hex print a contiguous buffer */
 void
@@ -2121,8 +2209,10 @@ bcm_mkiovar(char *name, char *data, uint datalen, char *buf, uint buflen)
 	strncpy(buf, name, buflen);
 
 	/* append data onto the end of the name string */
-	memcpy(&buf[len], data, datalen);
-	len += datalen;
+	if (data) {
+		memcpy(&buf[len], data, datalen);
+		len += datalen;
+	}
 
 	return len;
 }
@@ -2385,7 +2475,7 @@ bcm_format_ssid(char* buf, const uchar ssid[], uint ssid_len)
 
 	return (int)(p - buf);
 }
-#endif 
+#endif
 
 #endif /* BCMDRIVER */
 
