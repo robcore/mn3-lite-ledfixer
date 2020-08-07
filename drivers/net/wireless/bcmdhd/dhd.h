@@ -60,10 +60,6 @@ int get_scheduler_policy(struct task_struct *p);
 #include <wlfc_proto.h>
 
 
-#if defined(WL11U) && !defined(MFP)
-#define MFP /* Applying interaction with MFP by spec HS2.0 REL2 */
-#endif /* WL11U */
-
 #if defined(KEEP_ALIVE)
 /* Default KEEP_ALIVE Period is 55 sec to prevent AP from sending Keep Alive probe frame */
 #define KEEP_ALIVE_PERIOD 55000
@@ -139,13 +135,9 @@ enum dhd_prealloc_index {
 	DHD_PREALLOC_RXBUF,
 	DHD_PREALLOC_DATABUF,
 	DHD_PREALLOC_OSL_BUF,
-#if defined(STATIC_WL_PRIV_STRUCT)
 	DHD_PREALLOC_WIPHY_ESCAN0 = 5,
-#if defined(CUSTOMER_HW4) && defined(DUAL_ESCAN_RESULT_BUFFER)
-	DHD_PREALLOC_WIPHY_ESCAN1,
-#endif /* CUSTOMER_HW4 && DUAL_ESCAN_RESULT_BUFFER */
-#endif /* STATIC_WL_PRIV_STRUCT */
-	DHD_PREALLOC_DHD_INFO = 7
+	DHD_PREALLOC_WIPHY_ESCAN1 = 6,
+	DHD_PREALLOC_DHD_INFO = 7,
 	DHD_PREALLOC_DHD_WLFC_INFO = 8,
 	DHD_PREALLOC_SECTION_MAX = DHD_PREALLOC_DHD_WLFC_INFO
 };
@@ -925,9 +917,6 @@ void dhd_arp_offload_add_ip(dhd_pub_t *dhd, uint32 ipaddr, int idx);
 #endif /* ARP_OFFLOAD_SUPPORT */
 #ifdef WLTDLS
 int dhd_tdls_enable(struct net_device *dev, bool tdls_on, bool auto_on, struct ether_addr *mac);
-#ifdef CUSTOMER_HW4
-int dhd_tdls_reset_manual(dhd_pub_t *dhd, struct net_device *dev);
-#endif /* CUSTOMER_HW4 */
 #endif
 /* Neighbor Discovery Offload Support */
 int dhd_ndo_enable(dhd_pub_t * dhd, int ndo_enable);
