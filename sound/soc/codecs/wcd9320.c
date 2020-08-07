@@ -7654,6 +7654,26 @@ static ssize_t uhqa_mode_store(struct kobject *kobj,
 	return count;
 }
 
+static ssize_t high_perf_mode_show(struct kobject *kobj,
+		struct kobj_attribute *attr, char *buf) {
+	return sprintf(buf, "%u\n", high_perf_mode);
+}
+
+static ssize_t high_perf_mode_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count) {
+	int uval;
+
+	sscanf(buf, "%d", &uval);
+
+	if (uval < 0)
+		uval = 0;
+	if (uval > 1)
+		uval = 1;
+
+	high_perf_mode = uval;
+	return count;
+}
+
 static ssize_t interpolator_boost_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf) {
 	return sprintf(buf, "%u\n", interpolator_boost);
@@ -7760,6 +7780,11 @@ static struct kobj_attribute uhqa_mode_attribute =
 		uhqa_mode_show,
 		uhqa_mode_store);
 
+static struct kobj_attribute high_perf_mode_attribute =
+	__ATTR(high_perf_mode, 0644,
+		high_perf_mode_show,
+		high_perf_mode_store);
+
 static struct kobj_attribute interpolator_boost_attribute =
 	__ATTR(interpolator_boost, 0644,
 		interpolator_boost_show,
@@ -7786,6 +7811,7 @@ static struct attribute *sound_control_attrs[] = {
 		&hph_poweramp_gain_raw_attribute.attr,
 		&speaker_gain_attribute.attr,
 		&uhqa_mode_attribute.attr,
+		&high_perf_mode_attribute.attr,
 		&interpolator_boost_attribute.attr,
 		&hph_pa_enabled_attribute.attr,
 		&six_db_gain_lock_attribute.attr,
