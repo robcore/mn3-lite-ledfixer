@@ -4346,10 +4346,7 @@ static int taiko_write(struct snd_soc_codec *codec, unsigned int reg,
 	int ret;
 	struct wcd9xxx *wcd9xxx;
 
-	if (reg == SND_SOC_NOPM)
-		return 0;
-
-	if (reg > TAIKO_MAX_REGISTER)
+	if (reg < 0 || reg > TAIKO_MAX_REGISTER)
 		return -ERANGE;
 
 	if (codec == NULL)
@@ -4375,10 +4372,7 @@ static unsigned int taiko_read(struct snd_soc_codec *codec,
 
 	struct wcd9xxx *wcd9xxx;
 
-	if (reg == SND_SOC_NOPM)
-		return 0;
-
-	if (reg > TAIKO_MAX_REGISTER)
+	if (reg < 0 || reg > TAIKO_MAX_REGISTER)
 		return -ERANGE;
 
 	if (codec == NULL)
