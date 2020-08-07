@@ -718,7 +718,7 @@ not match our unaligned address for < 2.6.24
 
 #define KMALLOC_FLAG (CAN_SLEEP() ? GFP_KERNEL: GFP_ATOMIC)
 
-#define RANDOM32	prandom_u32
+#define RANDOM32 random32
 #define SRANDOM32(entropy)	prandom_seed(entropy)
 
 /*
