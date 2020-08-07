@@ -96,6 +96,25 @@ chown -R 0:2000 /system/etc/init.d;
 rm -rf /data/magisk_backup*
 
 ui_print "- Importing updated WiFi Firmware"
+if [ ! -d "/system/etc/wifi/backups" ]
+then
+	mkdir /system/etc/wifi/backups
+	cp -af /system/etc/wifi/bcmdhd_apsta.bin /system/etc/wifi/backups/
+	cp -af /system/etc/wifi/bcmdhd_ibss.bin /system/etc/wifi/backups/
+	cp -af /system/etc/wifi/bcmdhd_mfg.bin /system/etc/wifi/backups/
+	cp -af /system/etc/wifi/bcmdhd_sta.bin /system/etc/wifi/backups/
+	cp -af /system/etc/wifi/nvram_mfg.txt /system/etc/wifi/backups/
+	cp -af /system/etc/wifi/nvram_mfg.txt_murata /system/etc/wifi/backups/
+	cp -af /system/etc/wifi/nvram_mfg.txt_muratafem1 /system/etc/wifi/backups/
+	cp -af /system/etc/wifi/nvram_net.txt /system/etc/wifi/backups/
+	cp -af /system/etc/wifi/nvram_net.txt_murata /system/etc/wifi/backups/
+	cp -af /system/etc/wifi/nvram_net.txt_muratafem1 /system/etc/wifi/backups/
+	cp -af /system/etc/wifi/p2p_supplicant_overlay.conf /system/etc/wifi/backups/
+	cp -af /system/etc/wifi/WCNSS_qcom_cfg.ini /system/etc/wifi/backups/
+	cp -af /system/etc/wifi/wpa_supplicant.conf /system/etc/wifi/backups/
+	cp -af /system/etc/wifi/wpa_supplicant_overlay.conf /system/etc/wifi/backups/
+fi
+
 cp -af $COMMONDIR/wifi/bcmdhd_apsta.bin /system/etc/wifi/
 cp -af $COMMONDIR/wifi/bcmdhd_ibss.bin /system/etc/wifi/
 cp -af $COMMONDIR/wifi/bcmdhd_mfg.bin /system/etc/wifi/
