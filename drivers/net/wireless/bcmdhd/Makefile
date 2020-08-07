@@ -464,7 +464,7 @@ endif
   # FCC power limit control on ch12/13.
   DHDCFLAGS += -DFCC_PWR_LIMIT_2G
   # US/988 country code with higher power on UNII-1 5G band
-  DHDCFLAGS += -DDHD_SUPPORT_FCC_US_988
+  #DHDCFLAGS += -DDHD_SUPPORT_FCC_US_988
 
   # Remove common feature for BCM4343
   DHDCFLAGS :=$(filter-out -DDHD_USE_IDLECOUNT,$(DHDCFLAGS))
