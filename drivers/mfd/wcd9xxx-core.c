@@ -122,9 +122,9 @@ static unsigned int sound_control_override = 0;
 void lock_sound_control(struct wcd9xxx_core_resource *core_res,
 						unsigned int lockval) {
 	struct wcd9xxx *wcd9xxx = (struct wcd9xxx *) core_res->parent;
-	if (unlikely(lockval <= 0))
+	if (unlikely(lockval < 0))
 		lockval = 0;
-	if (unlikely(lockval >= 1))
+	if (unlikely(lockval > 1))
 		lockval = 1;
 
 	mutex_lock(&wcd9xxx->io_lock);
