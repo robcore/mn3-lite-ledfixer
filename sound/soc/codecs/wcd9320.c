@@ -611,18 +611,17 @@ static void write_hph_poweramp_gain(unsigned short reg, bool mute)
 	if (!hph_pa_enabled)
 		return;
 
-	if (reg == WCD9XXX_A_RX_HPH_L_GAIN) {
-		if (mute)
-			local_cached_gain = 0;
-		else
-			local_cached_gain = hphl_pa_cached_gain;
-	} else if (reg == WCD9XXX_A_RX_HPH_R_GAIN) {
-		if (mute)
-			local_cached_gain = 0;
-		else
-			local_cached_gain = hphr_pa_cached_gain;
-	} else
+	if (reg != WCD9XXX_A_RX_HPH_L_GAIN &&
+		reg != WCD9XXX_A_RX_HPH_R_GAIN)
 		return;
+
+	if (mute && (reg == WCD9XXX_A_RX_HPH_L_GAIN ||
+		reg == WCD9XXX_A_RX_HPH_R_GAIN))
+		local_cached_gain = 0;
+	else if (!mute && reg == WCD9XXX_A_RX_HPH_L_GAIN)
+		local_cached_gain = hphl_pa_cached_gain;
+	else if (!mute && reg == WCD9XXX_A_RX_HPH_R_GAIN)
+		local_cached_gain = hphr_pa_cached_gain;
 
 	snd_soc_update_bits(direct_codec, reg, 32, 32);
 
