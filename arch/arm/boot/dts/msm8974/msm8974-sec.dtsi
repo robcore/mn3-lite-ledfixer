@@ -813,8 +813,8 @@
 			qcom,cdc-vdd-tx-h-current = <25000>;
 
 			cdc-vdd-rx-h-supply = <&pm8941_s3>;
-			qcom,cdc-vdd-rx-h-voltage = <2150000 2150000>;
-			qcom,cdc-vdd-rx-h-current = <50000>;
+			qcom,cdc-vdd-rx-h-voltage = <1800000 1800000>;
+			qcom,cdc-vdd-rx-h-current = <25000>;
 
 			cdc-vddpx-1-supply = <&pm8941_s3>;
 			qcom,cdc-vddpx-1-voltage = <1800000 1800000>;
