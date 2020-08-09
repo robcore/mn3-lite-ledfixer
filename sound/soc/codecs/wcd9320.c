@@ -572,6 +572,9 @@ static bool hpwidget = false;
 static bool spkwidget = false;
 static unsigned int compander_gain_lock;
 static unsigned int compander_gain_boost;
+u32 sc_peak_det_timeout = 0xB;
+u32 sc_rms_meter_div_fact = 0xD;
+u32 sc_rms_meter_resamp_fact = 0xA0;
 
 static void update_headphone_gain(void) {
 	if (!hpwidget)
@@ -1286,15 +1289,20 @@ static int taiko_config_compander(struct snd_soc_dapm_widget *w,
 /*		.peak_det_timeout = 0x0B,
 		.rms_meter_div_fact = 0xC,
 		.rms_meter_resamp_fact = 0x50,
+		u32 sc_peak_det_timeout = 0xB;
+		u32 sc_rms_meter_div_fact = 0xD;
+		u32 sc_rms_meter_resamp_fact = 0xA0;
 */
 		if (interpolator_boost) { 
-			snd_soc_write(codec, TAIKO_A_CDC_COMP0_B3_CTL + (comp * 8), 0xA0);
+			snd_soc_write(codec,
+						TAIKO_A_CDC_COMP0_B3_CTL + (comp * 8),
+						sc_rms_meter_resamp_fact);
 			snd_soc_update_bits(codec,
 					    TAIKO_A_CDC_COMP0_B2_CTL + (comp * 8),
-					    0xF0, 0xD << 4);
+					    0xF0, sc_rms_meter_div_fact << 4);
 			snd_soc_update_bits(codec,
 						TAIKO_A_CDC_COMP0_B2_CTL + (comp * 8),
-						0x0F, 0x0B);
+						0x0F, sc_peak_det_timeout);
 		} else {
 			snd_soc_write(codec, TAIKO_A_CDC_COMP0_B3_CTL + (comp * 8),
 				      comp_params->rms_meter_resamp_fact);
@@ -7937,6 +7945,70 @@ static ssize_t speaker_hpf_store(struct kobject *kobj,
 	return count;
 }
 
+static ssize_t peak_det_timeout_show(struct kobject *kobj,
+		struct kobj_attribute *attr, char *buf) {
+	return sprintf(buf, "%u\n", sc_peak_det_timeout);
+}
+
+static ssize_t peak_det_timeout_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count) {
+	int uval;
+
+	sscanf(buf, "%d", &uval);
+
+	if (uval < 0)
+		uval = 0;
+	if (uval > 15)
+		uval = 15;
+
+	sc_peak_det_timeout = uval;
+
+	return count;
+}
+
+static ssize_t rms_meter_div_fact_show(struct kobject *kobj,
+		struct kobj_attribute *attr, char *buf) {
+	return sprintf(buf, "%u\n", sc_rms_meter_div_fact);
+}
+
+static ssize_t rms_meter_div_fact_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count) {
+	int uval;
+
+	sscanf(buf, "%d", &uval);
+
+	if (uval < 0)
+		uval = 0;
+	if (uval > 15)
+		uval = 15;
+
+	sc_rms_meter_div_fact = uval;
+
+	return count;
+}
+
+static ssize_t rms_meter_resamp_fact_show(struct kobject *kobj,
+		struct kobj_attribute *attr, char *buf) {
+	return sprintf(buf, "%u\n", sc_rms_meter_resamp_fact);
+}
+
+/* TODO: Find out if this maxes out at 240 or 255 */
+static ssize_t rms_meter_resamp_fact_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count) {
+	int uval;
+
+	sscanf(buf, "%d", &uval);
+
+	if (uval < 0)
+		uval = 0;
+	if (uval > 255)
+		uval = 255;
+
+	sc_rms_meter_resamp_fact = uval;
+
+	return count;
+}
+
 static struct kobj_attribute headphone_gain_attribute =
 	__ATTR(headphone_gain, 0644,
 		headphone_gain_show,
@@ -7997,6 +8069,21 @@ static struct kobj_attribute speaker_hpf_attribute =
 		speaker_hpf_show,
 		speaker_hpf_store);
 
+static struct kobj_attribute peak_det_timeout_attribute =
+	__ATTR(peak_det_timeout, 0644,
+		peak_det_timeout_show,
+		peak_det_timeout_store);
+
+static struct kobj_attribute rms_meter_div_fact_attribute =
+	__ATTR(rms_meter_div_fact, 0644,
+		rms_meter_div_fact_show,
+		rms_meter_div_fact_store);
+
+static struct kobj_attribute rms_meter_resamp_fact_attribute =
+	__ATTR(rms_meter_resamp_fact, 0644,
+		rms_meter_resamp_fact_show,
+		rms_meter_resamp_fact_store);
+
 static struct attribute *sound_control_attrs[] = {
 		&headphone_gain_attribute.attr,
 		&hph_poweramp_gain_attribute.attr,
@@ -8010,6 +8097,9 @@ static struct attribute *sound_control_attrs[] = {
 		&compander_gain_boost_attribute.attr,
 		&headphone_hpf_attribute.attr,
 		&speaker_hpf_attribute.attr,
+		&peak_det_timeout_attribute.attr,
+		&rms_meter_div_fact_attribute.attr,
+		&rms_meter_resamp_fact_attribute.attr,
 		NULL,
 };
 
