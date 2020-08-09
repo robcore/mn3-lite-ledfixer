@@ -7725,6 +7725,23 @@ static ssize_t hph_poweramp_gain_raw_show(struct kobject *kobj,
 	return sprintf(buf, "%d %d\n", leftval, rightval);
 }
 
+static ssize_t hph_poweramp_gain_raw_store(struct kobject *kobj,
+		struct kobj_attribute *attr, char *buf)
+{
+	int val;
+
+	sscanf(buf, "%d", &val)
+	if (val < 0)
+		val = 0;
+	if (val > 255)
+		val = 255;
+	
+	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, WCD9XXX_A_RX_HPH_L_GAIN, val);
+	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, WCD9XXX_A_RX_HPH_R_GAIN, val);
+
+	return count;
+}
+
 static ssize_t speaker_gain_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf) {
 	int spkval, tempval;
@@ -8063,9 +8080,9 @@ static struct kobj_attribute hph_poweramp_gain_attribute =
 		hph_poweramp_gain_store);
 
 static struct kobj_attribute hph_poweramp_gain_raw_attribute =
-	__ATTR(hph_poweramp_gain_raw, 0444,
+	__ATTR(hph_poweramp_gain_raw, 0644,
 		hph_poweramp_gain_raw_show,
-		NULL);
+		hph_poweramp_gain_raw_store);
 
 static struct kobj_attribute speaker_gain_attribute =
 	__ATTR(speaker_gain, 0644,
