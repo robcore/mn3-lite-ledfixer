@@ -548,9 +548,6 @@ static unsigned short tx_digital_gain_reg[] = {
 u8 hphl_cached_gain;
 u8 hphr_cached_gain;
 u8 speaker_cached_gain;
-u8 hphl_hpf_cutoff;
-u8 hphr_hpf_cutoff;
-u8 speaker_hpf_cutoff;
 
 #define HPH_RX_GAIN_MAX 20
 #define HPH_PA_SHIFT 0
@@ -571,6 +568,9 @@ static bool hpwidget = false;
 static bool spkwidget = false;
 static unsigned int compander_gain_lock;
 static unsigned int compander_gain_boost;
+static u8 hphl_hpf_cutoff;
+static u8 hphr_hpf_cutoff;
+static u8 speaker_hpf_cutoff;
 
 static void update_headphone_gain(void) {
 	if (!hpwidget)
@@ -658,38 +658,96 @@ static void update_speaker_gain(void) {
 }
 
 /*
+	__________________________Bypass Switch_______________________
+
 	SOC_SINGLE(xname, reg, shift, max, invert)
 	SOC_SINGLE("RX1 HPF Switch", TAIKO_A_CDC_RX1_B5_CTL, 2, 1, 0),
 	SOC_SINGLE("RX2 HPF Switch", TAIKO_A_CDC_RX2_B5_CTL, 2, 1, 0),
 	SOC_SINGLE("RX7 HPF Switch", TAIKO_A_CDC_RX7_B5_CTL, 2, 1, 0),
+	______________________________________________________________
+
+	__________________________HPF Cutoff__________________________
+	Cutoff Registers - values are 0, 1, 2 corresponding with
+		"MIN_3DB_4Hz", "MIN_3DB_75Hz", "MIN_3DB_150Hz"
+
+#define SOC_ENUM_SINGLE(xreg, xshift, xmax, xtexts) \
+	static const struct soc_enum cf_rxmix1_enum =
+		SOC_ENUM_SINGLE(TAIKO_A_CDC_RX1_B4_CTL, 0, 3, cf_text);
+
+	static const struct soc_enum cf_rxmix2_enum =
+		SOC_ENUM_SINGLE(TAIKO_A_CDC_RX2_B4_CTL, 0, 3, cf_text);
+
+	static const struct soc_enum cf_rxmix7_enum =
+		SOC_ENUM_SINGLE(TAIKO_A_CDC_RX7_B4_CTL, 0, 3, cf_text);
+
+	.get = snd_soc_get_enum_double, .put = snd_soc_put_enum_double, \
+	______________________________________________________________
 */
 
-static void write_hpf(unsigned short reg)
+static void write_hpf_cutoff(unsigned short reg)
 {
+	unsigned int val, mask, bitmask, old, new;
+
 	switch (reg) {
-		case TAIKO_A_CDC_RX1_B5_CTL:
-		case TAIKO_A_CDC_RX2_B5_CTL:
-		case TAIKO_A_CDC_RX7_B5_CTL:
+		case TAIKO_A_CDC_RX1_B4_CTL:
+		case TAIKO_A_CDC_RX2_B4_CTL:
+		case TAIKO_A_CDC_RX7_B4_CTL:
 			break;
 		default:
 			return;
 	}
 
-}
-static int read_hpf(unsigned short reg)
-{
+	for (bitmask = 1; bitmask < 3; bitmask <<= 1)
+		;
 	switch (reg) {
-		case TAIKO_A_CDC_RX1_B5_CTL:
-		case TAIKO_A_CDC_RX2_B5_CTL:
-		case TAIKO_A_CDC_RX7_B5_CTL:
+		case TAIKO_A_CDC_RX1_B4_CTL:
+			val = hphl_hpf_cutoff << 0;
+			break;
+		case TAIKO_A_CDC_RX2_B4_CTL:
+			val = hphr_hpf_cutoff << 0;
+			break;
+		case TAIKO_A_CDC_RX7_B4_CTL:
+			val = speaker_hpf_cutoff << 0;
 			break;
 		default:
-			return;
+			break;
 	}
 
+	mask = (bitmask - 1) << 0;
+
+	/*snd_soc_update_bits_locked(codec, e->reg, mask, val);*/
+	mutex_lock(&direct_codec->mutex);
+	old = wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, reg);
+	if (old < 0) {
+		mutex_unlock(&direct_codec->mutex);
+		return;
+	}
+	new = (old & ~mask) | (val & mask);
+	if (old != new)
+		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, reg, new);
+	mutex_unlock(&direct_codec->mutex);
 }
 
+static int read_hpf_cutoff(unsigned short reg)
+{
+	unsigned int val, bitmask, local_reg_val;
 
+	switch (reg) {
+		case TAIKO_A_CDC_RX1_B4_CTL:
+		case TAIKO_A_CDC_RX2_B4_CTL:
+		case TAIKO_A_CDC_RX7_B4_CTL:
+			break;
+		default:
+			return -EINVAL;
+	}
+
+	for (bitmask = 1; bitmask < 3; bitmask <<= 1)
+		;
+	val = wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, reg);
+	local_reg_val = (val >> 0) & (bitmask - 1);
+
+	return local_reg_val;
+}
 
 static int spkr_drv_wrnd = 1;
 
@@ -7811,6 +7869,84 @@ static ssize_t compander_gain_boost_store(struct kobject *kobj,
 	return count;
 }
 
+/*		TAIKO_A_CDC_RX1_B4_CTL
+		TAIKO_A_CDC_RX2_B4_CTL
+		hphl_hpf_cutoff
+		hphr_hpf_cutoff
+*/
+
+static ssize_t headphone_hpf_show(struct kobject *kobj,
+		struct kobj_attribute *attr, char *buf)
+{
+	int leftval, rightval;
+
+	leftval = read_hpf_cutoff(TAIKO_A_CDC_RX1_B4_CTL);
+	rightval = read_hpf_cutoff(TAIKO_A_CDC_RX2_B4_CTL);
+
+	return sprintf(buf, "%d %d\n", leftval, rightval);
+}
+
+static ssize_t headphone_hpf_store(struct kobject *kobj,
+		struct kobj_attribute *attr, const char *buf, size_t count)
+{
+
+	int leftinput;
+	int rightinput;
+	int dualinput;
+
+	if (sscanf(buf, "%d %d", &leftinput, &rightinput) == 2) {
+		if (leftinput < 0)
+			leftinput = 0;
+		if (leftinput > 2)
+			leftinput = 2;
+		if (rightinput < 0)
+			rightinput = 0;
+		if (rightinput > 2)
+			rightinput = 2;
+		hphl_hpf_cutoff = (u8)leftinput;
+		hphr_hpf_cutoff = (u8)rightinput;
+	} else if (sscanf(buf, "%d", &dualinput) == 1) {
+		if (dualinput < 0)
+			dualinput = 0;
+		if (dualinput > 2)
+			dualinput = 2;
+		hphl_hpf_cutoff = (u8)dualinput;
+		hphr_hpf_cutoff = (u8)dualinput;
+	}
+
+	write_hpf_cutoff(TAIKO_A_CDC_RX1_B4_CTL);
+	write_hpf_cutoff(TAIKO_A_CDC_RX2_B4_CTL);
+
+	return count;
+}
+
+/*
+		TAIKO_A_CDC_RX7_B4_CTL
+		speaker_hpf_cutoff
+*/
+
+static ssize_t speaker_hpf_show(struct kobject *kobj,
+		struct kobj_attribute *attr, char *buf) {
+	return sprintf(buf, "%u\n", read_hpf_cutoff(TAIKO_A_CDC_RX7_B4_CTL));
+}
+
+static ssize_t speaker_hpf_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count) {
+	int uval;
+
+	sscanf(buf, "%d", &uval);
+
+	if (uval < 0)
+		uval = 0;
+	if (uval > 2)
+		uval = 2;
+
+	speaker_hpf_cutoff = uval;
+
+	write_hpf_cutoff(TAIKO_A_CDC_RX7_B4_CTL);
+
+	return count;
+}
 
 static struct kobj_attribute headphone_gain_attribute =
 	__ATTR(headphone_gain, 0644,
@@ -7862,6 +7998,16 @@ static struct kobj_attribute compander_gain_boost_attribute =
 		compander_gain_boost_show,
 		compander_gain_boost_store);
 
+static struct kobj_attribute headphone_hpf_attribute =
+	__ATTR(headphone_hpf, 0644,
+		headphone_hpf_show,
+		headphone_hpf_store);
+
+static struct kobj_attribute speaker_hpf_attribute =
+	__ATTR(speaker_hpf, 0644,
+		speaker_hpf_show,
+		speaker_hpf_store);
+
 static struct attribute *sound_control_attrs[] = {
 		&headphone_gain_attribute.attr,
 		&hph_poweramp_gain_attribute.attr,
@@ -7873,6 +8019,8 @@ static struct attribute *sound_control_attrs[] = {
 		&hph_pa_enabled_attribute.attr,
 		&compander_gain_lock_attribute.attr,
 		&compander_gain_boost_attribute.attr,
+		&headphone_hpf_attribute.attr,
+		&speaker_hpf_attribute.attr,
 		NULL,
 };
 
