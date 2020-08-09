@@ -548,9 +548,6 @@ static unsigned short tx_digital_gain_reg[] = {
 u8 hphl_cached_gain;
 u8 hphr_cached_gain;
 u8 speaker_cached_gain;
-u8 raw_hphl_hpf_cutoff;
-u8 raw_hphr_hpf_cutoff;
-u8 raw_speaker_hpf_cutoff;
 
 static u8 hphl_hpf_cutoff;
 static u8 hphr_hpf_cutoff;
@@ -718,23 +715,6 @@ static void write_hpf_cutoff(unsigned short reg)
 	}
 
 	mask = (bitmask - 1) << 0;
-
-	tempold = wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, reg);
-	if (tempold < 0)
-		return;
-	switch (reg) {
-		case TAIKO_A_CDC_RX1_B4_CTL:
-			raw_hphl_hpf_cutoff = (tempold & ~mask) | (val & mask);
-			break;
-		case TAIKO_A_CDC_RX2_B4_CTL:
-			raw_hphr_hpf_cutoff = (tempold & ~mask) | (val & mask);
-			break;
-		case TAIKO_A_CDC_RX7_B4_CTL:
-			raw_speaker_hpf_cutoff = (tempold & ~mask) | (val & mask);
-			break;
-		default:
-			break;
-	}
 
 	/*snd_soc_update_bits_locked(codec, e->reg, mask, val);*/
 	mutex_lock(&direct_codec->mutex);
@@ -3527,10 +3507,12 @@ static int taiko_hphl_dac_event(struct snd_soc_dapm_widget *w,
 	case SND_SOC_DAPM_POST_PMU:
 		snd_soc_update_bits(codec, TAIKO_A_CDC_RX1_B3_CTL, 0xBC, 0x94);
 		snd_soc_update_bits(codec, TAIKO_A_CDC_RX1_B4_CTL, 0x30, 0x10);
+		write_hpf_cutoff(TAIKO_A_CDC_RX1_B4_CTL);
 		break;
 	case SND_SOC_DAPM_PRE_PMD:
 		snd_soc_update_bits(codec, TAIKO_A_CDC_RX1_B3_CTL, 0xBC, 0x00);
 		snd_soc_update_bits(codec, TAIKO_A_CDC_RX1_B4_CTL, 0x30, 0x00);
+		write_hpf_cutoff(TAIKO_A_CDC_RX1_B4_CTL);
 		break;
 	case SND_SOC_DAPM_POST_PMD:
 		snd_soc_update_bits(codec, TAIKO_A_CDC_CLK_RDAC_CLK_EN_CTL,
@@ -3567,10 +3549,12 @@ static int taiko_hphr_dac_event(struct snd_soc_dapm_widget *w,
 	case SND_SOC_DAPM_POST_PMU:
 		snd_soc_update_bits(codec, TAIKO_A_CDC_RX2_B3_CTL, 0xBC, 0x94);
 		snd_soc_update_bits(codec, TAIKO_A_CDC_RX2_B4_CTL, 0x30, 0x10);
+		write_hpf_cutoff(TAIKO_A_CDC_RX2_B4_CTL);
 		break;
 	case SND_SOC_DAPM_PRE_PMD:
 		snd_soc_update_bits(codec, TAIKO_A_CDC_RX2_B3_CTL, 0xBC, 0x00);
 		snd_soc_update_bits(codec, TAIKO_A_CDC_RX2_B4_CTL, 0x30, 0x00);
+		write_hpf_cutoff(TAIKO_A_CDC_RX2_B4_CTL);
 		break;
 	case SND_SOC_DAPM_POST_PMD:
 		snd_soc_update_bits(codec, TAIKO_A_CDC_CLK_RDAC_CLK_EN_CTL,
@@ -7486,6 +7470,9 @@ static int taiko_post_reset_cb(struct wcd9xxx *wcd9xxx)
 		taiko->dai[count].bus_down_in_recovery = true;
 
 	mutex_unlock(&codec->mutex);
+	write_hpf_cutoff(TAIKO_A_CDC_RX1_B4_CTL);
+	write_hpf_cutoff(TAIKO_A_CDC_RX2_B4_CTL);
+	write_hpf_cutoff(TAIKO_A_CDC_RX7_B4_CTL);
 	return ret;
 }
 
@@ -8252,6 +8239,10 @@ static int taiko_codec_probe(struct snd_soc_codec *codec)
 	} else {
 		pr_warn("%s kobject create failed!\n", __func__);
 	}
+
+	write_hpf_cutoff(TAIKO_A_CDC_RX1_B4_CTL):
+	write_hpf_cutoff(TAIKO_A_CDC_RX2_B4_CTL);
+	write_hpf_cutoff(TAIKO_A_CDC_RX7_B4_CTL):
 
 	return ret;
 
