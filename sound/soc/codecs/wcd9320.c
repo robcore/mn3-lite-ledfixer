@@ -763,6 +763,7 @@ static int get_analog_gain(unsigned short reg) {
 		else if (reg == WCD9XXX_A_RX_HPH_R_GAIN)
 			return (hphr_analag_gain & TAIKO_HPH_VOL_MASK);
 	}
+	return -EINVAL;
 }
 
 static void set_analog_gain(unsigned short reg)
@@ -8070,6 +8071,11 @@ static struct kobj_attribute speaker_hpf_attribute =
 		speaker_hpf_show,
 		speaker_hpf_store);
 
+static struct kobj_attribute hph_analog_gain_attribute =
+	__ATTR(hph_analog_gain, 0644,
+		hph_analog_gain_show,
+		hph_analog_gain_store);
+
 static struct attribute *sound_control_attrs[] = {
 		&headphone_gain_attribute.attr,
 		&hph_poweramp_gain_attribute.attr,
@@ -8083,6 +8089,7 @@ static struct attribute *sound_control_attrs[] = {
 		&compander_gain_boost_attribute.attr,
 		&headphone_hpf_attribute.attr,
 		&speaker_hpf_attribute.attr,
+		&hph_analog_gain_attribute.attr,
 		NULL,
 };
 
