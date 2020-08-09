@@ -1087,15 +1087,18 @@ static int taiko_set_compander(struct snd_kcontrol *kcontrol,
 		    kcontrol->private_value)->shift;
 	int value = ucontrol->value.integer.value[0];
 
-	if (hph_pa_enabled && comp == COMPANDER_1
-		&& taiko->comp_enabled[comp] == 0 && value == 1) {
-		/* Wavegen to 5 msec */
-		snd_soc_write(codec, TAIKO_A_RX_HPH_CNP_WG_CTL, 0xDA);
-		snd_soc_write(codec, TAIKO_A_RX_HPH_CNP_WG_TIME, 0x15);
-		snd_soc_write(codec, TAIKO_A_RX_HPH_BIAS_WG_OCP, 0x2A);
-		write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN, false);
-		write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_R_GAIN, false);
+	if (hph_pa_enabled && comp == COMPANDER_1) {
+		/* Wavegen to 20 msec */
 		taiko->comp_enabled[comp] = 0;
+		snd_soc_write(codec, TAIKO_A_RX_HPH_CNP_WG_CTL, 0xDB);
+		snd_soc_write(codec, TAIKO_A_RX_HPH_CNP_WG_TIME, 0x58);
+		snd_soc_write(codec, TAIKO_A_RX_HPH_BIAS_WG_OCP, 0x1A);
+
+		/* Disable CHOPPER block */
+		snd_soc_update_bits(codec,
+			TAIKO_A_RX_HPH_CHOP_CTL, 0x80, 0x00);
+
+		snd_soc_write(codec, TAIKO_A_NCP_DTEST, 0x10);
 		return 0;
 	}
 
@@ -1221,30 +1224,10 @@ static int taiko_config_compander(struct snd_soc_dapm_widget *w,
 	pr_info("%s: %s event %d compander %d, enabled %d", __func__,
 		 w->name, event, comp, taiko->comp_enabled[comp]);
 
-	if (hph_pa_enabled && comp == COMPANDER_1 && taiko->comp_enabled[comp]) {
-		/* Disable compander */
-		snd_soc_update_bits(codec,
-				    TAIKO_A_CDC_COMP0_B1_CTL + (comp * 8),
-				    enable_mask, 0x00);
-
-		/* Toggle compander reset bits */
-		snd_soc_update_bits(codec, TAIKO_A_CDC_CLK_OTHR_RESET_B2_CTL,
-				    mask << comp_shift[comp],
-				    mask << comp_shift[comp]);
-		snd_soc_update_bits(codec, TAIKO_A_CDC_CLK_OTHR_RESET_B2_CTL,
-				    mask << comp_shift[comp], 0);
-
-		/* Turn off the clock for compander in pair */
-		snd_soc_update_bits(codec, TAIKO_A_CDC_CLK_RX_B2_CTL,
-				    mask << comp_shift[comp], 0);
-
-		/* Set gain source to register */
-		taiko_config_gain_compander(codec, comp, false);
-		return 0;
+	if (comp != COMPANDER_1 && !hph_pa_enabled) {
+		if (!taiko->comp_enabled[comp])
+			return 0;
 	}
-
-	if (!taiko->comp_enabled[comp])
-		return 0;
 
 	/* Compander 0 has single channel */
 	mask = (comp == COMPANDER_0 ? 0x01 : 0x03);
@@ -1253,6 +1236,8 @@ static int taiko_config_compander(struct snd_soc_dapm_widget *w,
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
+		if (hph_pa_enabled)
+			break;
 		/* Set compander Sample rate */
 		snd_soc_update_bits(codec,
 				    TAIKO_A_CDC_COMP0_FS_CFG + (comp * 8),
@@ -1303,10 +1288,10 @@ static int taiko_config_compander(struct snd_soc_dapm_widget *w,
 		.rms_meter_resamp_fact = 0x50,
 */
 		if (interpolator_boost) { 
-			snd_soc_write(codec, TAIKO_A_CDC_COMP0_B3_CTL + (comp * 8), 0x50);
+			snd_soc_write(codec, TAIKO_A_CDC_COMP0_B3_CTL + (comp * 8), 0xA0);
 			snd_soc_update_bits(codec,
 					    TAIKO_A_CDC_COMP0_B2_CTL + (comp * 8),
-					    0xF0, 0xC << 4);
+					    0xF0, 0xD << 4);
 			snd_soc_update_bits(codec,
 						TAIKO_A_CDC_COMP0_B2_CTL + (comp * 8),
 						0x0F, 0x0B);
