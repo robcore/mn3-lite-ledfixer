@@ -122,11 +122,11 @@ extern u8 hphl_cached_gain;
 extern u8 hphr_cached_gain;
 extern u8 speaker_cached_gain;
 /* 0x2B3 */
-extern u8 hphl_hpf_cutoff;
+extern u8 raw_hphl_hpf_cutoff;
 /* 0x2BB */
-extern u8 hphr_hpf_cutoff;
+extern u8 raw_hphr_hpf_cutoff;
 /* 0x2E3 */
-extern u8 speaker_hpf_cutoff;
+extern u8 raw_speaker_hpf_cutoff;
 
 static unsigned int sound_control_override = 0;
 void lock_sound_control(struct wcd9xxx_core_resource *core_res,
@@ -220,13 +220,13 @@ static int __wcd9xxx_reg_write(struct wcd9xxx *wcd9xxx,
 					ret = wcd9xxx_write(wcd9xxx, reg, 1, &speaker_cached_gain, false);
 				break;
 			case 0x2B3:
-				ret = wcd9xxx_write(wcd9xxx, reg, 1, &hphl_hpf_cutoff, false);
+				ret = wcd9xxx_write(wcd9xxx, reg, 1, &raw_hphl_hpf_cutoff, false);
 				break;
 			case 0x2BB:
-				ret = wcd9xxx_write(wcd9xxx, reg, 1, &hphr_hpf_cutoff, false);
+				ret = wcd9xxx_write(wcd9xxx, reg, 1, &raw_hphr_hpf_cutoff, false);
 				break;
 			case 0x2E3:
-				ret = wcd9xxx_write(wcd9xxx, reg, 1, &speaker_hpf_cutoff, false);
+				ret = wcd9xxx_write(wcd9xxx, reg, 1, &raw_speaker_hpf_cutoff, false);
 				break;
 			default:
 				break;

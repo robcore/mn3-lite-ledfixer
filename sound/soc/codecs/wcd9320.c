@@ -548,9 +548,13 @@ static unsigned short tx_digital_gain_reg[] = {
 u8 hphl_cached_gain;
 u8 hphr_cached_gain;
 u8 speaker_cached_gain;
-u8 hphl_hpf_cutoff;
-u8 hphr_hpf_cutoff;
-u8 speaker_hpf_cutoff;
+u8 raw_hphl_hpf_cutoff;
+u8 raw_hphr_hpf_cutoff;
+u8 raw_speaker_hpf_cutoff;
+
+static u8 hphl_hpf_cutoff;
+static u8 hphr_hpf_cutoff;
+static u8 speaker_hpf_cutoff;
 
 #define HPH_RX_GAIN_MAX 20
 #define HPH_PA_SHIFT 0
@@ -724,6 +728,19 @@ static void write_hpf_cutoff(unsigned short reg)
 	}
 	new = (old & ~mask) | (val & mask);
 	if (old != new) {
+		switch (reg) {
+			case TAIKO_A_CDC_RX1_B4_CTL:
+				raw_hphl_hpf_cutoff = new;
+				break;
+			case TAIKO_A_CDC_RX2_B4_CTL:
+				raw_hphr_hpf_cutoff = new;
+				break;
+			case TAIKO_A_CDC_RX7_B4_CTL:
+				raw_speaker_hpf_cutoff = new;
+				break;
+			default:
+				break;
+		}
 		lock_sound_control(&sound_control_codec_ptr->core_res, 1);
 		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, reg, new);
 		lock_sound_control(&sound_control_codec_ptr->core_res, 0);
