@@ -8240,9 +8240,9 @@ static int taiko_codec_probe(struct snd_soc_codec *codec)
 		pr_warn("%s kobject create failed!\n", __func__);
 	}
 
-	write_hpf_cutoff(TAIKO_A_CDC_RX1_B4_CTL):
+	write_hpf_cutoff(TAIKO_A_CDC_RX1_B4_CTL);
 	write_hpf_cutoff(TAIKO_A_CDC_RX2_B4_CTL);
-	write_hpf_cutoff(TAIKO_A_CDC_RX7_B4_CTL):
+	write_hpf_cutoff(TAIKO_A_CDC_RX7_B4_CTL);
 
 	return ret;
 
