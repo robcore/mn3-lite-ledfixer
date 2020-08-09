@@ -7726,7 +7726,7 @@ static ssize_t hph_poweramp_gain_raw_show(struct kobject *kobj,
 }
 
 static ssize_t hph_poweramp_gain_raw_store(struct kobject *kobj,
-		struct kobj_attribute *attr, char *buf)
+		struct kobj_attribute *attr, const char *buf, size_t count)
 {
 	int val;
 
@@ -8040,7 +8040,7 @@ static ssize_t rms_meter_resamp_fact_store(struct kobject *kobj,
 static ssize_t hph_pa_bias_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%u\n", wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_BIAS_PA);
+	return sprintf(buf, "%u\n", wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_BIAS_PA));
 }
 
 static ssize_t hph_pa_bias_store(struct kobject *kobj,
