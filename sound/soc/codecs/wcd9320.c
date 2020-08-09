@@ -571,6 +571,8 @@ static unsigned int compander_gain_boost;
 static u8 hphl_hpf_cutoff;
 static u8 hphr_hpf_cutoff;
 static u8 speaker_hpf_cutoff;
+static unsigned int hphl_analag_gain;
+static unsigned int hphr_analag_gain;
 
 static void update_headphone_gain(void) {
 	if (!hpwidget)
@@ -747,6 +749,29 @@ static int read_hpf_cutoff(unsigned short reg)
 	local_reg_val = (val >> 0) & (bitmask - 1);
 
 	return local_reg_val;
+}
+
+static int get_analog_gain(unsigned short reg) {
+	if (hpwidget) {
+		if (reg == WCD9XXX_A_RX_HPH_L_GAIN || reg == WCD9XXX_A_RX_HPH_R_GAIN)
+			return (wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, reg) & TAIKO_HPH_VOL_MASK);
+	} else {
+		if (reg == WCD9XXX_A_RX_HPH_L_GAIN)
+			return (hphl_analag_gain & TAIKO_HPH_VOL_MASK);
+		else if (reg == WCD9XXX_A_RX_HPH_R_GAIN)
+			return (hphr_analag_gain & TAIKO_HPH_VOL_MASK);
+	}
+}
+
+static void set_analog_gain(unsigned short reg)
+{
+	if (hph_pa_enabled || !hpwidget)
+		return;
+
+	if (reg == WCD9XXX_A_RX_HPH_L_GAIN)
+		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, reg, hphl_analag_gain);
+	else if (reg == WCD9XXX_A_RX_HPH_L_GAIN)
+		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, reg, hphr_analag_gain);
 }
 
 static int spkr_drv_wrnd = 1;
@@ -1114,6 +1139,8 @@ static int taiko_set_compander(struct snd_kcontrol *kcontrol,
 		snd_soc_write(codec, TAIKO_A_NCP_DTEST, 0x20);
 		pr_debug("%s: Enabled Chopper and set wavegen to 5 msec\n",
 				__func__);
+		set_analog_gain(WCD9XXX_A_RX_HPH_L_GAIN);
+		set_analog_gain(WCD9XXX_A_RX_HPH_R_GAIN);
 	} else if (comp == COMPANDER_1 &&
 			taiko->comp_enabled[comp] == 0) {
 		if (hph_pa_enabled) {
@@ -3705,7 +3732,6 @@ static int taiko_hph_pa_event(struct snd_soc_dapm_widget *w,
 						 WCD9XXX_CLSH_EVENT_POST_PA);
 		}
 		pr_info("%s: hpwidget enabled\n", __func__);
-
 		break;
 
 	case SND_SOC_DAPM_POST_PMD:
@@ -7944,6 +7970,43 @@ static ssize_t speaker_hpf_store(struct kobject *kobj,
 	speaker_hpf_cutoff = uval;
 
 	write_hpf_cutoff(TAIKO_A_CDC_RX7_B4_CTL);
+
+	return count;
+}
+
+static ssize_t hph_analog_gain_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u %u\n",
+				  get_analog_gain(WCD9XXX_A_RX_HPH_L_GAIN),
+				  get_analog_gain(WCD9XXX_A_RX_HPH_R_GAIN));
+}
+
+static ssize_t hph_analog_gain_store(struct kobject *kobj, struct kobj_attribute *attr, const char *buf, size_t count)
+{
+	u32 val;
+
+	if (sscanf(buf, "%d %d", &leftinput, &rightinput) == 2) {
+		if (leftinput < 0)
+			leftinput = 0;
+		if (leftinput > TAIKO_HPH_VOL_MASK)
+			leftinput = TAIKO_HPH_VOL_MASK;
+		if (rightinput < 0)
+			rightinput = 0;
+		if (rightinput > TAIKO_HPH_VOL_MASK)
+			rightinput = TAIKO_HPH_VOL_MASK;
+		hphl_analag_gain = leftinput | TAIKO_HPH_GAIN_ENABLE;
+		hphr_analag_gain = rightinput | TAIKO_HPH_GAIN_ENABLE;
+	} else if (sscanf(buf, "%d", &dualinput) == 1) {
+		if (dualinput < 0)
+			dualinput = 0;
+		if (dualinput > TAIKO_HPH_VOL_MASK)
+			dualinput = TAIKO_HPH_VOL_MASK;
+		hphl_analag_gain = dualinput | TAIKO_HPH_GAIN_ENABLE;
+		hphr_analag_gain = dualinput | TAIKO_HPH_GAIN_ENABLE;
+	}
+
+	set_analog_gain(hphl_analag_gain);
+	set_analog_gain(hphr_analag_gain);
 
 	return count;
 }
