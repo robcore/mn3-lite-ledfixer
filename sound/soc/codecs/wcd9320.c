@@ -751,6 +751,8 @@ static int read_hpf_cutoff(unsigned short reg)
 	return local_reg_val;
 }
 
+#define TAIKO_HPH_VOL_MASK 0x1F
+#define TAIKO_HPH_GAIN_ENABLE BIT(5)
 static int get_analog_gain(unsigned short reg) {
 	if (hpwidget) {
 		if (reg == WCD9XXX_A_RX_HPH_L_GAIN || reg == WCD9XXX_A_RX_HPH_R_GAIN)
@@ -7915,10 +7917,7 @@ static ssize_t headphone_hpf_show(struct kobject *kobj,
 static ssize_t headphone_hpf_store(struct kobject *kobj,
 		struct kobj_attribute *attr, const char *buf, size_t count)
 {
-
-	int leftinput;
-	int rightinput;
-	int dualinput;
+	int leftinput, rightinput, dualinput;
 
 	if (sscanf(buf, "%d %d", &leftinput, &rightinput) == 2) {
 		if (leftinput < 0)
@@ -7983,7 +7982,7 @@ static ssize_t hph_analog_gain_show(struct kobject *kobj, struct kobj_attribute 
 
 static ssize_t hph_analog_gain_store(struct kobject *kobj, struct kobj_attribute *attr, const char *buf, size_t count)
 {
-	u32 val;
+	int leftinput, rightinput, dualinput;
 
 	if (sscanf(buf, "%d %d", &leftinput, &rightinput) == 2) {
 		if (leftinput < 0)
