@@ -690,7 +690,7 @@ static void update_speaker_gain(void) {
 
 static void write_hpf_cutoff(unsigned short reg)
 {
-	unsigned int val, mask, bitmask, old, new;
+	unsigned int val, mask, bitmask, tempold, old, new;
 
 	switch (reg) {
 		case TAIKO_A_CDC_RX1_B4_CTL:
@@ -719,6 +719,23 @@ static void write_hpf_cutoff(unsigned short reg)
 
 	mask = (bitmask - 1) << 0;
 
+	tempold = wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, reg);
+	if (tempold < 0)
+		return;
+	switch (reg) {
+		case TAIKO_A_CDC_RX1_B4_CTL:
+			raw_hphl_hpf_cutoff = (tempold & ~mask) | (val & mask);
+			break;
+		case TAIKO_A_CDC_RX2_B4_CTL:
+			raw_hphr_hpf_cutoff = (tempold & ~mask) | (val & mask);
+			break;
+		case TAIKO_A_CDC_RX7_B4_CTL:
+			raw_speaker_hpf_cutoff = (tempold & ~mask) | (val & mask);
+			break;
+		default:
+			break;
+	}
+
 	/*snd_soc_update_bits_locked(codec, e->reg, mask, val);*/
 	mutex_lock(&direct_codec->mutex);
 	old = wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, reg);
@@ -727,24 +744,8 @@ static void write_hpf_cutoff(unsigned short reg)
 		return;
 	}
 	new = (old & ~mask) | (val & mask);
-	if (old != new) {
-		switch (reg) {
-			case TAIKO_A_CDC_RX1_B4_CTL:
-				raw_hphl_hpf_cutoff = new;
-				break;
-			case TAIKO_A_CDC_RX2_B4_CTL:
-				raw_hphr_hpf_cutoff = new;
-				break;
-			case TAIKO_A_CDC_RX7_B4_CTL:
-				raw_speaker_hpf_cutoff = new;
-				break;
-			default:
-				break;
-		}
-		lock_sound_control(&sound_control_codec_ptr->core_res, 1);
+	if (old != new)
 		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, reg, new);
-		lock_sound_control(&sound_control_codec_ptr->core_res, 0);
-	}
 	mutex_unlock(&direct_codec->mutex);
 }
 
