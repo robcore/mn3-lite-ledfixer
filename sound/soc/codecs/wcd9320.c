@@ -7730,7 +7730,7 @@ static ssize_t hph_poweramp_gain_raw_store(struct kobject *kobj,
 {
 	int val;
 
-	sscanf(buf, "%d", &val)
+	sscanf(buf, "%d", &val);
 	if (val < 0)
 		val = 0;
 	if (val > 255)
