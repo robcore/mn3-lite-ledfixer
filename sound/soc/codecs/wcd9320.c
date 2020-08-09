@@ -572,9 +572,10 @@ static bool hpwidget = false;
 static bool spkwidget = false;
 static unsigned int compander_gain_lock;
 static unsigned int compander_gain_boost;
-u32 sc_peak_det_timeout = 0xB;
-u32 sc_rms_meter_div_fact = 0xD;
-u32 sc_rms_meter_resamp_fact = 0xA0;
+static u32 sc_peak_det_timeout = 0xB;
+static u32 sc_rms_meter_div_fact = 0xD;
+static u32 sc_rms_meter_resamp_fact = 0xA0;
+static u8 hph_pa_bias = 0x7A;
 
 static void update_headphone_gain(void) {
 	if (!hpwidget)
@@ -751,6 +752,13 @@ static int read_hpf_cutoff(unsigned short reg)
 	local_reg_val = (val >> 0) & (bitmask - 1);
 
 	return local_reg_val;
+}
+
+/* Lazy wrapper until there are more bias regs added */
+static void update_bias(unsigned short reg)
+{
+	if (reg == TAIKO_A_RX_HPH_BIAS_PA)
+		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, reg, hph_pa_bias);
 }
 
 static int spkr_drv_wrnd = 1;
@@ -6986,6 +6994,8 @@ static void taiko_update_reg_defaults(struct snd_soc_codec *codec)
 				      taiko_2_0_reg_defaults[i].val);
 		spkr_drv_wrnd = -1;
 	}
+
+	update_bias(TAIKO_A_RX_HPH_BIAS_PA);
 }
 
 static const struct wcd9xxx_reg_mask_val taiko_codec_reg_init_val[] = {
@@ -7466,6 +7476,7 @@ static int taiko_post_reset_cb(struct wcd9xxx *wcd9xxx)
 	write_hpf_cutoff(TAIKO_A_CDC_RX1_B4_CTL);
 	write_hpf_cutoff(TAIKO_A_CDC_RX2_B4_CTL);
 	write_hpf_cutoff(TAIKO_A_CDC_RX7_B4_CTL);
+	update_bias(TAIKO_A_RX_HPH_BIAS_PA);
 	return ret;
 }
 
@@ -7956,8 +7967,8 @@ static ssize_t peak_det_timeout_store(struct kobject *kobj,
 
 	sscanf(buf, "%d", &uval);
 
-	if (uval < 0)
-		uval = 0;
+	if (uval < 1)
+		uval = 1;
 	if (uval > 15)
 		uval = 15;
 
@@ -7977,8 +7988,8 @@ static ssize_t rms_meter_div_fact_store(struct kobject *kobj,
 
 	sscanf(buf, "%d", &uval);
 
-	if (uval < 0)
-		uval = 0;
+	if (uval < 1)
+		uval = 1;
 	if (uval > 15)
 		uval = 15;
 
@@ -7999,8 +8010,8 @@ static ssize_t rms_meter_resamp_fact_store(struct kobject *kobj,
 
 	sscanf(buf, "%d", &uval);
 
-	if (uval < 0)
-		uval = 0;
+	if (uval < 1)
+		uval = 1;
 	if (uval > 255)
 		uval = 255;
 
@@ -8009,6 +8020,38 @@ static ssize_t rms_meter_resamp_fact_store(struct kobject *kobj,
 	return count;
 }
 
+static ssize_t hph_pa_bias_show(struct kobject *kobj,
+		struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_BIAS_PA);
+}
+
+static ssize_t hph_pa_bias_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
+	int uval;
+
+	sscanf(buf, "%d", &uval);
+
+	if (uval < 1)
+		uval = 1;
+	if (uval > 255)
+		uval = 255;
+
+	hph_pa_bias = uval;
+
+	update_bias(TAIKO_A_RX_HPH_BIAS_PA);
+
+	return count;
+}
+
+/*
+static void update_bias(unsigned short reg)
+{
+	if (reg == TAIKO_A_RX_HPH_BIAS_PA)
+		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, reg, hph_pa_bias);
+}
+*/
 static struct kobj_attribute headphone_gain_attribute =
 	__ATTR(headphone_gain, 0644,
 		headphone_gain_show,
@@ -8084,6 +8127,11 @@ static struct kobj_attribute rms_meter_resamp_fact_attribute =
 		rms_meter_resamp_fact_show,
 		rms_meter_resamp_fact_store);
 
+static struct kobj_attribute hph_pa_bias_attribute =
+	__ATTR(hph_pa_bias, 0644,
+		hph_pa_bias_show,
+		hph_pa_bias_store);
+
 static struct attribute *sound_control_attrs[] = {
 		&headphone_gain_attribute.attr,
 		&hph_poweramp_gain_attribute.attr,
@@ -8100,6 +8148,7 @@ static struct attribute *sound_control_attrs[] = {
 		&peak_det_timeout_attribute.attr,
 		&rms_meter_div_fact_attribute.attr,
 		&rms_meter_resamp_fact_attribute.attr,
+		&hph_pa_bias_attribute.attr,
 		NULL,
 };
 
