@@ -3812,6 +3812,7 @@ static int taiko_spk_dac_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
 	pr_debug("%s %s %d\n", __func__, w->name, event);
+	write_hpf_cutoff(TAIKO_A_CDC_RX7_B4_CTL);
 	return 0;
 }
 
@@ -6994,8 +6995,6 @@ static void taiko_update_reg_defaults(struct snd_soc_codec *codec)
 				      taiko_2_0_reg_defaults[i].val);
 		spkr_drv_wrnd = -1;
 	}
-
-	update_bias(TAIKO_A_RX_HPH_BIAS_PA);
 }
 
 static const struct wcd9xxx_reg_mask_val taiko_codec_reg_init_val[] = {
@@ -8384,7 +8383,7 @@ static int taiko_codec_probe(struct snd_soc_codec *codec)
 	write_hpf_cutoff(TAIKO_A_CDC_RX1_B4_CTL);
 	write_hpf_cutoff(TAIKO_A_CDC_RX2_B4_CTL);
 	write_hpf_cutoff(TAIKO_A_CDC_RX7_B4_CTL);
-
+	update_bias(TAIKO_A_RX_HPH_BIAS_PA);
 	return ret;
 
 err_irq:
