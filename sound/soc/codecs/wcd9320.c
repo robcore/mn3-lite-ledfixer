@@ -723,8 +723,11 @@ static void write_hpf_cutoff(unsigned short reg)
 		return;
 	}
 	new = (old & ~mask) | (val & mask);
-	if (old != new)
+	if (old != new) {
+		lock_sound_control(&sound_control_codec_ptr->core_res, 1);
 		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, reg, new);
+		lock_sound_control(&sound_control_codec_ptr->core_res, 0);
+	}
 	mutex_unlock(&direct_codec->mutex);
 }
 
