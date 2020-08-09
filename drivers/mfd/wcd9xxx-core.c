@@ -118,6 +118,9 @@ int wcd9xxx_reg_read(
 }
 EXPORT_SYMBOL(wcd9xxx_reg_read);
 
+extern u8 hphl_cached_gain;
+extern u8 hphr_cached_gain;
+extern u8 speaker_cached_gain;
 static unsigned int sound_control_override = 0;
 void lock_sound_control(struct wcd9xxx_core_resource *core_res,
 						unsigned int lockval) {
@@ -133,8 +136,22 @@ void lock_sound_control(struct wcd9xxx_core_resource *core_res,
 }
 EXPORT_SYMBOL(lock_sound_control);
 
+static bool sound_control_reserved(unsigned short reg)
+{
+	switch (reg) {
+		case 0x2B7:
+		case 0x2BF:
+		case 0x2E7:
+			return true;
+		default:
+			break;
+	}
+	return false;
+}
+
 static int wcd9xxx_write(struct wcd9xxx *wcd9xxx, unsigned short reg,
-			int bytes, void *src, bool interface_reg) {
+			int bytes, void *src, bool interface_reg)
+{
 	int i;
 
 	if (bytes <= 0) {
@@ -143,34 +160,15 @@ static int wcd9xxx_write(struct wcd9xxx *wcd9xxx, unsigned short reg,
 	}
 
 	if (!sound_control_override) {
-		switch (reg) {
-			case 0x2B7:
-			case 0x2BF:
-			case 0x2E7:
-				return 0;
-			default:
-				break;
-		}
+		if (sound_control_reserved(reg))
+			return 0;
 	}
-/*
-	if (reg == 0x1AE)
-		pr_info("%s: HPH Left PA write: %u\n", __func__, (u8 *)src);
-	if (reg == 0x1B4)
-		pr_info("%s: HPH Right PA write: %u\n", __func__, (u8 *)src);
-*/
-/*
-	for (i = 0; i < bytes; i++)
-		dev_dbg(wcd9xxx->dev, "Write %02x to 0x%x\n", ((u8 *)src)[i],
-			reg + i);
-*/
 	return wcd9xxx->write_dev(wcd9xxx, reg, bytes, src, interface_reg);
 }
-extern u8 hphl_cached_gain;
-extern u8 hphr_cached_gain;
-extern u8 speaker_cached_gain;
 
 static int __wcd9xxx_reg_write(struct wcd9xxx *wcd9xxx,
-							   unsigned short reg, u8 val) {
+							   unsigned short reg, u8 val)
+{
 	int ret;
 	bool need_fixup = false;
 
@@ -180,7 +178,7 @@ static int __wcd9xxx_reg_write(struct wcd9xxx *wcd9xxx,
 		mutex_unlock(&wcd9xxx->io_lock);
 		return ret;
 	} else {
-		if (reg == 0x2E7 || reg == 0x2B7 || reg == 0x2BF) {
+		if (sound_control_reserved(reg)) {
 			mutex_unlock(&wcd9xxx->io_lock);
 			need_fixup = true;
 		} else {

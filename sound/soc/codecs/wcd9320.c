@@ -544,6 +544,14 @@ static unsigned short tx_digital_gain_reg[] = {
 	TAIKO_A_CDC_TX10_VOL_CTL_GAIN,
 };
 
+/* Shared values for core resource locking */
+u8 hphl_cached_gain;
+u8 hphr_cached_gain;
+u8 speaker_cached_gain;
+u8 hphl_hpf_cutoff;
+u8 hphr_hpf_cutoff;
+u8 speaker_hpf_cutoff;
+
 #define HPH_RX_GAIN_MAX 20
 #define HPH_PA_SHIFT 0
 static struct wcd9xxx *sound_control_codec_ptr;
@@ -553,19 +561,16 @@ static int taiko_write(struct snd_soc_codec *codec, unsigned int reg,
 static unsigned int wcd9xxx_hw_revision;
 
 static unsigned int hph_pa_enabled = 0;
-u8 hphl_cached_gain = 0;
-u8 hphr_cached_gain = 0;
 static u8 hphl_pa_cached_gain = 20;
 static u8 hphr_pa_cached_gain = 20;
-u8 speaker_cached_gain = 0;
 unsigned int hph_poweramp_mask = 31; /* (1 << fls(max)) - 1 */
 static unsigned int uhqa_mode = 0;
 static unsigned int high_perf_mode;
 static unsigned int interpolator_boost = 0;
 static bool hpwidget = false;
 static bool spkwidget = false;
-static unsigned int six_db_gain_lock;
-static unsigned int six_db_gain_boost;
+static unsigned int compander_gain_lock;
+static unsigned int compander_gain_boost;
 
 static void update_headphone_gain(void) {
 	if (!hpwidget)
@@ -651,6 +656,40 @@ static void update_speaker_gain(void) {
 	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX7_VOL_CTL_B2_CTL, speaker_cached_gain);
 	lock_sound_control(&sound_control_codec_ptr->core_res, 0);
 }
+
+/*
+	SOC_SINGLE(xname, reg, shift, max, invert)
+	SOC_SINGLE("RX1 HPF Switch", TAIKO_A_CDC_RX1_B5_CTL, 2, 1, 0),
+	SOC_SINGLE("RX2 HPF Switch", TAIKO_A_CDC_RX2_B5_CTL, 2, 1, 0),
+	SOC_SINGLE("RX7 HPF Switch", TAIKO_A_CDC_RX7_B5_CTL, 2, 1, 0),
+*/
+
+static void write_hpf(unsigned short reg)
+{
+	switch (reg) {
+		case TAIKO_A_CDC_RX1_B5_CTL:
+		case TAIKO_A_CDC_RX2_B5_CTL:
+		case TAIKO_A_CDC_RX7_B5_CTL:
+			break;
+		default:
+			return;
+	}
+
+}
+static int read_hpf(unsigned short reg)
+{
+	switch (reg) {
+		case TAIKO_A_CDC_RX1_B5_CTL:
+		case TAIKO_A_CDC_RX2_B5_CTL:
+		case TAIKO_A_CDC_RX7_B5_CTL:
+			break;
+		default:
+			return;
+	}
+
+}
+
+
 
 static int spkr_drv_wrnd = 1;
 
@@ -1160,8 +1199,8 @@ static int taiko_config_compander(struct snd_soc_dapm_widget *w,
 				    TAIKO_A_CDC_COMP0_FS_CFG + (comp * 8),
 				    0x07, rate);
 		/* Set the static gain offset */
-		if (six_db_gain_lock && comp == COMPANDER_1) {
-			if (six_db_gain_boost)
+		if (compander_gain_lock && comp == COMPANDER_1) {
+			if (compander_gain_boost)
 				snd_soc_update_bits(codec,
 						TAIKO_A_CDC_COMP0_B4_CTL + (comp * 8),
 						0x80, 0x00);
@@ -1169,12 +1208,12 @@ static int taiko_config_compander(struct snd_soc_dapm_widget *w,
 				snd_soc_update_bits(codec,
 						TAIKO_A_CDC_COMP0_B4_CTL + (comp * 8),
 						0x80, 0x80);
-		} else if (!six_db_gain_lock && comp == COMPANDER_1
+		} else if (!compander_gain_lock && comp == COMPANDER_1
 			&& buck_mv == WCD9XXX_CDC_BUCK_MV_1P8) {
 			snd_soc_update_bits(codec,
 					TAIKO_A_CDC_COMP0_B4_CTL + (comp * 8),
 					0x80, 0x80);
-		} else if (!six_db_gain_lock) {
+		} else if (!compander_gain_lock) {
 			snd_soc_update_bits(codec,
 					TAIKO_A_CDC_COMP0_B4_CTL + (comp * 8),
 					0x80, 0x00);
@@ -7732,12 +7771,12 @@ static ssize_t hph_pa_enabled_store(struct kobject *kobj,
 	return count;
 }
 
-static ssize_t six_db_gain_lock_show(struct kobject *kobj,
+static ssize_t compander_gain_lock_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf) {
-	return sprintf(buf, "%u\n", six_db_gain_lock);
+	return sprintf(buf, "%u\n", compander_gain_lock);
 }
 
-static ssize_t six_db_gain_lock_store(struct kobject *kobj,
+static ssize_t compander_gain_lock_store(struct kobject *kobj,
 			   struct kobj_attribute *attr, const char *buf, size_t count) {
 	int uval;
 
@@ -7748,16 +7787,16 @@ static ssize_t six_db_gain_lock_store(struct kobject *kobj,
 	if (uval > 1)
 		uval = 1;
 
-	six_db_gain_lock = uval;
+	compander_gain_lock = uval;
 	return count;
 }
 
-static ssize_t six_db_gain_boost_show(struct kobject *kobj,
+static ssize_t compander_gain_boost_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf) {
-	return sprintf(buf, "%u\n", six_db_gain_boost);
+	return sprintf(buf, "%u\n", compander_gain_boost);
 }
 
-static ssize_t six_db_gain_boost_store(struct kobject *kobj,
+static ssize_t compander_gain_boost_store(struct kobject *kobj,
 			   struct kobj_attribute *attr, const char *buf, size_t count) {
 	int uval;
 
@@ -7768,7 +7807,7 @@ static ssize_t six_db_gain_boost_store(struct kobject *kobj,
 	if (uval > 1)
 		uval = 1;
 
-	six_db_gain_boost = uval;
+	compander_gain_boost = uval;
 	return count;
 }
 
@@ -7813,15 +7852,15 @@ static struct kobj_attribute hph_pa_enabled_attribute =
 		hph_pa_enabled_show,
 		hph_pa_enabled_store);
 
-static struct kobj_attribute six_db_gain_lock_attribute =
-	__ATTR(six_db_gain_lock, 0644,
-		six_db_gain_lock_show,
-		six_db_gain_lock_store);
+static struct kobj_attribute compander_gain_lock_attribute =
+	__ATTR(compander_gain_lock, 0644,
+		compander_gain_lock_show,
+		compander_gain_lock_store);
 
-static struct kobj_attribute six_db_gain_boost_attribute =
-	__ATTR(six_db_gain_boost, 0644,
-		six_db_gain_boost_show,
-		six_db_gain_boost_store);
+static struct kobj_attribute compander_gain_boost_attribute =
+	__ATTR(compander_gain_boost, 0644,
+		compander_gain_boost_show,
+		compander_gain_boost_store);
 
 static struct attribute *sound_control_attrs[] = {
 		&headphone_gain_attribute.attr,
@@ -7832,8 +7871,8 @@ static struct attribute *sound_control_attrs[] = {
 		&high_perf_mode_attribute.attr,
 		&interpolator_boost_attribute.attr,
 		&hph_pa_enabled_attribute.attr,
-		&six_db_gain_lock_attribute.attr,
-		&six_db_gain_boost_attribute.attr,
+		&compander_gain_lock_attribute.attr,
+		&compander_gain_boost_attribute.attr,
 		NULL,
 };
 
