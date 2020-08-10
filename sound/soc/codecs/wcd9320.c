@@ -1109,7 +1109,7 @@ static int taiko_set_compander(struct snd_kcontrol *kcontrol,
 			TAIKO_A_RX_HPH_CHOP_CTL, 0x80, 0x00);
 
 		snd_soc_write(codec, TAIKO_A_NCP_DTEST, 0x10);
-		if (value = 1) {
+		if (value == 1) {
 			write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN, false);
 			write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_R_GAIN, false);
 		} else {
