@@ -555,6 +555,7 @@ static u8 speaker_hpf_cutoff;
 
 #define HPH_RX_GAIN_MAX 20
 #define HPH_PA_SHIFT 0
+#define HPH_PA_GAIN_MASK GENMASK(4, 0)
 static struct wcd9xxx *sound_control_codec_ptr;
 static struct snd_soc_codec *direct_codec;
 static int taiko_write(struct snd_soc_codec *codec, unsigned int reg,
@@ -8474,6 +8475,7 @@ static int taiko_codec_probe(struct snd_soc_codec *codec)
 	write_hpf_cutoff(TAIKO_A_CDC_RX2_B4_CTL);
 	write_hpf_cutoff(TAIKO_A_CDC_RX7_B4_CTL);
 	update_bias(TAIKO_A_RX_HPH_BIAS_PA);
+	pr_info("HPH_PA_GAIN_MASK is: %lu\n", HPH_PA_GAIN_MASK);
 	return ret;
 
 err_irq:
