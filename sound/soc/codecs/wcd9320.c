@@ -1206,7 +1206,7 @@ static void taiko_discharge_comp(struct snd_soc_codec *codec, int comp)
 	snd_soc_write(codec, TAIKO_A_CDC_COMP0_B3_CTL + (comp * 8), 0x01);
 
 	/* Worst case timeout for compander CnP sleep timeout */
-	usleep_range(5000, 5000);
+	usleep_range(3000, 3000);
 }
 
 static enum wcd9xxx_buck_volt taiko_codec_get_buck_mv(
@@ -6914,10 +6914,10 @@ static const struct wcd9xxx_reg_mask_val taiko_reg_defaults[] = {
 	TAIKO_REG_VAL(TAIKO_A_CDC_CLK_OTHR_RESET_B1_CTL, 0x00),
 	TAIKO_REG_VAL(TAIKO_A_CDC_CLK_OTHR_CTL, 0x00),
 	TAIKO_REG_VAL(TAIKO_A_CDC_CONN_MAD, 0x01),
-#if !defined(CONFIG_MACH_VIENNA_LTE) && !defined(CONFIG_MACH_LT03_LTE) && !defined(CONFIG_MACH_PICASSO_LTE) && !defined(CONFIG_SEC_H_PROJECT) && !defined(CONFIG_SEC_FRESCO_PROJECT) && !defined(CONFIG_MACH_KS01EUR)
+
 	/* Set HPH Path to low power mode */
 	TAIKO_REG_VAL(TAIKO_A_RX_HPH_BIAS_PA, 0x55),
-#endif
+
 	/* BUCK default */
 	TAIKO_REG_VAL(WCD9XXX_A_BUCK_CTRL_CCL_4, 0x51),
 	TAIKO_REG_VAL(WCD9XXX_A_BUCK_CTRL_CCL_1, 0x5B),
@@ -8523,7 +8523,7 @@ static int taiko_resume(struct device *dev)
 
 	if (!taiko) {
 		dev_dbg(dev, "%s: taiko private data is NULL\n", __func__);
-		return -ENODEV;
+		return -EINVAL;
 	}
 	dev_dbg(dev, "%s: system resume\n", __func__);
 	/* Notify */
