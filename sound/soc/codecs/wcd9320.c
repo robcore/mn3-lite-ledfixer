@@ -3577,13 +3577,13 @@ static int taiko_hphl_dac_event(struct snd_soc_dapm_widget *w,
 	case SND_SOC_DAPM_PRE_PMD:
 		snd_soc_update_bits(codec, TAIKO_A_CDC_RX1_B3_CTL, 0xBC, 0x00);
 		snd_soc_update_bits(codec, TAIKO_A_CDC_RX1_B4_CTL, 0x30, 0x00);
-		write_hpf_cutoff(TAIKO_A_CDC_RX1_B4_CTL);
 		break;
 	case SND_SOC_DAPM_POST_PMD:
 		snd_soc_update_bits(codec, TAIKO_A_CDC_CLK_RDAC_CLK_EN_CTL,
 							0x02, 0x00);
+		write_hpf_cutoff(TAIKO_A_CDC_RX1_B4_CTL);
 		if (hph_pa_enabled)
-		write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN, true);
+			write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN, true);
 	}
 	return 0;
 }
