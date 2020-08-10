@@ -809,7 +809,7 @@ static void wcd9xxx_set_fclk_get_ncp(struct snd_soc_codec *codec,
 
 	/* enable NCP and wait until settles down */
 	if (snd_soc_update_bits(codec, WCD9XXX_A_NCP_EN, 0x01, 0x01))
-		usleep_range(NCP_SETTLE_TIME_US, NCP_SETTLE_TIME_US);
+		usleep_range(NCP_SETTLE_TIME_US, NCP_SETTLE_TIME_US + 50);
 	pr_debug("%s: leave\n", __func__);
 }
 
