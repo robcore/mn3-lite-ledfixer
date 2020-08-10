@@ -575,7 +575,7 @@ static unsigned int compander_gain_boost;
 static u32 sc_peak_det_timeout = 0xB;
 static u32 sc_rms_meter_div_fact = 0xD;
 static u32 sc_rms_meter_resamp_fact = 0xA0;
-static u8 hph_pa_bias = 0x7A;
+static u8 hph_pa_bias = 0x55;
 
 static void update_headphone_gain(void) {
 	if (!hpwidget)
@@ -8084,7 +8084,7 @@ static ssize_t rms_meter_div_fact_store(struct kobject *kobj,
 
 static ssize_t rms_meter_resamp_fact_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf) {
-	return sprintf(buf, "%u\n", sc_rms_meter_resamp_fact);
+	return sprintf(buf, "%u\n", sc_rms_meter_resamp_fact >> 4);
 }
 
 static ssize_t rms_meter_resamp_fact_store(struct kobject *kobj,
