@@ -626,12 +626,11 @@ static void write_hph_poweramp_gain(unsigned short reg, bool mute)
 		reg != WCD9XXX_A_RX_HPH_R_GAIN)
 		return;
 
-	if (mute && (reg == WCD9XXX_A_RX_HPH_L_GAIN ||
-		reg == WCD9XXX_A_RX_HPH_R_GAIN))
+	if (mute)
 		local_cached_gain = 0;
-	else if (!mute && reg == WCD9XXX_A_RX_HPH_L_GAIN)
+	else if (reg == WCD9XXX_A_RX_HPH_L_GAIN)
 		local_cached_gain = hphl_pa_cached_gain;
-	else if (!mute && reg == WCD9XXX_A_RX_HPH_R_GAIN)
+	else if (reg == WCD9XXX_A_RX_HPH_R_GAIN)
 		local_cached_gain = hphr_pa_cached_gain;
 
 	snd_soc_update_bits(direct_codec, reg, 32, 32);
@@ -1110,6 +1109,14 @@ static int taiko_set_compander(struct snd_kcontrol *kcontrol,
 			TAIKO_A_RX_HPH_CHOP_CTL, 0x80, 0x00);
 
 		snd_soc_write(codec, TAIKO_A_NCP_DTEST, 0x10);
+		if (value = 1) {
+			write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN, false);
+			write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_R_GAIN, false);
+		} else {
+			write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN, true);
+			write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_R_GAIN, true);
+		}
+
 		return 0;
 	}
 
@@ -1117,6 +1124,11 @@ static int taiko_set_compander(struct snd_kcontrol *kcontrol,
 
 	if (comp == COMPANDER_1 &&
 			taiko->comp_enabled[comp] == 1) {
+		if (hph_pa_enabled) {
+			write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN, false);
+			write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_R_GAIN, false);
+			return 0;
+		}
 		/* Wavegen to 5 msec */
 		snd_soc_write(codec, TAIKO_A_RX_HPH_CNP_WG_CTL, 0xDA);
 		snd_soc_write(codec, TAIKO_A_RX_HPH_CNP_WG_TIME, 0x15);
@@ -1234,11 +1246,31 @@ static int taiko_config_compander(struct snd_soc_dapm_widget *w,
 
 	pr_info("%s: %s event %d compander %d, enabled %d", __func__,
 		 w->name, event, comp, taiko->comp_enabled[comp]);
+	if (comp == COMPANDER_1 && hph_pa_enabled) {
+		/* Disable compander */
+		snd_soc_update_bits(codec,
+				    TAIKO_A_CDC_COMP0_B1_CTL + (comp * 8),
+				    enable_mask, 0x00);
 
-	if (comp != COMPANDER_1 && !hph_pa_enabled) {
-		if (!taiko->comp_enabled[comp])
-			return 0;
+		/* Toggle compander reset bits */
+		snd_soc_update_bits(codec, TAIKO_A_CDC_CLK_OTHR_RESET_B2_CTL,
+				    mask << comp_shift[comp],
+				    mask << comp_shift[comp]);
+		snd_soc_update_bits(codec, TAIKO_A_CDC_CLK_OTHR_RESET_B2_CTL,
+				    mask << comp_shift[comp], 0);
+
+		/* Turn off the clock for compander in pair */
+		snd_soc_update_bits(codec, TAIKO_A_CDC_CLK_RX_B2_CTL,
+				    mask << comp_shift[comp], 0);
+
+		/* Set gain source to register */
+		taiko_config_gain_compander(codec, comp, false);
+		write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN, false);
+		write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_R_GAIN, false);
 	}
+	
+	if (!taiko->comp_enabled[comp])
+		return 0;
 
 	/* Compander 0 has single channel */
 	mask = (comp == COMPANDER_0 ? 0x01 : 0x03);
@@ -1247,8 +1279,11 @@ static int taiko_config_compander(struct snd_soc_dapm_widget *w,
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
-		if (hph_pa_enabled)
+		if (hph_pa_enabled) {
+			write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN, false);
+			write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_R_GAIN, false);
 			break;
+		}
 		/* Set compander Sample rate */
 		snd_soc_update_bits(codec,
 				    TAIKO_A_CDC_COMP0_FS_CFG + (comp * 8),
@@ -1342,6 +1377,12 @@ static int taiko_config_compander(struct snd_soc_dapm_widget *w,
 
 		/* Set gain source to register */
 		taiko_config_gain_compander(codec, comp, false);
+		if (hph_pa_enabled) {
+			write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN, true);
+			write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_R_GAIN, true);
+		}
+		break;
+	default:
 		break;
 	}
 	return 0;
@@ -2814,11 +2855,13 @@ static int taiko_codec_enable_spk_pa(struct snd_soc_dapm_widget *w,
 		snd_soc_update_bits(codec, TAIKO_A_SPKR_DRV_EN, 0x80, 0x80);
 		spkwidget = true;
 		update_speaker_gain();
+		write_hpf_cutoff(TAIKO_A_CDC_RX7_B4_CTL);
 		break;
 	case SND_SOC_DAPM_POST_PMD:
-		spkwidget = false;
 		taiko->spkr_pa_widget_on = false;
+		spkwidget = false;
 		snd_soc_update_bits(codec, TAIKO_A_SPKR_DRV_EN, 0x80, 0x00);
+		write_hpf_cutoff(TAIKO_A_CDC_RX7_B4_CTL);
 		break;
 	}
 	return 0;
@@ -3509,6 +3552,8 @@ static int taiko_hphl_dac_event(struct snd_soc_dapm_widget *w,
 		snd_soc_update_bits(codec, TAIKO_A_CDC_RX1_B3_CTL, 0xBC, 0x94);
 		snd_soc_update_bits(codec, TAIKO_A_CDC_RX1_B4_CTL, 0x30, 0x10);
 		write_hpf_cutoff(TAIKO_A_CDC_RX1_B4_CTL);
+		if (hph_pa_enabled)
+			write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN, false);
 		break;
 	case SND_SOC_DAPM_PRE_PMD:
 		snd_soc_update_bits(codec, TAIKO_A_CDC_RX1_B3_CTL, 0xBC, 0x00);
@@ -3518,6 +3563,8 @@ static int taiko_hphl_dac_event(struct snd_soc_dapm_widget *w,
 	case SND_SOC_DAPM_POST_PMD:
 		snd_soc_update_bits(codec, TAIKO_A_CDC_CLK_RDAC_CLK_EN_CTL,
 							0x02, 0x00);
+		if (hph_pa_enabled)
+		write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN, true);
 	}
 	return 0;
 }
@@ -3551,16 +3598,21 @@ static int taiko_hphr_dac_event(struct snd_soc_dapm_widget *w,
 		snd_soc_update_bits(codec, TAIKO_A_CDC_RX2_B3_CTL, 0xBC, 0x94);
 		snd_soc_update_bits(codec, TAIKO_A_CDC_RX2_B4_CTL, 0x30, 0x10);
 		write_hpf_cutoff(TAIKO_A_CDC_RX2_B4_CTL);
+		if (hph_pa_enabled)
+			write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_R_GAIN, false);
 		break;
 	case SND_SOC_DAPM_PRE_PMD:
 		snd_soc_update_bits(codec, TAIKO_A_CDC_RX2_B3_CTL, 0xBC, 0x00);
 		snd_soc_update_bits(codec, TAIKO_A_CDC_RX2_B4_CTL, 0x30, 0x00);
-		write_hpf_cutoff(TAIKO_A_CDC_RX2_B4_CTL);
 		break;
 	case SND_SOC_DAPM_POST_PMD:
 		snd_soc_update_bits(codec, TAIKO_A_CDC_CLK_RDAC_CLK_EN_CTL,
 							0x04, 0x00);
 		snd_soc_update_bits(codec, w->reg, 0x40, 0x00);
+		write_hpf_cutoff(TAIKO_A_CDC_RX2_B4_CTL);
+		if (hph_pa_enabled)
+			write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_R_GAIN, true);
+
 		break;
 	}
 	return 0;
@@ -3702,17 +3754,30 @@ static int taiko_hph_pa_event(struct snd_soc_dapm_widget *w,
 	case SND_SOC_DAPM_POST_PMU:
 		usleep_range(5000, 5000);
 //		pr_debug("%s: sleep 5000us after %s PA enable\n", __func__, w->name);
-		hpwidget = true;
-		update_headphone_gain();
 		if (!high_perf_mode) {
 			wcd9xxx_clsh_fsm(codec, &taiko->clsh_d,
 						 req_clsh_state,
 						 WCD9XXX_CLSH_REQ_ENABLE,
 						 WCD9XXX_CLSH_EVENT_POST_PA);
 		}
+		hpwidget = true;
+		update_headphone_gain();
+		if (hph_pa_enabled) {
+			if (w->shift == 5)
+				write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN, false);
+			else if (w->shift == 4)
+				write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_R_GAIN, false);
+		}
 		pr_info("%s: hpwidget enabled\n", __func__);
 		break;
-
+	case SND_SOC_DAPM_PRE_PMD:
+		if (hph_pa_enabled) {
+			if (w->shift == 5)
+				write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN, true);
+			else if (w->shift == 4)
+				write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_R_GAIN, true);
+		}
+		break;
 	case SND_SOC_DAPM_POST_PMD:
 		hpwidget = false;
 		usleep_range(13000, 13000);
@@ -4635,6 +4700,8 @@ static int taiko_prepare(struct snd_pcm_substream *substream,
 
 	if (!found_hs_pa)
 		return 0;
+
+
 
 	pr_info("%s(): rate = %u. bit_width = %u.  hs compander_enabled = %u",
 			__func__, taiko_p->dai[dai->id].rate,
@@ -6927,7 +6994,8 @@ static const struct wcd9xxx_reg_mask_val taiko_2_0_reg_defaults[] = {
 #if !defined(CONFIG_MACH_VIENNA_LTE) && !defined(CONFIG_MACH_LT03_LTE) && !defined(CONFIG_MACH_PICASSO_LTE) && !defined(CONFIG_SEC_H_PROJECT) && !defined(CONFIG_SEC_FRESCO_PROJECT) && !defined(CONFIG_MACH_KS01EUR)
 	TAIKO_REG_VAL(TAIKO_A_RX_HPH_OCP_CTL, 0x6B),
 #else
-	TAIKO_REG_VAL(TAIKO_A_RX_HPH_BIAS_PA, 0x7A),
+	/*TAIKO_REG_VAL(TAIKO_A_RX_HPH_BIAS_PA, 0x7A),*/
+	TAIKO_REG_VAL(TAIKO_A_RX_HPH_BIAS_PA, 0x55),
 	TAIKO_REG_VAL(TAIKO_A_RX_HPH_OCP_CTL, 0x6B),
 #endif
 	TAIKO_REG_VAL(TAIKO_A_RX_HPH_CNP_WG_CTL, 0xDA),
@@ -8019,7 +8087,6 @@ static ssize_t rms_meter_resamp_fact_show(struct kobject *kobj,
 	return sprintf(buf, "%u\n", sc_rms_meter_resamp_fact);
 }
 
-/* TODO: Find out if this maxes out at 240 or 255 */
 static ssize_t rms_meter_resamp_fact_store(struct kobject *kobj,
 			   struct kobj_attribute *attr, const char *buf, size_t count) {
 	int uval;
@@ -8028,10 +8095,10 @@ static ssize_t rms_meter_resamp_fact_store(struct kobject *kobj,
 
 	if (uval < 1)
 		uval = 1;
-	if (uval > 255)
-		uval = 255;
+	if (uval > 15)
+		uval = 15;
 
-	sc_rms_meter_resamp_fact = uval;
+	sc_rms_meter_resamp_fact = uval << 4;
 
 	return count;
 }
@@ -8048,9 +8115,9 @@ static ssize_t hph_pa_bias_store(struct kobject *kobj,
 	int uval;
 
 	sscanf(buf, "%d", &uval);
-
-	if (uval < 1)
-		uval = 1;
+	/* 0.85 */
+	if (uval < 85)
+		uval = 85;
 	if (uval > 255)
 		uval = 255;
 
