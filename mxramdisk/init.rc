@@ -529,20 +529,20 @@ on post-fs-data
     # DRM directory creation
 	mkdir /system/etc/security/.drm 0775
 	chmod 0775 /system/etc/security/.drm
-	chown drm drm /system/etc/security/.drm
+	chown /system/etc/security/.drm
 
     # Added for Playready DRM Support
 	mkdir /data/data/.drm 0775
 	chmod 0775 /data/data/.drm
-	chown drm drm /data/data/.drm
+	chown /data/data/.drm
 	mkdir /data/data/.drm/.playready 0775
 	chmod 0775 /data/data/.drm/.playready
-	chown drm drm /data/data/.drm/.playready
+	chown /data/data/.drm/.playready
 
     # Added drm folder to copy drm plugins
 	mkdir /system/lib/drm 0775
 	chmod 0775 /system/lib/drm
-	#chown drm drm /system/lib/drm
+	chown /system/lib/drm
 
     restorecon -R /efs
 #    restorecon -R /carrier
@@ -1539,6 +1539,12 @@ service cs_service /system/bin/cs
     class main
     user system
     group system radio inet sdcard_r sdcard_rw media_rw shell
+
+# Sensor
+service sensorhubservice /system/bin/sensorhubservice
+    class main
+    user system
+    group input
 
 # insthk
   service insthk /system/bin/insthk

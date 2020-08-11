@@ -813,6 +813,7 @@ static int msm_thermal_get_freq_table(void)
 
 	table = cpufreq_frequency_get_table(0);
 	if (table == NULL) {
+		pr_err("error reading cpufreq table\n");
 		ret = -EINVAL;
 		goto fail;
 	}
@@ -825,9 +826,7 @@ static int msm_thermal_get_freq_table(void)
 	limit_idx_low = 0;
 //#endif
 	limit_idx_high = limit_idx = i - 1;
-	if (limit_idx_high <= 0 || limit_idx_high <= limit_idx_low)
-		limit_idx_high = limit_idx_low + 1;
-//	BUG_ON(limit_idx_high <= 0 || limit_idx_high <= limit_idx_low);
+	BUG_ON(limit_idx_high <= 0 || limit_idx_high <= limit_idx_low);
 fail:
 	return ret;
 }
