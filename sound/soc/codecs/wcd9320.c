@@ -577,6 +577,7 @@ static u32 sc_peak_det_timeout = 0xB;
 static u32 sc_rms_meter_div_fact = 0xD;
 static u32 sc_rms_meter_resamp_fact = 0xA0;
 static u8 hph_pa_bias = 0x55;
+unsigned int anc_delay;
 
 static void update_headphone_gain(void) {
 	if (!hpwidget)
@@ -8167,6 +8168,25 @@ static ssize_t hph_pa_bias_store(struct kobject *kobj,
 	return count;
 }
 
+static ssize_t anc_delay_show(struct kobject *kobj,
+		struct kobj_attribute *attr, char *buf) {
+	return sprintf(buf, "%u\n", anc_delay);
+}
+
+static ssize_t anc_delay_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count) {
+	int uval;
+
+	sscanf(buf, "%d", &uval);
+
+	if (uval < 0)
+		uval = 0;
+	if (uval > 1)
+		uval = 1;
+
+	anc_delay = uval;
+	return count;
+}
 /*
 static void update_bias(unsigned short reg)
 {
@@ -8224,6 +8244,11 @@ static struct kobj_attribute compander_gain_boost_attribute =
 		compander_gain_boost_show,
 		compander_gain_boost_store);
 
+static struct kobj_attribute anc_delay_attribute =
+	__ATTR(anc_delay, 0644,
+		anc_delay_show,
+		anc_delay_store);
+
 static struct kobj_attribute headphone_hpf_attribute =
 	__ATTR(headphone_hpf, 0644,
 		headphone_hpf_show,
@@ -8265,6 +8290,7 @@ static struct attribute *sound_control_attrs[] = {
 		&hph_pa_enabled_attribute.attr,
 		&compander_gain_lock_attribute.attr,
 		&compander_gain_boost_attribute.attr,
+		&anc_delay_attribute.attr,
 		&headphone_hpf_attribute.attr,
 		&speaker_hpf_attribute.attr,
 		&peak_det_timeout_attribute.attr,

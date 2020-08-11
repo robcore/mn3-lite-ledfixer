@@ -423,12 +423,13 @@ wcd9xxx_enable_clsh_block(struct snd_soc_codec *codec,
 		clsh_d->clsh_users, enable);
 }
 
+extern unsigned int anc_delay;
 static inline void wcd9xxx_enable_anc_delay(
 	struct snd_soc_codec *codec,
 	bool on)
 {
 	snd_soc_update_bits(codec, WCD9XXX_A_CDC_CLSH_B1_CTL,
-		0x02, on ? 0x02 : 0x00);
+		0x02, (on && anc_delay) ? 0x02 : 0x00);
 }
 
 static inline void
@@ -1365,7 +1366,8 @@ void wcd9xxx_clsh_fsm(struct snd_soc_codec *codec,
 	switch (clsh_event) {
 	case WCD9XXX_CLSH_EVENT_PRE_DAC:
 		/* PRE_DAC event should be used only for Enable */
-		BUG_ON(req_type != WCD9XXX_CLSH_REQ_ENABLE);
+		if (req_type != WCD9XXX_CLSH_REQ_ENABLE)
+			pr_warn("%s PRE_DAC event should be used only for Enable\n", __func__);
 
 		old_state = cdc_clsh_d->state;
 		new_state = old_state | req_state;
