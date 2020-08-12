@@ -585,7 +585,7 @@ unsigned int anc_delay;
 
 static bool hpwidget(void)
 {
-	return hpwidget_left && hpwidget_right
+	return hpwidget_left && hpwidget_right;
 }
 
 static void update_headphone_gain(void) {
