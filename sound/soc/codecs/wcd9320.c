@@ -579,7 +579,7 @@ static unsigned int compander_gain_lock;
 static unsigned int compander_gain_boost;
 static u32 sc_peak_det_timeout = 15;
 static u32 sc_rms_meter_div_fact = 15;
-static u32 sc_rms_meter_resamp_fact = 15;
+static u32 sc_rms_meter_resamp_fact = 240;
 static u8 hph_pa_bias = 0x55;
 unsigned int anc_delay;
 
@@ -679,6 +679,12 @@ static void update_speaker_gain(void) {
 	SOC_SINGLE("RX1 HPF Switch", TAIKO_A_CDC_RX1_B5_CTL, 2, 1, 0),
 	SOC_SINGLE("RX2 HPF Switch", TAIKO_A_CDC_RX2_B5_CTL, 2, 1, 0),
 	SOC_SINGLE("RX7 HPF Switch", TAIKO_A_CDC_RX7_B5_CTL, 2, 1, 0),
+
+#define SOC_SINGLE(xname, reg, shift, max, invert) \
+{	.iface = SNDRV_CTL_ELEM_IFACE_MIXER, .name = xname, \
+	.info = snd_soc_info_volsw, .get = snd_soc_get_volsw,\
+	.put = snd_soc_put_volsw, \
+	.private_value =  SOC_SINGLE_VALUE(reg, shift, max, invert) }
 	______________________________________________________________
 
 
