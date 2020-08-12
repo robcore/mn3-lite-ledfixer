@@ -8116,8 +8116,8 @@ static ssize_t peak_det_timeout_store(struct kobject *kobj,
 
 	sscanf(buf, "%d", &uval);
 
-	if (uval < 1)
-		uval = 1;
+	if (uval < 0)
+		uval = 0;
 	if (uval > 15)
 		uval = 15;
 
@@ -8137,8 +8137,8 @@ static ssize_t rms_meter_div_fact_store(struct kobject *kobj,
 
 	sscanf(buf, "%d", &uval);
 
-	if (uval < 1)
-		uval = 1;
+	if (uval < 0)
+		uval = 0;
 	if (uval > 15)
 		uval = 15;
 
@@ -8158,8 +8158,8 @@ static ssize_t rms_meter_resamp_fact_store(struct kobject *kobj,
 
 	sscanf(buf, "%d", &uval);
 
-	if (uval < 1)
-		uval = 1;
+	if (uval < 0)
+		uval = 0;
 	if (uval > 15)
 		uval = 15;
 
