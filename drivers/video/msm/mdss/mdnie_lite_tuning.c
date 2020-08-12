@@ -403,6 +403,9 @@ static void update_mdnie_mode(void)
 				source_1 = BYPASS_1;
 				source_2 = BYPASS_2;
 				break;
+			default:
+				return;
+			}
 		} else {
 			switch (mdnie_tun_state.background) {
 			case DYNAMIC_MODE:
