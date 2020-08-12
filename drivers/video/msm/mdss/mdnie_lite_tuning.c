@@ -112,7 +112,7 @@ static int override_color[24];
 static int offset_color[24];
 static int custom_curve[48];
 static int chroma_correction[18];
-static int bypass = 0;
+static int bypass;
 
 static unsigned int offset_mode = 1;
 static unsigned int sharpen;
