@@ -1553,9 +1553,14 @@ static int gradation_offset_H_revJ[][9] = {
 
 #define RGB_COMPENSATION 24
 static int rgb_offset_H_revJ[][RGB_COMPENSATION] = {
-/*	R255 G255 B255 R203 G203 B203 R151 G151 B151
-	R87 G87 B87 R51 G51 B51 R35 G35 B35
-	R23 G23 B23 R11 G11 B11
+/*	R255 G255 B255
+	R203 G203 B203
+	R151 G151 B151
+	R87  G87  B87
+	R51  G51  B51
+	R35  G35  B35
+	R23  G23  B23
+	R11  G11  B11
 */
 	{-4, 0, -3, -2, 1, -2, -3, 1, -4, -7, 3, -8, -9, 4, -8, -7, 3, -4, -5, 3, -3, -6, 4, -5},
 	{-3, 0, -3, -2, 1, -2, -3, 1, -4, -6, 3, -6, -9, 4, -8, -7, 3, -4, -5, 3, -3, -6, 4, -5},
