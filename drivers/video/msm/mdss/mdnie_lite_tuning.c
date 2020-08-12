@@ -83,7 +83,14 @@
 #endif
 #endif
 
+#if defined(CONFIG_FB_MSM_MDSS_MDP3)
+static struct mdss_dsi_driver_data *mdnie_msd;
+#if defined(CONFIG_FB_MSM_MDSS_DSI_DBG)
+int dsi_ctrl_on;
+#endif
+#else
 static struct mipi_samsung_driver_data *mdnie_msd;
+#endif
 
 //#define MDNIE_LITE_TUN_DEBUG
 
@@ -97,30 +104,44 @@ static struct mipi_samsung_driver_data *mdnie_msd;
 
 /*#define MDNIE_LITE_TUN_DATA_DEBUG*/
 
+#if defined(CONFIG_FB_MSM_MIPI_VIDEO_WVGA_NT35502_PT_PANEL)
+#define PAYLOAD1 mdni_tune_cmd[1]
+#define PAYLOAD2 mdni_tune_cmd[2]
+#define PAYLOAD3 mdni_tune_cmd[3]
+#define PAYLOAD4 mdni_tune_cmd[4]
+#define PAYLOAD5 mdni_tune_cmd[5]
+
+#define INPUT_PAYLOAD1(x) PAYLOAD1.payload = x
+#define INPUT_PAYLOAD2(x) PAYLOAD2.payload = x
+#define INPUT_PAYLOAD3(x) PAYLOAD3.payload = x
+#define INPUT_PAYLOAD4(x) PAYLOAD4.payload = x
+#define INPUT_PAYLOAD5(x) PAYLOAD5.payload = x
+#else
 #define PAYLOAD1 mdni_tune_cmd[3]
 #define PAYLOAD2 mdni_tune_cmd[2]
 
 #define INPUT_PAYLOAD1(x) PAYLOAD1.payload = x
 #define INPUT_PAYLOAD2(x) PAYLOAD2.payload = x
+#endif
 
 /* Hijack */
 static char LITE_CONTROL_1[5];
 static char LITE_CONTROL_2[108];
 
-static int hijack;
+static int hijack = 0;
 static int override_color[24];
 static int offset_color[24];
 static int custom_curve[48];
 static int chroma_correction[18];
-static int bypass;
+static int bypass = 0;
 
 static unsigned int offset_mode = 1;
-static unsigned int sharpen;
-static unsigned int sharpen_extra;
-static unsigned int chroma;
-static unsigned int gamma;
-static int sharpen_extra_bit = 3;
-static int sharpen_bit = 2;
+static unsigned int sharpen_dark = 0;
+static unsigned int sharpen_light = 0;
+static unsigned int chroma = 0;
+static unsigned int gamma = 0;
+static int sharpen_light_bit = 3;
+static int sharpen_dark_bit = 2;
 static int chroma_bit = 1;
 static int gamma_bit = 0;
 
@@ -130,6 +151,13 @@ static int gamma_bit = 0;
 unsigned int play_speed_1_5;
 
 struct dsi_buf dsi_mdnie_tx_buf;
+
+#if defined(CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_CMD_WQHD_PT_PANEL) || defined(CONFIG_FB_MSM_MIPI_MAGNA_OCTA_CMD_HD_PT_PANEL)
+#if defined(CONFIG_LCD_CLASS_DEVICE) && defined(DDI_VIDEO_ENHANCE_TUNING)
+extern int mdnie_adb_test;
+#endif
+int get_lcd_panel_res(void);
+#endif
 
 struct mdnie_lite_tun_type mdnie_tun_state = {
 	.mdnie_enable = false,
@@ -173,24 +201,74 @@ const char accessibility_name[ACCESSIBILITY_MAX][20] = {
 	"SCREEN_CURTAIN_MODE",
 };
 
+#if defined(CONFIG_FB_MSM_MIPI_VIDEO_WVGA_NT35502_PT_PANEL)
+static char cmd_enable[6] = { 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00 };
+#else
 static char level1_key[] = {
 	0xF0,
 	0x5A, 0x5A,
 };
 
+#if defined(CONFIG_FB_MSM_MDSS_SAMSUNG_OCTA_VIDEO_720P_PT_PANEL) ||defined(CONFIG_FB_MSM_MDSS_MAGNA_OCTA_VIDEO_720P_PANEL) \
+	|| defined(CONFIG_FB_MSM_MIPI_MAGNA_OCTA_VIDEO_WXGA_PT_DUAL_PANEL)
+static char level2_key[] = {
+	0xF1,
+	0x5A, 0x5A,
+};
+#else
 static char level2_key[] = {
 	0xF0,
 	0x5A, 0x5A,
 };
+#endif
+#endif
 
+#if defined(CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_CMD_WQHD_PT_PANEL) || defined (CONFIG_FB_MSM_MIPI_MAGNA_OCTA_CMD_HD_PT_PANEL)
+static char level1_key_disable[] = {
+	0xF0,
+	0xA5, 0xA5,
+};
+#elif defined(CONFIG_FB_MSM_MIPI_VIDEO_WVGA_NT35502_PT_PANEL)
+static char cmd_disable[6] = { 0xF0, 0x55, 0xAA, 0x52, 0x00, 0x00 };
+#endif
+
+#if defined(CONFIG_FB_MSM_MIPI_VIDEO_WVGA_NT35502_PT_PANEL)
 static char tune_data1[MDNIE_TUNE_FIRST_SIZE] = {0,};
 static char tune_data2[MDNIE_TUNE_SECOND_SIZE] = {0,};
+static char tune_data3[MDNIE_TUNE_THIRD_SIZE] = { 0,};
+static char tune_data4[MDNIE_TUNE_FOURTH_SIZE] = { 0,};
+static char tune_data5[MDNIE_TUNE_FIFTH_SIZE] = { 0,};
+#else
+static char tune_data1[MDNIE_TUNE_FIRST_SIZE] = {0,};
+static char tune_data2[MDNIE_TUNE_SECOND_SIZE] = {0,};
+#endif
 
 #if defined(CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_CMD_WQHD_PT_PANEL)
 static char white_rgb_buf[MDNIE_TUNE_FIRST_SIZE] = {0,};
 #endif
 
+#if defined(CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_CMD_WQHD_PT_PANEL) || defined(CONFIG_FB_MSM_MIPI_MAGNA_OCTA_CMD_HD_PT_PANEL) \
+	|| defined(CONFIG_FB_MSM_MIPI_MAGNA_OCTA_VIDEO_WXGA_PT_DUAL_PANEL)
+static char tune_data1_adb[MDNIE_TUNE_FIRST_SIZE] = {0,};
+static char tune_data2_adb[MDNIE_TUNE_SECOND_SIZE] = {0,};
+
+void copy_tuning_data_from_adb(char *data1, char *data2)
+{
+	memcpy(tune_data1_adb, data1, MDNIE_TUNE_FIRST_SIZE);
+	memcpy(tune_data2_adb, data2, MDNIE_TUNE_SECOND_SIZE);
+}
+#endif
+
 static struct dsi_cmd_desc mdni_tune_cmd[] = {
+#if defined(CONFIG_FB_MSM_MIPI_VIDEO_WVGA_NT35502_PT_PANEL)
+	{{DTYPE_DCS_LWRITE, 1, 0, 0, 0, sizeof(cmd_enable)}, cmd_enable},
+	{{DTYPE_DCS_LWRITE, 0, 0, 0, 0, sizeof(tune_data1)}, tune_data1},
+	{{DTYPE_DCS_LWRITE, 0, 0, 0, 0, sizeof(tune_data2)}, tune_data2},
+	{{DTYPE_DCS_LWRITE, 0, 0, 0, 0, sizeof(tune_data3)}, tune_data3},
+	{{DTYPE_DCS_LWRITE, 0, 0, 0, 0, sizeof(tune_data4)}, tune_data4},
+	{{DTYPE_DCS_LWRITE, 1, 0, 0, 0, sizeof(tune_data5)}, tune_data5},
+	{{DTYPE_DCS_LWRITE, 1, 0, 0, 0, sizeof(cmd_disable)}, cmd_disable},
+#else
 	{{DTYPE_DCS_LWRITE, 1, 0, 0, 0,
 		sizeof(level1_key)}, level1_key},
 	{{DTYPE_DCS_LWRITE, 1, 0, 0, 0,
@@ -200,6 +278,12 @@ static struct dsi_cmd_desc mdni_tune_cmd[] = {
 		sizeof(tune_data1)}, tune_data1},
 	{{DTYPE_DCS_LWRITE, 1, 0, 0, 0,
 		sizeof(tune_data2)}, tune_data2},
+
+#if defined(CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_CMD_WQHD_PT_PANEL) || defined(CONFIG_FB_MSM_MIPI_MAGNA_OCTA_CMD_HD_PT_PANEL)
+	{{DTYPE_DCS_LWRITE, 1, 0, 0, 0,
+		sizeof(level1_key_disable)}, level1_key_disable},
+#endif
+#endif
 };
 
 static int char_to_int(char data1)
@@ -256,6 +340,7 @@ void sending_tuning_cmd(void)
 		return;
 
 	mutex_lock(&mdnie_msd->lock);
+
 #ifdef MDNIE_LITE_TUN_DATA_DEBUG
 	print_tun_data();
 #endif
@@ -541,13 +626,15 @@ static void update_mdnie_mode(void)
 		return;
 	}
 
-	for (i = 0; i < 4; i++)
+	for (i = 0; i < 4; i++) {
 		LITE_CONTROL_1[i] = source_1[i];
+	}
 
 	i = 0;
 
-	for (i = 0; i < 107; i++)
+	for (i = 0; i < 107; i++) {
 		LITE_CONTROL_2[i] = source_2[i];
+	}
 
 	i = 0;
 
@@ -595,22 +682,22 @@ static void update_mdnie_mode(void)
 			LITE_CONTROL_2[i + 90] = chroma_correction[i];
 		}
 
-		result = (LITE_CONTROL_1[4] >> (sharpen_bit));
-		if (sharpen) {
+		result = (LITE_CONTROL_1[4] >> (sharpen_dark_bit));
+		if (sharpen_dark) {
 			if (!(result & 1))
-				LITE_CONTROL_1[4] |= 1 << sharpen_bit;
+				LITE_CONTROL_1[4] |= 1 << sharpen_dark_bit;
 		} else {
 			if (result & 1)
-				LITE_CONTROL_1[4] &= ~(1 << sharpen_bit);
+				LITE_CONTROL_1[4] &= ~(1 << sharpen_dark_bit);
 		}
 
-		result = (LITE_CONTROL_1[4] >> (sharpen_extra_bit));
-		if (sharpen_extra) {
+		result = (LITE_CONTROL_1[4] >> (sharpen_light_bit));
+		if (sharpen_light) {
 			if (!(result & 1))
-				LITE_CONTROL_1[4] |= 1 << sharpen_extra_bit;
+				LITE_CONTROL_1[4] |= 1 << sharpen_light_bit;
 		} else {
 			if (result & 1)
-				LITE_CONTROL_1[4] &= ~(1 << sharpen_extra_bit);
+				LITE_CONTROL_1[4] &= ~(1 << sharpen_light_bit);
 		}
 
 		result = (LITE_CONTROL_1[4] >> (chroma_bit));
@@ -664,11 +751,11 @@ static void update_mdnie_mode(void)
 
 		LITE_CONTROL_1[4] = source_1[4];
 
-		result = (LITE_CONTROL_1[4] >> (sharpen_bit));
-		sharpen = result & 1;
+		result = (LITE_CONTROL_1[4] >> (sharpen_dark_bit));
+		sharpen_dark = result & 1;
 
-		result = (LITE_CONTROL_1[4] >> (sharpen_extra_bit));
-		sharpen_extra = result & 1;
+		result = (LITE_CONTROL_1[4] >> (sharpen_light_bit));
+		sharpen_light = result & 1;
 
 		result = (LITE_CONTROL_1[4] >> (chroma_bit));
 		chroma = result & 1;
@@ -708,23 +795,21 @@ void mDNIe_Set_Mode(void)
 		return;
 
 	play_speed_1_5 = 0;
+	update_mdnie_mode();
 
-	if (hijack) {
+	if (hijack == 1) {
 		DPRINT(" = CONTROL MODE =\n");
-		update_mdnie_mode();
 		INPUT_PAYLOAD1(LITE_CONTROL_1);
 		INPUT_PAYLOAD2(LITE_CONTROL_2);
 	} else if (mdnie_tun_state.accessibility) {
 		DPRINT(" = ACCESSIBILITY MODE =\n");
 		INPUT_PAYLOAD1(blind_tune_value[mdnie_tun_state.accessibility][0]);
 		INPUT_PAYLOAD2(blind_tune_value[mdnie_tun_state.accessibility][1]);
-		update_mdnie_mode();
 	} else {
 		INPUT_PAYLOAD1(
 			mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][0]);
 		INPUT_PAYLOAD2(
 			mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][1]);
-		update_mdnie_mode();
 	}
 
 	sending_tuning_cmd();
@@ -1161,14 +1246,14 @@ static ssize_t offset_mode_store(struct kobject *kobj,
 	return count;
 }
 
-/* sharpen */
+/* sharpen_dark */
 
-static ssize_t sharpen_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+static ssize_t sharpen_dark_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%u\n", sharpen);
+	return sprintf(buf, "%u\n", sharpen_dark);
 }
 
-static ssize_t sharpen_store(struct kobject *kobj,
+static ssize_t sharpen_dark_store(struct kobject *kobj,
 			   struct kobj_attribute *attr, const char *buf, size_t count)
 {
 	int newval;
@@ -1177,20 +1262,20 @@ static ssize_t sharpen_store(struct kobject *kobj,
 		newval = 0;
 	if (newval > 1)
 		newval = 1;
-	sharpen = newval;
+	sharpen_dark = newval;
 	mDNIe_Set_Mode();
 	return count;
 }
 
 
-/* sharpen_extra */
+/* sharpen_light */
 
-static ssize_t sharpen_extra_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+static ssize_t sharpen_light_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%u\n", sharpen_extra);
+	return sprintf(buf, "%u\n", sharpen_light);
 }
 
-static ssize_t sharpen_extra_store(struct kobject *kobj,
+static ssize_t sharpen_light_store(struct kobject *kobj,
 			   struct kobj_attribute *attr, const char *buf, size_t count)
 {
 	int newval;
@@ -1199,7 +1284,7 @@ static ssize_t sharpen_extra_store(struct kobject *kobj,
 		newval = 0;
 	if (newval > 1)
 		newval = 1;
-	sharpen_extra = newval;
+	sharpen_light = newval;
 	mDNIe_Set_Mode();
 	return count;
 }
@@ -1962,8 +2047,8 @@ static ssize_t offset_cyan_store(struct kobject *kobj,
 MX_ATTR_RW(hijack);
 MX_ATTR_RW(offset_mode);
 MX_ATTR_RO(effect_mask);
-MX_ATTR_RW(sharpen);
-MX_ATTR_RW(sharpen_extra);
+MX_ATTR_RW(sharpen_dark);
+MX_ATTR_RW(sharpen_light);
 MX_ATTR_RW(chroma);
 MX_ATTR_RW(gamma);
 MX_ATTR_RW(bypass);
@@ -1974,8 +2059,8 @@ static struct attribute *mdnie_control_attrs[] = {
 	&hijack_attr.attr,
 	&offset_mode_attr.attr,
 	&effect_mask_attr.attr,
-	&sharpen_attr.attr,
-	&sharpen_extra_attr.attr,
+	&sharpen_dark_attr.attr,
+	&sharpen_light_attr.attr,
 	&chroma_attr.attr,
 	&gamma_attr.attr,
 	&bypass_attr.attr,
@@ -2128,6 +2213,7 @@ static struct kobject *offset_kobj;
 static struct kobject *gcurve_kobj;
 static struct kobject *cc_kobj;
 
+static bool msd_initialized = false;
 void init_mdnie_class(void)
 {
 	if (mdnie_tun_state.mdnie_enable) {
@@ -2256,13 +2342,14 @@ mdniefail:
 
 success:
 	mdnie_tun_state.mdnie_enable = true;
-	mDNIe_Set_Mode();
+	if (msd_initialized)
+		mDNIe_Set_Mode();
 }
 
 void mdnie_lite_tuning_init(struct mipi_samsung_driver_data *msd)
 {
 	mdnie_msd = msd;
-	mDNIe_Set_Mode();
+	msd_initialized = true;
 }
 
 #define coordinate_data_size 6
