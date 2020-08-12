@@ -742,7 +742,7 @@ static char BYPASS_1[] = {
 	0x00, //mdnie_en
 	0x00, //data_width mask 00 000
 	0x33, //scr_roi 1 scr algo_roi 1 algo 00 1 0 00 1 0
-	0x01, //sharpen cc gamma 00 0 0
+	0x00, //sharpen cc gamma 00 0 0
 };
 
 static char BYPASS_2[] = {
