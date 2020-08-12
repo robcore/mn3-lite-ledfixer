@@ -552,6 +552,9 @@ u8 speaker_cached_gain;
 static u8 hphl_hpf_cutoff;
 static u8 hphr_hpf_cutoff;
 static u8 speaker_hpf_cutoff;
+static u8 hphl_hpf_bypass;
+static u8 hphr_hpf_bypass;
+static u8 speaker_hpf_bypass;
 
 #define HPH_RX_GAIN_MAX 20
 #define HPH_PA_SHIFT 0
