@@ -569,7 +569,8 @@ unsigned int hph_poweramp_mask = 31; /* (1 << fls(max)) - 1 */
 static unsigned int uhqa_mode = 0;
 static unsigned int high_perf_mode;
 static unsigned int interpolator_boost = 0;
-static bool hpwidget = false;
+static bool hpwidget_left = false;
+static bool hpwidget_right = false;
 static bool spkwidget = false;
 static unsigned int compander_gain_lock;
 static unsigned int compander_gain_boost;
@@ -579,8 +580,13 @@ static u32 sc_rms_meter_resamp_fact = 0xA0;
 static u8 hph_pa_bias = 0x55;
 unsigned int anc_delay;
 
+static bool hpwidget(void)
+{
+	return hpwidget_left && hpwidget_right
+}
+
 static void update_headphone_gain(void) {
-	if (!hpwidget)
+	if (!hpwidget())
 		return;
 	lock_sound_control(&sound_control_codec_ptr->core_res, 1);
 	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX1_VOL_CTL_B2_CTL, hphl_cached_gain);
@@ -671,6 +677,7 @@ static void update_speaker_gain(void) {
 	SOC_SINGLE("RX2 HPF Switch", TAIKO_A_CDC_RX2_B5_CTL, 2, 1, 0),
 	SOC_SINGLE("RX7 HPF Switch", TAIKO_A_CDC_RX7_B5_CTL, 2, 1, 0),
 	______________________________________________________________
+
 
 	__________________________HPF Cutoff__________________________
 	Cutoff Registers - values are 0, 1, 2 corresponding with
@@ -3789,7 +3796,12 @@ static int taiko_hph_pa_event(struct snd_soc_dapm_widget *w,
 						 WCD9XXX_CLSH_REQ_ENABLE,
 						 WCD9XXX_CLSH_EVENT_POST_PA);
 		}
-		hpwidget = true;
+
+		if (w->shift == 5)
+			hpwidget_left = true;
+		else if (w->shift == 4)
+			hpwidget_right = true;
+
 		update_headphone_gain();
 		if (hph_pa_enabled) {
 			if (w->shift == 5)
@@ -3808,7 +3820,11 @@ static int taiko_hph_pa_event(struct snd_soc_dapm_widget *w,
 		}
 		break;
 	case SND_SOC_DAPM_POST_PMD:
-		hpwidget = false;
+		if (w->shift == 5)
+			hpwidget_left = false;
+		else if (w->shift == 4)
+			hpwidget_right = false;
+
 		usleep_range(13000, 13000);
 //		pr_debug("%s: sleep 13000us after %s PA disable\n", __func__, w->name);
 		pr_info("%s: hpwidget disabled\n", __func__);
@@ -7813,7 +7829,7 @@ static ssize_t hph_poweramp_gain_store(struct kobject *kobj,
 		hphr_pa_cached_gain = (u8)dualinput;
 	}
 
-	if (hph_pa_enabled && hpwidget) {
+	if (hph_pa_enabled && hpwidget()) {
 		write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN, false);
 		write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_R_GAIN, false);
 	}
