@@ -29,7 +29,7 @@
 
 export PATH=${PATH}:/sbin:/system/bin:/system/xbin
 #export PATH=/sbin:/system/bin:/system/xbin:/res/synapse/actions:$PATH
-
+echo "[MACHIN3X] mx.sh Started" | tee /dev/kmsg
 #Supersu
 #if [ -e /system/xbin/daemonsu ]; then
 #	/system/xbin/daemonsu --daemon &
@@ -74,10 +74,10 @@ then
 	chmod 755 "/sbin/zip"
 fi
 
-echo '1267200' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
-echo '1267200' > /sys/devices/system/cpu/cpu1/cpufreq/scaling_min_freq
-echo '1267200' > /sys/devices/system/cpu/cpu2/cpufreq/scaling_min_freq
-echo '1267200' > /sys/devices/system/cpu/cpu3/cpufreq/scaling_min_freq
+#echo '1267200' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
+#echo '1267200' > /sys/devices/system/cpu/cpu1/cpufreq/scaling_min_freq
+#echo '1267200' > /sys/devices/system/cpu/cpu2/cpufreq/scaling_min_freq
+#echo '1267200' > /sys/devices/system/cpu/cpu3/cpufreq/scaling_min_freq
 
 #busybox ln -sf $(pwd)/sbin/uci $(pwd)/res/synapse/uci
 
@@ -91,7 +91,7 @@ echo '1267200' > /sys/devices/system/cpu/cpu3/cpufreq/scaling_min_freq
 chmod 666 /sys/module/lowmemorykiller/parameters/cost
 chmod 666 /sys/module/lowmemorykiller/parameters/adj
 chmod 666 /sys/module/lowmemorykiller/parameters/minfree
-setprop ro.ril.enable.amr.wideband 1
+resetprop ro.ril.enable.amr.wideband 1
 #echo 32 > /sys/module/lowmemorykiller/parameters/cost;
 
 #echo 0 > /sys/module/subsystem_restart/parameters/enable_ramdumps;
@@ -258,7 +258,7 @@ setprop ro.ril.enable.amr.wideband 1
 #supolicy --live "allow netmgrd netmgrd socket { read write open ioctl }"
 
 # Init.d
-chown -R 0:0 /system/etc/init.d/
+chown -R 0:2000 /system/etc/init.d/
 chmod -R 755 /system/etc/init.d/
 chmod 755 /sys
 supolicy --live "permissive audioserver"
@@ -315,7 +315,7 @@ chmod 666 /sys/block/mmcblk1/queue/scheduler
 for MYBLOCK in mmcblk0 mmcblk0rpmb mmcblk1
 do
 echo 0 > "/sys/block/$MYBLOCK/queue/add_random"
-echo 0 > "/sys/block/$MYBLOCK/queue/iostats"
+#echo 0 > "/sys/block/$MYBLOCK/queue/iostats"
 done
 #echo 0 > "/sys/block/$MYBLOCK/queue/iosched/slice_idle"
 echo 1 > /proc/sys/vm/panic_on_oom
@@ -327,8 +327,8 @@ echo 1 > /proc/sys/kernel/ftrace_dump_on_oops
 #echo 0 > /proc/sys/net/bridge/bridge-nf-call-iptables
 #echo 6 > /sys/kernel/sound_control_3/gpl_headphone_gain
 #echo 6 > /sys/kernel/sound_control_3/gpl_speaker_gain
-echo 0 > /sys/kernel/debug/tracing/tracing_on
-echo 0 > /sys/kernel/debug/tracing/tracing_enabled
+#echo 0 > /sys/kernel/debug/tracing/tracing_on
+#echo 0 > /sys/kernel/debug/tracing/tracing_enabled
 #echo f > /sys/class/net/wlan0/queues/rx-0/rps_cpus
 #echo f > /sys/class/net/wlan0/queues/tx-0/xps_cpus
 #echo 0 > /sys/class/net/wlan0/queues/tx-0/byte_queue_limits/hold_time
@@ -357,14 +357,14 @@ echo 0 > /sys/kernel/debug/tracing/tracing_enabled
 #echo '1267200' > /sys/devices/system/cpu/cpu2/cpufreq/scaling_min_freq
 #echo '1267200' > /sys/devices/system/cpu/cpu3/cpufreq/scaling_min_freq
 #echo '0' > /sys/kernel/gamma_control/gcontrol_gradient_enabled
-echo '1' > /sys/class/mdnie/mdnie/mode
-echo '1' > /sys/kernel/mdnie_control/hijack
-echo '0' > /sys/kernel/mdnie_control/offset_mode
-echo '1' > /sys/kernel/mdnie_control/bypass
-echo '0' > /sys/kernel/mdnie_control/sharpen_dark
-echo '0' > /sys/kernel/mdnie_control/sharpen_light
-echo '0' > /sys/kernel/mdnie_control/gamma
-echo '0' > /sys/kernel/mdnie_control/chroma
+#echo '1' > /sys/class/mdnie/mdnie/mode
+#echo '1' > /sys/kernel/mdnie_control/hijack
+#echo '0' > /sys/kernel/mdnie_control/offset_mode
+#echo '1' > /sys/kernel/mdnie_control/bypass
+#echo '0' > /sys/kernel/mdnie_control/sharpen_dark
+#echo '0' > /sys/kernel/mdnie_control/sharpen_light
+#echo '0' > /sys/kernel/mdnie_control/gamma
+#echo '0' > /sys/kernel/mdnie_control/chroma
 #echo '30 25 20' > /sys/kernel/mdnie_control/override/black
 #echo '20 20 15' > /sys/kernel/mdnie_control/override/black
 echo '0' > /sys/devices/platform/kcal_ctrl.0/kcal_enable
@@ -378,7 +378,7 @@ chmod 400 /sys/devices/virtual/graphics/fb0/csc_cfg
 echo 'deadline' > /sys/block/mmcblk0/queue/scheduler
 echo 'deadline' > /sys/block/mmcblk1/queue/scheduler
 echo '0' > /sys/devices/virtual/lcd/panel/temperature
-echo '1' > /sys/kernel/mdnie_control/bypass
+#echo '1' > /sys/kernel/mdnie_control/bypass
 echo 'y' > /sys/module/mdss_hdmi_tx/parameters/hdcp
 echo "init.d complete on $(date)" >> /mnt/sdcard/initdlog.txt
 echo ' ' | tee /dev/kmsg
@@ -395,4 +395,4 @@ restorecon -R /data/data
 restorecon -R /data/dalvik-cache
 echo 0 > /sys/fs/selinux/enforce
 #am startservice com.atmos/com.atmos.service.DsService
-echo "[MACHIN3X] INIT.D EXECUTED" | tee /dev/kmsg
+echo "[MACHIN3X] mx.sh Complete" | tee /dev/kmsg
