@@ -574,9 +574,9 @@ static bool hpwidget_right = false;
 static bool spkwidget = false;
 static unsigned int compander_gain_lock;
 static unsigned int compander_gain_boost;
-static u32 sc_peak_det_timeout = 0xB;
-static u32 sc_rms_meter_div_fact = 0xD;
-static u32 sc_rms_meter_resamp_fact = 0xA0;
+static u32 sc_peak_det_timeout = 15;
+static u32 sc_rms_meter_div_fact = 15;
+static u32 sc_rms_meter_resamp_fact = 15;
 static u8 hph_pa_bias = 0x55;
 unsigned int anc_delay;
 
