@@ -541,15 +541,13 @@ static void update_mdnie_mode(void)
 		return;
 	}
 
-	for (i = 0; i < 4; i++) {
+	for (i = 0; i < 4; i++)
 		LITE_CONTROL_1[i] = source_1[i];
-	}
 
 	i = 0;
 
-	for (i = 0; i < 107; i++) {
+	for (i = 0; i < 107; i++)
 		LITE_CONTROL_2[i] = source_2[i];
-	}
 
 	i = 0;
 
@@ -720,7 +718,7 @@ void mDNIe_Set_Mode(void)
 		DPRINT(" = ACCESSIBILITY MODE =\n");
 		INPUT_PAYLOAD1(blind_tune_value[mdnie_tun_state.accessibility][0]);
 		INPUT_PAYLOAD2(blind_tune_value[mdnie_tun_state.accessibility][1]);
-		update_mdnie_mode()
+		update_mdnie_mode();
 	} else {
 		INPUT_PAYLOAD1(
 			mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][0]);
