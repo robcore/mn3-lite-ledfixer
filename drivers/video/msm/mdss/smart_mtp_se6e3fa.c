@@ -2187,7 +2187,7 @@ static int smart_dimming_init(struct SMART_DIM *psmart)
 	v23_adjustment(psmart);
 	v11_adjustment(psmart);
 	v3_adjustment(psmart);
-	print_RGB_offset(psmart);
+	//print_RGB_offset(psmart);
 
 	if (generate_gray_scale(psmart)) {
 		pr_info(KERN_ERR "lcd smart dimming fail generate_gray_scale\n");
