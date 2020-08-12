@@ -145,6 +145,12 @@ chmod 644 /system/etc/wifi/WCNSS_qcom_cfg.ini
 chmod 644 /system/etc/wifi/wpa_supplicant.conf
 chmod 644 /system/etc/wifi/wpa_supplicant_overlay.conf
 
+ui_print "- Replacing Mixer Paths"
+rm /system/etc/mixer_paths.xml
+cp -af $COMMONDIR/mixer_paths.xml /system/etc/mixer_paths.xml
+chmod 644 /system/etc/mixer_paths.xml
+chown 0:0 /system/etc/mixer_paths.xml
+
 $BOOTMODE || recovery_actions
 
 #####################

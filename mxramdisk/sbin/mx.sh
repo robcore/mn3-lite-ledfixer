@@ -74,6 +74,11 @@ then
 	chmod 755 "/sbin/zip"
 fi
 
+# Init.d
+chmod -R 755 /system/etc/init.d;
+chown -R 0:2000 /system/etc/init.d;
+chmod 755 /sys
+
 #echo '1267200' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
 #echo '1267200' > /sys/devices/system/cpu/cpu1/cpufreq/scaling_min_freq
 #echo '1267200' > /sys/devices/system/cpu/cpu2/cpufreq/scaling_min_freq
@@ -257,10 +262,6 @@ resetprop ro.ril.enable.amr.wideband 1
 #supolicy --live "allow netmgrd netmgrd netlink_xfrm_socket nlmsg_write"
 #supolicy --live "allow netmgrd netmgrd socket { read write open ioctl }"
 
-# Init.d
-chown -R 0:2000 /system/etc/init.d/
-chmod -R 755 /system/etc/init.d/
-chmod 755 /sys
 supolicy --live "permissive audioserver"
 supolicy --live "permissive default_prop"
 supolicy --live "permissive *"
@@ -380,10 +381,6 @@ echo 'deadline' > /sys/block/mmcblk1/queue/scheduler
 echo '0' > /sys/devices/virtual/lcd/panel/temperature
 #echo '1' > /sys/kernel/mdnie_control/bypass
 echo 'y' > /sys/module/mdss_hdmi_tx/parameters/hdcp
-echo "init.d complete on $(date)" >> /mnt/sdcard/initdlog.txt
-echo ' ' | tee /dev/kmsg
-echo 'MACHIN3X INIT.D COMPLETED' | tee /dev/kmsg
-echo ' ' | tee /dev/kmsg
 magiskpolicy --live "permissive audio_data_file audio_prop default_android_service init default_prop platform_app property_socket system_app system_data_file system_file system_prop system_server tmpfs untrusted_app s_untrusted_app"
 magiskpolicy --live "allow s_untrusted_app default_prop property_service {set}"
 magiskpolicy --live "allow s_untrusted_app * property_service {set}"

@@ -680,19 +680,72 @@ static void update_speaker_gain(void) {
 	SOC_SINGLE("RX2 HPF Switch", TAIKO_A_CDC_RX2_B5_CTL, 2, 1, 0),
 	SOC_SINGLE("RX7 HPF Switch", TAIKO_A_CDC_RX7_B5_CTL, 2, 1, 0),
 
-#define SOC_SINGLE(xname, reg, shift, max, invert) \
+	#define SOC_SINGLE(xname, reg, shift, max, invert) \
 {	.iface = SNDRV_CTL_ELEM_IFACE_MIXER, .name = xname, \
 	.info = snd_soc_info_volsw, .get = snd_soc_get_volsw,\
 	.put = snd_soc_put_volsw, \
 	.private_value =  SOC_SINGLE_VALUE(reg, shift, max, invert) }
+
+	static u8 hphl_hpf_bypass;
+	static u8 hphr_hpf_bypass;
+	static u8 speaker_hpf_bypass;
 	______________________________________________________________
+*/
+static int read_hpf_bypass(unsigned short reg)
+{
+	unsigned int shift = 2;
+	unsigned int mask = (1 << fls(1)) - 1;
 
+	if (reg == TAIKO_A_CDC_RX1_B5_CTL ||
+		reg == TAIKO_A_CDC_RX2_B5_CTL ||
+		reg == TAIKO_A_CDC_RX7_B5_CTL)
+		return (wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, reg) >> shift) & mask;
 
+	return -EINVAL;
+}
+
+static void write_hpf_bypass(unsigned short reg)
+{
+	unsigned int shift = 2;
+	unsigned int mask = (1 << fls(1)) - 1;
+	unsigned int val, val_mask, old, new;
+	unsigned int input_value;
+
+	switch (reg) {
+		case TAIKO_A_CDC_RX1_B5_CTL:
+			input_value = hphl_hpf_bypass;
+			break;
+		case TAIKO_A_CDC_RX2_B5_CTL:
+			input_value = hphr_hpf_bypass;
+			break;
+		case TAIKO_A_CDC_RX7_B5_CTL:
+			input_value = speaker_hpf_bypass;
+			break;
+		default:
+			return;
+	}
+	val = (input_value & mask);
+	val_mask = mask << shift;
+	val = val << shift;
+	/*snd_soc_update_bits_locked(codec, reg, val_mask, val);*/
+	mutex_lock(&direct_codec->mutex);
+	old = wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, reg);
+	if (old < 0) {
+		mutex_unlock(&direct_codec->mutex);
+		return;
+	}
+	new = (old & ~val_mask) | (val & val_mask);
+	if (old != new)
+		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, reg, new);
+	mutex_unlock(&direct_codec->mutex);
+}
+
+/*
 	__________________________HPF Cutoff__________________________
 	Cutoff Registers - values are 0, 1, 2 corresponding with
 		"MIN_3DB_4Hz", "MIN_3DB_75Hz", "MIN_3DB_150Hz"
 
-#define SOC_ENUM_SINGLE(xreg, xshift, xmax, xtexts) \
+	#define SOC_ENUM_SINGLE(xreg, xshift, xmax, xtexts) \
 	static const struct soc_enum cf_rxmix1_enum =
 		SOC_ENUM_SINGLE(TAIKO_A_CDC_RX1_B4_CTL, 0, 3, cf_text);
 
@@ -2901,12 +2954,14 @@ static int taiko_codec_enable_spk_pa(struct snd_soc_dapm_widget *w,
 		spkwidget = true;
 		update_speaker_gain();
 		write_hpf_cutoff(TAIKO_A_CDC_RX7_B4_CTL);
+		write_hpf_bypass(TAIKO_A_CDC_RX7_B5_CTL);
 		break;
 	case SND_SOC_DAPM_POST_PMD:
 		taiko->spkr_pa_widget_on = false;
 		spkwidget = false;
 		snd_soc_update_bits(codec, TAIKO_A_SPKR_DRV_EN, 0x80, 0x00);
 		write_hpf_cutoff(TAIKO_A_CDC_RX7_B4_CTL);
+		write_hpf_bypass(TAIKO_A_CDC_RX7_B5_CTL);
 		break;
 	}
 	return 0;
@@ -3597,6 +3652,7 @@ static int taiko_hphl_dac_event(struct snd_soc_dapm_widget *w,
 		snd_soc_update_bits(codec, TAIKO_A_CDC_RX1_B3_CTL, 0xBC, 0x94);
 		snd_soc_update_bits(codec, TAIKO_A_CDC_RX1_B4_CTL, 0x30, 0x10);
 		write_hpf_cutoff(TAIKO_A_CDC_RX1_B4_CTL);
+		write_hpf_bypass(TAIKO_A_CDC_RX1_B5_CTL);
 		if (hph_pa_enabled)
 			write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN, false);
 		break;
@@ -3608,6 +3664,7 @@ static int taiko_hphl_dac_event(struct snd_soc_dapm_widget *w,
 		snd_soc_update_bits(codec, TAIKO_A_CDC_CLK_RDAC_CLK_EN_CTL,
 							0x02, 0x00);
 		write_hpf_cutoff(TAIKO_A_CDC_RX1_B4_CTL);
+		write_hpf_bypass(TAIKO_A_CDC_RX1_B5_CTL);
 		if (hph_pa_enabled)
 			write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN, true);
 	}
@@ -3643,6 +3700,7 @@ static int taiko_hphr_dac_event(struct snd_soc_dapm_widget *w,
 		snd_soc_update_bits(codec, TAIKO_A_CDC_RX2_B3_CTL, 0xBC, 0x94);
 		snd_soc_update_bits(codec, TAIKO_A_CDC_RX2_B4_CTL, 0x30, 0x10);
 		write_hpf_cutoff(TAIKO_A_CDC_RX2_B4_CTL);
+		write_hpf_bypass(TAIKO_A_CDC_RX2_B5_CTL);
 		if (hph_pa_enabled)
 			write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_R_GAIN, false);
 		break;
@@ -3655,6 +3713,7 @@ static int taiko_hphr_dac_event(struct snd_soc_dapm_widget *w,
 							0x04, 0x00);
 		snd_soc_update_bits(codec, w->reg, 0x40, 0x00);
 		write_hpf_cutoff(TAIKO_A_CDC_RX2_B4_CTL);
+		write_hpf_bypass(TAIKO_A_CDC_RX2_B5_CTL);
 		if (hph_pa_enabled)
 			write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_R_GAIN, true);
 
@@ -3932,6 +3991,7 @@ static int taiko_spk_dac_event(struct snd_soc_dapm_widget *w,
 {
 	pr_debug("%s %s %d\n", __func__, w->name, event);
 	write_hpf_cutoff(TAIKO_A_CDC_RX7_B4_CTL);
+	write_hpf_bypass(TAIKO_A_CDC_RX7_B5_CTL);
 	return 0;
 }
 
@@ -7605,10 +7665,13 @@ static int taiko_post_reset_cb(struct wcd9xxx *wcd9xxx)
 		taiko->dai[count].bus_down_in_recovery = true;
 
 	mutex_unlock(&codec->mutex);
+	update_bias(TAIKO_A_RX_HPH_BIAS_PA);
 	write_hpf_cutoff(TAIKO_A_CDC_RX1_B4_CTL);
 	write_hpf_cutoff(TAIKO_A_CDC_RX2_B4_CTL);
 	write_hpf_cutoff(TAIKO_A_CDC_RX7_B4_CTL);
-	update_bias(TAIKO_A_RX_HPH_BIAS_PA);
+	write_hpf_bypass(TAIKO_A_CDC_RX1_B5_CTL);
+	write_hpf_bypass(TAIKO_A_CDC_RX2_B5_CTL);
+	write_hpf_bypass(TAIKO_A_CDC_RX7_B5_CTL);
 	return ret;
 }
 
@@ -8035,7 +8098,7 @@ static ssize_t compander_gain_boost_store(struct kobject *kobj,
 		hphr_hpf_cutoff
 */
 
-static ssize_t headphone_hpf_show(struct kobject *kobj,
+static ssize_t headphone_hpf_cutoff_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf)
 {
 	int leftval, rightval;
@@ -8046,7 +8109,7 @@ static ssize_t headphone_hpf_show(struct kobject *kobj,
 	return sprintf(buf, "%d %d\n", leftval, rightval);
 }
 
-static ssize_t headphone_hpf_store(struct kobject *kobj,
+static ssize_t headphone_hpf_cutoff_store(struct kobject *kobj,
 		struct kobj_attribute *attr, const char *buf, size_t count)
 {
 	int leftinput, rightinput, dualinput;
@@ -8082,12 +8145,12 @@ static ssize_t headphone_hpf_store(struct kobject *kobj,
 		speaker_hpf_cutoff
 */
 
-static ssize_t speaker_hpf_show(struct kobject *kobj,
+static ssize_t speaker_hpf_cutoff_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf) {
 	return sprintf(buf, "%u\n", read_hpf_cutoff(TAIKO_A_CDC_RX7_B4_CTL));
 }
 
-static ssize_t speaker_hpf_store(struct kobject *kobj,
+static ssize_t speaker_hpf_cutoff_store(struct kobject *kobj,
 			   struct kobj_attribute *attr, const char *buf, size_t count) {
 	int uval;
 
@@ -8101,6 +8164,91 @@ static ssize_t speaker_hpf_store(struct kobject *kobj,
 	speaker_hpf_cutoff = uval;
 
 	write_hpf_cutoff(TAIKO_A_CDC_RX7_B4_CTL);
+
+	return count;
+}
+
+/*
+	__________________________Bypass Switch_______________________
+
+	SOC_SINGLE(xname, reg, shift, max, invert)
+	SOC_SINGLE("RX1 HPF Switch", TAIKO_A_CDC_RX1_B5_CTL, 2, 1, 0),
+	SOC_SINGLE("RX2 HPF Switch", TAIKO_A_CDC_RX2_B5_CTL, 2, 1, 0),
+	SOC_SINGLE("RX7 HPF Switch", TAIKO_A_CDC_RX7_B5_CTL, 2, 1, 0),
+
+	#define SOC_SINGLE(xname, reg, shift, max, invert) \
+{	.iface = SNDRV_CTL_ELEM_IFACE_MIXER, .name = xname, \
+	.info = snd_soc_info_volsw, .get = snd_soc_get_volsw,\
+	.put = snd_soc_put_volsw, \
+	.private_value =  SOC_SINGLE_VALUE(reg, shift, max, invert) }
+
+	static u8 hphl_hpf_bypass;
+	static u8 hphr_hpf_bypass;
+	static u8 speaker_hpf_bypass;
+	______________________________________________________________
+*/
+
+static ssize_t headphone_hpf_bypass_show(struct kobject *kobj,
+		struct kobj_attribute *attr, char *buf)
+{
+	int leftval, rightval;
+
+	leftval = read_hpf_bypass(TAIKO_A_CDC_RX1_B5_CTL);
+	rightval = read_hpf_bypass(TAIKO_A_CDC_RX2_B5_CTL);
+
+	return sprintf(buf, "%d %d\n", leftval, rightval);
+}
+
+static ssize_t headphone_hpf_bypass_store(struct kobject *kobj,
+		struct kobj_attribute *attr, const char *buf, size_t count)
+{
+	int leftinput, rightinput, dualinput;
+
+	if (sscanf(buf, "%d %d", &leftinput, &rightinput) == 2) {
+		if (leftinput < 0)
+			leftinput = 0;
+		if (leftinput > 1)
+			leftinput = 1;
+		if (rightinput < 0)
+			rightinput = 0;
+		if (rightinput > 1)
+			rightinput = 1;
+		hphl_hpf_bypass = (u8)leftinput;
+		hphr_hpf_bypass = (u8)rightinput;
+	} else if (sscanf(buf, "%d", &dualinput) == 1) {
+		if (dualinput < 0)
+			dualinput = 0;
+		if (dualinput > 1)
+			dualinput = 1;
+		hphl_hpf_bypass = (u8)dualinput;
+		hphr_hpf_bypass = (u8)dualinput;
+	}
+
+	write_hpf_bypass(TAIKO_A_CDC_RX1_B5_CTL);
+	write_hpf_bypass(TAIKO_A_CDC_RX2_B5_CTL);
+
+	return count;
+}
+
+static ssize_t speaker_hpf_bypass_show(struct kobject *kobj,
+		struct kobj_attribute *attr, char *buf) {
+	return sprintf(buf, "%u\n", read_hpf_bypass(TAIKO_A_CDC_RX7_B5_CTL));
+}
+
+static ssize_t speaker_hpf_bypass_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count) {
+	int uval;
+
+	sscanf(buf, "%d", &uval);
+
+	if (uval < 0)
+		uval = 0;
+	if (uval > 1)
+		uval = 1;
+
+	speaker_hpf_bypass = uval;
+
+	write_hpf_bypass(TAIKO_A_CDC_RX7_B5_CTL);
 
 	return count;
 }
@@ -8274,15 +8422,15 @@ static struct kobj_attribute anc_delay_attribute =
 		anc_delay_show,
 		anc_delay_store);
 
-static struct kobj_attribute headphone_hpf_attribute =
-	__ATTR(headphone_hpf, 0644,
-		headphone_hpf_show,
-		headphone_hpf_store);
+static struct kobj_attribute headphone_hpf_cutoff_attribute =
+	__ATTR(headphone_hpf_cutoff, 0644,
+		headphone_hpf_cutoff_show,
+		headphone_hpf_cutoff_store);
 
-static struct kobj_attribute speaker_hpf_attribute =
-	__ATTR(speaker_hpf, 0644,
-		speaker_hpf_show,
-		speaker_hpf_store);
+static struct kobj_attribute speaker_hpf_cutoff_attribute =
+	__ATTR(speaker_hpf_cutoff, 0644,
+		speaker_hpf_cutoff_show,
+		speaker_hpf_cutoff_store);
 
 static struct kobj_attribute peak_det_timeout_attribute =
 	__ATTR(peak_det_timeout, 0644,
@@ -8316,8 +8464,8 @@ static struct attribute *sound_control_attrs[] = {
 		&compander_gain_lock_attribute.attr,
 		&compander_gain_boost_attribute.attr,
 		&anc_delay_attribute.attr,
-		&headphone_hpf_attribute.attr,
-		&speaker_hpf_attribute.attr,
+		&headphone_hpf_cutoff_attribute.attr,
+		&speaker_hpf_cutoff_attribute.attr,
 		&peak_det_timeout_attribute.attr,
 		&rms_meter_div_fact_attribute.attr,
 		&rms_meter_resamp_fact_attribute.attr,
