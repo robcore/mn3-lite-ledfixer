@@ -1178,9 +1178,6 @@ static int taiko_set_compander(struct snd_kcontrol *kcontrol,
 		/* Disable CHOPPER block */
 		snd_soc_update_bits(codec,
 			TAIKO_A_RX_HPH_CHOP_CTL, 0x80, 0x00);
-		pr_info("%s hph chop control: %d\n", __func__,
-				wcd9xxx_reg_read(&sound_control_codec_ptr->core_res,
-				TAIKO_A_RX_HPH_CHOP_CTL));
 
 		snd_soc_write(codec, TAIKO_A_NCP_DTEST, 0x10);
 		if (value == 1) {
@@ -1211,9 +1208,6 @@ static int taiko_set_compander(struct snd_kcontrol *kcontrol,
 		/* Enable Chopper */
 		snd_soc_update_bits(codec,
 			TAIKO_A_RX_HPH_CHOP_CTL, 0x80, 0x80);
-		pr_info("%s hph chop control: %d\n", __func__,
-				wcd9xxx_reg_read(&sound_control_codec_ptr->core_res,
-				TAIKO_A_RX_HPH_CHOP_CTL));
 
 		snd_soc_write(codec, TAIKO_A_NCP_DTEST, 0x20);
 		pr_debug("%s: Enabled Chopper and set wavegen to 5 msec\n",
@@ -1232,9 +1226,6 @@ static int taiko_set_compander(struct snd_kcontrol *kcontrol,
 		/* Disable CHOPPER block */
 		snd_soc_update_bits(codec,
 			TAIKO_A_RX_HPH_CHOP_CTL, 0x80, 0x00);
-		pr_info("%s hph chop control: %d\n", __func__,
-				wcd9xxx_reg_read(&sound_control_codec_ptr->core_res,
-				TAIKO_A_RX_HPH_CHOP_CTL));
 
 		snd_soc_write(codec, TAIKO_A_NCP_DTEST, 0x10);
 		pr_debug("%s: Disabled Chopper and set wavegen to 20 msec\n",
@@ -4789,9 +4780,6 @@ static int taiko_prepare(struct snd_pcm_substream *substream,
 	if (!taiko_p->comp_enabled[COMPANDER_1]) {
 			taiko_p->clsh_d.hs_perf_mode_enabled = false;
 			snd_soc_update_bits(codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20);
-			pr_info("%s hph chop control: %d\n", __func__,
-					wcd9xxx_reg_read(&sound_control_codec_ptr->core_res,
-					TAIKO_A_RX_HPH_CHOP_CTL));
 			pr_info("%s(): HS peformance mode Disabled - No Headphone Playback", __func__);
 			return 0;
 	}
@@ -4843,9 +4831,6 @@ static int taiko_prepare(struct snd_pcm_substream *substream,
 		if (snd_soc_update_bits(codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20) >= 0)
 			pr_info("%s: uhqa_mode disabled", __func__);
 	}
-	pr_info("%s hph chop control: %d\n", __func__,
-			wcd9xxx_reg_read(&sound_control_codec_ptr->core_res,
-			TAIKO_A_RX_HPH_CHOP_CTL));
 
 	return 0;
 }
@@ -8432,6 +8417,16 @@ static struct kobj_attribute speaker_hpf_cutoff_attribute =
 		speaker_hpf_cutoff_show,
 		speaker_hpf_cutoff_store);
 
+static struct kobj_attribute headphone_hpf_bypass_attribute =
+	__ATTR(headphone_hpf_bypass, 0644,
+		headphone_hpf_bypass_show,
+		headphone_hpf_bypass_store);
+
+static struct kobj_attribute speaker_hpf_bypass_attribute =
+	__ATTR(speaker_hpf_bypass, 0644,
+		speaker_hpf_bypass_show,
+		speaker_hpf_bypass_store);
+
 static struct kobj_attribute peak_det_timeout_attribute =
 	__ATTR(peak_det_timeout, 0644,
 		peak_det_timeout_show,
@@ -8466,6 +8461,8 @@ static struct attribute *sound_control_attrs[] = {
 		&anc_delay_attribute.attr,
 		&headphone_hpf_cutoff_attribute.attr,
 		&speaker_hpf_cutoff_attribute.attr,
+		&headphone_hpf_bypass_attribute.attr,
+		&speaker_hpf_bypass_attribute.attr,
 		&peak_det_timeout_attribute.attr,
 		&rms_meter_div_fact_attribute.attr,
 		&rms_meter_resamp_fact_attribute.attr,
@@ -8688,11 +8685,10 @@ static int taiko_codec_probe(struct snd_soc_codec *codec)
 	write_hpf_cutoff(TAIKO_A_CDC_RX1_B4_CTL);
 	write_hpf_cutoff(TAIKO_A_CDC_RX2_B4_CTL);
 	write_hpf_cutoff(TAIKO_A_CDC_RX7_B4_CTL);
+	write_hpf_bypass(TAIKO_A_CDC_RX1_B5_CTL);
+	write_hpf_bypass(TAIKO_A_CDC_RX2_B5_CTL);
+	write_hpf_bypass(TAIKO_A_CDC_RX7_B5_CTL);
 	update_bias(TAIKO_A_RX_HPH_BIAS_PA);
-	pr_info("HPH_PA_GAIN_MASK is: %lu\n", HPH_PA_GAIN_MASK);
-	pr_info("%s hph chop control: %d\n", __func__,
-			wcd9xxx_reg_read(&sound_control_codec_ptr->core_res,
-			TAIKO_A_RX_HPH_CHOP_CTL));
 
 	return ret;
 
