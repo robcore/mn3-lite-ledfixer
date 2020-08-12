@@ -128,20 +128,20 @@ static struct mipi_samsung_driver_data *mdnie_msd;
 static char LITE_CONTROL_1[5];
 static char LITE_CONTROL_2[108];
 
-static int hijack = 0;
+static int hijack;
 static int override_color[24];
 static int offset_color[24];
 static int custom_curve[48];
 static int chroma_correction[18];
-static int bypass = 0;
+static int bypass;
 
 static unsigned int offset_mode = 1;
-static unsigned int sharpen_dark = 0;
-static unsigned int sharpen_light = 0;
-static unsigned int chroma = 0;
-static unsigned int gamma = 0;
-static int sharpen_light_bit = 3;
-static int sharpen_dark_bit = 2;
+static unsigned int sharpen;
+static unsigned int sharpen_extra;
+static unsigned int chroma;
+static unsigned int gamma;
+static int sharpen_extra_bit = 3;
+static int sharpen_bit = 2;
 static int chroma_bit = 1;
 static int gamma_bit = 0;
 
@@ -162,7 +162,7 @@ int get_lcd_panel_res(void);
 struct mdnie_lite_tun_type mdnie_tun_state = {
 	.mdnie_enable = false,
 	.scenario = mDNIe_UI_MODE,
-	.background = STANDARD_MODE,
+	.background = BYPASS_MODE,
 	.outdoor = OUTDOOR_OFF_MODE,
 	.accessibility = ACCESSIBILITY_OFF,
 };
@@ -187,6 +187,7 @@ const char background_name[MAX_BACKGROUND_MODE][10] = {
 	"NATURAL",
 	"MOVIE",
 	"AUTO",
+	"BYPASS",
 };
 
 const char outdoor_name[MAX_OUTDOOR_MODE][20] = {
@@ -379,14 +380,29 @@ static void update_mdnie_mode(void)
 			source_1 = AUTO_UI_1;
 			source_2 = AUTO_UI_2;
 			break;
+		case BYPASS_MODE:
+			source_1 = BYPASS_1;
+			source_2 = BYPASS_2;
+			break;
 		default:
 			return;
 		}
 		break;
 	case mDNIe_VIDEO_MODE:
 		if (mdnie_tun_state.outdoor == OUTDOOR_ON_MODE) {
-			source_1 = OUTDOOR_VIDEO_1;
-			source_2 = OUTDOOR_VIDEO_2;
+			switch (mdnie_tun_state.background) {
+			case DYNAMIC_MODE:
+			case STANDARD_MODE:
+			case NATURAL_MODE:
+			case MOVIE_MODE:
+			case AUTO_MODE:
+				source_1 = OUTDOOR_VIDEO_1;
+				source_2 = OUTDOOR_VIDEO_2;
+				break;
+			case BYPASS_MODE:
+				source_1 = BYPASS_1;
+				source_2 = BYPASS_2;
+				break;
 		} else {
 			switch (mdnie_tun_state.background) {
 			case DYNAMIC_MODE:
@@ -409,6 +425,10 @@ static void update_mdnie_mode(void)
 				source_1 = AUTO_VIDEO_1;
 				source_2 = AUTO_VIDEO_2;
 				break;
+			case BYPASS_MODE:
+				source_1 = BYPASS_1;
+				source_2 = BYPASS_2;
+				break;
 			default:
 				return;
 			}
@@ -429,6 +449,10 @@ static void update_mdnie_mode(void)
 				source_2 = WARM_2;
 			}
 			break;
+		case BYPASS_MODE:
+			source_1 = BYPASS_1;
+			source_2 = BYPASS_2;
+			break;
 		default:
 			return;
 		}
@@ -447,6 +471,10 @@ static void update_mdnie_mode(void)
 				source_1 = COLD_1;
 				source_2 = COLD_2;
 			}
+			break;
+		case BYPASS_MODE:
+			source_1 = BYPASS_1;
+			source_2 = BYPASS_2;
 			break;
 		default:
 			return;
@@ -475,6 +503,10 @@ static void update_mdnie_mode(void)
 				source_2 = AUTO_CAMERA_2;
 			}
 			break;
+		case BYPASS_MODE:
+			source_1 = BYPASS_1;
+			source_2 = BYPASS_2;
+			break;
 		default:
 			return;
 		}
@@ -500,6 +532,10 @@ static void update_mdnie_mode(void)
 		case AUTO_MODE:
 			source_1 = AUTO_BROWSER_1;
 			source_2 = AUTO_BROWSER_2;
+			break;
+		case BYPASS_MODE:
+			source_1 = BYPASS_1;
+			source_2 = BYPASS_2;
 			break;
 		default:
 			return;
@@ -527,6 +563,11 @@ static void update_mdnie_mode(void)
 			source_1 = AUTO_GALLERY_1;
 			source_2 = AUTO_GALLERY_2;
 			break;
+		case BYPASS_MODE:
+			source_1 = BYPASS_1;
+			source_2 = BYPASS_2;
+			break;
+
 		default:
 			return;
 		}
@@ -553,6 +594,11 @@ static void update_mdnie_mode(void)
 			source_1 = AUTO_VT_1;
 			source_2 = AUTO_VT_2;
 			break;
+		case BYPASS_MODE:
+			source_1 = BYPASS_1;
+			source_2 = BYPASS_2;
+			break;
+
 		default:
 			return;
 		}
@@ -578,6 +624,10 @@ static void update_mdnie_mode(void)
 		case AUTO_MODE:
 			source_1 = AUTO_BROWSER_1;
 			source_2 = AUTO_BROWSER_2;
+			break;
+		case BYPASS_MODE:
+			source_1 = BYPASS_1;
+			source_2 = BYPASS_2;
 			break;
 		default:
 			return;
@@ -605,6 +655,10 @@ static void update_mdnie_mode(void)
 			source_1 = AUTO_EBOOK_1;
 			source_2 = AUTO_EBOOK_2;
 			break;
+		case BYPASS_MODE:
+			source_1 = BYPASS_1;
+			source_2 = BYPASS_2;
+			break;
 		default:
 			return;
 		}
@@ -619,6 +673,10 @@ static void update_mdnie_mode(void)
 			source_1 = AUTO_EMAIL_1;
 			source_2 = AUTO_EMAIL_2;
 			break;
+		case BYPASS_MODE:
+			source_1 = BYPASS_1;
+			source_2 = BYPASS_2;
+			break;
 		default:
 			return;
 		}
@@ -626,13 +684,9 @@ static void update_mdnie_mode(void)
 		return;
 	}
 
-	for (i = 0; i < 4; i++) {
-		LITE_CONTROL_1[i] = source_1[i];
-	}
-
-	i = 0;
-
 	for (i = 0; i < 107; i++) {
+		if (i < 5)
+			LITE_CONTROL_1[i] = source_1[i];
 		LITE_CONTROL_2[i] = source_2[i];
 	}
 
@@ -682,22 +736,22 @@ static void update_mdnie_mode(void)
 			LITE_CONTROL_2[i + 90] = chroma_correction[i];
 		}
 
-		result = (LITE_CONTROL_1[4] >> (sharpen_dark_bit));
-		if (sharpen_dark) {
+		result = (LITE_CONTROL_1[4] >> (sharpen_bit));
+		if (sharpen) {
 			if (!(result & 1))
-				LITE_CONTROL_1[4] |= 1 << sharpen_dark_bit;
+				LITE_CONTROL_1[4] |= 1 << sharpen_bit;
 		} else {
 			if (result & 1)
-				LITE_CONTROL_1[4] &= ~(1 << sharpen_dark_bit);
+				LITE_CONTROL_1[4] &= ~(1 << sharpen_bit);
 		}
 
-		result = (LITE_CONTROL_1[4] >> (sharpen_light_bit));
-		if (sharpen_light) {
+		result = (LITE_CONTROL_1[4] >> (sharpen_extra_bit));
+		if (sharpen_extra) {
 			if (!(result & 1))
-				LITE_CONTROL_1[4] |= 1 << sharpen_light_bit;
+				LITE_CONTROL_1[4] |= 1 << sharpen_extra_bit;
 		} else {
 			if (result & 1)
-				LITE_CONTROL_1[4] &= ~(1 << sharpen_light_bit);
+				LITE_CONTROL_1[4] &= ~(1 << sharpen_extra_bit);
 		}
 
 		result = (LITE_CONTROL_1[4] >> (chroma_bit));
@@ -751,11 +805,11 @@ static void update_mdnie_mode(void)
 
 		LITE_CONTROL_1[4] = source_1[4];
 
-		result = (LITE_CONTROL_1[4] >> (sharpen_dark_bit));
-		sharpen_dark = result & 1;
+		result = (LITE_CONTROL_1[4] >> (sharpen_bit));
+		sharpen = result & 1;
 
-		result = (LITE_CONTROL_1[4] >> (sharpen_light_bit));
-		sharpen_light = result & 1;
+		result = (LITE_CONTROL_1[4] >> (sharpen_extra_bit));
+		sharpen_extra = result & 1;
 
 		result = (LITE_CONTROL_1[4] >> (chroma_bit));
 		chroma = result & 1;
@@ -791,7 +845,7 @@ void mDNIe_Set_Mode(void)
 		return;
 	}
 
-	if ((mfd->blank_mode) || (mfd->resume_state == MIPI_SUSPEND_STATE))
+	if ((mfd->blank_mode) || (mfd->resume_state == MIPI_SUSPEND_STATE) || !mdnie_tun_state.mdnie_enable)
 		return;
 
 	play_speed_1_5 = 0;
@@ -855,8 +909,8 @@ static ssize_t mode_store(struct device *dev,
 
 	if (value <= DYNAMIC_MODE)
 		value = DYNAMIC_MODE;
-	if (value >= AUTO_MODE)
-		value = AUTO_MODE;
+	if (value >= BYPASS_MODE)
+		value = BYPASS_MODE;
 
 	//previous_mode = mdnie_tun_state.background;
 
@@ -1246,14 +1300,14 @@ static ssize_t offset_mode_store(struct kobject *kobj,
 	return count;
 }
 
-/* sharpen_dark */
+/* sharpen */
 
-static ssize_t sharpen_dark_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+static ssize_t sharpen_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%u\n", sharpen_dark);
+	return sprintf(buf, "%u\n", sharpen);
 }
 
-static ssize_t sharpen_dark_store(struct kobject *kobj,
+static ssize_t sharpen_store(struct kobject *kobj,
 			   struct kobj_attribute *attr, const char *buf, size_t count)
 {
 	int newval;
@@ -1262,20 +1316,20 @@ static ssize_t sharpen_dark_store(struct kobject *kobj,
 		newval = 0;
 	if (newval > 1)
 		newval = 1;
-	sharpen_dark = newval;
+	sharpen = newval;
 	mDNIe_Set_Mode();
 	return count;
 }
 
 
-/* sharpen_light */
+/* sharpen_extra */
 
-static ssize_t sharpen_light_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+static ssize_t sharpen_extra_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%u\n", sharpen_light);
+	return sprintf(buf, "%u\n", sharpen_extra);
 }
 
-static ssize_t sharpen_light_store(struct kobject *kobj,
+static ssize_t sharpen_extra_store(struct kobject *kobj,
 			   struct kobj_attribute *attr, const char *buf, size_t count)
 {
 	int newval;
@@ -1284,7 +1338,7 @@ static ssize_t sharpen_light_store(struct kobject *kobj,
 		newval = 0;
 	if (newval > 1)
 		newval = 1;
-	sharpen_light = newval;
+	sharpen_extra = newval;
 	mDNIe_Set_Mode();
 	return count;
 }
@@ -2047,8 +2101,8 @@ static ssize_t offset_cyan_store(struct kobject *kobj,
 MX_ATTR_RW(hijack);
 MX_ATTR_RW(offset_mode);
 MX_ATTR_RO(effect_mask);
-MX_ATTR_RW(sharpen_dark);
-MX_ATTR_RW(sharpen_light);
+MX_ATTR_RW(sharpen);
+MX_ATTR_RW(sharpen_extra);
 MX_ATTR_RW(chroma);
 MX_ATTR_RW(gamma);
 MX_ATTR_RW(bypass);
@@ -2059,8 +2113,8 @@ static struct attribute *mdnie_control_attrs[] = {
 	&hijack_attr.attr,
 	&offset_mode_attr.attr,
 	&effect_mask_attr.attr,
-	&sharpen_dark_attr.attr,
-	&sharpen_light_attr.attr,
+	&sharpen_attr.attr,
+	&sharpen_extra_attr.attr,
 	&chroma_attr.attr,
 	&gamma_attr.attr,
 	&bypass_attr.attr,

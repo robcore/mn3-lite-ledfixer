@@ -737,6 +737,125 @@ static char AUTO_UI_2[] = {
 	0x48,
 };
 
+static char BYPASS_1[] = {
+	0xEB,
+	0x00, //mdnie_en
+	0x00, //data_width mask 00 000
+	0x33, //scr_roi 1 scr algo_roi 1 algo 00 1 0 00 1 0
+	0x01, //sharpen cc gamma 00 0 0
+};
+
+static char BYPASS_2[] = {
+	0xEC,
+	0x00, //roi ctrl
+	0x00, //roi0 x start
+	0x00,
+	0x00, //roi0 x end
+	0x00,
+	0x00, //roi0 y start
+	0x00,
+	0x00, //roi0 y end
+	0x00,
+	0x00, //roi1 x strat
+	0x00,
+	0x00, //roi1 x end
+	0x00,
+	0x00, //roi1 y start
+	0x00,
+	0x00, //roi1 y end
+	0x00,
+	0x00, //scr Cr Yb
+	0xff, //scr Rr Bb
+	0xff, //scr Cg Yg
+	0x00, //scr Rg Bg
+	0xff, //scr Cb Yr
+	0x00, //scr Rb Br
+	0xff, //scr Mr Mb
+	0x00, //scr Gr Gb
+	0x00, //scr Mg Mg
+	0xff, //scr Gg Gg
+	0xff, //scr Mb Mr
+	0x00, //scr Gb Gr
+	0xff, //scr Yr Cb
+	0x00, //scr Br Rb
+	0xff, //scr Yg Cg
+	0x00, //scr Bg Rg
+	0x00, //scr Yb Cr
+	0xff, //scr Bb Rr
+	0xff, //scr Wr Wb
+	0x00, //scr Kr Kb
+	0xff, //scr Wg Wg
+	0x00, //scr Kg Kg
+	0xff, //scr Wb Wr
+	0x00, //scr Kb Kr
+	0x00, //curve 1 b
+	0x20, //curve 1 a
+	0x00, //curve 2 b
+	0x20, //curve 2 a
+	0x00, //curve 3 b
+	0x20, //curve 3 a
+	0x00, //curve 4 b
+	0x20, //curve 4 a
+	0x02, //curve 5 b
+	0x1b, //curve 5 a
+	0x02, //curve 6 b
+	0x1b, //curve 6 a
+	0x02, //curve 7 b
+	0x1b, //curve 7 a
+	0x01, //curve 8 b
+	0x1b, //curve 8 a
+	0x09, //curve 9 b
+	0xa6, //curve 9 a
+	0x09, //curve10 b
+	0xa6, //curve10 a
+	0x09, //curve11 b
+	0xa6, //curve11 a
+	0x09, //curve12 b
+	0xa6, //curve12 a
+	0x00, //curve13 b
+	0x20, //curve13 a
+	0x00, //curve14 b
+	0x20, //curve14 a
+	0x00, //curve15 b
+	0x20, //curve15 a
+	0x00, //curve16 b
+	0x20, //curve16 a
+	0x00, //curve17 b
+	0x20, //curve17 a
+	0x00, //curve18 b
+	0x20, //curve18 a
+	0x00, //curve19 b
+	0x20, //curve19 a
+	0x00, //curve20 b
+	0x20, //curve20 a
+	0x00, //curve21 b
+	0x20, //curve21 a
+	0x00, //curve22 b
+	0x20, //curve22 a
+	0x00, //curve23 b
+	0x20, //curve23 a
+	0x00, //curve24 b
+	0xFF, //curve24 a
+	0x04, //cc r1 0.08x
+	0x39,
+	0x1f, //cc r2
+	0xd0,
+	0x1f, //cc r3
+	0xf7,
+	0x1f, //cc g1
+	0xe8,
+	0x04, //cc g2
+	0x21,
+	0x1f, //cc g3
+	0xf7,
+	0x1f, //cc b1
+	0xe8,
+	0x1f, //cc b2
+	0xd0,
+	0x04, //cc b3
+	0x48,
+};
+
 ////////////////// GALLERY /////////////////////
 static char STANDARD_GALLERY_1[] = {
 	0xEB,
@@ -4614,6 +4733,7 @@ static char *mdnie_tune_value[MAX_mDNIe_MODE][MAX_BACKGROUND_MODE][MAX_OUTDOOR_M
 			NATURAL_MODE (outdoor off/on)
 			MOVIE_MODE (outdoor off/on)
 			AUTO_MODE (outdoor off/on)
+			BYPASS_MODE (outdoor off/on)
 		*/
 		// UI_APP
 		{
@@ -4622,6 +4742,7 @@ static char *mdnie_tune_value[MAX_mDNIe_MODE][MAX_BACKGROUND_MODE][MAX_OUTDOOR_M
 			{{NATURAL_UI_1, NATURAL_UI_2}, {NATURAL_UI_1, NATURAL_UI_2}},
 			{{MOVIE_UI_1, MOVIE_UI_2}, {MOVIE_UI_1, MOVIE_UI_2}},
 			{{AUTO_UI_1, AUTO_UI_2}, {AUTO_UI_1, AUTO_UI_2}},
+			{{BYPASS_1, BYPASS_2}, {BYPASS_1, BYPASS_2}},
 		},
 		// VIDEO_APP
 		{
@@ -4630,6 +4751,7 @@ static char *mdnie_tune_value[MAX_mDNIe_MODE][MAX_BACKGROUND_MODE][MAX_OUTDOOR_M
 			{{NATURAL_VIDEO_1, NATURAL_VIDEO_2}, {OUTDOOR_VIDEO_1, OUTDOOR_VIDEO_2}},
 			{{MOVIE_VIDEO_1, MOVIE_VIDEO_2}, {OUTDOOR_VIDEO_1, OUTDOOR_VIDEO_2}},
 			{{AUTO_VIDEO_1, AUTO_VIDEO_2}, {OUTDOOR_VIDEO_1, OUTDOOR_VIDEO_2}},
+			{{BYPASS_1, BYPASS_2}, {BYPASS_1, BYPASS_2}},
 		},
 		// VIDEO_WARM_APP
 		{
@@ -4638,6 +4760,7 @@ static char *mdnie_tune_value[MAX_mDNIe_MODE][MAX_BACKGROUND_MODE][MAX_OUTDOOR_M
 			{{WARM_1, WARM_2}, {WARM_OUTDOOR_1, WARM_OUTDOOR_2}},
 			{{WARM_1, WARM_2}, {WARM_OUTDOOR_1, WARM_OUTDOOR_2}},
 			{{WARM_1, WARM_2}, {WARM_OUTDOOR_1, WARM_OUTDOOR_2}},
+			{{BYPASS_1, BYPASS_2}, {BYPASS_1, BYPASS_2}},
 		},
 		// VIDEO_COLD_APP
 		{
@@ -4646,6 +4769,7 @@ static char *mdnie_tune_value[MAX_mDNIe_MODE][MAX_BACKGROUND_MODE][MAX_OUTDOOR_M
 			{{COLD_1, COLD_2}, {COLD_OUTDOOR_1, COLD_OUTDOOR_2}},
 			{{COLD_1, COLD_2}, {COLD_OUTDOOR_1, COLD_OUTDOOR_2}},
 			{{COLD_1, COLD_2}, {COLD_OUTDOOR_1, COLD_OUTDOOR_2}},
+			{{BYPASS_1, BYPASS_2}, {BYPASS_1, BYPASS_2}},
 		},
 		// CAMERA_APP
 		{
@@ -4654,6 +4778,7 @@ static char *mdnie_tune_value[MAX_mDNIe_MODE][MAX_BACKGROUND_MODE][MAX_OUTDOOR_M
 			{{CAMERA_1, CAMERA_2}, {CAMERA_OUTDOOR_1, CAMERA_OUTDOOR_2}},
 			{{CAMERA_1, CAMERA_2}, {CAMERA_OUTDOOR_1, CAMERA_OUTDOOR_2}},
 			{{AUTO_CAMERA_1, AUTO_CAMERA_2}, {CAMERA_OUTDOOR_1, CAMERA_OUTDOOR_2}},
+			{{BYPASS_1, BYPASS_2}, {BYPASS_1, BYPASS_2}},
 		},
 		// NAVI_APP
 		{
@@ -4662,6 +4787,7 @@ static char *mdnie_tune_value[MAX_mDNIe_MODE][MAX_BACKGROUND_MODE][MAX_OUTDOOR_M
 			{{NATURAL_BROWSER_1, NATURAL_BROWSER_2}, {NATURAL_BROWSER_1, NATURAL_BROWSER_2}},
 			{{MOVIE_BROWSER_1, MOVIE_BROWSER_2}, {MOVIE_BROWSER_1, MOVIE_BROWSER_2}},
 			{{AUTO_BROWSER_1, AUTO_BROWSER_2}, {AUTO_BROWSER_1, AUTO_BROWSER_2}},
+			{{BYPASS_1, BYPASS_2}, {BYPASS_1, BYPASS_2}},
 		},
 		// GALLERY_APP
 		{
@@ -4670,6 +4796,7 @@ static char *mdnie_tune_value[MAX_mDNIe_MODE][MAX_BACKGROUND_MODE][MAX_OUTDOOR_M
 			{{NATURAL_GALLERY_1, NATURAL_GALLERY_2}, {NATURAL_GALLERY_1, NATURAL_GALLERY_2}},
 			{{MOVIE_GALLERY_1, MOVIE_GALLERY_2}, {MOVIE_GALLERY_1, MOVIE_GALLERY_2}},
 			{{AUTO_GALLERY_1, AUTO_GALLERY_2}, {AUTO_GALLERY_1, AUTO_GALLERY_2}},
+			{{BYPASS_1, BYPASS_2}, {BYPASS_1, BYPASS_2}},
 		},
 		// VT_APP
 		{
@@ -4678,6 +4805,7 @@ static char *mdnie_tune_value[MAX_mDNIe_MODE][MAX_BACKGROUND_MODE][MAX_OUTDOOR_M
 			{{NATURAL_VT_1, NATURAL_VT_2}, {NATURAL_VT_1, NATURAL_VT_2}},
 			{{MOVIE_VT_1, MOVIE_VT_2}, {MOVIE_VT_1, MOVIE_VT_2}},
 			{{AUTO_VT_1, AUTO_VT_2}, {AUTO_VT_1, AUTO_VT_2}},
+			{{BYPASS_1, BYPASS_2}, {BYPASS_1, BYPASS_2}},
 		},
 		// BROWSER_APP
 		{
@@ -4686,6 +4814,7 @@ static char *mdnie_tune_value[MAX_mDNIe_MODE][MAX_BACKGROUND_MODE][MAX_OUTDOOR_M
 			{{NATURAL_BROWSER_1, NATURAL_BROWSER_2}, {NATURAL_BROWSER_1, NATURAL_BROWSER_2}},
 			{{MOVIE_BROWSER_1, MOVIE_BROWSER_2}, {MOVIE_BROWSER_1, MOVIE_BROWSER_2}},
 			{{AUTO_BROWSER_1, AUTO_BROWSER_2}, {AUTO_BROWSER_1, AUTO_BROWSER_2}},
+			{{BYPASS_1, BYPASS_2}, {BYPASS_1, BYPASS_2}},
 		},
 		// eBOOK_APP
 		{
@@ -4694,6 +4823,7 @@ static char *mdnie_tune_value[MAX_mDNIe_MODE][MAX_BACKGROUND_MODE][MAX_OUTDOOR_M
 			{{NATURAL_EBOOK_1, NATURAL_EBOOK_2}, {NATURAL_EBOOK_1, NATURAL_EBOOK_2}},
 			{{MOVIE_EBOOK_1, MOVIE_EBOOK_2}, {MOVIE_EBOOK_1, MOVIE_EBOOK_2}},
 			{{AUTO_EBOOK_1, AUTO_EBOOK_2}, {AUTO_EBOOK_1, AUTO_EBOOK_2}},
+			{{BYPASS_1, BYPASS_2}, {BYPASS_1, BYPASS_2}},
 		},
 		// EMAIL_APP
 		{
@@ -4702,6 +4832,7 @@ static char *mdnie_tune_value[MAX_mDNIe_MODE][MAX_BACKGROUND_MODE][MAX_OUTDOOR_M
 			{{AUTO_EMAIL_1, AUTO_EMAIL_2}, {AUTO_EMAIL_1, AUTO_EMAIL_2}},
 			{{AUTO_EMAIL_1, AUTO_EMAIL_2}, {AUTO_EMAIL_1, AUTO_EMAIL_2}},
 			{{AUTO_EMAIL_1, AUTO_EMAIL_2}, {AUTO_EMAIL_1, AUTO_EMAIL_2}},
+			{{BYPASS_1, BYPASS_2}, {BYPASS_1, BYPASS_2}},
 		},
 };
 
