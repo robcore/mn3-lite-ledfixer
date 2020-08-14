@@ -220,8 +220,6 @@ void free_tun_cmd(void)
 {
 	memset(tune_data1, 0, MDNIE_TUNE_FIRST_SIZE);
 	memset(tune_data2, 0, MDNIE_TUNE_SECOND_SIZE);
-	memset(LITE_CONTROL_1, 0, MDNIE_TUNE_FIRST_SIZE);
-	memset(LITE_CONTROL_2, 0, MDNIE_TUNE_SECOND_SIZE);
 }
 
 void sending_tuning_cmd(void)
