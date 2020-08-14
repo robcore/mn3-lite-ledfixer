@@ -266,7 +266,7 @@ static char NATURAL_UI_1[] = {
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
 	0x33, //scr_roi 1 scr algo_roi 1 algo 00 1 0 00 1 0
-	0x09, //sharpen cc gamma 00 0 0
+	0x01, //sharpen cc gamma 00 0 0
 };
 
 static char NATURAL_UI_2[] = {
