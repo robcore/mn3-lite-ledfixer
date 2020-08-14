@@ -21,7 +21,7 @@
 
 ////////////////// UI /// /////////////////////
 
-unsigned char SCREEN_CURTAIN_1[] = {
+char SCREEN_CURTAIN_1[] = {
 	//start
 	0xEB,
 	0x01, //mdnie_en
@@ -30,7 +30,7 @@ unsigned char SCREEN_CURTAIN_1[] = {
 	0x00, //sharpen cc gamma 00 0 0
 };
 
-unsigned char SCREEN_CURTAIN_2[] = {
+char SCREEN_CURTAIN_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -142,7 +142,7 @@ unsigned char SCREEN_CURTAIN_2[] = {
 	//end
 };
 
-unsigned char STANDARD_UI_1[] = {
+char STANDARD_UI_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -150,7 +150,7 @@ unsigned char STANDARD_UI_1[] = {
 	0x01, //sharpen cc gamma 00 0 0
 };
 
-unsigned char STANDARD_UI_2[] = {
+char STANDARD_UI_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -261,7 +261,7 @@ unsigned char STANDARD_UI_2[] = {
 	0x48,
 };
 
-unsigned char NATURAL_UI_1[] = {
+char NATURAL_UI_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -269,7 +269,7 @@ unsigned char NATURAL_UI_1[] = {
 	0x01, //sharpen cc gamma 00 0 0
 };
 
-unsigned char NATURAL_UI_2[] = {
+char NATURAL_UI_2[] = {
 	0xEC, //0
 	0x00, //1 roi ctrl
 	0x00, //2 roi0 x start
@@ -380,7 +380,7 @@ unsigned char NATURAL_UI_2[] = {
 	0xb5, //107
 };
 
-unsigned char DYNAMIC_UI_1[] = {
+char DYNAMIC_UI_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -388,7 +388,7 @@ unsigned char DYNAMIC_UI_1[] = {
 	0x03, //sharpen cc gamma 00 0 0
 };
 
-unsigned char DYNAMIC_UI_2[] = {
+char DYNAMIC_UI_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -499,7 +499,7 @@ unsigned char DYNAMIC_UI_2[] = {
 	0x36,
 };
 
-unsigned char MOVIE_UI_1[] = {
+char MOVIE_UI_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -507,7 +507,7 @@ unsigned char MOVIE_UI_1[] = {
 	0x01, //sharpen cc gamma 00 0 0
 };
 
-unsigned char MOVIE_UI_2[] = {
+char MOVIE_UI_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -618,7 +618,7 @@ unsigned char MOVIE_UI_2[] = {
 	0xb5,
 };
 
-unsigned char AUTO_UI_1[] = {
+char AUTO_UI_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -626,7 +626,7 @@ unsigned char AUTO_UI_1[] = {
 	0x01, //sharpen cc gamma 00 0 0
 };
 
-unsigned char AUTO_UI_2[] = {
+char AUTO_UI_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -737,7 +737,7 @@ unsigned char AUTO_UI_2[] = {
 	0x48,
 };
 
-unsigned char BYPASS_1[] = {
+char BYPASS_1[] = {
 	0xEB,
 	0x00, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -745,7 +745,7 @@ unsigned char BYPASS_1[] = {
 	0x00, //sharpen cc gamma 00 0 0
 };
 
-unsigned char BYPASS_2[] = {
+char BYPASS_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -857,7 +857,7 @@ unsigned char BYPASS_2[] = {
 };
 
 ////////////////// GALLERY /////////////////////
-unsigned char STANDARD_GALLERY_1[] = {
+char STANDARD_GALLERY_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -865,7 +865,7 @@ unsigned char STANDARD_GALLERY_1[] = {
 	0x09, //sharpen cc gamma 00 0 0
 };
 
-unsigned char STANDARD_GALLERY_2[] = {
+char STANDARD_GALLERY_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -976,7 +976,7 @@ unsigned char STANDARD_GALLERY_2[] = {
 	0x36,
 };
 
-unsigned char NATURAL_GALLERY_1[] = {
+char NATURAL_GALLERY_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -984,7 +984,7 @@ unsigned char NATURAL_GALLERY_1[] = {
 	0x05, //sharpen cc gamma 00 0 0
 };
 
-unsigned char NATURAL_GALLERY_2[] = {
+char NATURAL_GALLERY_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -1095,7 +1095,7 @@ unsigned char NATURAL_GALLERY_2[] = {
 	0xb5,
 };
 
-unsigned char DYNAMIC_GALLERY_1[] = {
+char DYNAMIC_GALLERY_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -1103,7 +1103,7 @@ unsigned char DYNAMIC_GALLERY_1[] = {
 	0x0b, //sharpen cc gamma 00 0 0
 };
 
-unsigned char DYNAMIC_GALLERY_2[] = {
+char DYNAMIC_GALLERY_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -1214,7 +1214,7 @@ unsigned char DYNAMIC_GALLERY_2[] = {
 	0x36,
 };
 
-unsigned char MOVIE_GALLERY_1[] = {
+char MOVIE_GALLERY_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -1222,7 +1222,7 @@ unsigned char MOVIE_GALLERY_1[] = {
 	0x05, //sharpen cc gamma 00 0 0
 };
 
-unsigned char MOVIE_GALLERY_2[] = {
+char MOVIE_GALLERY_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -1333,7 +1333,7 @@ unsigned char MOVIE_GALLERY_2[] = {
 	0xb5,
 };
 
-unsigned char AUTO_GALLERY_1[] = {
+char AUTO_GALLERY_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -1341,7 +1341,7 @@ unsigned char AUTO_GALLERY_1[] = {
 	0x09, //sharpen cc gamma 00 0 0
 };
 
-unsigned char AUTO_GALLERY_2[] = {
+char AUTO_GALLERY_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -1454,7 +1454,7 @@ unsigned char AUTO_GALLERY_2[] = {
 
 ////////////////// VIDEO /////////////////////
 
-unsigned char STANDARD_VIDEO_1[] = {
+char STANDARD_VIDEO_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -1462,7 +1462,7 @@ unsigned char STANDARD_VIDEO_1[] = {
 	0x01, //sharpen cc gamma 00 0 0
 };
 
-unsigned char STANDARD_VIDEO_2[] = {
+char STANDARD_VIDEO_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -1573,7 +1573,7 @@ unsigned char STANDARD_VIDEO_2[] = {
 	0x36,
 };
 
-unsigned char NATURAL_VIDEO_1[] = {
+char NATURAL_VIDEO_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -1581,7 +1581,7 @@ unsigned char NATURAL_VIDEO_1[] = {
 	0x01, //sharpen cc gamma 00 0 0
 };
 
-unsigned char NATURAL_VIDEO_2[] = {
+char NATURAL_VIDEO_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -1692,7 +1692,7 @@ unsigned char NATURAL_VIDEO_2[] = {
 	0xb5,
 };
 
-unsigned char DYNAMIC_VIDEO_1[] = {
+char DYNAMIC_VIDEO_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -1700,7 +1700,7 @@ unsigned char DYNAMIC_VIDEO_1[] = {
 	0x03, //sharpen cc gamma 00 0 0
 };
 
-unsigned char DYNAMIC_VIDEO_2[] = {
+char DYNAMIC_VIDEO_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -1811,7 +1811,7 @@ unsigned char DYNAMIC_VIDEO_2[] = {
 	0x36,
 };
 
-unsigned char MOVIE_VIDEO_1[] = {
+char MOVIE_VIDEO_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -1819,7 +1819,7 @@ unsigned char MOVIE_VIDEO_1[] = {
 	0x01, //sharpen cc gamma 00 0 0
 };
 
-unsigned char MOVIE_VIDEO_2[] = {
+char MOVIE_VIDEO_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -1930,7 +1930,7 @@ unsigned char MOVIE_VIDEO_2[] = {
 	0xb5,
 };
 
-unsigned char AUTO_VIDEO_1[] = {
+char AUTO_VIDEO_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -1938,7 +1938,7 @@ unsigned char AUTO_VIDEO_1[] = {
 	0x01, //sharpen cc gamma 00 0 0
 };
 
-unsigned char AUTO_VIDEO_2[] = {
+char AUTO_VIDEO_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -2051,7 +2051,7 @@ unsigned char AUTO_VIDEO_2[] = {
 
 ////////////////// VT /////////////////////
 
-unsigned char STANDARD_VT_1[] = {
+char STANDARD_VT_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -2059,7 +2059,7 @@ unsigned char STANDARD_VT_1[] = {
 	0x09, //sharpen cc gamma 00 0 0
 };
 
-unsigned char STANDARD_VT_2[] = {
+char STANDARD_VT_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -2170,7 +2170,7 @@ unsigned char STANDARD_VT_2[] = {
 	0x36,
 };
 
-unsigned char NATURAL_VT_1[] = {
+char NATURAL_VT_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -2178,7 +2178,7 @@ unsigned char NATURAL_VT_1[] = {
 	0x05, //sharpen cc gamma 00 0 0
 };
 
-unsigned char NATURAL_VT_2[] = {
+char NATURAL_VT_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -2289,7 +2289,7 @@ unsigned char NATURAL_VT_2[] = {
 	0xb5,
 };
 
-unsigned char DYNAMIC_VT_1[] = {
+char DYNAMIC_VT_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -2297,7 +2297,7 @@ unsigned char DYNAMIC_VT_1[] = {
 	0x0b, //sharpen cc gamma 00 0 0
 };
 
-unsigned char DYNAMIC_VT_2[] = {
+char DYNAMIC_VT_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -2408,7 +2408,7 @@ unsigned char DYNAMIC_VT_2[] = {
 	0x36,
 };
 
-unsigned char MOVIE_VT_1[] = {
+char MOVIE_VT_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -2416,7 +2416,7 @@ unsigned char MOVIE_VT_1[] = {
 	0x05, //sharpen cc gamma 00 0 0
 };
 
-unsigned char MOVIE_VT_2[] = {
+char MOVIE_VT_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -2527,7 +2527,7 @@ unsigned char MOVIE_VT_2[] = {
 	0xb5,
 };
 
-unsigned char AUTO_VT_1[] = {
+char AUTO_VT_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -2535,7 +2535,7 @@ unsigned char AUTO_VT_1[] = {
 	0x09, //sharpen cc gamma 00 0 0
 };
 
-unsigned char AUTO_VT_2[] = {
+char AUTO_VT_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -2648,7 +2648,7 @@ unsigned char AUTO_VT_2[] = {
 
 ////////////////// CAMERA /////////////////////
 
-unsigned char CAMERA_1[] = {
+char CAMERA_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -2656,7 +2656,7 @@ unsigned char CAMERA_1[] = {
 	0x01, //sharpen cc gamma 00 0 0
 };
 
-unsigned char CAMERA_2[] = {
+char CAMERA_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -2767,7 +2767,7 @@ unsigned char CAMERA_2[] = {
 	0x36,
 };
 
-unsigned char AUTO_CAMERA_1[] = {
+char AUTO_CAMERA_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -2775,7 +2775,7 @@ unsigned char AUTO_CAMERA_1[] = {
 	0x01, //sharpen cc gamma 00 0 0
 };
 
-unsigned char AUTO_CAMERA_2[] = {
+char AUTO_CAMERA_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -2887,13 +2887,13 @@ unsigned char AUTO_CAMERA_2[] = {
 };
 
 
-unsigned char CAMERA_OUTDOOR_1[] = {
+char CAMERA_OUTDOOR_1[] = {
 	0xEB,
 	0x01, 0x00, 0x03,
 	0x0b,
 };
 
-unsigned char CAMERA_OUTDOOR_2[] = {
+char CAMERA_OUTDOOR_2[] = {
 	0xEC,
 	0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00,
@@ -2933,13 +2933,13 @@ unsigned char CAMERA_OUTDOOR_2[] = {
 	0x04, 0xb5,
 };
 
-unsigned char COLD_1[] = {
+char COLD_1[] = {
 	0xEB,
 	0x01, 0x00, 0x33,
 	0x08,
 };
 
-unsigned char COLD_2[] = {
+char COLD_2[] = {
 	0xEC,
 	0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00,
@@ -2979,13 +2979,13 @@ unsigned char COLD_2[] = {
 	0x04, 0x36,
 };
 
-unsigned char COLD_OUTDOOR_1[] = {
+char COLD_OUTDOOR_1[] = {
 	0xEB,
 	0x01, 0x00, 0x33,
 	0x0b,
 };
 
-unsigned char COLD_OUTDOOR_2[] = {
+char COLD_OUTDOOR_2[] = {
 	0xEC,
 	0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00,
@@ -3025,13 +3025,13 @@ unsigned char COLD_OUTDOOR_2[] = {
 	0x04, 0xb5,
 };
 
-unsigned char WARM_1[] = {
+char WARM_1[] = {
 	0xEB,
 	0x01, 0x00, 0x33,
 	0x08,
 };
 
-unsigned char WARM_2[] = {
+char WARM_2[] = {
 	0xEC,
 	0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00,
@@ -3071,13 +3071,13 @@ unsigned char WARM_2[] = {
 	0x04, 0x36,
 };
 
-unsigned char WARM_OUTDOOR_1[] = {
+char WARM_OUTDOOR_1[] = {
 	0xEB,
 	0x01, 0x00, 0x33,
 	0x0b,
 };
 
-unsigned char WARM_OUTDOOR_2[] = {
+char WARM_OUTDOOR_2[] = {
 	0xEC,
 	0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00,
@@ -3117,7 +3117,7 @@ unsigned char WARM_OUTDOOR_2[] = {
 	0x04, 0xb5,
 };
 
-unsigned char NEGATIVE_1[] = {
+char NEGATIVE_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -3125,7 +3125,7 @@ unsigned char NEGATIVE_1[] = {
 	0x00, //sharpen cc gamma 00 0 0
 };
 
-unsigned char NEGATIVE_2[] = {
+char NEGATIVE_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -3236,13 +3236,13 @@ unsigned char NEGATIVE_2[] = {
 	0x00,
 };
 
-unsigned char OUTDOOR_VIDEO_1[] = {
+char OUTDOOR_VIDEO_1[] = {
 	0xEB,
 	0x01, 0x00, 0x03,
 	0x0b,
 };
 
-unsigned char OUTDOOR_VIDEO_2[] = {
+char OUTDOOR_VIDEO_2[] = {
 	0xEC,
 	0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00,
@@ -3282,7 +3282,7 @@ unsigned char OUTDOOR_VIDEO_2[] = {
 	0x04, 0xb5,
 };
 
-unsigned char COLOR_BLIND_1[] = {
+char COLOR_BLIND_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -3290,7 +3290,7 @@ unsigned char COLOR_BLIND_1[] = {
 	0x00, //sharpen cc gamma 00 0 0
 };
 
-unsigned char COLOR_BLIND_2[] = {
+char COLOR_BLIND_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -3403,7 +3403,7 @@ unsigned char COLOR_BLIND_2[] = {
 
 ////////////////// BROWSER /////////////////////
 
-unsigned char STANDARD_BROWSER_1[] = {
+char STANDARD_BROWSER_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -3411,7 +3411,7 @@ unsigned char STANDARD_BROWSER_1[] = {
 	0x01, //sharpen cc gamma 00 0 0
 };
 
-unsigned char STANDARD_BROWSER_2[] = {
+char STANDARD_BROWSER_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -3522,7 +3522,7 @@ unsigned char STANDARD_BROWSER_2[] = {
 	0x36,
 };
 
-unsigned char NATURAL_BROWSER_1[] = {
+char NATURAL_BROWSER_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -3530,7 +3530,7 @@ unsigned char NATURAL_BROWSER_1[] = {
 	0x01, //sharpen cc gamma 00 0 0
 };
 
-unsigned char NATURAL_BROWSER_2[] = {
+char NATURAL_BROWSER_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -3641,7 +3641,7 @@ unsigned char NATURAL_BROWSER_2[] = {
 	0xb5,
 };
 
-unsigned char DYNAMIC_BROWSER_1[] = {
+char DYNAMIC_BROWSER_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -3649,7 +3649,7 @@ unsigned char DYNAMIC_BROWSER_1[] = {
 	0x03, //sharpen cc gamma 00 0 0
 };
 
-unsigned char DYNAMIC_BROWSER_2[] = {
+char DYNAMIC_BROWSER_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -3760,7 +3760,7 @@ unsigned char DYNAMIC_BROWSER_2[] = {
 	0x36,
 };
 
-unsigned char MOVIE_BROWSER_1[] = {
+char MOVIE_BROWSER_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -3768,7 +3768,7 @@ unsigned char MOVIE_BROWSER_1[] = {
 	0x01, //sharpen cc gamma 00 0 0
 };
 
-unsigned char MOVIE_BROWSER_2[] = {
+char MOVIE_BROWSER_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -3879,7 +3879,7 @@ unsigned char MOVIE_BROWSER_2[] = {
 	0xb5,
 };
 
-unsigned char AUTO_BROWSER_1[] = {
+char AUTO_BROWSER_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -3887,7 +3887,7 @@ unsigned char AUTO_BROWSER_1[] = {
 	0x01, //sharpen cc gamma 00 0 0
 };
 
-unsigned char AUTO_BROWSER_2[] = {
+char AUTO_BROWSER_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -4000,7 +4000,7 @@ unsigned char AUTO_BROWSER_2[] = {
 
 ////////////////// eBOOK /////////////////////
 
-unsigned char AUTO_EBOOK_1[] = {
+char AUTO_EBOOK_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -4008,7 +4008,7 @@ unsigned char AUTO_EBOOK_1[] = {
 	0x01, //sharpen cc gamma 00 0 0
 };
 
-unsigned char AUTO_EBOOK_2[] = {
+char AUTO_EBOOK_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -4119,7 +4119,7 @@ unsigned char AUTO_EBOOK_2[] = {
 	0x36,
 };
 
-unsigned char STANDARD_EBOOK_1[] = {
+char STANDARD_EBOOK_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -4127,7 +4127,7 @@ unsigned char STANDARD_EBOOK_1[] = {
 	0x01, //sharpen cc gamma 00 0 0
 };
 
-unsigned char STANDARD_EBOOK_2[] = {
+char STANDARD_EBOOK_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -4238,7 +4238,7 @@ unsigned char STANDARD_EBOOK_2[] = {
 	0x36,
 };
 
-unsigned char DYNAMIC_EBOOK_1[] = {
+char DYNAMIC_EBOOK_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -4246,7 +4246,7 @@ unsigned char DYNAMIC_EBOOK_1[] = {
 	0x01, //sharpen cc gamma 00 0 0
 };
 
-unsigned char DYNAMIC_EBOOK_2[] = {
+char DYNAMIC_EBOOK_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -4357,7 +4357,7 @@ unsigned char DYNAMIC_EBOOK_2[] = {
 	0x36,
 };
 
-unsigned char NATURAL_EBOOK_1[] = {
+char NATURAL_EBOOK_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -4365,7 +4365,7 @@ unsigned char NATURAL_EBOOK_1[] = {
 	0x01, //sharpen cc gamma 00 0 0
 };
 
-unsigned char NATURAL_EBOOK_2[] = {
+char NATURAL_EBOOK_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -4476,7 +4476,7 @@ unsigned char NATURAL_EBOOK_2[] = {
 	0x36,
 };
 
-unsigned char MOVIE_EBOOK_1[] = {
+char MOVIE_EBOOK_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -4484,7 +4484,7 @@ unsigned char MOVIE_EBOOK_1[] = {
 	0x01, //sharpen cc gamma 00 0 0
 };
 
-unsigned char MOVIE_EBOOK_2[] = {
+char MOVIE_EBOOK_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -4595,7 +4595,7 @@ unsigned char MOVIE_EBOOK_2[] = {
 	0x36,
 };
 
-unsigned char AUTO_EMAIL_1[] = {
+char AUTO_EMAIL_1[] = {
 	0xEB,
 	0x01, //mdnie_en
 	0x00, //data_width mask 00 000
@@ -4603,7 +4603,7 @@ unsigned char AUTO_EMAIL_1[] = {
 	0x01, //sharpen cc gamma 00 0 0
 };
 
-unsigned char AUTO_EMAIL_2[] = {
+char AUTO_EMAIL_2[] = {
 	0xEC,
 	0x00, //roi ctrl
 	0x00, //roi0 x start
@@ -4714,7 +4714,7 @@ unsigned char AUTO_EMAIL_2[] = {
 	0x36,
 };
 
-unsigned char *blind_tune_value[ACCESSIBILITY_MAX][2] = {
+char *blind_tune_value[ACCESSIBILITY_MAX][2] = {
 		/*
 			ACCESSIBILITY_OFF,
 			NEGATIVE,
@@ -4726,7 +4726,7 @@ unsigned char *blind_tune_value[ACCESSIBILITY_MAX][2] = {
 		{SCREEN_CURTAIN_1, SCREEN_CURTAIN_2},
 };
 
-unsigned char *mdnie_tune_value[MAX_mDNIe_MODE][MAX_BACKGROUND_MODE][MAX_OUTDOOR_MODE][2] = {
+char *mdnie_tune_value[MAX_mDNIe_MODE][MAX_BACKGROUND_MODE][MAX_OUTDOOR_MODE][2] = {
 		/*
 			DYNAMIC_MODE (outdoor off/on)
 			STANDARD_MODE (outdoor off/on)

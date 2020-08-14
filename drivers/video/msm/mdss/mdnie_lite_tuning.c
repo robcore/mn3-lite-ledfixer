@@ -62,11 +62,11 @@ static struct mipi_samsung_driver_data *mdnie_msd;
 #define INPUT_PAYLOAD2(x) PAYLOAD2.payload = x
 
 /* Hijack */
-static unsigned char LITE_CONTROL_1[5];
-static unsigned char LITE_CONTROL_2[108];
+static char LITE_CONTROL_1[5];
+static char LITE_CONTROL_2[108];
 
-static unsigned int hijack;
-static unsigned char override_color[] = {
+static int hijack;
+static char override_color[] = {
 	0x00, //scr Cr Yb
 	0xff, //scr Rr Bb
 	0xff, //scr Cg Yg
@@ -124,7 +124,7 @@ struct mdnie_lite_tun_type mdnie_tun_state = {
 	.accessibility = ACCESSIBILITY_OFF,
 };
 
-const unsigned char scenario_name[MAX_mDNIe_MODE][16] = {
+const char scenario_name[MAX_mDNIe_MODE][16] = {
 	"UI_MODE",
 	"VIDEO_MODE",
 	"VIDEO_WARM_MODE",
@@ -138,7 +138,7 @@ const unsigned char scenario_name[MAX_mDNIe_MODE][16] = {
 	"EMAIL",
 };
 
-const unsigned char background_name[MAX_BACKGROUND_MODE][10] = {
+const char background_name[MAX_BACKGROUND_MODE][10] = {
 	"DYNAMIC",
 	"STANDARD",
 	"NATURAL",
@@ -147,33 +147,33 @@ const unsigned char background_name[MAX_BACKGROUND_MODE][10] = {
 	"BYPASS",
 };
 
-const unsigned char outdoor_name[MAX_OUTDOOR_MODE][20] = {
+const char outdoor_name[MAX_OUTDOOR_MODE][20] = {
 	"OUTDOOR_OFF_MODE",
 	"OUTDOOR_ON_MODE",
 };
 
-const unsigned char accessibility_name[ACCESSIBILITY_MAX][20] = {
+const char accessibility_name[ACCESSIBILITY_MAX][20] = {
 	"ACCESSIBILITY_OFF",
 	"NEGATIVE_MODE",
 	"COLOR_BLIND_MODE",
 	"SCREEN_CURTAIN_MODE",
 };
 
-static unsigned char level1_key[] = {
+static char level1_key[] = {
 	0xF0,
 	0x5A, 0x5A,
 };
 
-static unsigned char level2_key[] = {
+static char level2_key[] = {
 	0xF0,
 	0x5A, 0x5A,
 };
 
-static unsigned char tune_data1[MDNIE_TUNE_FIRST_SIZE] = {0,};
-static unsigned char tune_data2[MDNIE_TUNE_SECOND_SIZE] = {0,};
+static char tune_data1[MDNIE_TUNE_FIRST_SIZE] = {0,};
+static char tune_data2[MDNIE_TUNE_SECOND_SIZE] = {0,};
 
 #if defined(CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_CMD_WQHD_PT_PANEL)
-static unsigned char white_rgb_buf[MDNIE_TUNE_FIRST_SIZE] = {0,};
+static char white_rgb_buf[MDNIE_TUNE_FIRST_SIZE] = {0,};
 #endif
 
 static struct dsi_cmd_desc mdni_tune_cmd[] = {
@@ -253,21 +253,14 @@ void sending_tuning_cmd(void)
 static void update_mdnie_mode(void)
 {
 	int i;
-	unsigned char *source_1;
-	unsigned char *source_2;
+	char *source_1;
+	char *source_2;
 
 	if (mdnie_msd == NULL || !mdnie_tun_state.mdnie_enable)
 		return;
 
 	source_1 = mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][0];
 	source_2 = mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][1];
-	memcpy(LITE_CONTROL_1,
-		   mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][0],
-		   MDNIE_TUNE_FIRST_SIZE);
-	memcpy(LITE_CONTROL_2,
-		   mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][1],
-		   MDNIE_TUNE_SECOND_SIZE);
-
 
 	for (i = 0; i < 5; i++) {
 		if (i >= 5)
@@ -325,7 +318,6 @@ static void update_mdnie_mode(void)
 		for (i = 0; i < 24; i++) {
 			if (i >= 24)
 				break;
-
 			LITE_CONTROL_2[i + 18] = override_color[i];
 		}
 		i = 0;
@@ -374,7 +366,7 @@ void mDNIe_Set_Mode(void)
 	play_speed_1_5 = 0;
 	update_mdnie_mode();
 
-	if (hijack == 1) {
+	if (hijack) {
 		DPRINT(" = CONTROL MODE =\n");
 		INPUT_PAYLOAD1(LITE_CONTROL_1);
 		INPUT_PAYLOAD2(LITE_CONTROL_2);
@@ -1130,9 +1122,9 @@ static ssize_t cyan_store(struct kobject *kobj,
 			newblue = 0;
 		if (newblue > 255)
 			newblue = 255;
-		override_color[0] = (unsigned char)(newred);
-		override_color[2] = (unsigned char)(newgreen);
-		override_color[4] = (unsigned char)(newblue);
+		override_color[0] = (char)(newred);
+		override_color[2] = (char)(newgreen);
+		override_color[4] = (char)(newblue);
 	} else if (sscanf(buf, "%d", &newval) == 1) {
 		if (newval < 0)
 			newval = 0;
@@ -1143,8 +1135,8 @@ static ssize_t cyan_store(struct kobject *kobj,
 		if (newval > 255)
 			newval = 255;
 		override_color[0] = 0;
-		override_color[2] = (unsigned char)(newval);
-		override_color[4] = (unsigned char)(newval);
+		override_color[2] = (char)(newval);
+		override_color[4] = (char)(newval);
 	} else {
 		return count;
 	}
@@ -1181,15 +1173,15 @@ static ssize_t red_store(struct kobject *kobj,
 			newblue = 0;
 		if (newblue > 255)
 			newblue = 255;
-		override_color[1] = (unsigned char)(newred);
-		override_color[3] = (unsigned char)(newgreen);
-		override_color[5] = (unsigned char)(newblue);
+		override_color[1] = (char)(newred);
+		override_color[3] = (char)(newgreen);
+		override_color[5] = (char)(newblue);
 	} else if (sscanf(buf, "%d", &newval) == 1) {
 		if (newval < 0)
 			newval = 0;
 		if (newval > 255)
 			newval = 255;
-		override_color[1] = (unsigned char)(newval);
+		override_color[1] = (char)(newval);
 		override_color[3] = 0;
 		override_color[5] = 0;
 	} else {
@@ -1229,17 +1221,17 @@ static ssize_t magenta_store(struct kobject *kobj,
 			newblue = 0;
 		if (newblue > 255)
 			newblue = 255;
-		override_color[6] = (unsigned char)(newred);
-		override_color[8] = (unsigned char)(newgreen);
-		override_color[10] = (unsigned char)(newblue);
+		override_color[6] = (char)(newred);
+		override_color[8] = (char)(newgreen);
+		override_color[10] = (char)(newblue);
 	} else if (sscanf(buf, "%d", &newval) == 1) {
 		if (newval < 0)
 			newval = 0;
 		if (newval > 255)
 			newval = 255;
-		override_color[6] = (unsigned char)(newval);
+		override_color[6] = (char)(newval);
 		override_color[8] = 0;
-		override_color[10] = (unsigned char)(newval);
+		override_color[10] = (char)(newval);
 	} else {
 		return count;
 	}
@@ -1276,16 +1268,16 @@ static ssize_t green_store(struct kobject *kobj,
 			newblue = 0;
 		if (newblue > 255)
 			newblue = 255;
-		override_color[7] = (unsigned char)(newred);
-		override_color[9] = (unsigned char)(newgreen);
-		override_color[11] = (unsigned char)(newblue);
+		override_color[7] = (char)(newred);
+		override_color[9] = (char)(newgreen);
+		override_color[11] = (char)(newblue);
 	} else if (sscanf(buf, "%d", &newval) == 1) {
 		if (newval < 0)
 			newval = 0;
 		if (newval > 255)
 			newval = 255;
 		override_color[7] = 0;
-		override_color[9] = (unsigned char)(newval);
+		override_color[9] = (char)(newval);
 		override_color[11] = 0;
 	} else {
 		return count;
@@ -1324,16 +1316,16 @@ static ssize_t yellow_store(struct kobject *kobj,
 			newblue = 0;
 		if (newblue > 255)
 			newblue = 255;
-		override_color[12] = (unsigned char)(newred);
-		override_color[14] = (unsigned char)(newgreen);
-		override_color[16] = (unsigned char)(newblue);
+		override_color[12] = (char)(newred);
+		override_color[14] = (char)(newgreen);
+		override_color[16] = (char)(newblue);
 	} else if (sscanf(buf, "%d", &newval) == 1) {
 		if (newval < 0)
 			newval = 0;
 		if (newval > 255)
 			newval = 255;
-		override_color[12] = (unsigned char)(newval);
-		override_color[14] = (unsigned char)(newval);
+		override_color[12] = (char)(newval);
+		override_color[14] = (char)(newval);
 		override_color[16] = 0;
 	} else {
 		return count;
@@ -1372,9 +1364,9 @@ static ssize_t blue_store(struct kobject *kobj,
 			newblue = 0;
 		if (newblue > 255)
 			newblue = 255;
-		override_color[13] = (unsigned char)(newred);
-		override_color[15] = (unsigned char)(newgreen);
-		override_color[17] = (unsigned char)(newblue);
+		override_color[13] = (char)(newred);
+		override_color[15] = (char)(newgreen);
+		override_color[17] = (char)(newblue);
 	} else if (sscanf(buf, "%d", &newval) == 1) {
 		if (newval < 0)
 			newval = 0;
@@ -1382,7 +1374,7 @@ static ssize_t blue_store(struct kobject *kobj,
 			newval = 255;
 		override_color[13] = 0;
 		override_color[15] = 0;
-		override_color[17] = (unsigned char)(newval);
+		override_color[17] = (char)(newval);
 	} else {
 		return count;
 	}
@@ -1420,17 +1412,17 @@ static ssize_t white_store(struct kobject *kobj,
 			newblue = 0;
 		if (newblue > 255)
 			newblue = 255;
-		override_color[18] = (unsigned char)(newred);
-		override_color[20] = (unsigned char)(newgreen);
-		override_color[22] = (unsigned char)(newblue);
+		override_color[18] = (char)(newred);
+		override_color[20] = (char)(newgreen);
+		override_color[22] = (char)(newblue);
 	} else if (sscanf(buf, "%d", &newval) == 1) {
 		if (newval < 0)
 			newval = 0;
 		if (newval > 255)
 			newval = 255;
-		override_color[18] = (unsigned char)(newval);
-		override_color[20] = (unsigned char)(newval);
-		override_color[22] = (unsigned char)(newval);
+		override_color[18] = (char)(newval);
+		override_color[20] = (char)(newval);
+		override_color[22] = (char)(newval);
 	} else {
 		return count;
 	}
@@ -1468,17 +1460,17 @@ static ssize_t black_store(struct kobject *kobj,
 			newblue = 0;
 		if (newblue > 255)
 			newblue = 255;
-		override_color[19] = (unsigned char)(newred);
-		override_color[21] = (unsigned char)(newgreen);
-		override_color[23] = (unsigned char)(newblue);
+		override_color[19] = (char)(newred);
+		override_color[21] = (char)(newgreen);
+		override_color[23] = (char)(newblue);
 	} else if (sscanf(buf, "%d", &newval) == 1) {
 		if (newval < 0)
 			newval = 0;
 		if (newval > 255)
 			newval = 255;
-		override_color[19] = (unsigned char)(newval);
-		override_color[21] = (unsigned char)(newval);
-		override_color[23] = (unsigned char)(newval);
+		override_color[19] = (char)(newval);
+		override_color[21] = (char)(newval);
+		override_color[23] = (char)(newval);
 	} else {
 		return count;
 	}
