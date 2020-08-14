@@ -40,48 +40,7 @@
 #include "mdss_panel.h"
 #include "mdss_dsi.h"
 #include "mdnie_lite_tuning.h"
-
-#if defined(CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_CMD_FULL_HD_PT_PANEL) // H
 #include "mdnie_lite_tuning_data_hlte.h"
-#elif defined(CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_VIDEO_FULL_HD_PT_PANEL) // KS01
-#include "mdnie_lite_tuning_data.h"
-#elif defined(CONFIG_FB_MSM_MIPI_SAMSUNG_YOUM_CMD_FULL_HD_PT_PANEL) // F
-#include "mdnie_lite_tuning_data_flte.h"
-#elif defined(CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_CMD_WQHD_PT_PANEL) // K
-#include "mdnie_lite_tuning_data_klte_fhd_s6e3fa2.h"
-#elif defined(CONFIG_FB_MSM_MIPI_MAGNA_OCTA_CMD_HD_PT_PANEL)
-#include "mdnie_lite_tuning_data_slte_hd_ea8064g.h"
-#elif defined(CONFIG_FB_MSM_MIPI_JDI_TFT_VIDEO_FULL_HD_PT_PANEL) // JACTIVE
-#include "mdnie_lite_tuning_data_jactiveltexx.h"
-/*
-#elif defined(CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_VIDEO_WVGA_S6E88A0_PT_PANEL) // ?
-#include "mdnie_lite_tuning_data_wvga_s6e88a0.h"
-#elif defined(CONFIG_MACH_JS01LTEDCM) || defined(CONFIG_MACH_JS01LTESBM) // JS01
-#include "mdnie_lite_tuning_data_js01.h"
-*/
-#elif defined(CONFIG_FB_MSM_MDSS_SAMSUNG_OCTA_VIDEO_720P_PT_PANEL)
-#include "mdnie_lite_tuning_data_fresco.h"
-#elif defined(CONFIG_FB_MSM_MDSS_MAGNA_OCTA_VIDEO_720P_PANEL) \
-	|| defined(CONFIG_FB_MSM_MIPI_MAGNA_OCTA_VIDEO_WXGA_PT_DUAL_PANEL)
-#include "mdnie_lite_tuning_data_kmini.h"
-#elif defined(CONFIG_FB_MSM_MIPI_VIDEO_WVGA_NT35502_PT_PANEL) // KANAS
-#include "mdnie_lite_tuning_data_wvga_nt35502.h"
-#elif defined (CONFIG_FB_MSM_MDSS_SHARP_HD_PANEL)
-#include "mdss_ms01_panel.h"
-#include "mdnie_lite_tuning_data_ms01.h"
-#elif defined(CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_CMD_WQXGA_S6E3HA1_PT_PANEL)
-#include "mdnie_lite_tuning_data_klimt.h"
-#else
-#include "mdnie_lite_tuning_data.h"
-#endif
-
-#if defined(CONFIG_TDMB)
-#if defined(CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_CMD_WQHD_PT_PANEL) // K
-#include "mdnie_lite_tuning_data_dmb_fhd_s6e3fa2.h"
-#else
-#include "mdnie_lite_tuning_data_dmb.h"
-#endif
-#endif
 
 static struct mipi_samsung_driver_data *mdnie_msd;
 
@@ -103,11 +62,37 @@ static struct mipi_samsung_driver_data *mdnie_msd;
 #define INPUT_PAYLOAD2(x) PAYLOAD2.payload = x
 
 /* Hijack */
-static char LITE_CONTROL_1[MDNIE_TUNE_FIRST_SIZE];
-static char LITE_CONTROL_2[MDNIE_TUNE_SECOND_SIZE];
+static unsigned char LITE_CONTROL_1[5];
+static unsigned char LITE_CONTROL_2[108];
 
 static unsigned int hijack;
-static char override_color[MDNIE_TUNE_SECOND_SIZE];
+static unsigned char override_color[] = {
+	0x00, //scr Cr Yb
+	0xff, //scr Rr Bb
+	0xff, //scr Cg Yg
+	0x00, //scr Rg Bg
+	0xff, //scr Cb Yr
+	0x00, //scr Rb Br
+	0xff, //scr Mr Mb
+	0x00, //scr Gr Gb
+	0x00, //scr Mg Mg
+	0xff, //scr Gg Gg
+	0xff, //scr Mb Mr
+	0x00, //scr Gb Gr
+	0xff, //scr Yr Cb
+	0x00, //scr Br Rb
+	0xff, //scr Yg Cg
+	0x00, //scr Bg Rg
+	0x00, //scr Yb Cr
+	0xff, //scr Bb Rr
+	0xff, //scr Wr Wb
+	0x00, //scr Kr Kb
+	0xff, //scr Wg Wg
+	0x00, //scr Kg Kg
+	0xff, //scr Wb Wr
+	0x00, //scr Kb Kr
+};
+
 //static char offset_color[24];
 //static char custom_curve[48];
 //static char chroma_correction[18];
@@ -131,13 +116,6 @@ unsigned int play_speed_1_5;
 
 struct dsi_buf dsi_mdnie_tx_buf;
 
-#if defined(CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_CMD_WQHD_PT_PANEL) || defined(CONFIG_FB_MSM_MIPI_MAGNA_OCTA_CMD_HD_PT_PANEL)
-#if defined(CONFIG_LCD_CLASS_DEVICE) && defined(DDI_VIDEO_ENHANCE_TUNING)
-extern int mdnie_adb_test;
-#endif
-int get_lcd_panel_res(void);
-#endif
-
 struct mdnie_lite_tun_type mdnie_tun_state = {
 	.mdnie_enable = false,
 	.scenario = mDNIe_UI_MODE,
@@ -146,7 +124,7 @@ struct mdnie_lite_tun_type mdnie_tun_state = {
 	.accessibility = ACCESSIBILITY_OFF,
 };
 
-const char scenario_name[MAX_mDNIe_MODE][16] = {
+const unsigned char scenario_name[MAX_mDNIe_MODE][16] = {
 	"UI_MODE",
 	"VIDEO_MODE",
 	"VIDEO_WARM_MODE",
@@ -160,7 +138,7 @@ const char scenario_name[MAX_mDNIe_MODE][16] = {
 	"EMAIL",
 };
 
-const char background_name[MAX_BACKGROUND_MODE][10] = {
+const unsigned char background_name[MAX_BACKGROUND_MODE][10] = {
 	"DYNAMIC",
 	"STANDARD",
 	"NATURAL",
@@ -169,45 +147,33 @@ const char background_name[MAX_BACKGROUND_MODE][10] = {
 	"BYPASS",
 };
 
-const char outdoor_name[MAX_OUTDOOR_MODE][20] = {
+const unsigned char outdoor_name[MAX_OUTDOOR_MODE][20] = {
 	"OUTDOOR_OFF_MODE",
 	"OUTDOOR_ON_MODE",
 };
 
-const char accessibility_name[ACCESSIBILITY_MAX][20] = {
+const unsigned char accessibility_name[ACCESSIBILITY_MAX][20] = {
 	"ACCESSIBILITY_OFF",
 	"NEGATIVE_MODE",
 	"COLOR_BLIND_MODE",
 	"SCREEN_CURTAIN_MODE",
 };
 
-#if defined(CONFIG_FB_MSM_MIPI_VIDEO_WVGA_NT35502_PT_PANEL)
-static char cmd_enable[6] = { 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00 };
-#else
-static char level1_key[] = {
+static unsigned char level1_key[] = {
 	0xF0,
 	0x5A, 0x5A,
 };
 
-#if defined(CONFIG_FB_MSM_MDSS_SAMSUNG_OCTA_VIDEO_720P_PT_PANEL) ||defined(CONFIG_FB_MSM_MDSS_MAGNA_OCTA_VIDEO_720P_PANEL) \
-	|| defined(CONFIG_FB_MSM_MIPI_MAGNA_OCTA_VIDEO_WXGA_PT_DUAL_PANEL)
-static char level2_key[] = {
-	0xF1,
-	0x5A, 0x5A,
-};
-#else
-static char level2_key[] = {
+static unsigned char level2_key[] = {
 	0xF0,
 	0x5A, 0x5A,
 };
-#endif
-#endif
 
-static char tune_data1[MDNIE_TUNE_FIRST_SIZE] = {0,};
-static char tune_data2[MDNIE_TUNE_SECOND_SIZE] = {0,};
+static unsigned char tune_data1[MDNIE_TUNE_FIRST_SIZE] = {0,};
+static unsigned char tune_data2[MDNIE_TUNE_SECOND_SIZE] = {0,};
 
 #if defined(CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_CMD_WQHD_PT_PANEL)
-static char white_rgb_buf[MDNIE_TUNE_FIRST_SIZE] = {0,};
+static unsigned char white_rgb_buf[MDNIE_TUNE_FIRST_SIZE] = {0,};
 #endif
 
 static struct dsi_cmd_desc mdni_tune_cmd[] = {
@@ -254,6 +220,8 @@ void free_tun_cmd(void)
 {
 	memset(tune_data1, 0, MDNIE_TUNE_FIRST_SIZE);
 	memset(tune_data2, 0, MDNIE_TUNE_SECOND_SIZE);
+	memset(LITE_CONTROL_1, 0, MDNIE_TUNE_FIRST_SIZE);
+	memset(LITE_CONTROL_2, 0, MDNIE_TUNE_SECOND_SIZE);
 }
 
 void sending_tuning_cmd(void)
@@ -286,416 +254,99 @@ void sending_tuning_cmd(void)
 
 static void update_mdnie_mode(void)
 {
-	char *source_1, *source_2;
-	unsigned int result;
 	int i;
+	unsigned char *source_1;
+	unsigned char *source_2;
 
-	if (mdnie_msd == NULL)
+	if (mdnie_msd == NULL || !mdnie_tun_state.mdnie_enable)
 		return;
 
-	switch (mdnie_tun_state.scenario) {
-	case mDNIe_UI_MODE:
-		switch (mdnie_tun_state.background) {
-		case DYNAMIC_MODE:
-			source_1 = DYNAMIC_UI_1;
-			source_2 = DYNAMIC_UI_2;
-			break;
-		case STANDARD_MODE:
-			source_1 = STANDARD_UI_1;
-			source_2 = STANDARD_UI_2;
-			break;
-		case NATURAL_MODE:
-			source_1 = NATURAL_UI_1;
-			source_2 = NATURAL_UI_2;
-			break;
-		case MOVIE_MODE:
-			source_1 = MOVIE_UI_1;
-			source_2 = MOVIE_UI_2;
-			break;
-		case AUTO_MODE:
-			source_1 = AUTO_UI_1;
-			source_2 = AUTO_UI_2;
-			break;
-		case BYPASS_MODE:
-			source_1 = BYPASS_1;
-			source_2 = BYPASS_2;
-			break;
-		default:
-			return;
-		}
-		break;
-	case mDNIe_VIDEO_MODE:
-		if (mdnie_tun_state.outdoor == OUTDOOR_ON_MODE) {
-			switch (mdnie_tun_state.background) {
-			case DYNAMIC_MODE:
-			case STANDARD_MODE:
-			case NATURAL_MODE:
-			case MOVIE_MODE:
-			case AUTO_MODE:
-				source_1 = OUTDOOR_VIDEO_1;
-				source_2 = OUTDOOR_VIDEO_2;
-				break;
-			case BYPASS_MODE:
-				source_1 = BYPASS_1;
-				source_2 = BYPASS_2;
-				break;
-			default:
-				return;
-			}
-		} else {
-			switch (mdnie_tun_state.background) {
-			case DYNAMIC_MODE:
-				source_1 = DYNAMIC_VIDEO_1;
-				source_2 = DYNAMIC_VIDEO_2;
-				break;
-			case STANDARD_MODE:
-				source_1 = STANDARD_VIDEO_1;
-				source_2 = STANDARD_VIDEO_2;
-				break;
-			case NATURAL_MODE:
-				source_1 = NATURAL_VIDEO_1;
-				source_2 = NATURAL_VIDEO_2;
-				break;
-			case MOVIE_MODE:
-				source_1 = MOVIE_VIDEO_1;
-				source_2 = MOVIE_VIDEO_2;
-				break;
-			case AUTO_MODE:
-				source_1 = AUTO_VIDEO_1;
-				source_2 = AUTO_VIDEO_2;
-				break;
-			case BYPASS_MODE:
-				source_1 = BYPASS_1;
-				source_2 = BYPASS_2;
-				break;
-			default:
-				return;
-			}
-		}
-		break;
-	case mDNIe_VIDEO_WARM_MODE:
-		switch (mdnie_tun_state.background) {
-		case DYNAMIC_MODE:
-		case STANDARD_MODE:
-		case NATURAL_MODE:
-		case MOVIE_MODE:
-		case AUTO_MODE:
-			if (mdnie_tun_state.outdoor == OUTDOOR_ON_MODE) {
-				source_1 = WARM_OUTDOOR_1;
-				source_2 = WARM_OUTDOOR_2;
-			} else {
-				source_1 = WARM_1;
-				source_2 = WARM_2;
-			}
-			break;
-		case BYPASS_MODE:
-			source_1 = BYPASS_1;
-			source_2 = BYPASS_2;
-			break;
-		default:
-			return;
-		}
-		break;
-	case mDNIe_VIDEO_COLD_MODE:
-		switch (mdnie_tun_state.background) {
-		case DYNAMIC_MODE:
-		case STANDARD_MODE:
-		case NATURAL_MODE:
-		case MOVIE_MODE:
-		case AUTO_MODE:
-			if (mdnie_tun_state.outdoor == OUTDOOR_ON_MODE) {
-				source_1 = COLD_OUTDOOR_1;
-				source_2 = COLD_OUTDOOR_2;
-			} else {
-				source_1 = COLD_1;
-				source_2 = COLD_2;
-			}
-			break;
-		case BYPASS_MODE:
-			source_1 = BYPASS_1;
-			source_2 = BYPASS_2;
-			break;
-		default:
-			return;
-		}
-		break;
-	case mDNIe_CAMERA_MODE:
-		switch (mdnie_tun_state.background) {
-		case DYNAMIC_MODE:
-		case STANDARD_MODE:
-		case NATURAL_MODE:
-		case MOVIE_MODE:
-			if (mdnie_tun_state.outdoor == OUTDOOR_ON_MODE) {
-				source_1 = CAMERA_OUTDOOR_1;
-				source_2 = CAMERA_OUTDOOR_2;
-			} else {
-				source_1 = CAMERA_1;
-				source_2 = CAMERA_2;
-			}
-			break;
-		case AUTO_MODE:
-			if (mdnie_tun_state.outdoor == OUTDOOR_ON_MODE) {
-				source_1 = CAMERA_OUTDOOR_1;
-				source_2 = CAMERA_OUTDOOR_2;
-			} else {
-				source_1 = AUTO_CAMERA_1;
-				source_2 = AUTO_CAMERA_2;
-			}
-			break;
-		case BYPASS_MODE:
-			source_1 = BYPASS_1;
-			source_2 = BYPASS_2;
-			break;
-		default:
-			return;
-		}
-		break;
-	case mDNIe_NAVI:
-		switch (mdnie_tun_state.background) {
-		case DYNAMIC_MODE:
-			source_1 = DYNAMIC_BROWSER_1;
-			source_2 = DYNAMIC_BROWSER_2;
-			break;
-		case STANDARD_MODE:
-			source_1 = STANDARD_BROWSER_1;
-			source_2 = STANDARD_BROWSER_2;
-			break;
-		case NATURAL_MODE:
-			source_1 = NATURAL_BROWSER_1;
-			source_2 = NATURAL_BROWSER_2;
-			break;
-		case MOVIE_MODE:
-			source_1 = MOVIE_BROWSER_1;
-			source_2 = MOVIE_BROWSER_2;
-			break;
-		case AUTO_MODE:
-			source_1 = AUTO_BROWSER_1;
-			source_2 = AUTO_BROWSER_2;
-			break;
-		case BYPASS_MODE:
-			source_1 = BYPASS_1;
-			source_2 = BYPASS_2;
-			break;
-		default:
-			return;
-		}
-		break;
-	case mDNIe_GALLERY:
-		switch (mdnie_tun_state.background) {
-		case DYNAMIC_MODE:
-			source_1 = DYNAMIC_GALLERY_1;
-			source_2 = DYNAMIC_GALLERY_2;
-			break;
-		case STANDARD_MODE:
-			source_1 = STANDARD_GALLERY_1;
-			source_2 = STANDARD_GALLERY_2;
-			break;
-		case NATURAL_MODE:
-			source_1 = NATURAL_GALLERY_1;
-			source_2 = NATURAL_GALLERY_2;
-			break;
-		case MOVIE_MODE:
-			source_1 = MOVIE_GALLERY_1;
-			source_2 = MOVIE_GALLERY_2;
-			break;
-		case AUTO_MODE:
-			source_1 = AUTO_GALLERY_1;
-			source_2 = AUTO_GALLERY_2;
-			break;
-		case BYPASS_MODE:
-			source_1 = BYPASS_1;
-			source_2 = BYPASS_2;
-			break;
+	source_1 = mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][0];
+	source_2 = mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][1];
+	memcpy(LITE_CONTROL_1,
+		   mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][0],
+		   MDNIE_TUNE_FIRST_SIZE);
+	memcpy(LITE_CONTROL_2,
+		   mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][1],
+		   MDNIE_TUNE_SECOND_SIZE);
 
-		default:
-			return;
-		}
-		break;
-	case mDNIe_VT_MODE:
-		switch (mdnie_tun_state.background) {
-		case DYNAMIC_MODE:
-			source_1 = DYNAMIC_VT_1;
-			source_2 = DYNAMIC_VT_2;
-			break;
-		case STANDARD_MODE:
-			source_1 = STANDARD_VT_1;
-			source_2 = STANDARD_VT_2;
-			break;
-		case NATURAL_MODE:
-			source_1 = NATURAL_VT_1;
-			source_2 = NATURAL_VT_2;
-			break;
-		case MOVIE_MODE:
-			source_1 = MOVIE_VT_1;
-			source_2 = MOVIE_VT_2;
-			break;
-		case AUTO_MODE:
-			source_1 = AUTO_VT_1;
-			source_2 = AUTO_VT_2;
-			break;
-		case BYPASS_MODE:
-			source_1 = BYPASS_1;
-			source_2 = BYPASS_2;
-			break;
 
-		default:
-			return;
-		}
-		break;
-	case mDNIe_BROWSER_MODE:
-		switch (mdnie_tun_state.background) {
-		case DYNAMIC_MODE:
-			source_1 = DYNAMIC_BROWSER_1;
-			source_2 = DYNAMIC_BROWSER_2;
+	for (i = 0; i < 5; i++) {
+		if (i >= 5)
 			break;
-		case STANDARD_MODE:
-			source_1 = STANDARD_BROWSER_1;
-			source_2 = STANDARD_BROWSER_2;
-			break;
-		case NATURAL_MODE:
-			source_1 = NATURAL_BROWSER_1;
-			source_2 = NATURAL_BROWSER_2;
-			break;
-		case MOVIE_MODE:
-			source_1 = MOVIE_BROWSER_1;
-			source_2 = MOVIE_BROWSER_2;
-			break;
-		case AUTO_MODE:
-			source_1 = AUTO_BROWSER_1;
-			source_2 = AUTO_BROWSER_2;
-			break;
-		case BYPASS_MODE:
-			source_1 = BYPASS_1;
-			source_2 = BYPASS_2;
-			break;
-		default:
-			return;
-		}
-		break;
-	case mDNIe_eBOOK_MODE:
-		switch (mdnie_tun_state.background) {
-		case DYNAMIC_MODE:
-			source_1 = DYNAMIC_EBOOK_1;
-			source_2 = DYNAMIC_EBOOK_2;
-			break;
-		case STANDARD_MODE:
-			source_1 = STANDARD_EBOOK_1;
-			source_2 = STANDARD_EBOOK_2;
-			break;
-		case NATURAL_MODE:
-			source_1 = NATURAL_EBOOK_1;
-			source_2 = NATURAL_EBOOK_2;
-			break;
-		case MOVIE_MODE:
-			source_1 = MOVIE_EBOOK_1;
-			source_2 = MOVIE_EBOOK_2;
-			break;
-		case AUTO_MODE:
-			source_1 = AUTO_EBOOK_1;
-			source_2 = AUTO_EBOOK_2;
-			break;
-		case BYPASS_MODE:
-			source_1 = BYPASS_1;
-			source_2 = BYPASS_2;
-			break;
-		default:
-			return;
-		}
-		break;
-	case mDNIe_EMAIL_MODE:
-		switch (mdnie_tun_state.background) {
-		case DYNAMIC_MODE:
-		case STANDARD_MODE:
-		case NATURAL_MODE:
-		case MOVIE_MODE:
-		case AUTO_MODE:
-			source_1 = AUTO_EMAIL_1;
-			source_2 = AUTO_EMAIL_2;
-			break;
-		case BYPASS_MODE:
-			source_1 = BYPASS_1;
-			source_2 = BYPASS_2;
-			break;
-		default:
-			return;
-		}
-	default:
-		return;
-	}
-
-	for (i = 0; i < (MDNIE_TUNE_FIRST_SIZE - 1); i++) {
 		LITE_CONTROL_1[i] = source_1[i];
 	}
 
-	for (i = 0; i < (MDNIE_TUNE_SECOND_SIZE - 1); i++) {
+	i = 0;
+
+	for (i = 0; i < 108; i++) {
+		if (i >= 108)
+			break;
 		LITE_CONTROL_2[i] = source_2[i];
-		if (hijack) {
-			if (i > 17 && i < 42)
-				LITE_CONTROL_2[i] = override_color[i];
-		} else {
-			if (i > 17 && i < 42)
-				override_color[i] = LITE_CONTROL_2[i];
-		}
 	}
 
+	i = 0;
+
 	if (hijack) {
-		result = (LITE_CONTROL_1[4] >> (SHARPEN_BIT));
-		if (sharpen) {
-			if (!(result & 1))
-				LITE_CONTROL_1[4] |= 1 << SHARPEN_BIT;
-		} else {
-			if (result & 1)
-				LITE_CONTROL_1[4] &= ~(1 << SHARPEN_BIT);
-		}
-
-		result = (LITE_CONTROL_1[4] >> (SHARPEN_EXTRA_BIT));
-		if (sharpen_extra) {
-			if (!(result & 1))
-				LITE_CONTROL_1[4] |= 1 << SHARPEN_EXTRA_BIT;
-		} else {
-			if (result & 1)
-				LITE_CONTROL_1[4] &= ~(1 << SHARPEN_EXTRA_BIT);
-		}
-
-		result = (LITE_CONTROL_1[4] >> (CHROMA_BIT));
-		if (chroma) {
-			if (!(result & 1))
-				LITE_CONTROL_1[4] |= 1 << CHROMA_BIT;
-		} else {
-			if (result & 1)
-				LITE_CONTROL_1[4] &= ~(1 << CHROMA_BIT);
-		}
-
-		result = (LITE_CONTROL_1[4] >> (GAMMA_BIT));
-		if (gamma) {
-			if (!(result & 1))
-				LITE_CONTROL_1[4] |= 1 << GAMMA_BIT;
-		} else {
-			if (result & 1)
-				LITE_CONTROL_1[4] &= ~(1 << GAMMA_BIT);
-		}
-
 		if (bypass)
 			LITE_CONTROL_1[1] = 0x00;
 		else
 			LITE_CONTROL_1[1] = 0x01;
+
+		if (sharpen) {
+			if (!((LITE_CONTROL_1[4] >> SHARPEN_BIT) & 1))
+				LITE_CONTROL_1[4] |= 1 << SHARPEN_BIT;
+		} else {
+			if ((LITE_CONTROL_1[4] >> SHARPEN_BIT) & 1)
+				LITE_CONTROL_1[4] &= ~(1 << SHARPEN_BIT);
+		}
+
+		if (sharpen_extra) {
+			if (!((LITE_CONTROL_1[4] >> SHARPEN_EXTRA_BIT) & 1))
+				LITE_CONTROL_1[4] |= 1 << SHARPEN_EXTRA_BIT;
+		} else {
+			if ((LITE_CONTROL_1[4] >> SHARPEN_EXTRA_BIT) & 1)
+				LITE_CONTROL_1[4] &= ~(1 << SHARPEN_EXTRA_BIT);
+		}
+
+		if (chroma) {
+			if (!((LITE_CONTROL_1[4] >> CHROMA_BIT) & 1))
+				LITE_CONTROL_1[4] |= 1 << CHROMA_BIT;
+		} else {
+			if ((LITE_CONTROL_1[4] >> CHROMA_BIT) & 1)
+				LITE_CONTROL_1[4] &= ~(1 << CHROMA_BIT);
+		}
+
+		if (gamma) {
+			if (!((LITE_CONTROL_1[4] >> GAMMA_BIT) & 1))
+				LITE_CONTROL_1[4] |= 1 << GAMMA_BIT;
+		} else {
+			if ((LITE_CONTROL_1[4] >> GAMMA_BIT) & 1)
+				LITE_CONTROL_1[4] &= ~(1 << GAMMA_BIT);
+		}
+		for (i = 0; i < 24; i++) {
+			if (i >= 24)
+				break;
+
+			LITE_CONTROL_2[i + 18] = override_color[i];
+		}
+		i = 0;
 	} else {
-		result = (LITE_CONTROL_1[4] >> (SHARPEN_BIT));
-		sharpen = result & 1;
-
-		result = (LITE_CONTROL_1[4] >> (SHARPEN_EXTRA_BIT));
-		sharpen_extra = result & 1;
-
-		result = (LITE_CONTROL_1[4] >> (CHROMA_BIT));
-		chroma = result & 1;
-
-		result = (LITE_CONTROL_1[4] >> (GAMMA_BIT));
-		gamma = result & 1;
-
+		for (i = 0; i < 24; i++) {
+			if (i >= 24)
+				break;
+			override_color[i] = LITE_CONTROL_2[i + 18];
+		}
+		i=0;
 		if (LITE_CONTROL_1[1] == 0x00)
 			bypass = 1;
 		else if (LITE_CONTROL_1[1] == 0x01)
 			bypass = 0;
+
+		sharpen = ((LITE_CONTROL_1[4] >> SHARPEN_BIT) & 1);
+		sharpen_extra = ((LITE_CONTROL_1[4] >> SHARPEN_EXTRA_BIT) & 1);
+		chroma = ((LITE_CONTROL_1[4] >> CHROMA_BIT) & 1);
+		gamma = ((LITE_CONTROL_1[4] >> GAMMA_BIT) & 1);
 	}
 }
 
@@ -1452,70 +1103,50 @@ static ssize_t _name##_store		\
 	return count;			\
 }
 */
-/* black */
-static ssize_t black_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
-{
-	int localred = override_color[37];
-	int localgreen = override_color[39];
-	int localblue = override_color[41];
 
-	return sprintf(buf, "%d %d %d\n", localred, localgreen, localblue);
+/* cyan */
+static ssize_t cyan_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+	unsigned int localred = override_color[0];
+	unsigned int localgreen = override_color[2];
+	unsigned int localblue = override_color[4];
+
+	return sprintf(buf, "%u %u %u\n", localred, localgreen, localblue);
 }
 
-static ssize_t black_store(struct kobject *kobj,
+static ssize_t cyan_store(struct kobject *kobj,
 			   struct kobj_attribute *attr, const char *buf, size_t count)
 {
 	int i, newval, newred, newgreen, newblue;
 
 	if (sscanf(buf, "%d %d %d", &newred, &newgreen, &newblue) == 3) {
-		clamp(newred, 0, 255);
-		clamp(newgreen, 0, 255);
-		clamp(newblue, 0, 255);
-		override_color[37] = newred;
-		override_color[39] = newgreen;
-		override_color[41] = newblue;
+		if (newred < 0)
+			newred = 0;
+		if (newred > 255)
+			newred = 255;
+		if (newgreen < 0)
+			newgreen = 0;
+		if (newgreen > 255)
+			newgreen = 255;
+		if (newblue < 0)
+			newblue = 0;
+		if (newblue > 255)
+			newblue = 255;
+		override_color[0] = (unsigned char)(newred);
+		override_color[2] = (unsigned char)(newgreen);
+		override_color[4] = (unsigned char)(newblue);
 	} else if (sscanf(buf, "%d", &newval) == 1) {
-		clamp(newval, 0, 255);
-		override_color[37] = newval;
-		override_color[39] = newval;
-		override_color[41] = newval;
-	} else {
-		return count;
-	}
-
-	mDNIe_Set_Mode();
-
-	return count;
-}
-
-/* white */
-
-static ssize_t white_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
-{
-	int localred = override_color[36];
-	int localgreen = override_color[38];
-	int localblue = override_color[40];
-
-	return sprintf(buf, "%d %d %d\n", localred, localgreen, localblue);
-}
-
-static ssize_t white_store(struct kobject *kobj,
-			   struct kobj_attribute *attr, const char *buf, size_t count)
-{
-	int i, newval, newred, newgreen, newblue;
-
-	if (sscanf(buf, "%d %d %d", &newred, &newgreen, &newblue) == 3) {
-		clamp(newred, 0, 255);
-		clamp(newgreen, 0, 255);
-		clamp(newblue, 0, 255);
-		override_color[36] = newred;
-		override_color[38] = newgreen;
-		override_color[22] = newblue;
-	} else if (sscanf(buf, "%d", &newval) == 1) {
-		clamp(newval, 0, 255);
-		override_color[36] = newval;
-		override_color[38] = newval;
-		override_color[40] = newval;
+		if (newval < 0)
+			newval = 0;
+		if (newval > 255)
+			newval = 255;
+		if (newval < 0)
+			newval = 0;
+		if (newval > 255)
+			newval = 255;
+		override_color[0] = 0;
+		override_color[2] = (unsigned char)(newval);
+		override_color[4] = (unsigned char)(newval);
 	} else {
 		return count;
 	}
@@ -1526,14 +1157,13 @@ static ssize_t white_store(struct kobject *kobj,
 }
 
 /* red */
-
 static ssize_t red_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-	int localred = override_color[19];
-	int localgreen = override_color[21];
-	int localblue = override_color[23];
+	unsigned int localred = override_color[1];
+	unsigned int localgreen = override_color[3];
+	unsigned int localblue = override_color[5];
 
-	return sprintf(buf, "%d %d %d\n", localred, localgreen, localblue);}
+	return sprintf(buf, "%u %u %u\n", localred, localgreen, localblue);}
 
 static ssize_t red_store(struct kobject *kobj,
 			   struct kobj_attribute *attr, const char *buf, size_t count)
@@ -1541,126 +1171,29 @@ static ssize_t red_store(struct kobject *kobj,
 	int i, newval, newred, newgreen, newblue;
 
 	if (sscanf(buf, "%d %d %d", &newred, &newgreen, &newblue) == 3) {
-		clamp(newred, 0, 255);
-		clamp(newgreen, 0, 255);
-		clamp(newblue, 0, 255);
-		override_color[19] = newred;
-		override_color[21] = newgreen;
-		override_color[23] = newblue;
+		if (newred < 0)
+			newred = 0;
+		if (newred > 255)
+			newred = 255;
+		if (newgreen < 0)
+			newgreen = 0;
+		if (newgreen > 255)
+			newgreen = 255;
+		if (newblue < 0)
+			newblue = 0;
+		if (newblue > 255)
+			newblue = 255;
+		override_color[1] = (unsigned char)(newred);
+		override_color[3] = (unsigned char)(newgreen);
+		override_color[5] = (unsigned char)(newblue);
 	} else if (sscanf(buf, "%d", &newval) == 1) {
-		clamp(newval, 0, 255);
-		override_color[19] = newval;
-		override_color[21] = 0;
-		override_color[23] = 0;
-	} else {
-		return count;
-	}
-
-	mDNIe_Set_Mode();
-
-	return count;
-}
-
-/* green */
-
-static ssize_t green_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
-{
-	int localred = override_color[25];
-	int localgreen = override_color[27];
-	int localblue = override_color[29];
-
-	return sprintf(buf, "%d %d %d\n", localred, localgreen, localblue);}
-
-static ssize_t green_store(struct kobject *kobj,
-			   struct kobj_attribute *attr, const char *buf, size_t count)
-{
-	int i, newval, newred, newgreen, newblue;
-
-	if (sscanf(buf, "%d %d %d", &newred, &newgreen, &newblue) == 3) {
-		clamp(newred, 0, 255);
-		clamp(newgreen, 0, 255);
-		clamp(newblue, 0, 255);
-		override_color[25] = newred;
-		override_color[27] = newgreen;
-		override_color[29] = newblue;
-	} else if (sscanf(buf, "%d", &newval) == 1) {
-		clamp(newval, 0, 255);
-		override_color[25] = 0;
-		override_color[27] = newval;
-		override_color[29] = 0;
-	} else {
-		return count;
-	}
-
-	mDNIe_Set_Mode();
-
-	return count;
-}
-
-/* blue */
-
-static ssize_t blue_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
-{
-	int localred = override_color[31];
-	int localgreen = override_color[33];
-	int localblue = override_color[35];
-
-	return sprintf(buf, "%d %d %d\n", localred, localgreen, localblue);
-}
-
-static ssize_t blue_store(struct kobject *kobj,
-			   struct kobj_attribute *attr, const char *buf, size_t count)
-{
-	int i, newval, newred, newgreen, newblue;
-
-	if (sscanf(buf, "%d %d %d", &newred, &newgreen, &newblue) == 3) {
-		clamp(newred, 0, 255);
-		clamp(newgreen, 0, 255);
-		clamp(newblue, 0, 255);
-		override_color[31] = newred;
-		override_color[33] = newgreen;
-		override_color[35] = newblue;
-	} else if (sscanf(buf, "%d", &newval) == 1) {
-		clamp(newval, 0, 255);
-		override_color[31] = 0;
-		override_color[33] = 0;
-		override_color[35] = newval;
-	} else {
-		return count;
-	}
-
-	mDNIe_Set_Mode();
-
-	return count;
-}
-
-/* yellow */
-static ssize_t yellow_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
-{
-	int localred = override_color[30];
-	int localgreen = override_color[32];
-	int localblue = override_color[34];
-
-	return sprintf(buf, "%d %d %d\n", localred, localgreen, localblue);
-}
-
-static ssize_t yellow_store(struct kobject *kobj,
-			   struct kobj_attribute *attr, const char *buf, size_t count)
-{
-	int i, newval, newred, newgreen, newblue;
-
-	if (sscanf(buf, "%d %d %d", &newred, &newgreen, &newblue) == 3) {
-		clamp(newred, 0, 255);
-		clamp(newgreen, 0, 255);
-		clamp(newblue, 0, 255);
-		override_color[30] = newred;
-		override_color[32] = newgreen;
-		override_color[34] = newblue;
-	} else if (sscanf(buf, "%d", &newval) == 1) {
-		clamp(newval, 0, 255);
-		override_color[30] = newval;
-		override_color[32] = newval;
-		override_color[34] = 0;
+		if (newval < 0)
+			newval = 0;
+		if (newval > 255)
+			newval = 255;
+		override_color[1] = (unsigned char)(newval);
+		override_color[3] = 0;
+		override_color[5] = 0;
 	} else {
 		return count;
 	}
@@ -1673,11 +1206,11 @@ static ssize_t yellow_store(struct kobject *kobj,
 /* magenta */
 static ssize_t magenta_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-	int localred = override_color[24];
-	int localgreen = override_color[26];
-	int localblue = override_color[28];
+	unsigned int localred = override_color[6];
+	unsigned int localgreen = override_color[8];
+	unsigned int localblue = override_color[10];
 
-	return sprintf(buf, "%d %d %d\n", localred, localgreen, localblue);
+	return sprintf(buf, "%u %u %u\n", localred, localgreen, localblue);
 }
 
 static ssize_t magenta_store(struct kobject *kobj,
@@ -1686,17 +1219,29 @@ static ssize_t magenta_store(struct kobject *kobj,
 	int i, newval, newred, newgreen, newblue;
 
 	if (sscanf(buf, "%d %d %d", &newred, &newgreen, &newblue) == 3) {
-		clamp(newred, 0, 255);
-		clamp(newgreen, 0, 255);
-		clamp(newblue, 0, 255);
-		override_color[24] = newred;
-		override_color[26] = newgreen;
-		override_color[28] = newblue;
+		if (newred < 0)
+			newred = 0;
+		if (newred > 255)
+			newred = 255;
+		if (newgreen < 0)
+			newgreen = 0;
+		if (newgreen > 255)
+			newgreen = 255;
+		if (newblue < 0)
+			newblue = 0;
+		if (newblue > 255)
+			newblue = 255;
+		override_color[6] = (unsigned char)(newred);
+		override_color[8] = (unsigned char)(newgreen);
+		override_color[10] = (unsigned char)(newblue);
 	} else if (sscanf(buf, "%d", &newval) == 1) {
-		clamp(newval, 0, 255);
-		override_color[24] = newval;
-		override_color[26] = 0;
-		override_color[28] = newval;
+		if (newval < 0)
+			newval = 0;
+		if (newval > 255)
+			newval = 255;
+		override_color[6] = (unsigned char)(newval);
+		override_color[8] = 0;
+		override_color[10] = (unsigned char)(newval);
 	} else {
 		return count;
 	}
@@ -1706,33 +1251,236 @@ static ssize_t magenta_store(struct kobject *kobj,
 	return count;
 }
 
-/* cyan */
-static ssize_t cyan_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+/* green */
+static ssize_t green_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-	int localred = override_color[0];
-	int localgreen = override_color[2];
-	int localblue = override_color[4];
+	unsigned int localred = override_color[7];
+	unsigned int localgreen = override_color[9];
+	unsigned int localblue = override_color[11];
 
-	return sprintf(buf, "%d %d %d\n", localred, localgreen, localblue);
-}
+	return sprintf(buf, "%u %u %u\n", localred, localgreen, localblue);}
 
-static ssize_t cyan_store(struct kobject *kobj,
+static ssize_t green_store(struct kobject *kobj,
 			   struct kobj_attribute *attr, const char *buf, size_t count)
 {
 	int i, newval, newred, newgreen, newblue;
 
 	if (sscanf(buf, "%d %d %d", &newred, &newgreen, &newblue) == 3) {
-		clamp(newred, 0, 255);
-		clamp(newgreen, 0, 255);
-		clamp(newblue, 0, 255);
-		override_color[18] = newred;
-		override_color[20] = newgreen;
-		override_color[22] = newblue;
+		if (newred < 0)
+			newred = 0;
+		if (newred > 255)
+			newred = 255;
+		if (newgreen < 0)
+			newgreen = 0;
+		if (newgreen > 255)
+			newgreen = 255;
+		if (newblue < 0)
+			newblue = 0;
+		if (newblue > 255)
+			newblue = 255;
+		override_color[7] = (unsigned char)(newred);
+		override_color[9] = (unsigned char)(newgreen);
+		override_color[11] = (unsigned char)(newblue);
 	} else if (sscanf(buf, "%d", &newval) == 1) {
-		clamp(newval, 0, 255);
-		override_color[18] = 0;
-		override_color[20] = newval;
-		override_color[22] = newval;
+		if (newval < 0)
+			newval = 0;
+		if (newval > 255)
+			newval = 255;
+		override_color[7] = 0;
+		override_color[9] = (unsigned char)(newval);
+		override_color[11] = 0;
+	} else {
+		return count;
+	}
+
+	mDNIe_Set_Mode();
+
+	return count;
+}
+
+/* yellow */
+static ssize_t yellow_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+	unsigned int localred = override_color[12];
+	unsigned int localgreen = override_color[14];
+	unsigned int localblue = override_color[16];
+
+	return sprintf(buf, "%u %u %u\n", localred, localgreen, localblue);
+}
+
+static ssize_t yellow_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
+	int i, newval, newred, newgreen, newblue;
+
+	if (sscanf(buf, "%d %d %d", &newred, &newgreen, &newblue) == 3) {
+		if (newred < 0)
+			newred = 0;
+		if (newred > 255)
+			newred = 255;
+		if (newgreen < 0)
+			newgreen = 0;
+		if (newgreen > 255)
+			newgreen = 255;
+		if (newblue < 0)
+			newblue = 0;
+		if (newblue > 255)
+			newblue = 255;
+		override_color[12] = (unsigned char)(newred);
+		override_color[14] = (unsigned char)(newgreen);
+		override_color[16] = (unsigned char)(newblue);
+	} else if (sscanf(buf, "%d", &newval) == 1) {
+		if (newval < 0)
+			newval = 0;
+		if (newval > 255)
+			newval = 255;
+		override_color[12] = (unsigned char)(newval);
+		override_color[14] = (unsigned char)(newval);
+		override_color[16] = 0;
+	} else {
+		return count;
+	}
+
+	mDNIe_Set_Mode();
+
+	return count;
+}
+
+/* blue */
+static ssize_t blue_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+	unsigned int localred = override_color[13];
+	unsigned int localgreen = override_color[15];
+	unsigned int localblue = override_color[17];
+
+	return sprintf(buf, "%u %u %u\n", localred, localgreen, localblue);
+}
+
+static ssize_t blue_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
+	int i, newval, newred, newgreen, newblue;
+
+	if (sscanf(buf, "%d %d %d", &newred, &newgreen, &newblue) == 3) {
+		if (newred < 0)
+			newred = 0;
+		if (newred > 255)
+			newred = 255;
+		if (newgreen < 0)
+			newgreen = 0;
+		if (newgreen > 255)
+			newgreen = 255;
+		if (newblue < 0)
+			newblue = 0;
+		if (newblue > 255)
+			newblue = 255;
+		override_color[13] = (unsigned char)(newred);
+		override_color[15] = (unsigned char)(newgreen);
+		override_color[17] = (unsigned char)(newblue);
+	} else if (sscanf(buf, "%d", &newval) == 1) {
+		if (newval < 0)
+			newval = 0;
+		if (newval > 255)
+			newval = 255;
+		override_color[13] = 0;
+		override_color[15] = 0;
+		override_color[17] = (unsigned char)(newval);
+	} else {
+		return count;
+	}
+
+	mDNIe_Set_Mode();
+
+	return count;
+}
+
+/* white */
+static ssize_t white_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+	unsigned int localred = override_color[18];
+	unsigned int localgreen = override_color[20];
+	unsigned int localblue = override_color[22];
+
+	return sprintf(buf, "%u %u %u\n", localred, localgreen, localblue);
+}
+
+static ssize_t white_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
+	int i, newval, newred, newgreen, newblue;
+
+	if (sscanf(buf, "%d %d %d", &newred, &newgreen, &newblue) == 3) {
+		if (newred < 0)
+			newred = 0;
+		if (newred > 255)
+			newred = 255;
+		if (newgreen < 0)
+			newgreen = 0;
+		if (newgreen > 255)
+			newgreen = 255;
+		if (newblue < 0)
+			newblue = 0;
+		if (newblue > 255)
+			newblue = 255;
+		override_color[18] = (unsigned char)(newred);
+		override_color[20] = (unsigned char)(newgreen);
+		override_color[22] = (unsigned char)(newblue);
+	} else if (sscanf(buf, "%d", &newval) == 1) {
+		if (newval < 0)
+			newval = 0;
+		if (newval > 255)
+			newval = 255;
+		override_color[18] = (unsigned char)(newval);
+		override_color[20] = (unsigned char)(newval);
+		override_color[22] = (unsigned char)(newval);
+	} else {
+		return count;
+	}
+
+	mDNIe_Set_Mode();
+
+	return count;
+}
+
+/* black */
+static ssize_t black_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+	unsigned int localred = override_color[19];
+	unsigned int localgreen = override_color[21];
+	unsigned int localblue = override_color[23];
+
+	return sprintf(buf, "%u %u %u\n", localred, localgreen, localblue);
+}
+
+static ssize_t black_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
+	int i, newval, newred, newgreen, newblue;
+
+	if (sscanf(buf, "%d %d %d", &newred, &newgreen, &newblue) == 3) {
+		if (newred < 0)
+			newred = 0;
+		if (newred > 255)
+			newred = 255;
+		if (newgreen < 0)
+			newgreen = 0;
+		if (newgreen > 255)
+			newgreen = 255;
+		if (newblue < 0)
+			newblue = 0;
+		if (newblue > 255)
+			newblue = 255;
+		override_color[19] = (unsigned char)(newred);
+		override_color[21] = (unsigned char)(newgreen);
+		override_color[23] = (unsigned char)(newblue);
+	} else if (sscanf(buf, "%d", &newval) == 1) {
+		if (newval < 0)
+			newval = 0;
+		if (newval > 255)
+			newval = 255;
+		override_color[19] = (unsigned char)(newval);
+		override_color[21] = (unsigned char)(newval);
+		override_color[23] = (unsigned char)(newval);
 	} else {
 		return count;
 	}
