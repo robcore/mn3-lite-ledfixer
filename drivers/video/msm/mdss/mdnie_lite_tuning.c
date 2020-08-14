@@ -83,14 +83,7 @@
 #endif
 #endif
 
-#if defined(CONFIG_FB_MSM_MDSS_MDP3)
-static struct mdss_dsi_driver_data *mdnie_msd;
-#if defined(CONFIG_FB_MSM_MDSS_DSI_DBG)
-int dsi_ctrl_on;
-#endif
-#else
 static struct mipi_samsung_driver_data *mdnie_msd;
-#endif
 
 //#define MDNIE_LITE_TUN_DEBUG
 
@@ -103,47 +96,35 @@ static struct mipi_samsung_driver_data *mdnie_msd;
 #define MAX_LUT_SIZE	256
 
 /*#define MDNIE_LITE_TUN_DATA_DEBUG*/
-
-#if defined(CONFIG_FB_MSM_MIPI_VIDEO_WVGA_NT35502_PT_PANEL)
-#define PAYLOAD1 mdni_tune_cmd[1]
-#define PAYLOAD2 mdni_tune_cmd[2]
-#define PAYLOAD3 mdni_tune_cmd[3]
-#define PAYLOAD4 mdni_tune_cmd[4]
-#define PAYLOAD5 mdni_tune_cmd[5]
-
-#define INPUT_PAYLOAD1(x) PAYLOAD1.payload = x
-#define INPUT_PAYLOAD2(x) PAYLOAD2.payload = x
-#define INPUT_PAYLOAD3(x) PAYLOAD3.payload = x
-#define INPUT_PAYLOAD4(x) PAYLOAD4.payload = x
-#define INPUT_PAYLOAD5(x) PAYLOAD5.payload = x
-#else
 #define PAYLOAD1 mdni_tune_cmd[3]
 #define PAYLOAD2 mdni_tune_cmd[2]
 
 #define INPUT_PAYLOAD1(x) PAYLOAD1.payload = x
 #define INPUT_PAYLOAD2(x) PAYLOAD2.payload = x
-#endif
 
+#define TUNESIZE1 (MDNIE_TUNE_FIRST_SIZE * sizeof(char))
+#define TUNESIZE2 (MDNIE_TUNE_SECOND_SIZE * sizeof(char))
 /* Hijack */
-static char LITE_CONTROL_1[5];
-static char LITE_CONTROL_2[108];
+static char LITE_CONTROL_1[MDNIE_TUNE_FIRST_SIZE];
+static char LITE_CONTROL_2[MDNIE_TUNE_SECOND_SIZE];
 
-static int hijack;
-static int override_color[24];
-static int offset_color[24];
-static int custom_curve[48];
-static int chroma_correction[18];
-static int bypass;
+static unsigned int hijack;
+static char override_color[24];
+//static char offset_color[24];
+//static char custom_curve[48];
+//static char chroma_correction[18];
+static unsigned int bypass;
 
-static unsigned int offset_mode = 1;
+//static unsigned int offset_mode;
 static unsigned int sharpen;
 static unsigned int sharpen_extra;
 static unsigned int chroma;
 static unsigned int gamma;
-static int sharpen_extra_bit = 3;
-static int sharpen_bit = 2;
-static int chroma_bit = 1;
-static int gamma_bit = 0;
+
+#define GAMMA_BIT 0
+#define CHROMA_BIT 1
+#define SHARPEN_BIT 2
+#define SHARPEN_EXTRA_BIT 3
 
 /* Hijack Extra End  */
 
@@ -162,7 +143,7 @@ int get_lcd_panel_res(void);
 struct mdnie_lite_tun_type mdnie_tun_state = {
 	.mdnie_enable = false,
 	.scenario = mDNIe_UI_MODE,
-	.background = BYPASS_MODE,
+	.background = DYNAMIC_MODE,
 	.outdoor = OUTDOOR_OFF_MODE,
 	.accessibility = ACCESSIBILITY_OFF,
 };
@@ -224,52 +205,14 @@ static char level2_key[] = {
 #endif
 #endif
 
-#if defined(CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_CMD_WQHD_PT_PANEL) || defined (CONFIG_FB_MSM_MIPI_MAGNA_OCTA_CMD_HD_PT_PANEL)
-static char level1_key_disable[] = {
-	0xF0,
-	0xA5, 0xA5,
-};
-#elif defined(CONFIG_FB_MSM_MIPI_VIDEO_WVGA_NT35502_PT_PANEL)
-static char cmd_disable[6] = { 0xF0, 0x55, 0xAA, 0x52, 0x00, 0x00 };
-#endif
-
-#if defined(CONFIG_FB_MSM_MIPI_VIDEO_WVGA_NT35502_PT_PANEL)
 static char tune_data1[MDNIE_TUNE_FIRST_SIZE] = {0,};
 static char tune_data2[MDNIE_TUNE_SECOND_SIZE] = {0,};
-static char tune_data3[MDNIE_TUNE_THIRD_SIZE] = { 0,};
-static char tune_data4[MDNIE_TUNE_FOURTH_SIZE] = { 0,};
-static char tune_data5[MDNIE_TUNE_FIFTH_SIZE] = { 0,};
-#else
-static char tune_data1[MDNIE_TUNE_FIRST_SIZE] = {0,};
-static char tune_data2[MDNIE_TUNE_SECOND_SIZE] = {0,};
-#endif
 
 #if defined(CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_CMD_WQHD_PT_PANEL)
 static char white_rgb_buf[MDNIE_TUNE_FIRST_SIZE] = {0,};
 #endif
 
-#if defined(CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_CMD_WQHD_PT_PANEL) || defined(CONFIG_FB_MSM_MIPI_MAGNA_OCTA_CMD_HD_PT_PANEL) \
-	|| defined(CONFIG_FB_MSM_MIPI_MAGNA_OCTA_VIDEO_WXGA_PT_DUAL_PANEL)
-static char tune_data1_adb[MDNIE_TUNE_FIRST_SIZE] = {0,};
-static char tune_data2_adb[MDNIE_TUNE_SECOND_SIZE] = {0,};
-
-void copy_tuning_data_from_adb(char *data1, char *data2)
-{
-	memcpy(tune_data1_adb, data1, MDNIE_TUNE_FIRST_SIZE);
-	memcpy(tune_data2_adb, data2, MDNIE_TUNE_SECOND_SIZE);
-}
-#endif
-
 static struct dsi_cmd_desc mdni_tune_cmd[] = {
-#if defined(CONFIG_FB_MSM_MIPI_VIDEO_WVGA_NT35502_PT_PANEL)
-	{{DTYPE_DCS_LWRITE, 1, 0, 0, 0, sizeof(cmd_enable)}, cmd_enable},
-	{{DTYPE_DCS_LWRITE, 0, 0, 0, 0, sizeof(tune_data1)}, tune_data1},
-	{{DTYPE_DCS_LWRITE, 0, 0, 0, 0, sizeof(tune_data2)}, tune_data2},
-	{{DTYPE_DCS_LWRITE, 0, 0, 0, 0, sizeof(tune_data3)}, tune_data3},
-	{{DTYPE_DCS_LWRITE, 0, 0, 0, 0, sizeof(tune_data4)}, tune_data4},
-	{{DTYPE_DCS_LWRITE, 1, 0, 0, 0, sizeof(tune_data5)}, tune_data5},
-	{{DTYPE_DCS_LWRITE, 1, 0, 0, 0, sizeof(cmd_disable)}, cmd_disable},
-#else
 	{{DTYPE_DCS_LWRITE, 1, 0, 0, 0,
 		sizeof(level1_key)}, level1_key},
 	{{DTYPE_DCS_LWRITE, 1, 0, 0, 0,
@@ -279,12 +222,6 @@ static struct dsi_cmd_desc mdni_tune_cmd[] = {
 		sizeof(tune_data1)}, tune_data1},
 	{{DTYPE_DCS_LWRITE, 1, 0, 0, 0,
 		sizeof(tune_data2)}, tune_data2},
-
-#if defined(CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_CMD_WQHD_PT_PANEL) || defined(CONFIG_FB_MSM_MIPI_MAGNA_OCTA_CMD_HD_PT_PANEL)
-	{{DTYPE_DCS_LWRITE, 1, 0, 0, 0,
-		sizeof(level1_key_disable)}, level1_key_disable},
-#endif
-#endif
 };
 
 static int char_to_int(char data1)
@@ -317,8 +254,8 @@ void print_tun_data(void)
 
 void free_tun_cmd(void)
 {
-	memset(tune_data1, 0, MDNIE_TUNE_FIRST_SIZE);
-	memset(tune_data2, 0, MDNIE_TUNE_SECOND_SIZE);
+	memset(tune_data1, 0, TUNESIZE1);
+	memset(tune_data2, 0, TUNESIZE2);
 }
 
 void sending_tuning_cmd(void)
@@ -351,38 +288,41 @@ void sending_tuning_cmd(void)
 
 static void update_mdnie_mode(void)
 {
-	char *source_1, *source_2;
-	int result, i = 0;
+	unsigned int result;
+	int i;
 
 	if (mdnie_msd == NULL)
 		return;
+
+	memset(LITE_CONTROL_1, 0, TUNESIZE1);
+	memset(LITE_CONTROL_2, 0, TUNESIZE2);
 
 	switch (mdnie_tun_state.scenario) {
 	case mDNIe_UI_MODE:
 		switch (mdnie_tun_state.background) {
 		case DYNAMIC_MODE:
-			source_1 = DYNAMIC_UI_1;
-			source_2 = DYNAMIC_UI_2;
+			memcpy(LITE_CONTROL_1, DYNAMIC_UI_1, TUNESIZE1);
+			memcpy(LITE_CONTROL_2, DYNAMIC_UI_2, TUNESIZE2);
 			break;
 		case STANDARD_MODE:
-			source_1 = STANDARD_UI_1;
-			source_2 = STANDARD_UI_2;
+			memcpy(LITE_CONTROL_1, STANDARD_UI_1, TUNESIZE1);
+			memcpy(LITE_CONTROL_2, STANDARD_UI_2, TUNESIZE2);
 			break;
 		case NATURAL_MODE:
-			source_1 = NATURAL_UI_1;
-			source_2 = NATURAL_UI_2;
+			memcpy(LITE_CONTROL_1, NATURAL_UI_1, TUNESIZE1);
+			memcpy(LITE_CONTROL_2, NATURAL_UI_2, TUNESIZE2);
 			break;
 		case MOVIE_MODE:
-			source_1 = MOVIE_UI_1;
-			source_2 = MOVIE_UI_2;
+			memcpy(LITE_CONTROL_1, MOVIE_UI_1, TUNESIZE1);
+			memcpy(LITE_CONTROL_2, MOVIE_UI_2, TUNESIZE2);
 			break;
 		case AUTO_MODE:
-			source_1 = AUTO_UI_1;
-			source_2 = AUTO_UI_2;
+			memcpy(LITE_CONTROL_1, AUTO_UI_1, TUNESIZE1);
+			memcpy(LITE_CONTROL_2, AUTO_UI_2, TUNESIZE2);
 			break;
 		case BYPASS_MODE:
-			source_1 = BYPASS_1;
-			source_2 = BYPASS_2;
+			memcpy(LITE_CONTROL_1, BYPASS_1, TUNESIZE1);
+			memcpy(LITE_CONTROL_2, BYPASS_2, TUNESIZE2);
 			break;
 		default:
 			return;
@@ -396,12 +336,12 @@ static void update_mdnie_mode(void)
 			case NATURAL_MODE:
 			case MOVIE_MODE:
 			case AUTO_MODE:
-				source_1 = OUTDOOR_VIDEO_1;
-				source_2 = OUTDOOR_VIDEO_2;
+				memcpy(LITE_CONTROL_1, OUTDOOR_VIDEO_1, TUNESIZE1);
+				memcpy(LITE_CONTROL_2, OUTDOOR_VIDEO_2, TUNESIZE2);
 				break;
 			case BYPASS_MODE:
-				source_1 = BYPASS_1;
-				source_2 = BYPASS_2;
+				memcpy(LITE_CONTROL_1, BYPASS_1, TUNESIZE1);
+				memcpy(LITE_CONTROL_2, BYPASS_2, TUNESIZE2);
 				break;
 			default:
 				return;
@@ -409,28 +349,28 @@ static void update_mdnie_mode(void)
 		} else {
 			switch (mdnie_tun_state.background) {
 			case DYNAMIC_MODE:
-				source_1 = DYNAMIC_VIDEO_1;
-				source_2 = DYNAMIC_VIDEO_2;
+				memcpy(LITE_CONTROL_1, DYNAMIC_VIDEO_1, TUNESIZE1);
+				memcpy(LITE_CONTROL_2, DYNAMIC_VIDEO_2, TUNESIZE2);
 				break;
 			case STANDARD_MODE:
-				source_1 = STANDARD_VIDEO_1;
-				source_2 = STANDARD_VIDEO_2;
+				memcpy(LITE_CONTROL_1, STANDARD_VIDEO_1, TUNESIZE1);
+				memcpy(LITE_CONTROL_2, STANDARD_VIDEO_2, TUNESIZE2);
 				break;
 			case NATURAL_MODE:
-				source_1 = NATURAL_VIDEO_1;
-				source_2 = NATURAL_VIDEO_2;
+				memcpy(LITE_CONTROL_1, NATURAL_VIDEO_1, TUNESIZE1);
+				memcpy(LITE_CONTROL_2, NATURAL_VIDEO_2, TUNESIZE2);
 				break;
 			case MOVIE_MODE:
-				source_1 = MOVIE_VIDEO_1;
-				source_2 = MOVIE_VIDEO_2;
+				memcpy(LITE_CONTROL_1, MOVIE_VIDEO_1, TUNESIZE1);
+				memcpy(LITE_CONTROL_2, MOVIE_VIDEO_2, TUNESIZE2);
 				break;
 			case AUTO_MODE:
-				source_1 = AUTO_VIDEO_1;
-				source_2 = AUTO_VIDEO_2;
+				memcpy(LITE_CONTROL_1, AUTO_VIDEO_1, TUNESIZE1);
+				memcpy(LITE_CONTROL_2, AUTO_VIDEO_2, TUNESIZE2);
 				break;
 			case BYPASS_MODE:
-				source_1 = BYPASS_1;
-				source_2 = BYPASS_2;
+				memcpy(LITE_CONTROL_1, BYPASS_1, TUNESIZE1);
+				memcpy(LITE_CONTROL_2, BYPASS_2, TUNESIZE2);
 				break;
 			default:
 				return;
@@ -445,16 +385,16 @@ static void update_mdnie_mode(void)
 		case MOVIE_MODE:
 		case AUTO_MODE:
 			if (mdnie_tun_state.outdoor == OUTDOOR_ON_MODE) {
-				source_1 = WARM_OUTDOOR_1;
-				source_2 = WARM_OUTDOOR_2;
+				memcpy(LITE_CONTROL_1, WARM_OUTDOOR_1, TUNESIZE1);
+				memcpy(LITE_CONTROL_2, WARM_OUTDOOR_2, TUNESIZE2);
 			} else {
-				source_1 = WARM_1;
-				source_2 = WARM_2;
+				memcpy(LITE_CONTROL_1, WARM_1, TUNESIZE1);
+				memcpy(LITE_CONTROL_2, WARM_2, TUNESIZE2);
 			}
 			break;
 		case BYPASS_MODE:
-			source_1 = BYPASS_1;
-			source_2 = BYPASS_2;
+			memcpy(LITE_CONTROL_1, BYPASS_1, TUNESIZE1);
+			memcpy(LITE_CONTROL_2, BYPASS_2, TUNESIZE2);
 			break;
 		default:
 			return;
@@ -468,16 +408,16 @@ static void update_mdnie_mode(void)
 		case MOVIE_MODE:
 		case AUTO_MODE:
 			if (mdnie_tun_state.outdoor == OUTDOOR_ON_MODE) {
-				source_1 = COLD_OUTDOOR_1;
-				source_2 = COLD_OUTDOOR_2;
+				memcpy(LITE_CONTROL_1, COLD_OUTDOOR_1, TUNESIZE1);
+				memcpy(LITE_CONTROL_2, COLD_OUTDOOR_2, TUNESIZE2);
 			} else {
-				source_1 = COLD_1;
-				source_2 = COLD_2;
+				memcpy(LITE_CONTROL_1, COLD_1, TUNESIZE1);
+				memcpy(LITE_CONTROL_2, COLD_2, TUNESIZE2);
 			}
 			break;
 		case BYPASS_MODE:
-			source_1 = BYPASS_1;
-			source_2 = BYPASS_2;
+			memcpy(LITE_CONTROL_1, BYPASS_1, TUNESIZE1);
+			memcpy(LITE_CONTROL_2, BYPASS_2, TUNESIZE2);
 			break;
 		default:
 			return;
@@ -490,25 +430,25 @@ static void update_mdnie_mode(void)
 		case NATURAL_MODE:
 		case MOVIE_MODE:
 			if (mdnie_tun_state.outdoor == OUTDOOR_ON_MODE) {
-				source_1 = CAMERA_OUTDOOR_1;
-				source_2 = CAMERA_OUTDOOR_2;
+				memcpy(LITE_CONTROL_1, CAMERA_OUTDOOR_1, TUNESIZE1);
+				memcpy(LITE_CONTROL_2, CAMERA_OUTDOOR_2, TUNESIZE2);
 			} else {
-				source_1 = CAMERA_1;
-				source_2 = CAMERA_2;
+				memcpy(LITE_CONTROL_1, CAMERA_1, TUNESIZE1);
+				memcpy(LITE_CONTROL_2, CAMERA_2, TUNESIZE2);
 			}
 			break;
 		case AUTO_MODE:
 			if (mdnie_tun_state.outdoor == OUTDOOR_ON_MODE) {
-				source_1 = CAMERA_OUTDOOR_1;
-				source_2 = CAMERA_OUTDOOR_2;
+				memcpy(LITE_CONTROL_1, CAMERA_OUTDOOR_1, TUNESIZE1);
+				memcpy(LITE_CONTROL_2, CAMERA_OUTDOOR_2, TUNESIZE2);
 			} else {
-				source_1 = AUTO_CAMERA_1;
-				source_2 = AUTO_CAMERA_2;
+				memcpy(LITE_CONTROL_1, AUTO_CAMERA_1, TUNESIZE1);
+				memcpy(LITE_CONTROL_2, AUTO_CAMERA_2, TUNESIZE2);
 			}
 			break;
 		case BYPASS_MODE:
-			source_1 = BYPASS_1;
-			source_2 = BYPASS_2;
+			memcpy(LITE_CONTROL_1, BYPASS_1, TUNESIZE1);
+			memcpy(LITE_CONTROL_2, BYPASS_2, TUNESIZE2);
 			break;
 		default:
 			return;
@@ -517,28 +457,28 @@ static void update_mdnie_mode(void)
 	case mDNIe_NAVI:
 		switch (mdnie_tun_state.background) {
 		case DYNAMIC_MODE:
-			source_1 = DYNAMIC_BROWSER_1;
-			source_2 = DYNAMIC_BROWSER_2;
+			memcpy(LITE_CONTROL_1, DYNAMIC_BROWSER_1, TUNESIZE1);
+			memcpy(LITE_CONTROL_2, DYNAMIC_BROWSER_2, TUNESIZE2);
 			break;
 		case STANDARD_MODE:
-			source_1 = STANDARD_BROWSER_1;
-			source_2 = STANDARD_BROWSER_2;
+			memcpy(LITE_CONTROL_1, STANDARD_BROWSER_1, TUNESIZE1);
+			memcpy(LITE_CONTROL_2, STANDARD_BROWSER_2, TUNESIZE2);
 			break;
 		case NATURAL_MODE:
-			source_1 = NATURAL_BROWSER_1;
-			source_2 = NATURAL_BROWSER_2;
+			memcpy(LITE_CONTROL_1, NATURAL_BROWSER_1, TUNESIZE1);
+			memcpy(LITE_CONTROL_2, NATURAL_BROWSER_2, TUNESIZE2);
 			break;
 		case MOVIE_MODE:
-			source_1 = MOVIE_BROWSER_1;
-			source_2 = MOVIE_BROWSER_2;
+			memcpy(LITE_CONTROL_1, MOVIE_BROWSER_1, TUNESIZE1);
+			memcpy(LITE_CONTROL_2, MOVIE_BROWSER_2, TUNESIZE2);
 			break;
 		case AUTO_MODE:
-			source_1 = AUTO_BROWSER_1;
-			source_2 = AUTO_BROWSER_2;
+			memcpy(LITE_CONTROL_1, AUTO_BROWSER_1, TUNESIZE1);
+			memcpy(LITE_CONTROL_2, AUTO_BROWSER_2, TUNESIZE2);
 			break;
 		case BYPASS_MODE:
-			source_1 = BYPASS_1;
-			source_2 = BYPASS_2;
+			memcpy(LITE_CONTROL_1, BYPASS_1, TUNESIZE1);
+			memcpy(LITE_CONTROL_2, BYPASS_2, TUNESIZE2);
 			break;
 		default:
 			return;
@@ -547,28 +487,28 @@ static void update_mdnie_mode(void)
 	case mDNIe_GALLERY:
 		switch (mdnie_tun_state.background) {
 		case DYNAMIC_MODE:
-			source_1 = DYNAMIC_GALLERY_1;
-			source_2 = DYNAMIC_GALLERY_2;
+			memcpy(LITE_CONTROL_1, DYNAMIC_GALLERY_1, TUNESIZE1);
+			memcpy(LITE_CONTROL_2, DYNAMIC_GALLERY_2, TUNESIZE2);
 			break;
 		case STANDARD_MODE:
-			source_1 = STANDARD_GALLERY_1;
-			source_2 = STANDARD_GALLERY_2;
+			memcpy(LITE_CONTROL_1, STANDARD_GALLERY_1, TUNESIZE1);
+			memcpy(LITE_CONTROL_2, STANDARD_GALLERY_2, TUNESIZE2);
 			break;
 		case NATURAL_MODE:
-			source_1 = NATURAL_GALLERY_1;
-			source_2 = NATURAL_GALLERY_2;
+			memcpy(LITE_CONTROL_1, NATURAL_GALLERY_1, TUNESIZE1);
+			memcpy(LITE_CONTROL_2, NATURAL_GALLERY_2, TUNESIZE2);
 			break;
 		case MOVIE_MODE:
-			source_1 = MOVIE_GALLERY_1;
-			source_2 = MOVIE_GALLERY_2;
+			memcpy(LITE_CONTROL_1, MOVIE_GALLERY_1, TUNESIZE1);
+			memcpy(LITE_CONTROL_2, MOVIE_GALLERY_2, TUNESIZE2);
 			break;
 		case AUTO_MODE:
-			source_1 = AUTO_GALLERY_1;
-			source_2 = AUTO_GALLERY_2;
+			memcpy(LITE_CONTROL_1, AUTO_GALLERY_1, TUNESIZE1);
+			memcpy(LITE_CONTROL_2, AUTO_GALLERY_2, TUNESIZE2);
 			break;
 		case BYPASS_MODE:
-			source_1 = BYPASS_1;
-			source_2 = BYPASS_2;
+			memcpy(LITE_CONTROL_1, BYPASS_1, TUNESIZE1);
+			memcpy(LITE_CONTROL_2, BYPASS_2, TUNESIZE2);
 			break;
 
 		default:
@@ -578,28 +518,28 @@ static void update_mdnie_mode(void)
 	case mDNIe_VT_MODE:
 		switch (mdnie_tun_state.background) {
 		case DYNAMIC_MODE:
-			source_1 = DYNAMIC_VT_1;
-			source_2 = DYNAMIC_VT_2;
+			memcpy(LITE_CONTROL_1, DYNAMIC_VT_1, TUNESIZE1);
+			memcpy(LITE_CONTROL_2, DYNAMIC_VT_2, TUNESIZE2);
 			break;
 		case STANDARD_MODE:
-			source_1 = STANDARD_VT_1;
-			source_2 = STANDARD_VT_2;
+			memcpy(LITE_CONTROL_1, STANDARD_VT_1, TUNESIZE1);
+			memcpy(LITE_CONTROL_2, STANDARD_VT_2, TUNESIZE2);
 			break;
 		case NATURAL_MODE:
-			source_1 = NATURAL_VT_1;
-			source_2 = NATURAL_VT_2;
+			memcpy(LITE_CONTROL_1, NATURAL_VT_1, TUNESIZE1);
+			memcpy(LITE_CONTROL_2, NATURAL_VT_2, TUNESIZE2);
 			break;
 		case MOVIE_MODE:
-			source_1 = MOVIE_VT_1;
-			source_2 = MOVIE_VT_2;
+			memcpy(LITE_CONTROL_1, MOVIE_VT_1, TUNESIZE1);
+			memcpy(LITE_CONTROL_2, MOVIE_VT_2, TUNESIZE2);
 			break;
 		case AUTO_MODE:
-			source_1 = AUTO_VT_1;
-			source_2 = AUTO_VT_2;
+			memcpy(LITE_CONTROL_1, AUTO_VT_1, TUNESIZE1);
+			memcpy(LITE_CONTROL_2, AUTO_VT_2, TUNESIZE2);
 			break;
 		case BYPASS_MODE:
-			source_1 = BYPASS_1;
-			source_2 = BYPASS_2;
+			memcpy(LITE_CONTROL_1, BYPASS_1, TUNESIZE1);
+			memcpy(LITE_CONTROL_2, BYPASS_2, TUNESIZE2);
 			break;
 
 		default:
@@ -609,28 +549,28 @@ static void update_mdnie_mode(void)
 	case mDNIe_BROWSER_MODE:
 		switch (mdnie_tun_state.background) {
 		case DYNAMIC_MODE:
-			source_1 = DYNAMIC_BROWSER_1;
-			source_2 = DYNAMIC_BROWSER_2;
+			memcpy(LITE_CONTROL_1, DYNAMIC_BROWSER_1, TUNESIZE1);
+			memcpy(LITE_CONTROL_2, DYNAMIC_BROWSER_2, TUNESIZE2);
 			break;
 		case STANDARD_MODE:
-			source_1 = STANDARD_BROWSER_1;
-			source_2 = STANDARD_BROWSER_2;
+			memcpy(LITE_CONTROL_1, STANDARD_BROWSER_1, TUNESIZE1);
+			memcpy(LITE_CONTROL_2, STANDARD_BROWSER_2, TUNESIZE2);
 			break;
 		case NATURAL_MODE:
-			source_1 = NATURAL_BROWSER_1;
-			source_2 = NATURAL_BROWSER_2;
+			memcpy(LITE_CONTROL_1, NATURAL_BROWSER_1, TUNESIZE1);
+			memcpy(LITE_CONTROL_2, NATURAL_BROWSER_2, TUNESIZE2);
 			break;
 		case MOVIE_MODE:
-			source_1 = MOVIE_BROWSER_1;
-			source_2 = MOVIE_BROWSER_2;
+			memcpy(LITE_CONTROL_1, MOVIE_BROWSER_1, TUNESIZE1);
+			memcpy(LITE_CONTROL_2, MOVIE_BROWSER_2, TUNESIZE2);
 			break;
 		case AUTO_MODE:
-			source_1 = AUTO_BROWSER_1;
-			source_2 = AUTO_BROWSER_2;
+			memcpy(LITE_CONTROL_1, AUTO_BROWSER_1, TUNESIZE1);
+			memcpy(LITE_CONTROL_2, AUTO_BROWSER_2, TUNESIZE2);
 			break;
 		case BYPASS_MODE:
-			source_1 = BYPASS_1;
-			source_2 = BYPASS_2;
+			memcpy(LITE_CONTROL_1, BYPASS_1, TUNESIZE1);
+			memcpy(LITE_CONTROL_2, BYPASS_2, TUNESIZE2);
 			break;
 		default:
 			return;
@@ -639,28 +579,28 @@ static void update_mdnie_mode(void)
 	case mDNIe_eBOOK_MODE:
 		switch (mdnie_tun_state.background) {
 		case DYNAMIC_MODE:
-			source_1 = DYNAMIC_EBOOK_1;
-			source_2 = DYNAMIC_EBOOK_2;
+			memcpy(LITE_CONTROL_1, DYNAMIC_EBOOK_1, TUNESIZE1);
+			memcpy(LITE_CONTROL_2, DYNAMIC_EBOOK_2, TUNESIZE2);
 			break;
 		case STANDARD_MODE:
-			source_1 = STANDARD_EBOOK_1;
-			source_2 = STANDARD_EBOOK_2;
+			memcpy(LITE_CONTROL_1, STANDARD_EBOOK_1, TUNESIZE1);
+			memcpy(LITE_CONTROL_2, STANDARD_EBOOK_2, TUNESIZE2);
 			break;
 		case NATURAL_MODE:
-			source_1 = NATURAL_EBOOK_1;
-			source_2 = NATURAL_EBOOK_2;
+			memcpy(LITE_CONTROL_1, NATURAL_EBOOK_1, TUNESIZE1);
+			memcpy(LITE_CONTROL_2, NATURAL_EBOOK_2, TUNESIZE2);
 			break;
 		case MOVIE_MODE:
-			source_1 = MOVIE_EBOOK_1;
-			source_2 = MOVIE_EBOOK_2;
+			memcpy(LITE_CONTROL_1, MOVIE_EBOOK_1, TUNESIZE1);
+			memcpy(LITE_CONTROL_2, MOVIE_EBOOK_2, TUNESIZE2);
 			break;
 		case AUTO_MODE:
-			source_1 = AUTO_EBOOK_1;
-			source_2 = AUTO_EBOOK_2;
+			memcpy(LITE_CONTROL_1, AUTO_EBOOK_1, TUNESIZE1);
+			memcpy(LITE_CONTROL_2, AUTO_EBOOK_2, TUNESIZE2);
 			break;
 		case BYPASS_MODE:
-			source_1 = BYPASS_1;
-			source_2 = BYPASS_2;
+			memcpy(LITE_CONTROL_1, BYPASS_1, TUNESIZE1);
+			memcpy(LITE_CONTROL_2, BYPASS_2, TUNESIZE2);
 			break;
 		default:
 			return;
@@ -673,12 +613,12 @@ static void update_mdnie_mode(void)
 		case NATURAL_MODE:
 		case MOVIE_MODE:
 		case AUTO_MODE:
-			source_1 = AUTO_EMAIL_1;
-			source_2 = AUTO_EMAIL_2;
+			memcpy(LITE_CONTROL_1, AUTO_EMAIL_1, TUNESIZE1);
+			memcpy(LITE_CONTROL_2, AUTO_EMAIL_2, TUNESIZE2);
 			break;
 		case BYPASS_MODE:
-			source_1 = BYPASS_1;
-			source_2 = BYPASS_2;
+			memcpy(LITE_CONTROL_1, BYPASS_1, TUNESIZE1);
+			memcpy(LITE_CONTROL_2, BYPASS_2, TUNESIZE2);
 			break;
 		default:
 			return;
@@ -686,41 +626,22 @@ static void update_mdnie_mode(void)
 	default:
 		return;
 	}
-
+/*
 	for (i = 0; i < 107; i++) {
 		if (i < 5)
 			LITE_CONTROL_1[i] = source_1[i];
 		LITE_CONTROL_2[i] = source_2[i];
 	}
-
-	i = 0;
-
+*/
 	if (hijack) {
-		if (offset_mode) {
-			for (i = 0; i < 24; i++) {
-					if (i == 24)
-						break;
-				override_color[i] = LITE_CONTROL_2[i + 18];
-				override_color[i] += offset_color[i];
-				if (override_color[i] > 255)
-					override_color[i] = 255;
-				if (override_color[i] < 0)
-					override_color[i] = 0;
-				LITE_CONTROL_2[i + 18] = override_color[i];
-			}
-		} else {
-				for (i = 0; i < 24; i++) {
-					if (i == 24)
-						break;
-				if (override_color[i] > 255)
-					override_color[i] = 255;
-				if (override_color[i] < 0)
-					override_color[i] = 0;
-			
-				LITE_CONTROL_2[i + 18] = override_color[i];
-			}
+		for (i = 0; i < 23; i++) {
+			if (override_color[i] > 255)
+				override_color[i] = 255;
+			if (override_color[i] < 0)
+				override_color[i] = 0;
+			LITE_CONTROL_2[i + 18] = override_color[i];
 		}
-
+/*
 		for (i = 0; i < 47; i++) {
 			if (custom_curve[i] > 255)
 				custom_curve[i] = 255;
@@ -738,41 +659,41 @@ static void update_mdnie_mode(void)
 
 			LITE_CONTROL_2[i + 90] = chroma_correction[i];
 		}
-
-		result = (LITE_CONTROL_1[4] >> (sharpen_bit));
+*/
+		result = (LITE_CONTROL_1[4] >> (SHARPEN_BIT));
 		if (sharpen) {
 			if (!(result & 1))
-				LITE_CONTROL_1[4] |= 1 << sharpen_bit;
+				LITE_CONTROL_1[4] |= 1 << SHARPEN_BIT;
 		} else {
 			if (result & 1)
-				LITE_CONTROL_1[4] &= ~(1 << sharpen_bit);
+				LITE_CONTROL_1[4] &= ~(1 << SHARPEN_BIT);
 		}
 
-		result = (LITE_CONTROL_1[4] >> (sharpen_extra_bit));
+		result = (LITE_CONTROL_1[4] >> (SHARPEN_EXTRA_BIT));
 		if (sharpen_extra) {
 			if (!(result & 1))
-				LITE_CONTROL_1[4] |= 1 << sharpen_extra_bit;
+				LITE_CONTROL_1[4] |= 1 << SHARPEN_EXTRA_BIT;
 		} else {
 			if (result & 1)
-				LITE_CONTROL_1[4] &= ~(1 << sharpen_extra_bit);
+				LITE_CONTROL_1[4] &= ~(1 << SHARPEN_EXTRA_BIT);
 		}
 
-		result = (LITE_CONTROL_1[4] >> (chroma_bit));
+		result = (LITE_CONTROL_1[4] >> (CHROMA_BIT));
 		if (chroma) {
 			if (!(result & 1))
-				LITE_CONTROL_1[4] |= 1 << chroma_bit;
+				LITE_CONTROL_1[4] |= 1 << CHROMA_BIT;
 		} else {
 			if (result & 1)
-				LITE_CONTROL_1[4] &= ~(1 << chroma_bit);
+				LITE_CONTROL_1[4] &= ~(1 << CHROMA_BIT);
 		}
 
-		result = (LITE_CONTROL_1[4] >> (gamma_bit));
+		result = (LITE_CONTROL_1[4] >> (GAMMA_BIT));
 		if (gamma) {
 			if (!(result & 1))
-				LITE_CONTROL_1[4] |= 1 << gamma_bit;
+				LITE_CONTROL_1[4] |= 1 << GAMMA_BIT;
 		} else {
 			if (result & 1)
-				LITE_CONTROL_1[4] &= ~(1 << gamma_bit);
+				LITE_CONTROL_1[4] &= ~(1 << GAMMA_BIT);
 		}
 
 		if (bypass)
@@ -780,16 +701,14 @@ static void update_mdnie_mode(void)
 		else
 			LITE_CONTROL_1[1] = 0x01;
 	} else {
-		for (i = 0; i < 24; i++) {
-			if (i == 24)
-				break;
+		for (i = 0; i < 23; i++) {
 			override_color[i] = LITE_CONTROL_2[i + 18];
 			if (override_color[i] > 255)
 				override_color[i] = 255;
 			if (override_color[i] < 0)
 				override_color[i] = 0;
 		}
-
+/*
 		for (i = 0; i < 47; i++) {
 			custom_curve[i] = LITE_CONTROL_2[i + 42];
 			if (custom_curve[i] > 255)
@@ -805,22 +724,19 @@ static void update_mdnie_mode(void)
 			if (chroma_correction[i] < 0)
 				chroma_correction[i] = 0;
 		}
-
-		LITE_CONTROL_1[4] = source_1[4];
-
-		result = (LITE_CONTROL_1[4] >> (sharpen_bit));
+*/
+		result = (LITE_CONTROL_1[4] >> (SHARPEN_BIT));
 		sharpen = result & 1;
 
-		result = (LITE_CONTROL_1[4] >> (sharpen_extra_bit));
+		result = (LITE_CONTROL_1[4] >> (SHARPEN_EXTRA_BIT));
 		sharpen_extra = result & 1;
 
-		result = (LITE_CONTROL_1[4] >> (chroma_bit));
+		result = (LITE_CONTROL_1[4] >> (CHROMA_BIT));
 		chroma = result & 1;
 
-		result = (LITE_CONTROL_1[4] >> (gamma_bit));
+		result = (LITE_CONTROL_1[4] >> (GAMMA_BIT));
 		gamma = result & 1;
 
-		LITE_CONTROL_1[1] = source_1[1];
 		if (LITE_CONTROL_1[1] == 0x00)
 			bypass = 1;
 		else if (LITE_CONTROL_1[1] == 0x01)
@@ -910,9 +826,9 @@ static ssize_t mode_store(struct device *dev,
 
 	sscanf(buf, "%d", &value);
 
-	if (value <= DYNAMIC_MODE)
+	if (value < DYNAMIC_MODE)
 		value = DYNAMIC_MODE;
-	if (value >= BYPASS_MODE)
+	if (value > BYPASS_MODE)
 		value = BYPASS_MODE;
 
 	//previous_mode = mdnie_tun_state.background;
@@ -945,9 +861,9 @@ static ssize_t scenario_store(struct device *dev,
 
 	sscanf(buf, "%d", &value);
 
-	if (value <= mDNIe_UI_MODE)
+	if (value < mDNIe_UI_MODE)
 		value = mDNIe_UI_MODE;
-	if (value >= mDNIe_EMAIL_MODE)
+	if (value > mDNIe_EMAIL_MODE)
 		value = mDNIe_EMAIL_MODE;
 
 	backup = mdnie_tun_state.scenario;
@@ -1049,7 +965,7 @@ static ssize_t outdoor_store(struct device *dev,
 
 	if (value < OUTDOOR_OFF_MODE)
 		value = OUTDOOR_OFF_MODE;
-	if (value >= OUTDOOR_ON_MODE)
+	if (value > OUTDOOR_ON_MODE)
 		value = OUTDOOR_ON_MODE;
 
 	backup = mdnie_tun_state.outdoor;
@@ -1223,7 +1139,7 @@ static ssize_t sensorRGB_store(struct device *dev,
 		DPRINT("%s: white_red = %d, white_green = %d, white_blue = %d\n", __func__, white_red, white_green, white_blue);
 
 			INPUT_PAYLOAD1(mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][0]);
-			memcpy(white_rgb_buf, mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][1], MDNIE_TUNE_FIRST_SIZE);
+			memcpy(white_rgb_buf, mdnie_tune_value[mdnie_tun_state.scenario][mdnie_tun_state.background][mdnie_tun_state.outdoor][1], TUNESIZE1);
 
 		white_rgb_buf[ADDRESS_SCR_WHITE_RED] = white_red;
 		white_rgb_buf[ADDRESS_SCR_WHITE_GREEN] = white_green;
@@ -1282,7 +1198,7 @@ static ssize_t effect_mask_show(struct kobject *kobj, struct kobj_attribute *att
 	return sprintf(buf, "Decimal:%u\nHex:0x%x\n", LITE_CONTROL_1[4], LITE_CONTROL_1[4]);
 }
 
-/* offset_mode */
+/* offset_mode 
 
 static ssize_t offset_mode_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
@@ -1302,7 +1218,7 @@ static ssize_t offset_mode_store(struct kobject *kobj,
 	mDNIe_Set_Mode();
 	return count;
 }
-
+*/
 /* sharpen */
 
 static ssize_t sharpen_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
@@ -1417,6 +1333,7 @@ static ssize_t scenario_value_show(struct kobject *kobj, struct kobj_attribute *
 }
 
 /* Custom Curve */
+#if 0
 #define show_one_curve(_name, bval, aval)			\
 static ssize_t _name##_show					\
 (struct kobject *kobj, struct kobj_attribute *attr, char *buf)	\
@@ -1492,7 +1409,8 @@ store_one_curve(gcurve21, 40, 41);
 store_one_curve(gcurve22, 42, 43);
 store_one_curve(gcurve23, 44, 45);
 store_one_curve(gcurve24, 46, 47);
-
+#endif
+#if 0
 #define show_one_cc(_name, firstval, secondval)			\
 static ssize_t _name##_show					\
 (struct kobject *kobj, struct kobj_attribute *attr, char *buf)	\
@@ -1540,7 +1458,7 @@ store_one_cc(cc_g3, 10, 11);
 store_one_cc(cc_b1, 12, 13);
 store_one_cc(cc_b2, 14, 15);
 store_one_cc(cc_b3, 16, 17);
-
+#endif
 /* Override Color */
 /*
 #define show_one_ovcolor(_name, redval, greenval, blueval)			\
@@ -1870,7 +1788,7 @@ static ssize_t cyan_store(struct kobject *kobj,
 }
 
 /* offset_black */
-
+#if 0
 static ssize_t offset_black_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
 	int localred = offset_color[19];
@@ -2101,8 +2019,9 @@ static ssize_t offset_cyan_store(struct kobject *kobj,
 
 	return count;
 }
+#endif
 MX_ATTR_RW(hijack);
-MX_ATTR_RW(offset_mode);
+//MX_ATTR_RW(offset_mode);
 MX_ATTR_RO(effect_mask);
 MX_ATTR_RW(sharpen);
 MX_ATTR_RW(sharpen_extra);
@@ -2114,7 +2033,7 @@ MX_ATTR_RO(scenario_value);
 
 static struct attribute *mdnie_control_attrs[] = {
 	&hijack_attr.attr,
-	&offset_mode_attr.attr,
+//	&offset_mode_attr.attr,
 	&effect_mask_attr.attr,
 	&sharpen_attr.attr,
 	&sharpen_extra_attr.attr,
@@ -2154,7 +2073,7 @@ static struct attribute *override_attrs[] = {
 static struct attribute_group override_attr_group = {
 	.attrs = override_attrs,
 };
-
+#if 0
 MX_ATTR_RW(offset_black);
 MX_ATTR_RW(offset_white);
 MX_ATTR_RW(offset_red);
@@ -2179,7 +2098,8 @@ static struct attribute *offset_attrs[] = {
 static struct attribute_group offset_attr_group = {
 	.attrs = offset_attrs,
 };
-
+#endif
+#if 0
 MX_ATTR_RW(gcurve1);
 MX_ATTR_RW(gcurve2);
 MX_ATTR_RW(gcurve3);
@@ -2263,12 +2183,12 @@ static struct attribute *cc_attrs[] = {
 static struct attribute_group cc_attr_group = {
 	.attrs = cc_attrs,
 };
-
+#endif
 static struct kobject *mdnie_control_kobj;
 static struct kobject *override_kobj;
-static struct kobject *offset_kobj;
-static struct kobject *gcurve_kobj;
-static struct kobject *cc_kobj;
+//static struct kobject *offset_kobj;
+//static struct kobject *gcurve_kobj;
+//static struct kobject *cc_kobj;
 
 static bool msd_initialized = false;
 void init_mdnie_class(void)
@@ -2352,7 +2272,7 @@ classfail:
 		pr_err("Failed to create override kobject!\n");
 		goto overridefail;
 	}
-
+/*
 	offset_kobj = kobject_create_and_add("offset", mdnie_control_kobj);
 	if (sysfs_create_group(offset_kobj, &offset_attr_group)) {
 		pr_err("Failed to create offset kobject!\n");
@@ -2370,9 +2290,9 @@ classfail:
 		pr_err("Failed to create cc kobject!\n");
 		goto ccfail;
 	}
-
+*/
 	goto success;
-
+/*
 ccfail:
 	kobject_put(cc_kobj);
 	cc_kobj = NULL;
@@ -2387,7 +2307,7 @@ offsetfail:
 	kobject_put(offset_kobj);
 	offset_kobj = NULL;
 	sysfs_remove_group(override_kobj, &override_attr_group);
-
+*/
 overridefail:
 	kobject_put(override_kobj);
 	override_kobj = NULL;
