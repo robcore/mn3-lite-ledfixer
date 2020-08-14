@@ -293,7 +293,7 @@ static char NATURAL_UI_2[] = {
 	0xec, //20 scr Cg Yg CYAN G
 	0x0d, //21 scr Rg Bg RED G
 	0xd0, //22 scr Cb Yr CYAN B
-	0x0b, //23 scr Rb Br RED b
+	0x0b, //23 scr Rb Br RED B
 	0xff, //24 scr Mr Mb MAGENTA R
 	0x00, //25 scr Gr Gb GREEN R
 	0x14, //26 scr Mg Mg MAGENTA G
