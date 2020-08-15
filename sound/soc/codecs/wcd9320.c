@@ -7798,13 +7798,7 @@ static int show_sound_value(unsigned int inputval)
 static ssize_t compander1_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%s: %d\n \
-						%s: %d\n, \
-						%s: %d\n \
-						%s: %d\n, \
-						%s: %d\n, \
-						%s: %d\n \
-						%s: %d\n",
+	return sprintf(buf, "%s: %d\n %s: %d\n %s: %d\n	%s: %d\n %s: %d\n %s: %d\n %s: %d\n",
 						"TAIKO_A_CDC_COMP1_B1_CTL", compread(TAIKO_A_CDC_COMP1_B1_CTL),
 						"TAIKO_A_CDC_COMP1_B2_CTL", compread(TAIKO_A_CDC_COMP1_B2_CTL),
 						"TAIKO_A_CDC_COMP1_B3_CTL", compread(TAIKO_A_CDC_COMP1_B3_CTL),
