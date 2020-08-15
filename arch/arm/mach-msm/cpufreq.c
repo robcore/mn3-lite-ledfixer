@@ -705,6 +705,7 @@ static int __init msm_cpufreq_register(void)
 	if (cpufreq_register_driver(&msm_cpufreq_driver))
 		pr_err("%s: Failed to register msm cpufreq!\n", __func__);
 	msm_thermal_device_init();
+	return 0;
 }
 
 device_initcall(msm_cpufreq_register);
