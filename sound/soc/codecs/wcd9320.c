@@ -680,7 +680,7 @@ static void write_hph_poweramp_gain(unsigned short reg, bool mute)
 
 static bool poweramp_active(void)
 {
-	return (hphl_active && hphr_active)
+	return (hphl_active && hphr_active);
 }
 
 static void update_speaker_gain(void)
