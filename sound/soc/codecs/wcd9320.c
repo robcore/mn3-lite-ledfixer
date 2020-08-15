@@ -7786,14 +7786,15 @@ static int show_sound_value(unsigned int inputval)
 }
 
 /*
-#define TAIKO_A_CDC_COMP1_B1_CTL			(0x370)
-#define TAIKO_A_CDC_COMP1_B2_CTL			(0x371)
-#define TAIKO_A_CDC_COMP1_B3_CTL			(0x372)
-#define TAIKO_A_CDC_COMP1_B4_CTL			(0x373)
-#define TAIKO_A_CDC_COMP1_B5_CTL			(0x374)
-#define TAIKO_A_CDC_COMP1_B6_CTL			(0x375)
-#define TAIKO_A_CDC_COMP1_SHUT_DOWN_STATUS			(0x376)
+TAIKO_A_CDC_COMP1_B1_CTL			(0x370)
+TAIKO_A_CDC_COMP1_B2_CTL			(0x371)
+TAIKO_A_CDC_COMP1_B3_CTL			(0x372)
+TAIKO_A_CDC_COMP1_B4_CTL			(0x373)
+TAIKO_A_CDC_COMP1_B5_CTL			(0x374)
+TAIKO_A_CDC_COMP1_B6_CTL			(0x375)
+TAIKO_A_CDC_COMP1_SHUT_DOWN_STATUS			(0x376)
  */
+
 #define compread(reg) wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, reg)
 static ssize_t compander1_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf)
@@ -7806,6 +7807,53 @@ static ssize_t compander1_show(struct kobject *kobj,
 						"COMP1_B5_CTL", compread(TAIKO_A_CDC_COMP1_B5_CTL),
 						"COMP1_B6_CTL", compread(TAIKO_A_CDC_COMP1_B6_CTL),
 						"COMP1_SHUT_DOWN_STATUS", compread(TAIKO_A_CDC_COMP1_SHUT_DOWN_STATUS));
+}
+/*
+TAIKO_A_RX_HPH_AUTO_CHOP			(0x1A4)
+TAIKO_A_RX_HPH_CHOP_CTL			(0x1A5)
+ */
+#define chopshow(reg) wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, reg)
+#define chopstore(reg, val) wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, reg, val)
+static ssize_t chopper_show(struct kobject *kobj,
+		struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%d\n", chopshow(TAIKO_A_RX_HPH_CHOP_CTL));
+}
+
+static ssize_t chopper_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count) {
+	int uval;
+
+	sscanf(buf, "%d", &uval);
+
+	if (uval < 0)
+		uval = 0;
+	if (uval > 255)
+		uval = 255;
+
+	chopstore(TAIKO_A_RX_HPH_CHOP_CTL, uval);
+	return count;
+}
+
+static ssize_t autochopper_show(struct kobject *kobj,
+		struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%d\n", chopshow(TAIKO_A_RX_HPH_AUTO_CHOP));
+}
+
+static ssize_t autochopper_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count) {
+	int uval;
+
+	sscanf(buf, "%d", &uval);
+
+	if (uval < 0)
+		uval = 0;
+	if (uval > 255)
+		uval = 255;
+
+	chopstore(TAIKO_A_RX_HPH_AUTO_CHOP, uval);
+	return count;
 }
 
 static ssize_t headphone_gain_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
@@ -8381,6 +8429,16 @@ static struct kobj_attribute compander1_attribute =
 		compander1_show,
 		NULL);
 
+static struct kobj_attribute chopper_attribute =
+	__ATTR(chopper, 0644,
+		chopper_show,
+		chopper_store);
+
+static struct kobj_attribute autochopper_attribute =
+	__ATTR(autochopper, 0644,
+		autochopper_show,
+		autochopper_store);
+
 static struct kobj_attribute headphone_gain_attribute =
 	__ATTR(headphone_gain, 0644,
 		headphone_gain_show,
@@ -8478,6 +8536,8 @@ static struct kobj_attribute hph_pa_bias_attribute =
 
 static struct attribute *sound_control_attrs[] = {
 		&compander1_attribute.attr,
+		&chopper_attribute.attr,
+		&autochopper_attribute.attr,
 		&headphone_gain_attribute.attr,
 		&hph_poweramp_gain_attribute.attr,
 		&hph_poweramp_gain_raw_attribute.attr,
