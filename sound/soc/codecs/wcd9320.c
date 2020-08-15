@@ -7813,14 +7813,14 @@ static int show_sound_value(unsigned int inputval)
 }
 
 /*
-TAIKO_A_CDC_COMP1_B1_CTL			(0x370)
-TAIKO_A_CDC_COMP1_B2_CTL			(0x371)
-TAIKO_A_CDC_COMP1_B3_CTL			(0x372)
-TAIKO_A_CDC_COMP1_B4_CTL			(0x373)
-TAIKO_A_CDC_COMP1_B5_CTL			(0x374)
-TAIKO_A_CDC_COMP1_B6_CTL			(0x375)
-TAIKO_A_CDC_COMP1_SHUT_DOWN_STATUS			(0x376)
- */
+COMP1_B1_CTL 0x370
+COMP1_B2_CTL 0x371
+COMP1_B3_CTL 0x372
+COMP1_B4_CTL 0x373
+COMP1_B5_CTL 0x374
+COMP1_B6_CTL 0x375
+COMP1_SHUT_DOWN_STATUS 0x376
+*/
 
 #define compread(reg) wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, reg)
 static ssize_t compander1_show(struct kobject *kobj,
@@ -7836,9 +7836,9 @@ static ssize_t compander1_show(struct kobject *kobj,
 						"COMP1_SHUT_DOWN_STATUS", compread(TAIKO_A_CDC_COMP1_SHUT_DOWN_STATUS));
 }
 /*
-TAIKO_A_RX_HPH_AUTO_CHOP			(0x1A4)
-TAIKO_A_RX_HPH_CHOP_CTL			(0x1A5)
- */
+TAIKO_A_RX_HPH_AUTO_CHOP 0x1A4
+TAIKO_A_RX_HPH_CHOP_CTL 0x1A5
+*/
 #define chopshow(reg) wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, reg)
 #define chopstore(reg, val) wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, reg, val)
 static ssize_t chopper_show(struct kobject *kobj,
