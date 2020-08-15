@@ -581,11 +581,11 @@ static u32 sc_peak_det_timeout = 15;
 static u32 sc_rms_meter_div_fact = 15;
 static u32 sc_rms_meter_resamp_fact = 240;
 static u8 hph_pa_bias = 0x55;
-unsigned int anc_delay;
+unsigned int anc_delay = 0;
 static bool hphl_active;
 static bool hphr_active;
-static u32 hph_chopper;
-static u32 hph_autochopper;
+static u32 hph_chopper = 0x24;
+static u32 hph_autochopper = 0x38;
 
 static bool hpwidget(void)
 {
@@ -634,9 +634,11 @@ static void write_hph_poweramp_gain(unsigned short reg, bool mute)
 	bool change;
 	unsigned int local_cached_gain;
 
-	if (!hph_pa_enabled)
+	if (!hph_pa_enabled) {
+		hphl_active = false;
+		hphr_active = false;
 		return;
-
+	}
 	if (reg != WCD9XXX_A_RX_HPH_L_GAIN &&
 		reg != WCD9XXX_A_RX_HPH_R_GAIN)
 		return;
