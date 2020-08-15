@@ -582,6 +582,8 @@ static u32 sc_rms_meter_div_fact = 15;
 static u32 sc_rms_meter_resamp_fact = 240;
 static u8 hph_pa_bias = 0x55;
 unsigned int anc_delay;
+static bool hphl_active;
+static bool hphr_active;
 
 static bool hpwidget(void)
 {
@@ -637,13 +639,25 @@ static void write_hph_poweramp_gain(unsigned short reg, bool mute)
 		reg != WCD9XXX_A_RX_HPH_R_GAIN)
 		return;
 
-	if (mute)
-		local_cached_gain = 0;
-	else if (reg == WCD9XXX_A_RX_HPH_L_GAIN)
-		local_cached_gain = hphl_pa_cached_gain;
-	else if (reg == WCD9XXX_A_RX_HPH_R_GAIN)
-		local_cached_gain = hphr_pa_cached_gain;
 
+
+	if (reg == WCD9XXX_A_RX_HPH_L_GAIN) {
+		if (mute) {
+			local_cached_gain = 0;
+			hphl_active = false;
+		} else {
+			local_cached_gain = hphl_pa_cached_gain;
+			hphl_active = true;
+		}
+	} else if (reg == WCD9XXX_A_RX_HPH_R_GAIN) {
+		if (mute) {
+			local_cached_gain = 0;
+			hphr_active = false;
+		} else {
+			local_cached_gain = hphr_pa_cached_gain;
+			hphr_active = true;
+		}
+	}
 	snd_soc_update_bits(direct_codec, reg, 32, 32);
 
 	val = local_cached_gain & hph_poweramp_mask;
@@ -664,7 +678,13 @@ static void write_hph_poweramp_gain(unsigned short reg, bool mute)
 	mutex_unlock(&direct_codec->mutex);
 }
 
-static void update_speaker_gain(void) {
+static bool poweramp_active(void)
+{
+	return (hphl_active && hphr_active)
+}
+
+static void update_speaker_gain(void)
+{
 	if (!spkwidget)
 		return;
 	lock_sound_control(&sound_control_codec_ptr->core_res, 1);
@@ -3868,7 +3888,11 @@ static int taiko_hph_pa_event(struct snd_soc_dapm_widget *w,
 			else if (w->shift == 4)
 				write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_R_GAIN, false);
 		}
-		pr_info("%s: hpwidget enabled\n", __func__);
+		if (w->shift == 5)
+			pr_info("%s: hpwidget_left enabled\n", __func__);
+		else if (w->shift == 4)
+			pr_info("%s: hpwidget_right enabled\n", __func__);
+
 		break;
 	case SND_SOC_DAPM_PRE_PMD:
 		if (hph_pa_enabled) {
@@ -4777,7 +4801,7 @@ static int taiko_prepare(struct snd_pcm_substream *substream,
 			taiko_p->dai[dai->id].bit_width,
 			taiko_p->comp_enabled[COMPANDER_1]);
 
-	if (!taiko_p->comp_enabled[COMPANDER_1]) {
+	if (!taiko_p->comp_enabled[COMPANDER_1] && !poweramp_active()) {
 			taiko_p->clsh_d.hs_perf_mode_enabled = false;
 			snd_soc_update_bits(codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20);
 			pr_info("%s(): HS peformance mode Disabled - No Headphone Playback", __func__);
@@ -4815,14 +4839,14 @@ static int taiko_prepare(struct snd_pcm_substream *substream,
 			taiko_p->dai[dai->id].bit_width,
 			taiko_p->comp_enabled[COMPANDER_1]);
 
-	if (taiko_p->comp_enabled[COMPANDER_1] && uhqa_mode) {
+	if ((taiko_p->comp_enabled[COMPANDER_1] || poweramp_active()) && uhqa_mode) {
 		taiko_p->clsh_d.hs_perf_mode_enabled = true;
 		if (snd_soc_update_bits(codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x00) >= 0)
 			pr_info("%s: uhqa_mode enabled", __func__);
 	} else if ((taiko_p->dai[dai->id].rate == 192000 ||
 		taiko_p->dai[dai->id].rate == 96000) &&
 	    (taiko_p->dai[dai->id].bit_width == 24) &&
-	    (taiko_p->comp_enabled[COMPANDER_1])) {
+	    (taiko_p->comp_enabled[COMPANDER_1] || poweramp_active())) {
 		taiko_p->clsh_d.hs_perf_mode_enabled = true;
 		if (snd_soc_update_bits(codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x00) >= 0)
 			pr_info("%s: uhqa_mode enabled", __func__);
@@ -8416,13 +8440,6 @@ static ssize_t anc_delay_store(struct kobject *kobj,
 	anc_delay = uval;
 	return count;
 }
-/*
-static void update_bias(unsigned short reg)
-{
-	if (reg == TAIKO_A_RX_HPH_BIAS_PA)
-		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, reg, hph_pa_bias);
-}
-*/
 
 static struct kobj_attribute compander1_attribute =
 	__ATTR(compander1, 0444,
