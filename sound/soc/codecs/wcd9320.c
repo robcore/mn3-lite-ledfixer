@@ -7826,7 +7826,7 @@ TAIKO_A_CDC_COMP1_SHUT_DOWN_STATUS			(0x376)
 static ssize_t compander1_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%s: %d\n %s: %d\n %s: %d\n %s: %d\n %s: %d\n %s: %d\n %s: %d\n",
+	return sprintf(buf, "%s: %d\n%s: %d\n%s: %d\n%s: %d\n%s: %d\n%s: %d\n%s: %d\n",
 						"COMP1_B1_CTL", compread(TAIKO_A_CDC_COMP1_B1_CTL),
 						"COMP1_B2_CTL", compread(TAIKO_A_CDC_COMP1_B2_CTL),
 						"COMP1_B3_CTL", compread(TAIKO_A_CDC_COMP1_B3_CTL),
