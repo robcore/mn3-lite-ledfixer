@@ -1,0 +1,1348 @@
+D/audio_route(  523): ---- alloc_mixer_state ==============
+D/qdutils (  490): DEBUG_CALC_FPS: 0
+D/qdutils (  490): period: 10
+D/qdutils (  490): ignorethresh_us: 500000
+D/audio_route(  523): ++++ audio_route_update_mixer ==============
+D/audio_route(  523): Setting mixer control: VEQ Enable
+D/audio_route(  523): Setting mixer control: value: 1
+D/audio_route(  523): Setting mixer control: Internal Route Config
+D/audio_route(  523): Setting mixer control: value: 5
+D/audio_route(  523): Setting mixer control: EAR PA Gain, value: 4
+D/audio_route(  523): Setting mixer control: HPHL Volume
+D/audio_route(  523): Setting mixer control: value: 0
+D/audio_route(  523): Setting mixer control: HPHR Volume
+D/audio_route(  523): Setting mixer control: value: 0
+D/audio_route(  523): Setting mixer control: LINEOUT1 Volume
+D/audio_route(  523): Setting mixer control: value: 0
+D/audio_route(  523): Setting mixer control: LINEOUT2 Volume
+D/audio_route(  523): Setting mixer control: value: 0
+D/audio_route(  523): Setting mixer control: LINEOUT3 Volume
+D/audio_route(  523): Setting mixer control: value: 0
+D/audio_route(  523): Setting mixer control: LINEOUT4 Volume
+D/audio_route(  523): Setting mixer control: value: 0
+D/audio_route(  523): Setting mixer control: SPK DRV Volume
+D/audio_route(  523): Setting mixer control: value: 0
+D/audio_route(  523): Setting mixer control: RX1 Digital Volume
+D/audio_route(  523): Setting mixer control: value: 0
+D/audio_route(  523): Setting mixer control: RX2 Digital Volume
+D/audio_route(  523): Setting mixer control: value: 0
+D/audio_route(  523): Setting mixer control: RX3 Digital Volume
+D/audio_route(  523): Setting mixer control: value: 0
+D/audio_route(  523): Setting mixer control: RX4 Digital Volume
+D/audio_route(  523): Setting mixer control: value: 0
+D/audio_route(  523): Setting mixer control: RX5 Digital Volume
+D/audio_route(  523): Setting mixer control: value: 0
+D/audio_route(  523): Setting mixer control: RX6 Digital Volume
+D/audio_route(  523): Setting mixer control: value: 0
+D/audio_route(  523): Setting mixer control: RX7 Digital Volume
+D/audio_route(  523): Setting mixer control: value: 0
+D/audio_route(  523): Setting mixer control: DEC1 Volume
+D/audio_route(  523): Setting mixer control: value: 0
+D/audio_route(  523): Setting mixer control: DEC2 Volume
+D/audio_route(  523): Setting mixer control: value: 0
+D/audio_route(  523): Setting mixer control: DEC3 Volume
+D/audio_route(  523): Setting mixer control: value: 0
+D/audio_route(  523): Setting mixer control: DEC4 Volume
+D/audio_route(  523): Setting mixer control: value: 0
+D/audio_route(  523): Setting mixer control: DEC5 Volume
+D/audio_route(  523): Setting mixer control: value: 0
+D/audio_route(  523): Setting mixer control: DEC6 Volume
+D/audio_route(  523): Setting mixer control: value: 0
+D/audio_route(  523): Setting mixer control: DEC7 Volume
+D/audio_route(  523): Setting mixer control: value: 0
+D/audio_route(  523): Setting mixer control: DEC8 Volume
+D/audio_route(  523): Setting mixer control: value: 0
+D/audio_route(  523): Setting mixer control: DEC9 Volume
+D/audio_route(  523): Setting mixer control: value: 0
+D/audio_route(  523): Setting mixer control: DEC10 Volume
+D/audio_route(  523): Setting mixer control: value: 0
+D/audio_route(  523): Setting mixer control: SLIM RX1 MUX, value: 1
+D/audio_route(  523): ------ audio_route_update_mixer ==============
+D/audio_route(  523): ---- audio_route_init ==============
+E/msm8974_platform(  523): platform_init: Failed to init hardware info
+V/msm8974_platform(  523): platform_init: DLOPEN successful for libacdbloader.so
+D/ACDB-LOADER(  523): ACDB -> Load file: /etc//Bluetooth_cal.acdb
+D/ACDB-LOADER(  523): ACDB -> Load file: /etc//General_cal.acdb
+D/ACDB-LOADER(  523): ACDB -> Load file: /etc//Global_cal.acdb
+D/ACDB-LOADER(  523): ACDB -> Load file: /etc//Handset_cal.acdb
+D/ACDB-LOADER(  523): ACDB -> Load file: /etc//Hdmi_cal.acdb
+D/ACDB-LOADER(  523): ACDB -> Load file: /etc//Headset_cal.acdb
+D/ACDB-LOADER(  523): ACDB -> Load file: /etc//Speaker_cal.acdb
+D/ACDB-LOADER(  523): ACDB -> ACDB_CMD_INITIALIZE_V2
+D/        (  523): [ACDB Command]->SW Minor/Major/Revision version mismatch warning /etc//Bluetooth_cal.acdb
+I/Xposed  (  545): Found Xposed class 'de/robv/android/xposed/XposedBridge', now initializing
+D/        (  523): [ACDB Command]->ACDB Sw Major = 3, ACDB Sw Minor = 0, ACDB Sw Revision = 0
+D/        (  523): [ACDB Command]->ACDB File Major = 3, ACDB File Minor = 0, ACDB File Revision = 2
+D/        (  523): [ACDB Command]->SW Minor/Major/Revision version mismatch warning /etc//General_cal.acdb
+D/        (  523): [ACDB Command]->ACDB Sw Major = 3, ACDB Sw Minor = 0, ACDB Sw Revision = 0
+D/        (  523): [ACDB Command]->ACDB File Major = 3, ACDB File Minor = 0, ACDB File Revision = 2
+D/        (  523): [ACDB Command]->SW Minor/Major/Revision version mismatch warning /etc//Global_cal.acdb
+D/        (  523): [ACDB Command]->ACDB Sw Major = 3, ACDB Sw Minor = 0, ACDB Sw Revision = 0
+D/        (  523): [ACDB Command]->ACDB File Major = 3, ACDB File Minor = 0, ACDB File Revision = 2
+D/        (  523): [ACDB Command]->SW Minor/Major/Revision version mismatch warning /etc//Handset_cal.acdb
+D/        (  523): [ACDB Command]->ACDB Sw Major = 3, ACDB Sw Minor = 0, ACDB Sw Revision = 0
+D/        (  523): [ACDB Command]->ACDB File Major = 3, ACDB File Minor = 0, ACDB File Revision = 2
+D/        (  523): [ACDB Command]->SW Minor/Major/Revision version mismatch warning /etc//Hdmi_cal.acdb
+D/        (  523): [ACDB Command]->ACDB Sw Major = 3, ACDB Sw Minor = 0, ACDB Sw Revision = 0
+D/        (  523): [ACDB Command]->ACDB File Major = 3, ACDB File Minor = 0, ACDB File Revision = 2
+D/        (  523): [ACDB Command]->SW Minor/Major/Revision version mismatch warning /etc//Headset_cal.acdb
+D/        (  523): [ACDB Command]->ACDB Sw Major = 3, ACDB Sw Minor = 0, ACDB Sw Revision = 0
+D/        (  523): [ACDB Command]->ACDB File Major = 3, ACDB File Minor = 0, ACDB File Revision = 2
+E/libcac2gpu(  537): cac2gpu_mem_alloc() allocating 3284992 bytes
+D/        (  523): [ACDB Command]->SW Minor/Major/Revision version mismatch warning /etc//Speaker_cal.acdb
+D/        (  523): [ACDB Command]->ACDB Sw Major = 3, ACDB Sw Minor = 0, ACDB Sw Revision = 0
+D/        (  523): [ACDB Command]->ACDB File Major = 3, ACDB File Minor = 0, ACDB File Revision = 2
+D/ACDB-LOADER(  523): ACDB -> ACPH INIT
+D/        (  523): [ACPH]->Online service registered with ACPH
+E/Diag_Lib(  523):  Diag_LSM_Init: Failed to open handle to diag driver, error = 2
+E/Diag_Lib(  523):  diagpkt_tbl_reg: Registration failed.
+D/        (  523): [ACPH]->ACPH init success
+D/ACDB-LOADER(  523): ACDB -> RTAC INIT
+D/        (  523): [ACPH]->DSP RTC service registered with ACPH
+D/ACDB-LOADER(  523): ACDB -> ADIE RTAC INIT
+D/        (  523): [ACPH]->ADIE RTC service registered with ACPH
+D/ACDB-LOADER(  523): No existing ION info in ACDB driver
+D/ACDB-LOADER(  523): ACDB -> ION_IOC_ALLOC
+D/ACDB-LOADER(  523): ACDB -> ION_IOC_SHARE
+D/ACDB-LOADER(  523): ACDB -> MMAP ADDR
+D/ACDB-LOADER(  523): ACDB -> register MEM to ACDB driver: 0xb2b91000
+D/ACDB-LOADER(  523): ACDB -> send_asm_topology
+D/ACDB-LOADER(  523): ACDB -> ACDB_CMD_GET_AUDPROC_STREAM_TOPOLOGY_ID
+D/ACDB-LOADER(  523): ACDB -> send_adm_custom_topology
+D/ACDB-LOADER(  523): ACDB -> ACDB_CMD_GET_AUDIO_COPP_TOPOLOGIES
+D/ACDB-LOADER(  523): ACDB -> AUDIO_SET_ADM_CUSTOM_TOPOLOGY
+D/ACDB-LOADER(  523): ACDB -> send_asm_custom_topology
+D/ACDB-LOADER(  523): ACDB -> ACDB_CMD_GET_AUDIO_POPP_TOPOLOGIES
+D/        (  523): ACDBFILE_MGR: Property for the pid 00012E48 not found
+D/        (  523): ACDB_COMMAND: Failed to fetch the property info for pid 00012E48 
+E/ACDB-LOADER(  523): Error: ACDB get asm topologies returned = -18
+D/ACDB-LOADER(  523): ACDB -> AUDIO_SET_ASM_CUSTOM_TOPOLOGY
+D/ACDB-LOADER(  523): send mbhc data
+E/libcac2gpu(  537): cac2gpu_mem_alloc() allocating 3284992 bytes
+E/ACDB-LOADER(  523): Error opening MBHC file 13
+E/ACDB-LOADER(  523): Error opening anc file 13
+D/ACDB-LOADER(  523): ACDB -> init done!
+V/audio_hw_primary(  523): adev_open: DLOPEN successful for /system/lib/soundfx/libqcomvisualizer.so
+V/audio_hw_primary(  523): adev_open: DLOPEN successful for /system/lib/soundfx/libaudioeffectoffload.so
+E/audio_hw_primary(  523): can not make /data/snd/hal_output.pcm 
+E/audio_hw_primary(  523): can not make /data/snd/hal_output_LowLatency.pcm 
+E/audio_hw_primary(  523): can not make /data/snd/hal_output_Hdmi.pcm 
+E/audio_hw_primary(  523): can not make /data/snd/hal_output_LowLatency.pcm 
+V/audio_hw_primary(  523): adev_open: exit
+V/ListenService(  523): loadAudioInterface returned status 0
+V/ListenService(  523): getInstance returns 0xb315b280, mNumInstances set to 1
+V/ListenService(  523): instantiate: call addService
+V/ListenService(  523): instantiate returns
+I/AudioPolicyService(  523): AudioPolicyService CSTOR in new mode
+E/librnrgpu(  537): rnrgpu_mem_alloc() allocating 3313664 bytes
+V/AudioPolicyManager(  523): loadHwModules() loading module primary
+V/AudioPolicyManager(  523): loadHwModule() loading output primary
+V/AudioPolicyManager(  523): loadSamplingRates() adding rate 44100
+V/AudioPolicyManager(  523): loadSamplingRates() adding rate 48000
+V/AudioPolicyManager(  523): loadOutChannels() AUDIO_CHANNEL_OUT_STEREO
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_CHANNEL_OUT_STEREO
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_FORMAT_PCM_16_BIT
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_DEVICE_OUT_EARPIECE
+V/AudioPolicyManager(  523): DeviceVector::refreshTypes() mDeviceTypes 00000001
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_DEVICE_OUT_SPEAKER
+V/AudioPolicyManager(  523): DeviceVector::refreshTypes() mDeviceTypes 00000003
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_DEVICE_OUT_WIRED_HEADSET
+V/AudioPolicyManager(  523): DeviceVector::refreshTypes() mDeviceTypes 00000007
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_DEVICE_OUT_WIRED_HEADPHONE
+V/AudioPolicyManager(  523): DeviceVector::refreshTypes() mDeviceTypes 0000000f
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_DEVICE_OUT_ALL_SCO
+V/AudioPolicyManager(  523): DeviceVector::refreshTypes() mDeviceTypes 0000007f
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_DEVICE_OUT_EXTERNAL_WIFI
+V/AudioPolicyManager(  523): DeviceVector::refreshTypes() mDeviceTypes 0080007f
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_DEVICE_OUT_ANLG_DOCK_HEADSET
+V/AudioPolicyManager(  523): DeviceVector::refreshTypes() mDeviceTypes 0080087f
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_OUTPUT_FLAG_PRIMARY
+V/AudioPolicyManager(  523): loadOutput() adding output Supported Devices 80087f, mFlags 0002
+V/AudioPolicyManager(  523): loadHwModule() loading output hdmi
+V/AudioPolicyManager(  523): loadSamplingRates() adding rate 48000
+V/AudioPolicyManager(  523): loadOutChannels() dynamic
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_FORMAT_PCM_16_BIT
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_DEVICE_OUT_AUX_DIGITAL
+V/AudioPolicyManager(  523): DeviceVector::refreshTypes() mDeviceTypes 00000400
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_OUTPUT_FLAG_MULTI_CH
+V/AudioPolicyManager(  523): loadOutput() adding output Supported Devices 0400, mFlags 0080
+V/AudioPolicyManager(  523): loadHwModule() loading output compress_offload
+V/AudioPolicyManager(  523): loadSamplingRates() adding rate 11025
+V/AudioPolicyManager(  523): loadSamplingRates() adding rate 16000
+V/AudioPolicyManager(  523): loadSamplingRates() adding rate 22050
+V/AudioPolicyManager(  523): loadSamplingRates() adding rate 32000
+V/AudioPolicyManager(  523): loadSamplingRates() adding rate 44100
+V/AudioPolicyManager(  523): loadSamplingRates() adding rate 48000
+V/AudioPolicyManager(  523): loadOutChannels() AUDIO_CHANNEL_OUT_MONO
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_CHANNEL_OUT_MONO
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_CHANNEL_OUT_STEREO
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_CHANNEL_OUT_QUAD
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_CHANNEL_OUT_5POINT1
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_CHANNEL_OUT_7POINT1
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_FORMAT_MP3
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_FORMAT_AAC_LC
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_FORMAT_AAC_HE_V1
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_FORMAT_AAC_HE_V2
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_FORMAT_AC3
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_FORMAT_E_AC3
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_DEVICE_OUT_EARPIECE
+V/AudioPolicyManager(  523): DeviceVector::refreshTypes() mDeviceTypes 00000001
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_DEVICE_OUT_SPEAKER
+V/AudioPolicyManager(  523): DeviceVector::refreshTypes() mDeviceTypes 00000003
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_DEVICE_OUT_WIRED_HEADSET
+V/AudioPolicyManager(  523): DeviceVector::refreshTypes() mDeviceTypes 00000007
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_DEVICE_OUT_WIRED_HEADPHONE
+V/AudioPolicyManager(  523): DeviceVector::refreshTypes() mDeviceTypes 0000000f
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_DEVICE_OUT_ALL_SCO
+V/AudioPolicyManager(  523): DeviceVector::refreshTypes() mDeviceTypes 0000007f
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_DEVICE_OUT_EXTERNAL_WIFI
+V/AudioPolicyManager(  523): DeviceVector::refreshTypes() mDeviceTypes 0080007f
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_DEVICE_OUT_ANLG_DOCK_HEADSET
+V/AudioPolicyManager(  523): DeviceVector::refreshTypes() mDeviceTypes 0080087f
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_OUTPUT_FLAG_DIRECT
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_OUTPUT_FLAG_COMPRESS_OFFLOAD
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_OUTPUT_FLAG_NON_BLOCKING
+V/AudioPolicyManager(  523): loadOutput() adding output Supported Devices 80087f, mFlags 0031
+V/AudioPolicyManager(  523): loadHwModule() loading input primary
+V/AudioPolicyManager(  523): loadSamplingRates() adding rate 8000
+V/AudioPolicyManager(  523): loadSamplingRates() adding rate 11025
+V/AudioPolicyManager(  523): loadSamplingRates() adding rate 12000
+V/AudioPolicyManager(  523): loadSamplingRates() adding rate 16000
+V/AudioPolicyManager(  523): loadSamplingRates() adding rate 22050
+V/AudioPolicyManager(  523): loadSamplingRates() adding rate 24000
+V/AudioPolicyManager(  523): loadSamplingRates() adding rate 32000
+V/AudioPolicyManager(  523): loadSamplingRates() adding rate 44100
+V/AudioPolicyManager(  523): loadSamplingRates() adding rate 48000
+V/AudioPolicyManager(  523): loadInChannels() AUDIO_CHANNEL_IN_MONO
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_CHANNEL_IN_MONO
+V/AudioPolicyManager(  523): loadInChannels() adding channelMask 0010
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_CHANNEL_IN_STEREO
+V/AudioPolicyManager(  523): loadInChannels() adding channelMask 000c
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_CHANNEL_IN_FRONT_BACK
+V/AudioPolicyManager(  523): loadInChannels() adding channelMask 0030
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_CHANNEL_IN_VOICE_UPLINK
+V/AudioPolicyManager(  523): loadInChannels() adding channelMask 4000
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_CHANNEL_IN_VOICE_DNLINK
+V/AudioPolicyManager(  523): loadInChannels() adding channelMask 8000
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_FORMAT_PCM_16_BIT
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_DEVICE_IN_BUILTIN_MIC
+V/AudioPolicyManager(  523): DeviceVector::refreshTypes() mDeviceTypes 80000004
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_DEVICE_IN_BLUETOOTH_SCO_HEADSET
+V/AudioPolicyManager(  523): DeviceVector::refreshTypes() mDeviceTypes 8000000c
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_DEVICE_IN_WIRED_HEADSET
+V/AudioPolicyManager(  523): DeviceVector::refreshTypes() mDeviceTypes 8000001c
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_DEVICE_IN_AUX_DIGITAL
+V/AudioPolicyManager(  523): DeviceVector::refreshTypes() mDeviceTypes 8000003c
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_DEVICE_IN_VOICE_CALL
+V/AudioPolicyManager(  523): DeviceVector::refreshTypes() mDeviceTypes 8000007c
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_DEVICE_IN_BACK_MIC
+V/AudioPolicyManager(  523): DeviceVector::refreshTypes() mDeviceTypes 800000fc
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_DEVICE_IN_DGTL_DOCK_HEADSET
+V/AudioPolicyManager(  523): DeviceVector::refreshTypes() mDeviceTypes 800004fc
+V/AudioPolicyManager(  523): loadInput() adding input Supported Devices 800004fc
+V/AudioPolicyManager(  523): loadHwModules() loading module a2dp
+V/AudioPolicyManager(  523): loadHwModule() loading output a2dp
+V/AudioPolicyManager(  523): loadSamplingRates() adding rate 44100
+V/AudioPolicyManager(  523): loadOutChannels() AUDIO_CHANNEL_OUT_STEREO
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_CHANNEL_OUT_STEREO
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_FORMAT_PCM_16_BIT
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_DEVICE_OUT_ALL_A2DP
+V/AudioPolicyManager(  523): DeviceVector::refreshTypes() mDeviceTypes 00000380
+V/AudioPolicyManager(  523): loadOutput() adding output Supported Devices 0380, mFlags 0000
+V/AudioPolicyManager(  523): loadHwModule() loading input a2dp
+V/AudioPolicyManager(  523): loadSamplingRates() adding rate 44100
+V/AudioPolicyManager(  523): loadSamplingRates() adding rate 48000
+V/AudioPolicyManager(  523): loadInChannels() AUDIO_CHANNEL_IN_MONO
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_CHANNEL_IN_MONO
+V/AudioPolicyManager(  523): loadInChannels() adding channelMask 0010
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_CHANNEL_IN_STEREO
+V/AudioPolicyManager(  523): loadInChannels() adding channelMask 000c
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_FORMAT_PCM_16_BIT
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_DEVICE_IN_BLUETOOTH_A2DP
+V/AudioPolicyManager(  523): DeviceVector::refreshTypes() mDeviceTypes 80020000
+V/AudioPolicyManager(  523): loadInput() adding input Supported Devices 80020000
+V/AudioPolicyManager(  523): loadHwModules() loading module usb
+V/AudioPolicyManager(  523): loadHwModule() loading output usb_accessory
+V/AudioPolicyManager(  523): loadSamplingRates() adding rate 44100
+V/AudioPolicyManager(  523): loadOutChannels() AUDIO_CHANNEL_OUT_STEREO
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_CHANNEL_OUT_STEREO
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_FORMAT_PCM_16_BIT
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_DEVICE_OUT_USB_ACCESSORY
+V/AudioPolicyManager(  523): DeviceVector::refreshTypes() mDeviceTypes 00002000
+V/AudioPolicyManager(  523): loadOutput() adding output Supported Devices 2000, mFlags 0000
+V/AudioPolicyManager(  523): loadHwModule() loading output usb_device
+V/AudioPolicyManager(  523): loadSamplingRates() adding rate 44100
+V/AudioPolicyManager(  523): loadSamplingRates() adding rate 48000
+V/AudioPolicyManager(  523): loadOutChannels() dynamic
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_FORMAT_PCM_16_BIT
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_DEVICE_OUT_USB_DEVICE
+V/AudioPolicyManager(  523): DeviceVector::refreshTypes() mDeviceTypes 00004000
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_DEVICE_OUT_DGTL_DOCK_HEADSET
+V/AudioPolicyManager(  523): DeviceVector::refreshTypes() mDeviceTypes 00005000
+V/AudioPolicyManager(  523): loadOutput() adding output Supported Devices 5000, mFlags 0000
+V/AudioPolicyManager(  523): loadHwModule() loading input usb_device
+V/AudioPolicyManager(  523): loadInChannels() AUDIO_CHANNEL_IN_STEREO
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_CHANNEL_IN_STEREO
+V/AudioPolicyManager(  523): loadInChannels() adding channelMask 000c
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_FORMAT_PCM_16_BIT
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_DEVICE_IN_USB_DEVICE
+V/AudioPolicyManager(  523): DeviceVector::refreshTypes() mDeviceTypes 80001000
+V/AudioPolicyManager(  523): loadInput() adding input Supported Devices 80001000
+V/AudioPolicyManager(  523): loadHwModules() loading module tms
+V/AudioPolicyManager(  523): loadHwModule() loading output tms
+V/AudioPolicyManager(  523): loadSamplingRates() adding rate 44100
+V/AudioPolicyManager(  523): loadOutChannels() AUDIO_CHANNEL_OUT_STEREO
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_CHANNEL_OUT_STEREO
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_FORMAT_PCM_16_BIT
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_DEVICE_OUT_EXTERNAL_TMS
+V/AudioPolicyManager(  523): DeviceVector::refreshTypes() mDeviceTypes 01000000
+V/AudioPolicyManager(  523): loadOutput() adding output Supported Devices 1000000, mFlags 0000
+V/AudioPolicyManager(  523): loadHwModule() loading input tms
+V/AudioPolicyManager(  523): loadSamplingRates() adding rate 44100
+V/AudioPolicyManager(  523): loadInChannels() AUDIO_CHANNEL_IN_MONO
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_CHANNEL_IN_MONO
+V/AudioPolicyManager(  523): loadInChannels() adding channelMask 0010
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_CHANNEL_IN_STEREO
+V/AudioPolicyManager(  523): loadInChannels() adding channelMask 000c
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_FORMAT_PCM_16_BIT
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_DEVICE_IN_EXTERNAL_TMS
+V/AudioPolicyManager(  523): DeviceVector::refreshTypes() mDeviceTypes 80100000
+V/AudioPolicyManager(  523): loadInput() adding input Supported Devices 80100000
+V/AudioPolicyManager(  523): loadHwModules() loading module r_submix
+V/AudioPolicyManager(  523): loadHwModule() loading output submix
+V/AudioPolicyManager(  523): loadSamplingRates() adding rate 48000
+V/AudioPolicyManager(  523): loadOutChannels() AUDIO_CHANNEL_OUT_STEREO
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_CHANNEL_OUT_STEREO
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_FORMAT_PCM_16_BIT
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_DEVICE_OUT_REMOTE_SUBMIX
+V/AudioPolicyManager(  523): DeviceVector::refreshTypes() mDeviceTypes 00008000
+V/AudioPolicyManager(  523): loadOutput() adding output Supported Devices 8000, mFlags 0000
+V/AudioPolicyManager(  523): loadHwModule() loading input submix
+V/AudioPolicyManager(  523): loadSamplingRates() adding rate 48000
+V/AudioPolicyManager(  523): loadInChannels() AUDIO_CHANNEL_IN_STEREO
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_CHANNEL_IN_STEREO
+V/AudioPolicyManager(  523): loadInChannels() adding channelMask 000c
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_FORMAT_PCM_16_BIT
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_DEVICE_IN_REMOTE_SUBMIX
+V/AudioPolicyManager(  523): DeviceVector::refreshTypes() mDeviceTypes 80000100
+V/AudioPolicyManager(  523): loadInput() adding input Supported Devices 80000100
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_DEVICE_OUT_EARPIECE
+V/AudioPolicyManager(  523): DeviceVector::refreshTypes() mDeviceTypes 00000001
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_DEVICE_OUT_SPEAKER
+V/AudioPolicyManager(  523): DeviceVector::refreshTypes() mDeviceTypes 00000003
+V/AudioPolicyManager(  523): loadGlobalConfig() Attached Output Devices 00000003
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_DEVICE_OUT_SPEAKER
+V/AudioPolicyManager(  523): loadGlobalConfig() mDefaultOutputDevice 00000002
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_DEVICE_IN_BUILTIN_MIC
+V/AudioPolicyManager(  523): DeviceVector::refreshTypes() mDeviceTypes 80000004
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_DEVICE_IN_BACK_MIC
+V/AudioPolicyManager(  523): DeviceVector::refreshTypes() mDeviceTypes 80000084
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_DEVICE_IN_THIRD_MIC
+V/AudioPolicyManager(  523): DeviceVector::refreshTypes() mDeviceTypes 80080084
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_DEVICE_IN_REMOTE_SUBMIX
+V/AudioPolicyManager(  523): DeviceVector::refreshTypes() mDeviceTypes 80080184
+V/AudioPolicyManager(  523): stringToEnum() found AUDIO_DEVICE_IN_VOICE_CALL
+V/AudioPolicyManager(  523): DeviceVector::refreshTypes() mDeviceTypes 800801c4
+V/AudioPolicyManager(  523): loadGlobalConfig() Available InputDevices 800801c4
+I/AudioPolicyManager(  523): loadAudioPolicyConfig() loaded /system/etc/audio_policy.conf
+D/audio_hw_primary(  523): adev_open: enter
+D/audio_hw_primary(  523): adev_open: returning existing instance of adev
+D/audio_hw_primary(  523): adev_open: exit
+I/AudioFlinger(  523): loadHwModule() Loaded primary audio interface from QCOM Audio HAL (audio) handle 1
+V/audio_hw_primary(  523): adev_open_output_stream: enter: sample_rate(48000) channel_mask(0x3) devices(0x2) flags(0x2)
+V/audio_hw_primary(  523): adev_open_output_stream: exit
+I/AudioFlinger(  523): HAL output buffer size 960 frames, normal sink buffer size 960 frames
+I/ServiceManager(  813): Waiting for service media.audio_policy...
+W/linker  (  523): lib_SoundAlive_play_ver125e.so has text relocations. This is wasting memory and prevents security hardening. Please fix.
+I/DlbDlbEffect(  523): getDescriptor(uuid=9D4921DA-8225-4F29-AEFA-39537A041337, pDescriptor=0xb317b540)
+I/DlbDlbEffect(  523): getDescriptor() Returning descriptor for DAP
+I/ViPER4Android_v2(  523): Enter EffectGetDescriptor()
+I/ViPER4Android_v2(  523): EffectGetDescriptor(), uuid = 41d3c987-e6cf-11e3-a88a-11aba5d5c51b
+W/EffectsFactory(  523): Error querying effect 4d486880-e92c-11e2-91e2-0800200c9a66 on lib pre_processing
+W/EffectsFactory(  523): loadEffect() invalid uuid 1d97bb0b-9e2f-4403-9ae3-58c2554306
+I/AudioMixer(  523): found effect "Multichannel Downmix To Stereo" from The Android Open Source Project
+I/AudioFlinger(  523): Using module 1 has the primary audio interface
+V/AudioPolicyManager(  523): setOutputDevice() output 2 device 0002 delayMs 0
+V/AudioPolicyManager(  523): setOutputDevice() prevDevice 0002
+V/AudioPolicyManager(  523): setOutputDevice() changing device
+V/AudioPolicyManager(  523): DeviceVector::refreshTypes() mDeviceTypes 00000002
+V/AudioPolicyManager(  523): DeviceVector::getDevicesFromType() for type 2 found 0xb315de40
+I/AudioFlinger(  523): AudioFlinger's thread 0xb2701000 ready to run
+W/AudioFlinger(  523): Thread AudioOut_2 cannot connect to the power manager service
+D/audio_hw_primary(  523): out_set_parameters: enter: usecase(0: deep-buffer-playback) kvpairs: routing=2
+D/audio_hw_primary(  523): routing=0 : PostProcessInit(OUTPUT_LOW_LATENCY)
+V/PostProcess(  523): PostProcessInit::new SoundBooster(output)
+V/PostProcess(  523): [void android::PostProcessInit(android::out_type, uint32_t, audio_format_t)] mSoundBooster init
+D/audio_hw_primary(  523): change routing path, adev->out_device(0) -> val(2)
+D/audio_hw_hfp(  523): audio_extn_hfp_set_parameters: enter
+V/audio_hw_primary(  523): out_set_parameters: exit: code(0)
+V/audio_hw_primary(  523): out_standby: enter: usecase(0: deep-buffer-playback)
+V/audio_hw_primary(  523): out_standby: exit
+V/AudioPolicyManager(  523): setOutputDevice() createAudioPatch returned 0 patchHandle 3num_sources 1 num_sinks 1
+V/AudioPolicyManager(  523): addAudioPatch() handle 4 af handle 0 num_sources 1 num_sinks 1 source handle 3sink handle 2
+W/AudioFlinger(  523): Thread AudioOut_2 cannot connect to the power manager service
+W/AudioFlinger(  523): Thread AudioOut_2 cannot connect to the power manager service
+E/AudioFlinger(  523): no wake lock to update!
+V/AudioPolicyManager(  523): checkAndSetVolume() cannot set stream 6 volume with force use = 0 for comm
+V/audio_hw_primary(  523): adev_open_input_stream: enter
+E/audio_hw_primary(  523): adev_open_input_stream : jack_config 0
+E/audio_hw_primary(  523): adev_open_input_stream input is null, set new input stream
+V/audio_hw_primary(  523): adev_open_input_stream: exit
+I/AudioFlinger(  523): AudioFlinger's thread 0xb2742000 ready to run
+V/audio_hw_primary(  523): adev_close_input_stream
+V/audio_hw_primary(  523): in_standby: enter
+V/audio_hw_primary(  523): in_standby: exit:  status(0)
+E/audio_hw_primary(  523): adev_close_input_stream, set jack_in to null
+I/audio_a2dp_hw(  523): adev_open:  adev_open in A2dp_hw module
+I/AudioFlinger(  523): loadHwModule() Loaded a2dp audio interface from A2DP Audio HW HAL (audio) handle 5
+I/AudioFlinger(  523): loadHwModule() Loaded usb audio interface from USB audio HW HAL (audio) handle 6
+E/AudioFlinger(  523): int android::load_audio_interface(const char*, audio_hw_device_t**) couldn't load audio hw module audio.tms (No such file or directory)
+I/AudioFlinger(  523): loadHwModule() error -2 loading module tms 
+W/AudioPolicyManager(  523): could not open HW module tms
+I/r_submix(  523): adev_open(name=audio_hw_if)
+I/r_submix(  523): adev_init_check()
+I/AudioFlinger(  523): loadHwModule() Loaded r_submix audio interface from Wifi Display audio HAL (audio) handle 7
+D/r_submix(  523): adev_open_input_stream()
+D/r_submix(  523): submix_audio_device_create_pipe()
+E/MonoPipe(  523): Failed to fetch local time frequency when constructing a MonoPipe (res = -32).  getNextWriteTimestamp calls will be non-functional
+I/AudioFlinger(  523): AudioFlinger's thread 0xb274a000 ready to run
+D/r_submix(  523): adev_close_input_stream()
+D/r_submix(  523): submix_audio_device_release_pipe()
+D/r_submix(  523): submix_audio_device_destroy_pipe(): pipe destroyed
+W/AudioPolicyManager(  523): Input device 80080000 unreachable
+V/AudioPolicyManager(  523): DeviceVector::refreshTypes() mDeviceTypes 800001c4
+W/VolumeCustomizer(  523): createVolumeTable device=0
+D/VolumeCustomizer(  523): volume tuning file does NOT exist!!! use default VolumeTable
+W/VolumeCustomizer(  523): createVolumeTable device=1
+D/VolumeCustomizer(  523): volume tuning file does NOT exist!!! use default VolumeTable
+W/VolumeCustomizer(  523): createVolumeTable device=2
+D/VolumeCustomizer(  523): volume tuning file does NOT exist!!! use default VolumeTable
+W/VolumeCustomizer(  523): createVolumeTable device=3
+D/VolumeCustomizer(  523): volume tuning file does NOT exist!!! use default VolumeTable
+W/VolumeCustomizer(  523): createVolumeTable device=4
+D/VolumeCustomizer(  523): volume tuning file does NOT exist!!! use default VolumeTable
+V/AudioPolicyManager(  523): ====spkVolume[0][0] = 0.177828
+V/AudioPolicyManager(  523): ====spkVolume[0][1] = 0.251189
+V/AudioPolicyManager(  523): ====spkVolume[0][2] = 0.354813
+V/AudioPolicyManager(  523): ====spkVolume[0][3] = 0.501187
+V/AudioPolicyManager(  523): ====spkVolume[0][4] = 0.707946
+V/AudioPolicyManager(  523): ====spkVolume[0][5] = 1.000000
+V/AudioPolicyManager(  523): ====spkVolume[0][6] = 0.500000
+V/AudioPolicyManager(  523): ====spkVolume[0][7] = 0.000000
+V/AudioPolicyManager(  523): ====spkVolume[0][8] = 0.000000
+V/AudioPolicyManager(  523): ====spkVolume[0][9] = 0.000000
+V/AudioPolicyManager(  523): ====spkVolume[0][10] = 0.000000
+V/AudioPolicyManager(  523): ====spkVolume[0][11] = 0.000000
+V/AudioPolicyManager(  523): ====spkVolume[0][12] = 0.000000
+V/AudioPolicyManager(  523): ====spkVolume[0][13] = 0.000000
+V/AudioPolicyManager(  523): ====spkVolume[0][14] = 0.000000
+V/AudioPolicyManager(  523): ====spkVolume[0][15] = 0.000000
+V/AudioPolicyManager(  523): ====spkVolume[0][16] = 0.000000
+V/AudioPolicyManager(  523): ====spkVolume[1][0] = 0.000000
+V/AudioPolicyManager(  523): ====spkVolume[1][1] = 0.199526
+V/AudioPolicyManager(  523): ====spkVolume[1][2] = 0.223872
+V/AudioPolicyManager(  523): ====spkVolume[1][3] = 0.251189
+V/AudioPolicyManager(  523): ====spkVolume[1][4] = 0.281838
+V/AudioPolicyManager(  523): ====spkVolume[1][5] = 0.316228
+V/AudioPolicyManager(  523): ====spkVolume[1][6] = 0.354813
+V/AudioPolicyManager(  523): ====spkVolume[1][7] = 0.398107
+V/AudioPolicyManager(  523): ====spkVolume[1][8] = 0.446684
+V/AudioPolicyManager(  523): ====spkVolume[1][9] = 0.501187
+V/AudioPolicyManager(  523): ====spkVolume[1][10] = 0.562341
+V/AudioPolicyManager(  523): ====spkVolume[1][11] = 0.630957
+V/AudioPolicyManager(  523): ====spkVolume[1][12] = 0.707946
+V/AudioPolicyManager(  523): ====spkVolume[1][13] = 0.794328
+V/AudioPolicyManager(  523): ====spkVolume[1][14] = 0.891251
+V/AudioPolicyManager(  523): ====spkVolume[1][15] = 1.000000
+V/AudioPolicyManager(  523): ====spkVolume[1][16] = 1.000000
+V/AudioPolicyManager(  523): ====spkVolume[2][0] = 0.000000
+V/AudioPolicyManager(  523): ====spkVolume[2][1] = 0.039811
+V/AudioPolicyManager(  523): ====spkVolume[2][2] = 0.050119
+V/AudioPolicyManager(  523): ====spkVolume[2][3] = 0.063096
+V/AudioPolicyManager(  523): ====spkVolume[2][4] = 0.079433
+V/AudioPolicyManager(  523): ====spkVolume[2][5] = 0.100000
+V/AudioPolicyManager(  523): ====spkVolume[2][6] = 0.125893
+V/AudioPolicyManager(  523): ====spkVolume[2][7] = 0.158489
+V/AudioPolicyManager(  523): ====spkVolume[2][8] = 0.199526
+V/AudioPolicyManager(  523): ====spkVolume[2][9] = 0.251189
+V/AudioPolicyManager(  523): ====spkVolume[2][10] = 0.316228
+V/AudioPolicyManager(  523): ====spkVolume[2][11] = 0.398107
+V/AudioPolicyManager(  523): ====spkVolume[2][12] = 0.501187
+V/AudioPolicyManager(  523): ====spkVolume[2][13] = 0.630957
+V/AudioPolicyManager(  523): ====spkVolume[2][14] = 0.794328
+V/AudioPolicyManager(  523): ====spkVolume[2][15] = 1.000000
+V/AudioPolicyManager(  523): ====spkVolume[2][16] = 1.000000
+V/AudioPolicyManager(  523): ====spkVolume[3][0] = 0.000000
+V/AudioPolicyManager(  523): ====spkVolume[3][1] = 0.005012
+V/AudioPolicyManager(  523): ====spkVolume[3][2] = 0.008913
+V/AudioPolicyManager(  523): ====spkVolume[3][3] = 0.014125
+V/AudioPolicyManager(  523): ====spkVolume[3][4] = 0.022387
+V/AudioPolicyManager(  523): ====spkVolume[3][5] = 0.031623
+V/AudioPolicyManager(  523): ====spkVolume[3][6] = 0.044668
+V/AudioPolicyManager(  523): ====spkVolume[3][7] = 0.063096
+V/AudioPolicyManager(  523): ====spkVolume[3][8] = 0.089125
+V/AudioPolicyManager(  523): ====spkVolume[3][9] = 0.125893
+V/AudioPolicyManager(  523): ====spkVolume[3][10] = 0.158489
+V/AudioPolicyManager(  523): ====spkVolume[3][11] = 0.199526
+V/AudioPolicyManager(  523): ====spkVolume[3][12] = 0.251189
+V/AudioPolicyManager(  523): ====spkVolume[3][13] = 0.316228
+V/AudioPolicyManager(  523): ====spkVolume[3][14] = 0.562341
+V/AudioPolicyManager(  523): ====spkVolume[3][15] = 1.000000
+V/AudioPolicyManager(  523): ====spkVolume[3][16] = 1.000000
+V/AudioPolicyManager(  523): ====spkVolume[4][0] = 0.000000
+V/AudioPolicyManager(  523): ====spkVolume[4][1] = 0.039811
+V/AudioPolicyManager(  523): ====spkVolume[4][2] = 0.050119
+V/AudioPolicyManager(  523): ====spkVolume[4][3] = 0.063096
+V/AudioPolicyManager(  523): ====spkVolume[4][4] = 0.079433
+V/AudioPolicyManager(  523): ====spkVolume[4][5] = 0.100000
+V/AudioPolicyManager(  523): ====spkVolume[4][6] = 0.125893
+V/AudioPolicyManager(  523): ====spkVolume[4][7] = 0.158489
+V/AudioPolicyManager(  523): ====spkVolume[4][8] = 0.199526
+V/AudioPolicyManager(  523): ====spkVolume[4][9] = 0.251189
+V/AudioPolicyManager(  523): ====spkVolume[4][10] = 0.316228
+V/AudioPolicyManager(  523): ====spkVolume[4][11] = 0.398107
+V/AudioPolicyManager(  523): ====spkVolume[4][12] = 0.501187
+V/AudioPolicyManager(  523): ====spkVolume[4][13] = 0.630957
+V/AudioPolicyManager(  523): ====spkVolume[4][14] = 0.794328
+V/AudioPolicyManager(  523): ====spkVolume[4][15] = 1.000000
+V/AudioPolicyManager(  523): ====spkVolume[4][16] = 1.000000
+V/AudioPolicyManager(  523): ====spkVolume[5][0] = 0.000000
+V/AudioPolicyManager(  523): ====spkVolume[5][1] = 0.007943
+V/AudioPolicyManager(  523): ====spkVolume[5][2] = 0.011220
+V/AudioPolicyManager(  523): ====spkVolume[5][3] = 0.015849
+V/AudioPolicyManager(  523): ====spkVolume[5][4] = 0.022387
+V/AudioPolicyManager(  523): ====spkVolume[5][5] = 0.031623
+V/AudioPolicyManager(  523): ====spkVolume[5][6] = 0.044668
+V/AudioPolicyManager(  523): ====spkVolume[5][7] = 0.063096
+V/AudioPolicyManager(  523): ====spkVolume[5][8] = 0.089125
+V/AudioPolicyManager(  523): ====spkVolume[5][9] = 0.125893
+V/AudioPolicyManager(  523): ====spkVolume[5][10] = 0.177828
+V/AudioPolicyManager(  523): ====spkVolume[5][11] = 0.251189
+V/AudioPolicyManager(  523): ====spkVolume[5][12] = 0.354813
+V/AudioPolicyManager(  523): ====spkVolume[5][13] = 0.501187
+V/AudioPolicyManager(  523): ====spkVolume[5][14] = 0.707946
+V/AudioPolicyManager(  523): ====spkVolume[5][15] = 1.000000
+V/AudioPolicyManager(  523): ====spkVolume[5][16] = 1.000000
+V/AudioPolicyManager(  523): ====spkVolume[6][0] = 0.630957
+V/AudioPolicyManager(  523): ====spkVolume[6][1] = 0.668344
+V/AudioPolicyManager(  523): ====spkVolume[6][2] = 0.668344
+V/AudioPolicyManager(  523): ====spkVolume[6][3] = 0.707946
+V/AudioPolicyManager(  523): ====spkVolume[6][4] = 0.707946
+V/AudioPolicyManager(  523): ====spkVolume[6][5] = 0.749894
+V/AudioPolicyManager(  523): ====spkVolume[6][6] = 0.749894
+V/AudioPolicyManager(  523): ====spkVolume[6][7] = 0.794328
+V/AudioPolicyManager(  523): ====spkVolume[6][8] = 0.794328
+V/AudioPolicyManager(  523): ====spkVolume[6][9] = 0.841395
+V/AudioPolicyManager(  523): ====spkVolume[6][10] = 0.841395
+V/AudioPolicyManager(  523): ====spkVolume[6][11] = 0.891251
+V/AudioPolicyManager(  523): ====spkVolume[6][12] = 0.891251
+V/AudioPolicyManager(  523): ====spkVolume[6][13] = 0.944061
+V/AudioPolicyManager(  523): ====spkVolume[6][14] = 0.944061
+V/AudioPolicyManager(  523): ====spkVolume[6][15] = 1.000000
+V/AudioPolicyManager(  523): ====spkVolume[6][16] = 0.500000
+V/AudioPolicyManager(  523): ====spkVolume[7][0] = 0.000000
+V/AudioPolicyManager(  523): ====spkVolume[7][1] = 0.007943
+V/AudioPolicyManager(  523): ====spkVolume[7][2] = 0.011220
+V/AudioPolicyManager(  523): ====spkVolume[7][3] = 0.015849
+V/AudioPolicyManager(  523): ====spkVolume[7][4] = 0.022387
+V/AudioPolicyManager(  523): ====spkVolume[7][5] = 0.031623
+V/AudioPolicyManager(  523): ====spkVolume[7][6] = 0.044668
+V/AudioPolicyManager(  523): ====spkVolume[7][7] = 0.063096
+V/AudioPolicyManager(  523): ====spkVolume[7][8] = 0.089125
+V/AudioPolicyManager(  523): ====spkVolume[7][9] = 0.125893
+V/AudioPolicyManager(  523): ====spkVolume[7][10] = 0.177828
+V/AudioPolicyManager(  523): ====spkVolume[7][11] = 0.251189
+V/AudioPolicyManager(  523): ====spkVolume[7][12] = 0.354813
+V/AudioPolicyManager(  523): ====spkVolume[7][13] = 0.501187
+V/AudioPolicyManager(  523): ====spkVolume[7][14] = 0.707946
+V/AudioPolicyManager(  523): ====spkVolume[7][15] = 1.000000
+V/AudioPolicyManager(  523): ====spkVolume[7][16] = 1.000000
+V/AudioPolicyManager(  523): ====spkVolume[8][0] = 0.000000
+V/AudioPolicyManager(  523): ====spkVolume[8][1] = 0.003350
+V/AudioPolicyManager(  523): ====spkVolume[8][2] = 0.007943
+V/AudioPolicyManager(  523): ====spkVolume[8][3] = 0.014962
+V/AudioPolicyManager(  523): ====spkVolume[8][4] = 0.022387
+V/AudioPolicyManager(  523): ====spkVolume[8][5] = 0.031623
+V/AudioPolicyManager(  523): ====spkVolume[8][6] = 0.044668
+V/AudioPolicyManager(  523): ====spkVolume[8][7] = 0.063096
+V/AudioPolicyManager(  523): ====spkVolume[8][8] = 0.089125
+V/AudioPolicyManager(  523): ====spkVolume[8][9] = 0.125893
+V/AudioPolicyManager(  523): ====spkVolume[8][10] = 0.177828
+V/AudioPolicyManager(  523): ====spkVolume[8][11] = 0.251189
+V/AudioPolicyManager(  523): ====spkVolume[8][12] = 0.354813
+V/AudioPolicyManager(  523): ====spkVolume[8][13] = 0.501187
+V/AudioPolicyManager(  523): ====spkVolume[8][14] = 0.707946
+V/AudioPolicyManager(  523): ====spkVolume[8][15] = 1.000000
+V/AudioPolicyManager(  523): ====spkVolume[8][16] = 0.500000
+V/AudioPolicyManager(  523): ====spkVolume[9][0] = 0.000000
+V/AudioPolicyManager(  523): ====spkVolume[9][1] = 0.074989
+V/AudioPolicyManager(  523): ====spkVolume[9][2] = 0.089125
+V/AudioPolicyManager(  523): ====spkVolume[9][3] = 0.105925
+V/AudioPolicyManager(  523): ====spkVolume[9][4] = 0.125893
+V/AudioPolicyManager(  523): ====spkVolume[9][5] = 0.149624
+V/AudioPolicyManager(  523): ====spkVolume[9][6] = 0.177828
+V/AudioPolicyManager(  523): ====spkVolume[9][7] = 0.211349
+V/AudioPolicyManager(  523): ====spkVolume[9][8] = 0.251189
+V/AudioPolicyManager(  523): ====spkVolume[9][9] = 0.298538
+V/AudioPolicyManager(  523): ====spkVolume[9][10] = 0.354813
+V/AudioPolicyManager(  523): ====spkVolume[9][11] = 0.421696
+V/AudioPolicyManager(  523): ====spkVolume[9][12] = 0.501187
+V/AudioPolicyManager(  523): ====spkVolume[9][13] = 0.595662
+V/AudioPolicyManager(  523): ====spkVolume[9][14] = 0.707946
+V/AudioPolicyManager(  523): ====spkVolume[9][15] = 0.841395
+V/AudioPolicyManager(  523): ====spkVolume[9][16] = 0.500000
+V/AudioPolicyManager(  523): ====spkVolume[10][0] = 0.000000
+V/AudioPolicyManager(  523): ====spkVolume[10][1] = 0.003350
+V/AudioPolicyManager(  523): ====spkVolume[10][2] = 0.007943
+V/AudioPolicyManager(  523): ====spkVolume[10][3] = 0.014962
+V/AudioPolicyManager(  523): ====spkVolume[10][4] = 0.022387
+V/AudioPolicyManager(  523): ====spkVolume[10][5] = 0.031623
+V/AudioPolicyManager(  523): ====spkVolume[10][6] = 0.044668
+V/AudioPolicyManager(  523): ====spkVolume[10][7] = 0.063096
+V/AudioPolicyManager(  523): ====spkVolume[10][8] = 0.089125
+V/AudioPolicyManager(  523): ====spkVolume[10][9] = 0.125893
+V/AudioPolicyManager(  523): ====spkVolume[10][10] = 0.177828
+V/AudioPolicyManager(  523): ====spkVolume[10][11] = 0.251189
+V/AudioPolicyManager(  523): ====spkVolume[10][12] = 0.354813
+V/AudioPolicyManager(  523): ====spkVolume[10][13] = 0.501187
+V/AudioPolicyManager(  523): ====spkVolume[10][14] = 0.707946
+V/AudioPolicyManager(  523): ====spkVolume[10][15] = 1.000000
+V/AudioPolicyManager(  523): ====spkVolume[10][16] = 0.500000
+V/AudioPolicyManager(  523): ====spkVolume[11][0] = 0.177828
+V/AudioPolicyManager(  523): ====spkVolume[11][1] = 0.251189
+V/AudioPolicyManager(  523): ====spkVolume[11][2] = 0.354813
+V/AudioPolicyManager(  523): ====spkVolume[11][3] = 0.501187
+V/AudioPolicyManager(  523): ====spkVolume[11][4] = 0.707946
+V/AudioPolicyManager(  523): ====spkVolume[11][5] = 1.000000
+V/AudioPolicyManager(  523): ====spkVolume[11][6] = 0.500000
+V/AudioPolicyManager(  523): ====spkVolume[11][7] = 0.000000
+V/AudioPolicyManager(  523): ====spkVolume[11][8] = 0.000000
+V/AudioPolicyManager(  523): ====spkVolume[11][9] = 0.000000
+V/AudioPolicyManager(  523): ====spkVolume[11][10] = 0.000000
+V/AudioPolicyManager(  523): ====spkVolume[11][11] = 0.000000
+V/AudioPolicyManager(  523): ====spkVolume[11][12] = 0.000000
+V/AudioPolicyManager(  523): ====spkVolume[11][13] = 0.000000
+V/AudioPolicyManager(  523): ====spkVolume[11][14] = 0.000000
+V/AudioPolicyManager(  523): ====spkVolume[11][15] = 0.000000
+V/AudioPolicyManager(  523): ====spkVolume[11][16] = 0.000000
+V/AudioPolicyManager(  523): ====spkVolume[12][0] = 0.177828
+V/AudioPolicyManager(  523): ====spkVolume[12][1] = 0.251189
+V/AudioPolicyManager(  523): ====spkVolume[12][2] = 0.354813
+V/AudioPolicyManager(  523): ====spkVolume[12][3] = 0.501187
+V/AudioPolicyManager(  523): ====spkVolume[12][4] = 0.707946
+V/AudioPolicyManager(  523): ====spkVolume[12][5] = 1.000000
+V/AudioPolicyManager(  523): ====spkVolume[12][6] = 0.500000
+V/AudioPolicyManager(  523): ====spkVolume[12][7] = 0.000000
+V/AudioPolicyManager(  523): ====spkVolume[12][8] = 0.000000
+V/AudioPolicyManager(  523): ====spkVolume[12][9] = 0.000000
+V/AudioPolicyManager(  523): ====spkVolume[12][10] = 0.000000
+V/AudioPolicyManager(  523): ====spkVolume[12][11] = 0.000000
+V/AudioPolicyManager(  523): ====spkVolume[12][12] = 0.000000
+V/AudioPolicyManager(  523): ====spkVolume[12][13] = 0.000000
+V/AudioPolicyManager(  523): ====spkVolume[12][14] = 0.000000
+V/AudioPolicyManager(  523): ====spkVolume[12][15] = 0.000000
+V/AudioPolicyManager(  523): ====spkVolume[12][16] = 0.000000
+V/AudioPolicyManager(  523): ====headsetVolume[0][0] = 0.050119
+V/AudioPolicyManager(  523): ====headsetVolume[0][1] = 0.070795
+V/AudioPolicyManager(  523): ====headsetVolume[0][2] = 0.100000
+V/AudioPolicyManager(  523): ====headsetVolume[0][3] = 0.141254
+V/AudioPolicyManager(  523): ====headsetVolume[0][4] = 0.199526
+V/AudioPolicyManager(  523): ====headsetVolume[0][5] = 0.281838
+V/AudioPolicyManager(  523): ====headsetVolume[0][6] = 0.500000
+V/AudioPolicyManager(  523): ====headsetVolume[0][7] = 0.000000
+V/AudioPolicyManager(  523): ====headsetVolume[0][8] = 0.000000
+V/AudioPolicyManager(  523): ====headsetVolume[0][9] = 0.000000
+V/AudioPolicyManager(  523): ====headsetVolume[0][10] = 0.000000
+V/AudioPolicyManager(  523): ====headsetVolume[0][11] = 0.000000
+V/AudioPolicyManager(  523): ====headsetVolume[0][12] = 0.000000
+V/AudioPolicyManager(  523): ====headsetVolume[0][13] = 0.000000
+V/AudioPolicyManager(  523): ====headsetVolume[0][14] = 0.000000
+V/AudioPolicyManager(  523): ====headsetVolume[0][15] = 0.000000
+V/AudioPolicyManager(  523): ====headsetVolume[0][16] = 0.000000
+V/AudioPolicyManager(  523): ====headsetVolume[1][0] = 0.000000
+V/AudioPolicyManager(  523): ====headsetVolume[1][1] = 0.002512
+V/AudioPolicyManager(  523): ====headsetVolume[1][2] = 0.003548
+V/AudioPolicyManager(  523): ====headsetVolume[1][3] = 0.005012
+V/AudioPolicyManager(  523): ====headsetVolume[1][4] = 0.007079
+V/AudioPolicyManager(  523): ====headsetVolume[1][5] = 0.010000
+V/AudioPolicyManager(  523): ====headsetVolume[1][6] = 0.014125
+V/AudioPolicyManager(  523): ====headsetVolume[1][7] = 0.019953
+V/AudioPolicyManager(  523): ====headsetVolume[1][8] = 0.028184
+V/AudioPolicyManager(  523): ====headsetVolume[1][9] = 0.039811
+V/AudioPolicyManager(  523): ====headsetVolume[1][10] = 0.056234
+V/AudioPolicyManager(  523): ====headsetVolume[1][11] = 0.079433
+V/AudioPolicyManager(  523): ====headsetVolume[1][12] = 0.112202
+V/AudioPolicyManager(  523): ====headsetVolume[1][13] = 0.158489
+V/AudioPolicyManager(  523): ====headsetVolume[1][14] = 0.223872
+V/AudioPolicyManager(  523): ====headsetVolume[1][15] = 0.316228
+V/AudioPolicyManager(  523): ====headsetVolume[1][16] = 1.000000
+V/AudioPolicyManager(  523): ====headsetVolume[2][0] = 0.000000
+V/AudioPolicyManager(  523): ====headsetVolume[2][1] = 0.007943
+V/AudioPolicyManager(  523): ====headsetVolume[2][2] = 0.011220
+V/AudioPolicyManager(  523): ====headsetVolume[2][3] = 0.015849
+V/AudioPolicyManager(  523): ====headsetVolume[2][4] = 0.022387
+V/AudioPolicyManager(  523): ====headsetVolume[2][5] = 0.031623
+V/AudioPolicyManager(  523): ====headsetVolume[2][6] = 0.044668
+V/AudioPolicyManager(  523): ====headsetVolume[2][7] = 0.063096
+V/AudioPolicyManager(  523): ====headsetVolume[2][8] = 0.089125
+V/AudioPolicyManager(  523): ====headsetVolume[2][9] = 0.125893
+V/AudioPolicyManager(  523): ====headsetVolume[2][10] = 0.177828
+V/AudioPolicyManager(  523): ====headsetVolume[2][11] = 0.251189
+V/AudioPolicyManager(  523): ====headsetVolume[2][12] = 0.354813
+V/AudioPolicyManager(  523): ====headsetVolume[2][13] = 0.501187
+V/AudioPolicyManager(  523): ====headsetVolume[2][14] = 0.707946
+V/AudioPolicyManager(  523): ====headsetVolume[2][15] = 1.000000
+V/AudioPolicyManager(  523): ====headsetVolume[2][16] = 1.000000
+V/AudioPolicyManager(  523): ====headsetVolume[3][0] = 0.000000
+V/AudioPolicyManager(  523): ====headsetVolume[3][1] = 0.001122
+V/AudioPolicyManager(  523): ====headsetVolume[3][2] = 0.001995
+V/AudioPolicyManager(  523): ====headsetVolume[3][3] = 0.003548
+V/AudioPolicyManager(  523): ====headsetVolume[3][4] = 0.006310
+V/AudioPolicyManager(  523): ====headsetVolume[3][5] = 0.011220
+V/AudioPolicyManager(  523): ====headsetVolume[3][6] = 0.017783
+V/AudioPolicyManager(  523): ====headsetVolume[3][7] = 0.028184
+V/AudioPolicyManager(  523): ====headsetVolume[3][8] = 0.039811
+V/AudioPolicyManager(  523): ====headsetVolume[3][9] = 0.056234
+V/AudioPolicyManager(  523): ====headsetVolume[3][10] = 0.079433
+V/AudioPolicyManager(  523): ====headsetVolume[3][11] = 0.112202
+V/AudioPolicyManager(  523): ====headsetVolume[3][12] = 0.177828
+V/AudioPolicyManager(  523): ====headsetVolume[3][13] = 0.316228
+V/AudioPolicyManager(  523): ====headsetVolume[3][14] = 0.562341
+V/AudioPolicyManager(  523): ====headsetVolume[3][15] = 0.977238
+V/AudioPolicyManager(  523): ====headsetVolume[3][16] = 1.000000
+V/AudioPolicyManager(  523): ====headsetVolume[4][0] = 0.000000
+V/AudioPolicyManager(  523): ====headsetVolume[4][1] = 0.007943
+V/AudioPolicyManager(  523): ====headsetVolume[4][2] = 0.011220
+V/AudioPolicyManager(  523): ====headsetVolume[4][3] = 0.015849
+V/AudioPolicyManager(  523): ====headsetVolume[4][4] = 0.022387
+V/AudioPolicyManager(  523): ====headsetVolume[4][5] = 0.031623
+V/AudioPolicyManager(  523): ====headsetVolume[4][6] = 0.044668
+V/AudioPolicyManager(  523): ====headsetVolume[4][7] = 0.063096
+V/AudioPolicyManager(  523): ====headsetVolume[4][8] = 0.089125
+V/AudioPolicyManager(  523): ====headsetVolume[4][9] = 0.125893
+V/AudioPolicyManager(  523): ====headsetVolume[4][10] = 0.177828
+V/AudioPolicyManager(  523): ====headsetVolume[4][11] = 0.251189
+V/AudioPolicyManager(  523): ====headsetVolume[4][12] = 0.354813
+V/AudioPolicyManager(  523): ====headsetVolume[4][13] = 0.501187
+V/AudioPolicyManager(  523): ====headsetVolume[4][14] = 0.707946
+V/AudioPolicyManager(  523): ====headsetVolume[4][15] = 1.000000
+V/AudioPolicyManager(  523): ====headsetVolume[4][16] = 1.000000
+V/AudioPolicyManager(  523): ====headsetVolume[5][0] = 0.000000
+V/AudioPolicyManager(  523): ====headsetVolume[5][1] = 0.007943
+V/AudioPolicyManager(  523): ====headsetVolume[5][2] = 0.011220
+V/AudioPolicyManager(  523): ====headsetVolume[5][3] = 0.015849
+V/AudioPolicyManager(  523): ====headsetVolume[5][4] = 0.022387
+V/AudioPolicyManager(  523): ====headsetVolume[5][5] = 0.031623
+V/AudioPolicyManager(  523): ====headsetVolume[5][6] = 0.044668
+V/AudioPolicyManager(  523): ====headsetVolume[5][7] = 0.063096
+V/AudioPolicyManager(  523): ====headsetVolume[5][8] = 0.089125
+V/AudioPolicyManager(  523): ====headsetVolume[5][9] = 0.125893
+V/AudioPolicyManager(  523): ====headsetVolume[5][10] = 0.177828
+V/AudioPolicyManager(  523): ====headsetVolume[5][11] = 0.251189
+V/AudioPolicyManager(  523): ====headsetVolume[5][12] = 0.354813
+V/AudioPolicyManager(  523): ====headsetVolume[5][13] = 0.501187
+V/AudioPolicyManager(  523): ====headsetVolume[5][14] = 0.707946
+V/AudioPolicyManager(  523): ====headsetVolume[5][15] = 1.000000
+V/AudioPolicyManager(  523): ====headsetVolume[5][16] = 1.000000
+V/AudioPolicyManager(  523): ====headsetVolume[6][0] = 0.000000
+V/AudioPolicyManager(  523): ====headsetVolume[6][1] = 0.003350
+V/AudioPolicyManager(  523): ====headsetVolume[6][2] = 0.007943
+V/AudioPolicyManager(  523): ====headsetVolume[6][3] = 0.014962
+V/AudioPolicyManager(  523): ====headsetVolume[6][4] = 0.022387
+V/AudioPolicyManager(  523): ====headsetVolume[6][5] = 0.031623
+V/AudioPolicyManager(  523): ====headsetVolume[6][6] = 0.044668
+V/AudioPolicyManager(  523): ====headsetVolume[6][7] = 0.063096
+V/AudioPolicyManager(  523): ====headsetVolume[6][8] = 0.089125
+V/AudioPolicyManager(  523): ====headsetVolume[6][9] = 0.125893
+V/AudioPolicyManager(  523): ====headsetVolume[6][10] = 0.177828
+V/AudioPolicyManager(  523): ====headsetVolume[6][11] = 0.251189
+V/AudioPolicyManager(  523): ====headsetVolume[6][12] = 0.354813
+V/AudioPolicyManager(  523): ====headsetVolume[6][13] = 0.501187
+V/AudioPolicyManager(  523): ====headsetVolume[6][14] = 0.707946
+V/AudioPolicyManager(  523): ====headsetVolume[6][15] = 1.000000
+V/AudioPolicyManager(  523): ====headsetVolume[6][16] = 0.500000
+V/AudioPolicyManager(  523): ====headsetVolume[7][0] = 0.000000
+V/AudioPolicyManager(  523): ====headsetVolume[7][1] = 0.007943
+V/AudioPolicyManager(  523): ====headsetVolume[7][2] = 0.011220
+V/AudioPolicyManager(  523): ====headsetVolume[7][3] = 0.015849
+V/AudioPolicyManager(  523): ====headsetVolume[7][4] = 0.022387
+V/AudioPolicyManager(  523): ====headsetVolume[7][5] = 0.031623
+V/AudioPolicyManager(  523): ====headsetVolume[7][6] = 0.044668
+V/AudioPolicyManager(  523): ====headsetVolume[7][7] = 0.063096
+V/AudioPolicyManager(  523): ====headsetVolume[7][8] = 0.089125
+V/AudioPolicyManager(  523): ====headsetVolume[7][9] = 0.125893
+V/AudioPolicyManager(  523): ====headsetVolume[7][10] = 0.177828
+V/AudioPolicyManager(  523): ====headsetVolume[7][11] = 0.251189
+V/AudioPolicyManager(  523): ====headsetVolume[7][12] = 0.354813
+V/AudioPolicyManager(  523): ====headsetVolume[7][13] = 0.501187
+V/AudioPolicyManager(  523): ====headsetVolume[7][14] = 0.707946
+V/AudioPolicyManager(  523): ====headsetVolume[7][15] = 1.000000
+V/AudioPolicyManager(  523): ====headsetVolume[7][16] = 1.000000
+V/AudioPolicyManager(  523): ====headsetVolume[8][0] = 0.000000
+V/AudioPolicyManager(  523): ====headsetVolume[8][1] = 0.003350
+V/AudioPolicyManager(  523): ====headsetVolume[8][2] = 0.007499
+V/AudioPolicyManager(  523): ====headsetVolume[8][3] = 0.010000
+V/AudioPolicyManager(  523): ====headsetVolume[8][4] = 0.013335
+V/AudioPolicyManager(  523): ====headsetVolume[8][5] = 0.017783
+V/AudioPolicyManager(  523): ====headsetVolume[8][6] = 0.023714
+V/AudioPolicyManager(  523): ====headsetVolume[8][7] = 0.031623
+V/AudioPolicyManager(  523): ====headsetVolume[8][8] = 0.042170
+V/AudioPolicyManager(  523): ====headsetVolume[8][9] = 0.056234
+V/AudioPolicyManager(  523): ====headsetVolume[8][10] = 0.074989
+V/AudioPolicyManager(  523): ====headsetVolume[8][11] = 0.100000
+V/AudioPolicyManager(  523): ====headsetVolume[8][12] = 0.133352
+V/AudioPolicyManager(  523): ====headsetVolume[8][13] = 0.177828
+V/AudioPolicyManager(  523): ====headsetVolume[8][14] = 0.237137
+V/AudioPolicyManager(  523): ====headsetVolume[8][15] = 0.316228
+V/AudioPolicyManager(  523): ====headsetVolume[8][16] = 0.500000
+V/AudioPolicyManager(  523): ====headsetVolume[9][0] = 0.000000
+V/AudioPolicyManager(  523): ====headsetVolume[9][1] = 0.074989
+V/AudioPolicyManager(  523): ====headsetVolume[9][2] = 0.089125
+V/AudioPolicyManager(  523): ====headsetVolume[9][3] = 0.105925
+V/AudioPolicyManager(  523): ====headsetVolume[9][4] = 0.125893
+V/AudioPolicyManager(  523): ====headsetVolume[9][5] = 0.149624
+V/AudioPolicyManager(  523): ====headsetVolume[9][6] = 0.177828
+V/AudioPolicyManager(  523): ====headsetVolume[9][7] = 0.211349
+V/AudioPolicyManager(  523): ====headsetVolume[9][8] = 0.251189
+V/AudioPolicyManager(  523): ====headsetVolume[9][9] = 0.298538
+V/AudioPolicyManager(  523): ====headsetVolume[9][10] = 0.354813
+V/AudioPolicyManager(  523): ====headsetVolume[9][11] = 0.421696
+V/AudioPolicyManager(  523): ====headsetVolume[9][12] = 0.501187
+V/AudioPolicyManager(  523): ====headsetVolume[9][13] = 0.595662
+V/AudioPolicyManager(  523): ====headsetVolume[9][14] = 0.707946
+V/AudioPolicyManager(  523): ====headsetVolume[9][15] = 0.841395
+V/AudioPolicyManager(  523): ====headsetVolume[9][16] = 0.500000
+V/AudioPolicyManager(  523): ====headsetVolume[10][0] = 0.000000
+V/AudioPolicyManager(  523): ====headsetVolume[10][1] = 0.003350
+V/AudioPolicyManager(  523): ====headsetVolume[10][2] = 0.007943
+V/AudioPolicyManager(  523): ====headsetVolume[10][3] = 0.014962
+V/AudioPolicyManager(  523): ====headsetVolume[10][4] = 0.022387
+V/AudioPolicyManager(  523): ====headsetVolume[10][5] = 0.031623
+V/AudioPolicyManager(  523): ====headsetVolume[10][6] = 0.044668
+V/AudioPolicyManager(  523): ====headsetVolume[10][7] = 0.063096
+V/AudioPolicyManager(  523): ====headsetVolume[10][8] = 0.089125
+V/AudioPolicyManager(  523): ====headsetVolume[10][9] = 0.125893
+V/AudioPolicyManager(  523): ====headsetVolume[10][10] = 0.177828
+V/AudioPolicyManager(  523): ====headsetVolume[10][11] = 0.251189
+V/AudioPolicyManager(  523): ====headsetVolume[10][12] = 0.354813
+V/AudioPolicyManager(  523): ====headsetVolume[10][13] = 0.501187
+V/AudioPolicyManager(  523): ====headsetVolume[10][14] = 0.707946
+V/AudioPolicyManager(  523): ====headsetVolume[10][15] = 1.000000
+V/AudioPolicyManager(  523): ====headsetVolume[10][16] = 0.500000
+V/AudioPolicyManager(  523): ====headsetVolume[11][0] = 0.177828
+V/AudioPolicyManager(  523): ====headsetVolume[11][1] = 0.251189
+V/AudioPolicyManager(  523): ====headsetVolume[11][2] = 0.354813
+V/AudioPolicyManager(  523): ====headsetVolume[11][3] = 0.501187
+V/AudioPolicyManager(  523): ====headsetVolume[11][4] = 0.707946
+V/AudioPolicyManager(  523): ====headsetVolume[11][5] = 1.000000
+V/AudioPolicyManager(  523): ====headsetVolume[11][6] = 0.500000
+V/AudioPolicyManager(  523): ====headsetVolume[11][7] = 0.000000
+V/AudioPolicyManager(  523): ====headsetVolume[11][8] = 0.000000
+V/AudioPolicyManager(  523): ====headsetVolume[11][9] = 0.000000
+V/AudioPolicyManager(  523): ====headsetVolume[11][10] = 0.000000
+V/AudioPolicyManager(  523): ====headsetVolume[11][11] = 0.000000
+V/AudioPolicyManager(  523): ====headsetVolume[11][12] = 0.000000
+V/AudioPolicyManager(  523): ====headsetVolume[11][13] = 0.000000
+V/AudioPolicyManager(  523): ====headsetVolume[11][14] = 0.000000
+V/AudioPolicyManager(  523): ====headsetVolume[11][15] = 0.000000
+V/AudioPolicyManager(  523): ====headsetVolume[11][16] = 0.000000
+V/AudioPolicyManager(  523): ====headsetVolume[12][0] = 0.177828
+V/AudioPolicyManager(  523): ====headsetVolume[12][1] = 0.251189
+V/AudioPolicyManager(  523): ====headsetVolume[12][2] = 0.354813
+V/AudioPolicyManager(  523): ====headsetVolume[12][3] = 0.501187
+V/AudioPolicyManager(  523): ====headsetVolume[12][4] = 0.707946
+V/AudioPolicyManager(  523): ====headsetVolume[12][5] = 1.000000
+V/AudioPolicyManager(  523): ====headsetVolume[12][6] = 0.500000
+V/AudioPolicyManager(  523): ====headsetVolume[12][7] = 0.000000
+V/AudioPolicyManager(  523): ====headsetVolume[12][8] = 0.000000
+V/AudioPolicyManager(  523): ====headsetVolume[12][9] = 0.000000
+V/AudioPolicyManager(  523): ====headsetVolume[12][10] = 0.000000
+V/AudioPolicyManager(  523): ====headsetVolume[12][11] = 0.000000
+V/AudioPolicyManager(  523): ====headsetVolume[12][12] = 0.000000
+V/AudioPolicyManager(  523): ====headsetVolume[12][13] = 0.000000
+V/AudioPolicyManager(  523): ====headsetVolume[12][14] = 0.000000
+V/AudioPolicyManager(  523): ====headsetVolume[12][15] = 0.000000
+V/AudioPolicyManager(  523): ====headsetVolume[12][16] = 0.000000
+V/AudioPolicyManager(  523): ====earpieceVolume[0][0] = 0.177828
+V/AudioPolicyManager(  523): ====earpieceVolume[0][1] = 0.251189
+V/AudioPolicyManager(  523): ====earpieceVolume[0][2] = 0.354813
+V/AudioPolicyManager(  523): ====earpieceVolume[0][3] = 0.501187
+V/AudioPolicyManager(  523): ====earpieceVolume[0][4] = 0.707946
+V/AudioPolicyManager(  523): ====earpieceVolume[0][5] = 1.000000
+V/AudioPolicyManager(  523): ====earpieceVolume[0][6] = 0.500000
+V/AudioPolicyManager(  523): ====earpieceVolume[0][7] = 0.000000
+V/AudioPolicyManager(  523): ====earpieceVolume[0][8] = 0.000000
+V/AudioPolicyManager(  523): ====earpieceVolume[0][9] = 0.000000
+V/AudioPolicyManager(  523): ====earpieceVolume[0][10] = 0.000000
+V/AudioPolicyManager(  523): ====earpieceVolume[0][11] = 0.000000
+V/AudioPolicyManager(  523): ====earpieceVolume[0][12] = 0.000000
+V/AudioPolicyManager(  523): ====earpieceVolume[0][13] = 0.000000
+V/AudioPolicyManager(  523): ====earpieceVolume[0][14] = 0.000000
+V/AudioPolicyManager(  523): ====earpieceVolume[0][15] = 0.000000
+V/AudioPolicyManager(  523): ====earpieceVolume[0][16] = 0.000000
+V/AudioPolicyManager(  523): ====earpieceVolume[1][0] = 0.000000
+V/AudioPolicyManager(  523): ====earpieceVolume[1][1] = 0.007943
+V/AudioPolicyManager(  523): ====earpieceVolume[1][2] = 0.011220
+V/AudioPolicyManager(  523): ====earpieceVolume[1][3] = 0.015849
+V/AudioPolicyManager(  523): ====earpieceVolume[1][4] = 0.022387
+V/AudioPolicyManager(  523): ====earpieceVolume[1][5] = 0.031623
+V/AudioPolicyManager(  523): ====earpieceVolume[1][6] = 0.044668
+V/AudioPolicyManager(  523): ====earpieceVolume[1][7] = 0.063096
+V/AudioPolicyManager(  523): ====earpieceVolume[1][8] = 0.089125
+V/AudioPolicyManager(  523): ====earpieceVolume[1][9] = 0.125893
+V/AudioPolicyManager(  523): ====earpieceVolume[1][10] = 0.177828
+V/AudioPolicyManager(  523): ====earpieceVolume[1][11] = 0.251189
+V/AudioPolicyManager(  523): ====earpieceVolume[1][12] = 0.354813
+V/AudioPolicyManager(  523): ====earpieceVolume[1][13] = 0.501187
+V/AudioPolicyManager(  523): ====earpieceVolume[1][14] = 0.707946
+V/AudioPolicyManager(  523): ====earpieceVolume[1][15] = 1.000000
+V/AudioPolicyManager(  523): ====earpieceVolume[1][16] = 1.000000
+V/AudioPolicyManager(  523): ====earpieceVolume[2][0] = 0.000000
+V/AudioPolicyManager(  523): ====earpieceVolume[2][1] = 0.007943
+V/AudioPolicyManager(  523): ====earpieceVolume[2][2] = 0.011220
+V/AudioPolicyManager(  523): ====earpieceVolume[2][3] = 0.015849
+V/AudioPolicyManager(  523): ====earpieceVolume[2][4] = 0.022387
+V/AudioPolicyManager(  523): ====earpieceVolume[2][5] = 0.031623
+V/AudioPolicyManager(  523): ====earpieceVolume[2][6] = 0.044668
+V/AudioPolicyManager(  523): ====earpieceVolume[2][7] = 0.063096
+V/AudioPolicyManager(  523): ====earpieceVolume[2][8] = 0.089125
+V/AudioPolicyManager(  523): ====earpieceVolume[2][9] = 0.125893
+V/AudioPolicyManager(  523): ====earpieceVolume[2][10] = 0.177828
+V/AudioPolicyManager(  523): ====earpieceVolume[2][11] = 0.251189
+V/AudioPolicyManager(  523): ====earpieceVolume[2][12] = 0.354813
+V/AudioPolicyManager(  523): ====earpieceVolume[2][13] = 0.501187
+V/AudioPolicyManager(  523): ====earpieceVolume[2][14] = 0.707946
+V/AudioPolicyManager(  523): ====earpieceVolume[2][15] = 1.000000
+V/AudioPolicyManager(  523): ====earpieceVolume[2][16] = 1.000000
+V/AudioPolicyManager(  523): ====earpieceVolume[3][0] = 0.000000
+V/AudioPolicyManager(  523): ====earpieceVolume[3][1] = 0.005623
+V/AudioPolicyManager(  523): ====earpieceVolume[3][2] = 0.007943
+V/AudioPolicyManager(  523): ====earpieceVolume[3][3] = 0.011220
+V/AudioPolicyManager(  523): ====earpieceVolume[3][4] = 0.015849
+V/AudioPolicyManager(  523): ====earpieceVolume[3][5] = 0.022387
+V/AudioPolicyManager(  523): ====earpieceVolume[3][6] = 0.031623
+V/AudioPolicyManager(  523): ====earpieceVolume[3][7] = 0.044668
+V/AudioPolicyManager(  523): ====earpieceVolume[3][8] = 0.063096
+V/AudioPolicyManager(  523): ====earpieceVolume[3][9] = 0.089125
+V/AudioPolicyManager(  523): ====earpieceVolume[3][10] = 0.125893
+V/AudioPolicyManager(  523): ====earpieceVolume[3][11] = 0.177828
+V/AudioPolicyManager(  523): ====earpieceVolume[3][12] = 0.251189
+V/AudioPolicyManager(  523): ====earpieceVolume[3][13] = 0.354813
+V/AudioPolicyManager(  523): ====earpieceVolume[3][14] = 0.501187
+V/AudioPolicyManager(  523): ====earpieceVolume[3][15] = 0.707946
+V/AudioPolicyManager(  523): ====earpieceVolume[3][16] = 1.000000
+V/AudioPolicyManager(  523): ====earpieceVolume[4][0] = 0.000000
+V/AudioPolicyManager(  523): ====earpieceVolume[4][1] = 0.007943
+V/AudioPolicyManager(  523): ====earpieceVolume[4][2] = 0.011220
+V/AudioPolicyManager(  523): ====earpieceVolume[4][3] = 0.015849
+V/AudioPolicyManager(  523): ====earpieceVolume[4][4] = 0.022387
+V/AudioPolicyManager(  523): ====earpieceVolume[4][5] = 0.031623
+V/AudioPolicyManager(  523): ====earpieceVolume[4][6] = 0.044668
+V/AudioPolicyManager(  523): ====earpieceVolume[4][7] = 0.063096
+V/AudioPolicyManager(  523): ====earpieceVolume[4][8] = 0.089125
+V/AudioPolicyManager(  523): ====earpieceVolume[4][9] = 0.125893
+V/AudioPolicyManager(  523): ====earpieceVolume[4][10] = 0.177828
+V/AudioPolicyManager(  523): ====earpieceVolume[4][11] = 0.251189
+V/AudioPolicyManager(  523): ====earpieceVolume[4][12] = 0.354813
+V/AudioPolicyManager(  523): ====earpieceVolume[4][13] = 0.501187
+V/AudioPolicyManager(  523): ====earpieceVolume[4][14] = 0.707946
+V/AudioPolicyManager(  523): ====earpieceVolume[4][15] = 1.000000
+V/AudioPolicyManager(  523): ====earpieceVolume[4][16] = 1.000000
+V/AudioPolicyManager(  523): ====earpieceVolume[5][0] = 0.000000
+V/AudioPolicyManager(  523): ====earpieceVolume[5][1] = 0.007943
+V/AudioPolicyManager(  523): ====earpieceVolume[5][2] = 0.011220
+V/AudioPolicyManager(  523): ====earpieceVolume[5][3] = 0.015849
+V/AudioPolicyManager(  523): ====earpieceVolume[5][4] = 0.022387
+V/AudioPolicyManager(  523): ====earpieceVolume[5][5] = 0.031623
+V/AudioPolicyManager(  523): ====earpieceVolume[5][6] = 0.044668
+V/AudioPolicyManager(  523): ====earpieceVolume[5][7] = 0.063096
+V/AudioPolicyManager(  523): ====earpieceVolume[5][8] = 0.089125
+V/AudioPolicyManager(  523): ====earpieceVolume[5][9] = 0.125893
+V/AudioPolicyManager(  523): ====earpieceVolume[5][10] = 0.177828
+V/AudioPolicyManager(  523): ====earpieceVolume[5][11] = 0.251189
+V/AudioPolicyManager(  523): ====earpieceVolume[5][12] = 0.354813
+V/AudioPolicyManager(  523): ====earpieceVolume[5][13] = 0.501187
+V/AudioPolicyManager(  523): ====earpieceVolume[5][14] = 0.707946
+V/AudioPolicyManager(  523): ====earpieceVolume[5][15] = 1.000000
+V/AudioPolicyManager(  523): ====earpieceVolume[5][16] = 1.000000
+V/AudioPolicyManager(  523): ====earpieceVolume[6][0] = 0.000000
+V/AudioPolicyManager(  523): ====earpieceVolume[6][1] = 0.003350
+V/AudioPolicyManager(  523): ====earpieceVolume[6][2] = 0.007943
+V/AudioPolicyManager(  523): ====earpieceVolume[6][3] = 0.014962
+V/AudioPolicyManager(  523): ====earpieceVolume[6][4] = 0.022387
+V/AudioPolicyManager(  523): ====earpieceVolume[6][5] = 0.031623
+V/AudioPolicyManager(  523): ====earpieceVolume[6][6] = 0.044668
+V/AudioPolicyManager(  523): ====earpieceVolume[6][7] = 0.063096
+V/AudioPolicyManager(  523): ====earpieceVolume[6][8] = 0.089125
+V/AudioPolicyManager(  523): ====earpieceVolume[6][9] = 0.125893
+V/AudioPolicyManager(  523): ====earpieceVolume[6][10] = 0.177828
+V/AudioPolicyManager(  523): ====earpieceVolume[6][11] = 0.251189
+V/AudioPolicyManager(  523): ====earpieceVolume[6][12] = 0.354813
+V/AudioPolicyManager(  523): ====earpieceVolume[6][13] = 0.501187
+V/AudioPolicyManager(  523): ====earpieceVolume[6][14] = 0.707946
+V/AudioPolicyManager(  523): ====earpieceVolume[6][15] = 1.000000
+V/AudioPolicyManager(  523): ====earpieceVolume[6][16] = 0.500000
+V/AudioPolicyManager(  523): ====earpieceVolume[7][0] = 0.000000
+V/AudioPolicyManager(  523): ====earpieceVolume[7][1] = 0.007943
+V/AudioPolicyManager(  523): ====earpieceVolume[7][2] = 0.011220
+V/AudioPolicyManager(  523): ====earpieceVolume[7][3] = 0.015849
+V/AudioPolicyManager(  523): ====earpieceVolume[7][4] = 0.022387
+V/AudioPolicyManager(  523): ====earpieceVolume[7][5] = 0.031623
+V/AudioPolicyManager(  523): ====earpieceVolume[7][6] = 0.044668
+V/AudioPolicyManager(  523): ====earpieceVolume[7][7] = 0.063096
+V/AudioPolicyManager(  523): ====earpieceVolume[7][8] = 0.089125
+V/AudioPolicyManager(  523): ====earpieceVolume[7][9] = 0.125893
+V/AudioPolicyManager(  523): ====earpieceVolume[7][10] = 0.177828
+V/AudioPolicyManager(  523): ====earpieceVolume[7][11] = 0.251189
+V/AudioPolicyManager(  523): ====earpieceVolume[7][12] = 0.354813
+V/AudioPolicyManager(  523): ====earpieceVolume[7][13] = 0.501187
+V/AudioPolicyManager(  523): ====earpieceVolume[7][14] = 0.707946
+V/AudioPolicyManager(  523): ====earpieceVolume[7][15] = 1.000000
+V/AudioPolicyManager(  523): ====earpieceVolume[7][16] = 1.000000
+V/AudioPolicyManager(  523): ====earpieceVolume[8][0] = 0.000000
+V/AudioPolicyManager(  523): ====earpieceVolume[8][1] = 0.003350
+V/AudioPolicyManager(  523): ====earpieceVolume[8][2] = 0.007943
+V/AudioPolicyManager(  523): ====earpieceVolume[8][3] = 0.014962
+V/AudioPolicyManager(  523): ====earpieceVolume[8][4] = 0.022387
+V/AudioPolicyManager(  523): ====earpieceVolume[8][5] = 0.031623
+V/AudioPolicyManager(  523): ====earpieceVolume[8][6] = 0.044668
+V/AudioPolicyManager(  523): ====earpieceVolume[8][7] = 0.063096
+V/AudioPolicyManager(  523): ====earpieceVolume[8][8] = 0.089125
+V/AudioPolicyManager(  523): ====earpieceVolume[8][9] = 0.125893
+V/AudioPolicyManager(  523): ====earpieceVolume[8][10] = 0.177828
+V/AudioPolicyManager(  523): ====earpieceVolume[8][11] = 0.251189
+V/AudioPolicyManager(  523): ====earpieceVolume[8][12] = 0.354813
+V/AudioPolicyManager(  523): ====earpieceVolume[8][13] = 0.501187
+V/AudioPolicyManager(  523): ====earpieceVolume[8][14] = 0.707946
+V/AudioPolicyManager(  523): ====earpieceVolume[8][15] = 1.000000
+V/AudioPolicyManager(  523): ====earpieceVolume[8][16] = 0.500000
+V/AudioPolicyManager(  523): ====earpieceVolume[9][0] = 0.000000
+V/AudioPolicyManager(  523): ====earpieceVolume[9][1] = 0.074989
+V/AudioPolicyManager(  523): ====earpieceVolume[9][2] = 0.089125
+V/AudioPolicyManager(  523): ====earpieceVolume[9][3] = 0.105925
+V/AudioPolicyManager(  523): ====earpieceVolume[9][4] = 0.125893
+V/AudioPolicyManager(  523): ====earpieceVolume[9][5] = 0.149624
+V/AudioPolicyManager(  523): ====earpieceVolume[9][6] = 0.177828
+V/AudioPolicyManager(  523): ====earpieceVolume[9][7] = 0.211349
+V/AudioPolicyManager(  523): ====earpieceVolume[9][8] = 0.251189
+V/AudioPolicyManager(  523): ====earpieceVolume[9][9] = 0.298538
+V/AudioPolicyManager(  523): ====earpieceVolume[9][10] = 0.354813
+V/AudioPolicyManager(  523): ====earpieceVolume[9][11] = 0.421696
+V/AudioPolicyManager(  523): ====earpieceVolume[9][12] = 0.501187
+V/AudioPolicyManager(  523): ====earpieceVolume[9][13] = 0.595662
+V/AudioPolicyManager(  523): ====earpieceVolume[9][14] = 0.707946
+V/AudioPolicyManager(  523): ====earpieceVolume[9][15] = 0.841395
+V/AudioPolicyManager(  523): ====earpieceVolume[9][16] = 0.500000
+V/AudioPolicyManager(  523): ====earpieceVolume[10][0] = 0.000000
+V/AudioPolicyManager(  523): ====earpieceVolume[10][1] = 0.003350
+V/AudioPolicyManager(  523): ====earpieceVolume[10][2] = 0.007943
+V/AudioPolicyManager(  523): ====earpieceVolume[10][3] = 0.014962
+V/AudioPolicyManager(  523): ====earpieceVolume[10][4] = 0.022387
+V/AudioPolicyManager(  523): ====earpieceVolume[10][5] = 0.031623
+V/AudioPolicyManager(  523): ====earpieceVolume[10][6] = 0.044668
+V/AudioPolicyManager(  523): ====earpieceVolume[10][7] = 0.063096
+V/AudioPolicyManager(  523): ====earpieceVolume[10][8] = 0.089125
+V/AudioPolicyManager(  523): ====earpieceVolume[10][9] = 0.125893
+V/AudioPolicyManager(  523): ====earpieceVolume[10][10] = 0.177828
+V/AudioPolicyManager(  523): ====earpieceVolume[10][11] = 0.251189
+V/AudioPolicyManager(  523): ====earpieceVolume[10][12] = 0.354813
+V/AudioPolicyManager(  523): ====earpieceVolume[10][13] = 0.501187
+V/AudioPolicyManager(  523): ====earpieceVolume[10][14] = 0.707946
+V/AudioPolicyManager(  523): ====earpieceVolume[10][15] = 1.000000
+V/AudioPolicyManager(  523): ====earpieceVolume[10][16] = 0.500000
+V/AudioPolicyManager(  523): ====earpieceVolume[11][0] = 0.177828
+V/AudioPolicyManager(  523): ====earpieceVolume[11][1] = 0.251189
+V/AudioPolicyManager(  523): ====earpieceVolume[11][2] = 0.354813
+V/AudioPolicyManager(  523): ====earpieceVolume[11][3] = 0.501187
+V/AudioPolicyManager(  523): ====earpieceVolume[11][4] = 0.707946
+V/AudioPolicyManager(  523): ====earpieceVolume[11][5] = 1.000000
+V/AudioPolicyManager(  523): ====earpieceVolume[11][6] = 0.500000
+V/AudioPolicyManager(  523): ====earpieceVolume[11][7] = 0.000000
+V/AudioPolicyManager(  523): ====earpieceVolume[11][8] = 0.000000
+V/AudioPolicyManager(  523): ====earpieceVolume[11][9] = 0.000000
+V/AudioPolicyManager(  523): ====earpieceVolume[11][10] = 0.000000
+V/AudioPolicyManager(  523): ====earpieceVolume[11][11] = 0.000000
+V/AudioPolicyManager(  523): ====earpieceVolume[11][12] = 0.000000
+V/AudioPolicyManager(  523): ====earpieceVolume[11][13] = 0.000000
+V/AudioPolicyManager(  523): ====earpieceVolume[11][14] = 0.000000
+V/AudioPolicyManager(  523): ====earpieceVolume[11][15] = 0.000000
+V/AudioPolicyManager(  523): ====earpieceVolume[11][16] = 0.000000
+V/AudioPolicyManager(  523): ====earpieceVolume[12][0] = 0.177828
+V/AudioPolicyManager(  523): ====earpieceVolume[12][1] = 0.251189
+V/AudioPolicyManager(  523): ====earpieceVolume[12][2] = 0.354813
+V/AudioPolicyManager(  523): ====earpieceVolume[12][3] = 0.501187
+V/AudioPolicyManager(  523): ====earpieceVolume[12][4] = 0.707946
+V/AudioPolicyManager(  523): ====earpieceVolume[12][5] = 1.000000
+V/AudioPolicyManager(  523): ====earpieceVolume[12][6] = 0.500000
+V/AudioPolicyManager(  523): ====earpieceVolume[12][7] = 0.000000
+V/AudioPolicyManager(  523): ====earpieceVolume[12][8] = 0.000000
+V/AudioPolicyManager(  523): ====earpieceVolume[12][9] = 0.000000
+V/AudioPolicyManager(  523): ====earpieceVolume[12][10] = 0.000000
+V/AudioPolicyManager(  523): ====earpieceVolume[12][11] = 0.000000
+V/AudioPolicyManager(  523): ====earpieceVolume[12][12] = 0.000000
+V/AudioPolicyManager(  523): ====earpieceVolume[12][13] = 0.000000
+V/AudioPolicyManager(  523): ====earpieceVolume[12][14] = 0.000000
+V/AudioPolicyManager(  523): ====earpieceVolume[12][15] = 0.000000
+V/AudioPolicyManager(  523): ====earpieceVolume[12][16] = 0.000000
+V/AudioPolicyManager(  523): ====bluetoothVolume[0][0] = 0.177828
+V/AudioPolicyManager(  523): ====bluetoothVolume[0][1] = 0.251189
+V/AudioPolicyManager(  523): ====bluetoothVolume[0][2] = 0.354813
+V/AudioPolicyManager(  523): ====bluetoothVolume[0][3] = 0.501187
+V/AudioPolicyManager(  523): ====bluetoothVolume[0][4] = 0.707946
+V/AudioPolicyManager(  523): ====bluetoothVolume[0][5] = 1.000000
+V/AudioPolicyManager(  523): ====bluetoothVolume[0][6] = 0.500000
+V/AudioPolicyManager(  523): ====bluetoothVolume[0][7] = 0.000000
+V/AudioPolicyManager(  523): ====bluetoothVolume[0][8] = 0.000000
+V/AudioPolicyManager(  523): ====bluetoothVolume[0][9] = 0.000000
+V/AudioPolicyManager(  523): ====bluetoothVolume[0][10] = 0.000000
+V/AudioPolicyManager(  523): ====bluetoothVolume[0][11] = 0.000000
+V/AudioPolicyManager(  523): ====bluetoothVolume[0][12] = 0.000000
+V/AudioPolicyManager(  523): ====bluetoothVolume[0][13] = 0.000000
+V/AudioPolicyManager(  523): ====bluetoothVolume[0][14] = 0.000000
+V/AudioPolicyManager(  523): ====bluetoothVolume[0][15] = 0.000000
+V/AudioPolicyManager(  523): ====bluetoothVolume[0][16] = 0.000000
+V/AudioPolicyManager(  523): ====bluetoothVolume[1][0] = 0.000000
+V/AudioPolicyManager(  523): ====bluetoothVolume[1][1] = 0.007943
+V/AudioPolicyManager(  523): ====bluetoothVolume[1][2] = 0.011220
+V/AudioPolicyManager(  523): ====bluetoothVolume[1][3] = 0.015849
+V/AudioPolicyManager(  523): ====bluetoothVolume[1][4] = 0.022387
+V/AudioPolicyManager(  523): ====bluetoothVolume[1][5] = 0.031623
+V/AudioPolicyManager(  523): ====bluetoothVolume[1][6] = 0.044668
+V/AudioPolicyManager(  523): ====bluetoothVolume[1][7] = 0.063096
+V/AudioPolicyManager(  523): ====bluetoothVolume[1][8] = 0.089125
+V/AudioPolicyManager(  523): ====bluetoothVolume[1][9] = 0.125893
+V/AudioPolicyManager(  523): ====bluetoothVolume[1][10] = 0.177828
+V/AudioPolicyManager(  523): ====bluetoothVolume[1][11] = 0.251189
+V/AudioPolicyManager(  523): ====bluetoothVolume[1][12] = 0.354813
+V/AudioPolicyManager(  523): ====bluetoothVolume[1][13] = 0.501187
+V/AudioPolicyManager(  523): ====bluetoothVolume[1][14] = 0.707946
+V/AudioPolicyManager(  523): ====bluetoothVolume[1][15] = 1.000000
+V/AudioPolicyManager(  523): ====bluetoothVolume[1][16] = 1.000000
+V/AudioPolicyManager(  523): ====bluetoothVolume[2][0] = 0.000000
+V/AudioPolicyManager(  523): ====bluetoothVolume[2][1] = 0.007943
+V/AudioPolicyManager(  523): ====bluetoothVolume[2][2] = 0.011220
+V/AudioPolicyManager(  523): ====bluetoothVolume[2][3] = 0.015849
+V/AudioPolicyManager(  523): ====bluetoothVolume[2][4] = 0.022387
+V/AudioPolicyManager(  523): ====bluetoothVolume[2][5] = 0.031623
+V/AudioPolicyManager(  523): ====bluetoothVolume[2][6] = 0.044668
+V/AudioPolicyManager(  523): ====bluetoothVolume[2][7] = 0.063096
+V/AudioPolicyManager(  523): ====bluetoothVolume[2][8] = 0.089125
+V/AudioPolicyManager(  523): ====bluetoothVolume[2][9] = 0.125893
+V/AudioPolicyManager(  523): ====bluetoothVolume[2][10] = 0.177828
+V/AudioPolicyManager(  523): ====bluetoothVolume[2][11] = 0.251189
+V/AudioPolicyManager(  523): ====bluetoothVolume[2][12] = 0.354813
+V/AudioPolicyManager(  523): ====bluetoothVolume[2][13] = 0.501187
+V/AudioPolicyManager(  523): ====bluetoothVolume[2][14] = 0.707946
+V/AudioPolicyManager(  523): ====bluetoothVolume[2][15] = 1.000000
+V/AudioPolicyManager(  523): ====bluetoothVolume[2][16] = 1.000000
+V/AudioPolicyManager(  523): ====bluetoothVolume[3][0] = 0.000000
+V/AudioPolicyManager(  523): ====bluetoothVolume[3][1] = 0.003162
+V/AudioPolicyManager(  523): ====bluetoothVolume[3][2] = 0.005012
+V/AudioPolicyManager(  523): ====bluetoothVolume[3][3] = 0.007943
+V/AudioPolicyManager(  523): ====bluetoothVolume[3][4] = 0.012589
+V/AudioPolicyManager(  523): ====bluetoothVolume[3][5] = 0.019953
+V/AudioPolicyManager(  523): ====bluetoothVolume[3][6] = 0.031623
+V/AudioPolicyManager(  523): ====bluetoothVolume[3][7] = 0.050119
+V/AudioPolicyManager(  523): ====bluetoothVolume[3][8] = 0.079433
+V/AudioPolicyManager(  523): ====bluetoothVolume[3][9] = 0.112202
+V/AudioPolicyManager(  523): ====bluetoothVolume[3][10] = 0.158489
+V/AudioPolicyManager(  523): ====bluetoothVolume[3][11] = 0.251189
+V/AudioPolicyManager(  523): ====bluetoothVolume[3][12] = 0.354813
+V/AudioPolicyManager(  523): ====bluetoothVolume[3][13] = 0.562341
+V/AudioPolicyManager(  523): ====bluetoothVolume[3][14] = 0.707946
+V/AudioPolicyManager(  523): ====bluetoothVolume[3][15] = 1.000000
+V/AudioPolicyManager(  523): ====bluetoothVolume[3][16] = 1.000000
+V/AudioPolicyManager(  523): ====bluetoothVolume[4][0] = 0.000000
+V/AudioPolicyManager(  523): ====bluetoothVolume[4][1] = 0.007943
+V/AudioPolicyManager(  523): ====bluetoothVolume[4][2] = 0.011220
+V/AudioPolicyManager(  523): ====bluetoothVolume[4][3] = 0.015849
+V/AudioPolicyManager(  523): ====bluetoothVolume[4][4] = 0.022387
+V/AudioPolicyManager(  523): ====bluetoothVolume[4][5] = 0.031623
+V/AudioPolicyManager(  523): ====bluetoothVolume[4][6] = 0.044668
+V/AudioPolicyManager(  523): ====bluetoothVolume[4][7] = 0.063096
+V/AudioPolicyManager(  523): ====bluetoothVolume[4][8] = 0.089125
+V/AudioPolicyManager(  523): ====bluetoothVolume[4][9] = 0.125893
+V/AudioPolicyManager(  523): ====bluetoothVolume[4][10] = 0.177828
+V/AudioPolicyManager(  523): ====bluetoothVolume[4][11] = 0.251189
+V/AudioPolicyManager(  523): ====bluetoothVolume[4][12] = 0.354813
+V/AudioPolicyManager(  523): ====bluetoothVolume[4][13] = 0.501187
+V/AudioPolicyManager(  523): ====bluetoothVolume[4][14] = 0.707946
+V/AudioPolicyManager(  523): ====bluetoothVolume[4][15] = 1.000000
+V/AudioPolicyManager(  523): ====bluetoothVolume[4][16] = 1.000000
+V/AudioPolicyManager(  523): ====bluetoothVolume[5][0] = 0.000000
+V/AudioPolicyManager(  523): ====bluetoothVolume[5][1] = 0.007943
+V/AudioPolicyManager(  523): ====bluetoothVolume[5][2] = 0.011220
+V/AudioPolicyManager(  523): ====bluetoothVolume[5][3] = 0.015849
+V/AudioPolicyManager(  523): ====bluetoothVolume[5][4] = 0.022387
+V/AudioPolicyManager(  523): ====bluetoothVolume[5][5] = 0.031623
+V/AudioPolicyManager(  523): ====bluetoothVolume[5][6] = 0.044668
+V/AudioPolicyManager(  523): ====bluetoothVolume[5][7] = 0.063096
+V/AudioPolicyManager(  523): ====bluetoothVolume[5][8] = 0.089125
+V/AudioPolicyManager(  523): ====bluetoothVolume[5][9] = 0.125893
+V/AudioPolicyManager(  523): ====bluetoothVolume[5][10] = 0.177828
+V/AudioPolicyManager(  523): ====bluetoothVolume[5][11] = 0.251189
+V/AudioPolicyManager(  523): ====bluetoothVolume[5][12] = 0.354813
+V/AudioPolicyManager(  523): ====bluetoothVolume[5][13] = 0.501187
+V/AudioPolicyManager(  523): ====bluetoothVolume[5][14] = 0.707946
+V/AudioPolicyManager(  523): ====bluetoothVolume[5][15] = 1.000000
+V/AudioPolicyManager(  523): ====bluetoothVolume[5][16] = 1.000000
+V/AudioPolicyManager(  523): ====bluetoothVolume[6][0] = 0.000000
+V/AudioPolicyManager(  523): ====bluetoothVolume[6][1] = 0.003350
+V/AudioPolicyManager(  523): ====bluetoothVolume[6][2] = 0.007943
+V/AudioPolicyManager(  523): ====bluetoothVolume[6][3] = 0.014962
+V/AudioPolicyManager(  523): ====bluetoothVolume[6][4] = 0.022387
+V/AudioPolicyManager(  523): ====bluetoothVolume[6][5] = 0.031623
+V/AudioPolicyManager(  523): ====bluetoothVolume[6][6] = 0.044668
+V/AudioPolicyManager(  523): ====bluetoothVolume[6][7] = 0.063096
+V/AudioPolicyManager(  523): ====bluetoothVolume[6][8] = 0.089125
+V/AudioPolicyManager(  523): ====bluetoothVolume[6][9] = 0.125893
+V/AudioPolicyManager(  523): ====bluetoothVolume[6][10] = 0.177828
+V/AudioPolicyManager(  523): ====bluetoothVolume[6][11] = 0.251189
+V/AudioPolicyManager(  523): ====bluetoothVolume[6][12] = 0.354813
+V/AudioPolicyManager(  523): ====bluetoothVolume[6][13] = 0.501187
+V/AudioPolicyManager(  523): ====bluetoothVolume[6][14] = 0.707946
+V/AudioPolicyManager(  523): ====bluetoothVolume[6][15] = 1.000000
+V/AudioPolicyManager(  523): ====bluetoothVolume[6][16] = 0.500000
+V/AudioPolicyManager(  523): ====bluetoothVolume[7][0] = 0.000000
+V/AudioPolicyManager(  523): ====bluetoothVolume[7][1] = 0.007943
+V/AudioPolicyManager(  523): ====bluetoothVolume[7][2] = 0.011220
+V/AudioPolicyManager(  523): ====bluetoothVolume[7][3] = 0.015849
+V/AudioPolicyManager(  523): ====bluetoothVolume[7][4] = 0.022387
+V/AudioPolicyManager(  523): ====bluetoothVolume[7][5] = 0.031623
+V/AudioPolicyManager(  523): ====bluetoothVolume[7][6] = 0.044668
+V/AudioPolicyManager(  523): ====bluetoothVolume[7][7] = 0.063096
+V/AudioPolicyManager(  523): ====bluetoothVolume[7][8] = 0.089125
+V/AudioPolicyManager(  523): ====bluetoothVolume[7][9] = 0.125893
+V/AudioPolicyManager(  523): ====bluetoothVolume[7][10] = 0.177828
+V/AudioPolicyManager(  523): ====bluetoothVolume[7][11] = 0.251189
+V/AudioPolicyManager(  523): ====bluetoothVolume[7][12] = 0.354813
+V/AudioPolicyManager(  523): ====bluetoothVolume[7][13] = 0.501187
+V/AudioPolicyManager(  523): ====bluetoothVolume[7][14] = 0.707946
+V/AudioPolicyManager(  523): ====bluetoothVolume[7][15] = 1.000000
+V/AudioPolicyManager(  523): ====bluetoothVolume[7][16] = 1.000000
+V/AudioPolicyManager(  523): ====bluetoothVolume[8][0] = 0.000000
+V/AudioPolicyManager(  523): ====bluetoothVolume[8][1] = 0.003350
+V/AudioPolicyManager(  523): ====bluetoothVolume[8][2] = 0.007943
+V/AudioPolicyManager(  523): ====bluetoothVolume[8][3] = 0.014962
+V/AudioPolicyManager(  523): ====bluetoothVolume[8][4] = 0.022387
+V/AudioPolicyManager(  523): ====bluetoothVolume[8][5] = 0.031623
+V/AudioPolicyManager(  523): ====bluetoothVolume[8][6] = 0.044668
+V/AudioPolicyManager(  523): ====bluetoothVolume[8][7] = 0.063096
+V/AudioPolicyManager(  523): ====bluetoothVolume[8][8] = 0.089125
+V/AudioPolicyManager(  523): ====bluetoothVolume[8][9] = 0.125893
+V/AudioPolicyManager(  523): ====bluetoothVolume[8][10] = 0.177828
+V/AudioPolicyManager(  523): ====bluetoothVolume[8][11] = 0.251189
+V/AudioPolicyManager(  523): ====bluetoothVolume[8][12] = 0.354813
+V/AudioPolicyManager(  523): ====bluetoothVolume[8][13] = 0.501187
+V/AudioPolicyManager(  523): ====bluetoothVolume[8][14] = 0.707946
+V/AudioPolicyManager(  523): ====bluetoothVolume[8][15] = 1.000000
+V/AudioPolicyManager(  523): ====bluetoothVolume[8][16] = 0.500000
+V/AudioPolicyManager(  523): ====bluetoothVolume[9][0] = 0.000000
+V/AudioPolicyManager(  523): ====bluetoothVolume[9][1] = 0.074989
+V/AudioPolicyManager(  523): ====bluetoothVolume[9][2] = 0.089125
+V/AudioPolicyManager(  523): ====bluetoothVolume[9][3] = 0.105925
+V/AudioPolicyManager(  523): ====bluetoothVolume[9][4] = 0.125893
+V/AudioPolicyManager(  523): ====bluetoothVolume[9][5] = 0.149624
+V/AudioPolicyManager(  523): ====bluetoothVolume[9][6] = 0.177828
+V/AudioPolicyManager(  523): ====bluetoothVolume[9][7] = 0.211349
+V/AudioPolicyManager(  523): ====bluetoothVolume[9][8] = 0.251189
+V/AudioPolicyManager(  523): ====bluetoothVolume[9][9] = 0.298538
+V/AudioPolicyManager(  523): ====bluetoothVolume[9][10] = 0.354813
+V/AudioPolicyManager(  523): ====bluetoothVolume[9][11] = 0.421696
+V/AudioPolicyManager(  523): ====bluetoothVolume[9][12] = 0.501187
+V/AudioPolicyManager(  523): ====bluetoothVolume[9][13] = 0.595662
+V/AudioPolicyManager(  523): ====bluetoothVolume[9][14] = 0.707946
+V/AudioPolicyManager(  523): ====bluetoothVolume[9][15] = 0.841395
+V/AudioPolicyManager(  523): ====bluetoothVolume[9][16] = 0.500000
+V/AudioPolicyManager(  523): ====bluetoothVolume[10][0] = 0.000000
+V/AudioPolicyManager(  523): ====bluetoothVolume[10][1] = 0.003350
+V/AudioPolicyManager(  523): ====bluetoothVolume[10][2] = 0.007943
+V/AudioPolicyManager(  523): ====bluetoothVolume[10][3] = 0.014962
+V/AudioPolicyManager(  523): ====bluetoothVolume[10][4] = 0.022387
+V/AudioPolicyManager(  523): ====bluetoothVolume[10][5] = 0.031623
+V/AudioPolicyManager(  523): ====bluetoothVolume[10][6] = 0.044668
+V/AudioPolicyManager(  523): ====bluetoothVolume[10][7] = 0.063096
+V/AudioPolicyManager(  523): ====bluetoothVolume[10][8] = 0.089125
+V/AudioPolicyManager(  523): ====bluetoothVolume[10][9] = 0.125893
+V/AudioPolicyManager(  523): ====bluetoothVolume[10][10] = 0.177828
+V/AudioPolicyManager(  523): ====bluetoothVolume[10][11] = 0.251189
+V/AudioPolicyManager(  523): ====bluetoothVolume[10][12] = 0.354813
+V/AudioPolicyManager(  523): ====bluetoothVolume[10][13] = 0.501187
+V/AudioPolicyManager(  523): ====bluetoothVolume[10][14] = 0.707946
+V/AudioPolicyManager(  523): ====bluetoothVolume[10][15] = 1.000000
+V/AudioPolicyManager(  523): ====bluetoothVolume[10][16] = 0.500000
+V/AudioPolicyManager(  523): ====bluetoothVolume[11][0] = 0.177828
+V/AudioPolicyManager(  523): ====bluetoothVolume[11][1] = 0.251189
+V/AudioPolicyManager(  523): ====bluetoothVolume[11][2] = 0.354813
+V/AudioPolicyManager(  523): ====bluetoothVolume[11][3] = 0.501187
+V/AudioPolicyManager(  523): ====bluetoothVolume[11][4] = 0.707946
+V/AudioPolicyManager(  523): ====bluetoothVolume[11][5] = 1.000000
+V/AudioPolicyManager(  523): ====bluetoothVolume[11][6] = 0.500000
+V/AudioPolicyManager(  523): ====bluetoothVolume[11][7] = 0.000000
+V/AudioPolicyManager(  523): ====bluetoothVolume[11][8] = 0.000000
+V/AudioPolicyManager(  523): ====bluetoothVolume[11][9] = 0.000000
+V/AudioPolicyManager(  523): ====bluetoothVolume[11][10] = 0.000000
+V/AudioPolicyManager(  523): ====bluetoothVolume[11][11] = 0.000000
+V/AudioPolicyManager(  523): ====bluetoothVolume[11][12] = 0.000000
+V/AudioPolicyManager(  523): ====bluetoothVolume[11][13] = 0.000000
+V/AudioPolicyManager(  523): ====bluetoothVolume[11][14] = 0.000000
+V/AudioPolicyManager(  523): ====bluetoothVolume[11][15] = 0.000000
+V/AudioPolicyManager(  523): ====bluetoothVolume[11][16] = 0.000000
+V/AudioPolicyManager(  523): ====bluetoothVolume[12][0] = 0.177828
+V/AudioPolicyManager(  523): ====bluetoothVolume[12][1] = 0.251189
+V/AudioPolicyManager(  523): ====bluetoothVolume[12][2] = 0.354813
+V/AudioPolicyManager(  523): ====bluetoothVolume[12][3] = 0.501187
+V/AudioPolicyManager(  523): ====bluetoothVolume[12][4] = 0.707946
+V/AudioPolicyManager(  523): ====bluetoothVolume[12][5] = 1.000000
+V/AudioPolicyManager(  523): ====bluetoothVolume[12][6] = 0.500000
+V/AudioPolicyManager(  523): ====bluetoothVolume[12][7] = 0.000000
+V/AudioPolicyManager(  523): ====bluetoothVolume[12][8] = 0.000000
+V/AudioPolicyManager(  523): ====bluetoothVolume[12][9] = 0.000000
+V/AudioPolicyManager(  523): ====bluetoothVolume[12][10] = 0.000000
+V/AudioPolicyManager(  523): ====bluetoothVolume[12][11] = 0.000000
+V/AudioPolicyManager(  523): ====bluetoothVolume[12][12] = 0.000000
+V/AudioPolicyManager(  523): ====bluetoothVolume[12][13] = 0.000000
+V/AudioPolicyManager(  523): ====bluetoothVolume[12][14] = 0.000000
+V/AudioPolicyManager(  523): ====bluetoothVolume[12][15] = 0.000000
+V/AudioPolicyManager(  523): ====bluetoothVolume[12][16] = 0.000000
+V/AudioPolicyManager(  523): ==== situationVolume[0][0] = 0.500000
+V/AudioPolicyManager(  523): ==== situationVolume[0][1] = 0.100000
+V/AudioPolicyManager(  523): ==== situationVolume[1][0] = 0.500000
+V/AudioPolicyManager(  523): ==== situationVolume[1][1] = 0.100000
+V/AudioPolicyManager(  523): ==== situationVolume[2][0] = 0.500000
+V/AudioPolicyManager(  523): ==== situationVolume[2][1] = 1.000000
+V/AudioPolicyManager(  523): ==== situationVolume[3][0] = 0.500000
+V/AudioPolicyManager(  523): ==== situationVolume[3][1] = 0.500000
+V/AudioPolicyManager(  523): ==== situationVolume[4][0] = 0.500000
+V/AudioPolicyManager(  523): ==== situationVolume[4][1] = 0.500000
+V/AudioPolicyManager(  523): ==== situationVolume[5][0] = 1.000000
+V/AudioPolicyManager(  523): ==== situationVolume[5][1] = 0.500000
+V/AudioPolicyManager(  523): ==== situationVolume[6][0] = 0.500000
+V/AudioPolicyManager(  523): ==== situationVolume[6][1] = 0.030000
+V/AudioPolicyManager(  523): ==== situationVolume[7][0] = 1.000000
+V/AudioPolicyManager(  523): ==== situationVolume[7][1] = 1.000000
+V/AudioPolicyManager(  523): ==== situationVolume[8][0] = 0.500000
+V/AudioPolicyManager(  523): ==== situationVolume[8][1] = 0.020000
+V/AudioPolicyManager(  523): ==== situationVolume[9][0] = 0.500000
+V/AudioPolicyManager(  523): ==== situationVolume[9][1] = 0.500000
+V/AudioPolicyManager(  523): ==== situationVolume[10][0] = 0.500000
+V/AudioPolicyManager(  523): ==== situationVolume[10][1] = 0.500000
+V/AudioPolicyManager(  523): ==== situationVolume[11][0] = 1.000000
+V/AudioPolicyManager(  523): ==== situationVolume[11][1] = 1.000000
+V/AudioPolicyManager(  523): ==== situationVolume[12][0] = 0.500000
+V/AudioPolicyManager(  523): ==== situationVolume[12][1] = 1.000000
+V/AudioPolicyManager(  523): ==== situationVolume[13][0] = 0.500000
+V/AudioPolicyManager(  523): ==== situationVolume[13][1] = 1.000000
+V/AudioPolicyManager(  523): ==== situationVolume[14][0] = 0.500000
+V/AudioPolicyManager(  523): ==== situationVolume[14][1] = 1.000000
+V/AudioPolicyManager(  523): ==== situationVolume[15][0] = 0.500000
+V/AudioPolicyManager(  523): ==== situationVolume[15][1] = 1.000000
+V/AudioPolicyManager(  523): ==== situationVolume[16][0] = 0.500000
+V/AudioPolicyManager(  523): ==== situationVolume[16][1] = 1.000000
+D/Audio_Control_CSC(  523): get_CS_ISO_Code country_code = CA
+D/Audio_Control_CSC(  523): get_ShutterSound_Off
+D/Audio_Control_CSC(  523): getCameraShutterOn()_mbIsShutterOn = 0
+I/AudioPolicyService(  523): forced_val : 0
+V/AudioPolicyManager(  523): setSystemProperty() property ro.camera.sound.forced, value 0
+I/AudioPolicyManager(  523): ENFORCED_AUDIBLE can be muted
+W/AudioPolicyEffects(  523): loadEffect() invalid uuid 1d97bb0b-9e2f-4403-9ae3-58c2554306
