@@ -157,7 +157,8 @@
 	<ctl name="ES325 RX1 Enable" value="ZERO" />
 	<ctl name="ES325 RX2 Enable" value="ZERO" />
 	<ctl name="Internal Route Config" value="5" />
-	<ctl name="VEQ Enable" value="1" />
+	<ctl name="VEQ Enable" value="0" />
+	<ctl name="BWE Enable" value="0" />
 
 	<ctl name="TTY Mode" value="OFF" />
 	<ctl name="SPK Status" value="0" />
@@ -670,6 +671,7 @@
 		<ctl name="RX1 Digital Volume" value="84" />
 		<ctl name="ES325 RX1 Enable" value="1" />
 		<ctl name="VEQ Enable" value="0" />
+		<ctl name="BWE Enable" value="0" />
 	</path>
 
 	<path name="voice-call-handset-hac">
@@ -693,6 +695,7 @@
 		<ctl name="SPK DRV Volume" value="8" />
 		<ctl name="ES325 RX1 Enable" value="1" />
 		<ctl name="VEQ Enable" value="0" />
+		<ctl name="BWE Enable" value="0" />
 	</path>
 
 	<path name="voice-call-headset">
