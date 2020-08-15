@@ -67,10 +67,6 @@
 extern int msm_show_resume_irq_mask;
 #endif
 
-#ifdef CONFIG_SEC_PM_DEBUG
-extern int msm_show_resume_irq_mask;
-#endif
-
 #ifdef CONFIG_REGULATOR_MAX77826
 #include <linux/regulator/max77826.h>
 #endif
