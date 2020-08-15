@@ -7785,6 +7785,35 @@ static int show_sound_value(unsigned int inputval)
 	return tempval;
 }
 
+/*
+#define TAIKO_A_CDC_COMP1_B1_CTL			(0x370)
+#define TAIKO_A_CDC_COMP1_B2_CTL			(0x371)
+#define TAIKO_A_CDC_COMP1_B3_CTL			(0x372)
+#define TAIKO_A_CDC_COMP1_B4_CTL			(0x373)
+#define TAIKO_A_CDC_COMP1_B5_CTL			(0x374)
+#define TAIKO_A_CDC_COMP1_B6_CTL			(0x375)
+#define TAIKO_A_CDC_COMP1_SHUT_DOWN_STATUS			(0x376)
+ */
+#define compread(reg) wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, reg)
+static ssize_t compander1_show(struct kobject *kobj,
+		struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%s: %d\n \
+						%s: %d\n, \
+						%s: %d\n \
+						%s: %d\n, \
+						%s: %d\n, \
+						%s: %d\n \
+						%s: %d\n",
+						"TAIKO_A_CDC_COMP1_B1_CTL", compread(TAIKO_A_CDC_COMP1_B1_CTL),
+						"TAIKO_A_CDC_COMP1_B2_CTL", compread(TAIKO_A_CDC_COMP1_B2_CTL),
+						"TAIKO_A_CDC_COMP1_B3_CTL", compread(TAIKO_A_CDC_COMP1_B3_CTL),
+						"TAIKO_A_CDC_COMP1_B4_CTL", compread(TAIKO_A_CDC_COMP1_B4_CTL),
+						"TAIKO_A_CDC_COMP1_B5_CTL", compread(TAIKO_A_CDC_COMP1_B5_CTL),
+						"TAIKO_A_CDC_COMP1_B6_CTL", compread(TAIKO_A_CDC_COMP1_B6_CTL),
+						"TAIKO_A_CDC_COMP1_SHUT_DOWN_STATUS", compread(TAIKO_A_CDC_COMP1_SHUT_DOWN_STATUS));
+}
+
 static ssize_t headphone_gain_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
 	int leftval, rightval, templeft, tempright;
@@ -8352,6 +8381,12 @@ static void update_bias(unsigned short reg)
 		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, reg, hph_pa_bias);
 }
 */
+
+static struct kobj_attribute compander1_attribute =
+	__ATTR(compander1, 0444,
+		compander1_show,
+		NULL);
+
 static struct kobj_attribute headphone_gain_attribute =
 	__ATTR(headphone_gain, 0644,
 		headphone_gain_show,
@@ -8448,6 +8483,7 @@ static struct kobj_attribute hph_pa_bias_attribute =
 		hph_pa_bias_store);
 
 static struct attribute *sound_control_attrs[] = {
+		&compander1_attribute.attr,
 		&headphone_gain_attribute.attr,
 		&hph_poweramp_gain_attribute.attr,
 		&hph_poweramp_gain_raw_attribute.attr,
