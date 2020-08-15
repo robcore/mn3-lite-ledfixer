@@ -871,6 +871,13 @@ static void write_autochopper(void)
 	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_AUTO_CHOP, hph_autochopper);
 }
 
+/* Lazy wrapper until there are more bias regs added */
+static void update_bias(unsigned short reg)
+{
+	if (reg == TAIKO_A_RX_HPH_BIAS_PA)
+		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, reg, hph_pa_bias);
+}
+
 static void update_control_regs(void)
 {
 	update_bias(TAIKO_A_RX_HPH_BIAS_PA);
@@ -882,14 +889,6 @@ static void update_control_regs(void)
 	write_hpf_bypass(TAIKO_A_CDC_RX7_B5_CTL);
 	write_chopper();
 	write_autochopper();
-}
-
-
-/* Lazy wrapper until there are more bias regs added */
-static void update_bias(unsigned short reg)
-{
-	if (reg == TAIKO_A_RX_HPH_BIAS_PA)
-		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, reg, hph_pa_bias);
 }
 
 static int spkr_drv_wrnd = 1;
