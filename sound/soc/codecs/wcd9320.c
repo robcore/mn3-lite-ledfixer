@@ -3910,7 +3910,10 @@ static int taiko_hph_pa_event(struct snd_soc_dapm_widget *w,
 
 		usleep_range(13000, 13000);
 //		pr_debug("%s: sleep 13000us after %s PA disable\n", __func__, w->name);
-		pr_info("%s: hpwidget disabled\n", __func__);
+		if (w->shift == 5)
+			pr_info("%s: hpwidget_left disabled\n", __func__);
+		else if (w->shift == 4)
+			pr_info("%s: hpwidget_right disabled\n", __func__);
 
 		/* Let MBHC module know PA turned off */
 		wcd9xxx_resmgr_notifier_call(&taiko->resmgr, e_post_off);
