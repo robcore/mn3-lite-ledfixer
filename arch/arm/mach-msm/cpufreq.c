@@ -33,7 +33,6 @@
 #include <trace/events/power.h>
 #include <mach/socinfo.h>
 #include <mach/cpufreq.h>
-#include <linux/msm_thermal.h>
 
 #include "acpuclock.h"
 
@@ -205,6 +204,20 @@ static int set_cpu_freq(struct cpufreq_policy *policy, unsigned int new_freq,
 	trace_cpu_frequency_switch_start(freqs.old, freqs.new, policy->cpu);
 	if (is_clk) {
 		unsigned long rate = new_freq * 1000;
+//#ifdef CONFIG_SEC_PM
+#if 0
+		extern int jig_boot_clk_limit;
+
+		if (jig_boot_clk_limit == 1) { //limit 1.5Ghz to block whitescreen during 50 secs on JIG
+			unsigned long long t = sched_clock();
+			do_div(t, 1000000000);
+			if (t <= 50 && rate > 1574400000)
+				rate = 1574400000;
+			else if (t > 50) {		// no need to check after 50 sec
+				jig_boot_clk_limit = 0;
+			}
+		}
+#endif
 		rate = clk_round_rate(cpu_clk[policy->cpu], rate);
 		ret = clk_set_rate(cpu_clk[policy->cpu], rate);
 		if (!ret) {
@@ -364,6 +377,8 @@ static int __cpuinit msm_cpufreq_init(struct cpufreq_policy *policy)
 	    CPUFREQ_RELATION_H, &index) &&
 	    cpufreq_frequency_table_target(policy, table, cur_freq,
 	    CPUFREQ_RELATION_L, &index)) {
+		pr_info("cpufreq: cpu%d at invalid freq: %d\n",
+				policy->cpu, cur_freq);
 		return -EINVAL;
 	}
 	/*
@@ -373,6 +388,8 @@ static int __cpuinit msm_cpufreq_init(struct cpufreq_policy *policy)
 	ret = set_cpu_freq(policy, table[index].frequency, table[index].index);
 	if (ret)
 		return ret;
+	pr_debug("cpufreq: cpu%d init at %d switching to %d\n",
+			policy->cpu, cur_freq, table[index].frequency);
 	policy->cur = table[index].frequency;
 
 	policy->cpuinfo.transition_latency =
@@ -702,10 +719,7 @@ static int __init msm_cpufreq_register(void)
 	platform_driver_probe(&msm_cpufreq_plat_driver, msm_cpufreq_probe);
 	msm_cpufreq_wq = alloc_workqueue("msm-cpufreq", WQ_HIGHPRI, 0);
 	register_hotcpu_notifier(&msm_cpufreq_cpu_notifier);
-	if (cpufreq_register_driver(&msm_cpufreq_driver))
-		pr_err("%s: Failed to register msm cpufreq!\n", __func__);
-	msm_thermal_device_init();
-	return 0;
+	return cpufreq_register_driver(&msm_cpufreq_driver);
 }
 
 device_initcall(msm_cpufreq_register);
