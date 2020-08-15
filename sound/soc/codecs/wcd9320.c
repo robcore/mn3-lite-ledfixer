@@ -1315,13 +1315,18 @@ static int taiko_config_compander(struct snd_soc_dapm_widget *w,
 	    &comp_samp_params[rate];
 	enum wcd9xxx_buck_volt buck_mv;
 
+	/* Compander 0 has single channel */
+	mask = (comp == COMPANDER_0 ? 0x01 : 0x03);
+	enable_mask = (comp == COMPANDER_0 ? 0x02 : 0x03);
+	buck_mv = taiko_codec_get_buck_mv(codec);
+
 	pr_info("%s: %s event %d compander %d, enabled %d", __func__,
 		 w->name, event, comp, taiko->comp_enabled[comp]);
 	if (comp == COMPANDER_1 && hph_pa_enabled) {
 		/* Disable compander */
 		snd_soc_update_bits(codec,
 				    TAIKO_A_CDC_COMP0_B1_CTL + (comp * 8),
-				    0x03, 0x00);
+				    enable_mask, 0x00);
 
 		/* Toggle compander reset bits */
 		snd_soc_update_bits(codec, TAIKO_A_CDC_CLK_OTHR_RESET_B2_CTL,
@@ -1342,11 +1347,6 @@ static int taiko_config_compander(struct snd_soc_dapm_widget *w,
 	
 	if (!taiko->comp_enabled[comp])
 		return 0;
-
-	/* Compander 0 has single channel */
-	mask = (comp == COMPANDER_0 ? 0x01 : 0x03);
-	enable_mask = (comp == COMPANDER_0 ? 0x02 : 0x03);
-	buck_mv = taiko_codec_get_buck_mv(codec);
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
