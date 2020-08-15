@@ -1321,7 +1321,7 @@ static int taiko_config_compander(struct snd_soc_dapm_widget *w,
 		/* Disable compander */
 		snd_soc_update_bits(codec,
 				    TAIKO_A_CDC_COMP0_B1_CTL + (comp * 8),
-				    enable_mask, 0x00);
+				    0x03, 0x00);
 
 		/* Toggle compander reset bits */
 		snd_soc_update_bits(codec, TAIKO_A_CDC_CLK_OTHR_RESET_B2_CTL,
