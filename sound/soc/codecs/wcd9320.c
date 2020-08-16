@@ -1258,8 +1258,9 @@ static int taiko_set_compander(struct snd_kcontrol *kcontrol,
 		snd_soc_write(codec, TAIKO_A_RX_HPH_BIAS_WG_OCP, 0x2A);
 
 		/* Enable Chopper */
-		snd_soc_update_bits(codec,
-			TAIKO_A_RX_HPH_CHOP_CTL, 0x80, 0x80);
+		if (!chopper_bypass)
+			snd_soc_update_bits(codec,
+				TAIKO_A_RX_HPH_CHOP_CTL, 0x80, 0x80);
 
 		snd_soc_write(codec, TAIKO_A_NCP_DTEST, 0x20);
 		pr_debug("%s: Enabled Chopper and set wavegen to 5 msec\n",
@@ -4838,7 +4839,8 @@ static int taiko_prepare(struct snd_pcm_substream *substream,
 
 	if (!taiko_p->comp_enabled[COMPANDER_1] && !poweramp_active()) {
 			taiko_p->clsh_d.hs_perf_mode_enabled = false;
-			snd_soc_update_bits(codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20);
+			if (!chopper_bypass)
+				snd_soc_update_bits(codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20);
 			pr_info("%s(): HS peformance mode Disabled - No Headphone Playback", __func__);
 			update_control_regs();
 			return 0;
@@ -4888,8 +4890,10 @@ static int taiko_prepare(struct snd_pcm_substream *substream,
 			pr_info("%s: uhqa_mode enabled", __func__);
 	} else {
 		taiko_p->clsh_d.hs_perf_mode_enabled = false;
-		if (snd_soc_update_bits(codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20) >= 0)
-			pr_info("%s: uhqa_mode disabled", __func__);
+		if (!chopper_bypass) {
+			if (snd_soc_update_bits(codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20) >= 0)
+				pr_info("%s: uhqa_mode disabled", __func__);
+		}
 	}
 
 	update_control_regs();
@@ -7470,15 +7474,12 @@ static int wcd9xxx_enable_static_pa(struct wcd9xxx_mbhc *mbhc, bool enable)
 	const int wg_time = snd_soc_read(codec, WCD9XXX_A_RX_HPH_CNP_WG_TIME) *
 			    TAIKO_WG_TIME_FACTOR_US;
 
-	if (!hph_pa_enabled)
-		snd_soc_update_bits(codec, WCD9XXX_A_RX_HPH_CNP_EN, 0x30,
+	snd_soc_update_bits(codec, WCD9XXX_A_RX_HPH_CNP_EN, 0x30,
 				    enable ? 0x30 : 0x0);
-	else
-		snd_soc_update_bits(codec, WCD9XXX_A_RX_HPH_CNP_EN, 0x30, 0x0);
 	/* Wait for wave gen time to avoid pop noise */
 	usleep_range(wg_time, wg_time + WCD9XXX_USLEEP_RANGE_MARGIN_US);
 	pr_info("%s: PAs are %s as static mode (wg_time %d)\n", __func__,
-		 (enable && !hph_pa_enabled) ? "enabled" : "disabled", wg_time);
+		 enable ? "enabled" : "disabled", wg_time);
 	return 0;
 }
 
@@ -8460,7 +8461,7 @@ static struct kobj_attribute compander1_attribute =
 		NULL);
 
 static struct kobj_attribute chopper_bypass_attribute =
-	__ATTR(chopper, 0644,
+	__ATTR(chopper_bypass, 0644,
 		chopper_bypass_show,
 		chopper_bypass_store);
 
