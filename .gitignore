@@ -129,3 +129,4 @@ dolbydumpprops.txt
 arch/arm/configs/mxconfig.recent
 mxtempusb
 mxzip/common/boot.img
+mxzip/common/synapse.apk

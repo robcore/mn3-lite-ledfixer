@@ -151,6 +151,11 @@ cp -af $COMMONDIR/mixer_paths.xml /system/etc/mixer_paths.xml
 chmod 644 /system/etc/mixer_paths.xml
 chown 0:0 /system/etc/mixer_paths.xml
 
+ui_print "- Installing Synapse"
+cp -af $COMMONDIR/synapse.apk /system/priv-app/
+chmod 644 /system/priv-app/synapse.apk
+chown 0:0 /system/priv-app/synapse.apk
+
 $BOOTMODE || recovery_actions
 
 #####################
