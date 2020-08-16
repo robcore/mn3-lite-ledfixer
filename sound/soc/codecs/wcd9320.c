@@ -7458,7 +7458,9 @@ static int wcd9xxx_prepare_static_pa(struct wcd9xxx_mbhc *mbhc,
 					     reg_set_paon[i].mask,
 					     reg_set_paon[i].val, 0);
 	pr_info("%s: PAs are prepared\n", __func__);
-
+	update_control_regs();
+	write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN, false);
+	write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_R_GAIN, false);
 	return 0;
 }
 
@@ -7468,12 +7470,15 @@ static int wcd9xxx_enable_static_pa(struct wcd9xxx_mbhc *mbhc, bool enable)
 	const int wg_time = snd_soc_read(codec, WCD9XXX_A_RX_HPH_CNP_WG_TIME) *
 			    TAIKO_WG_TIME_FACTOR_US;
 
-	snd_soc_update_bits(codec, WCD9XXX_A_RX_HPH_CNP_EN, 0x30,
-			    enable ? 0x30 : 0x0);
+	if (!hph_pa_enabled)
+		snd_soc_update_bits(codec, WCD9XXX_A_RX_HPH_CNP_EN, 0x30,
+				    enable ? 0x30 : 0x0);
+	else
+		snd_soc_update_bits(codec, WCD9XXX_A_RX_HPH_CNP_EN, 0x30, 0x0);
 	/* Wait for wave gen time to avoid pop noise */
 	usleep_range(wg_time, wg_time + WCD9XXX_USLEEP_RANGE_MARGIN_US);
 	pr_info("%s: PAs are %s as static mode (wg_time %d)\n", __func__,
-		 enable ? "enabled" : "disabled", wg_time);
+		 (enable && !hph_pa_enabled) ? "enabled" : "disabled", wg_time);
 	return 0;
 }
 
@@ -8419,8 +8424,8 @@ static ssize_t hph_pa_bias_store(struct kobject *kobj,
 	/* 0.85 */
 	if (uval < 85)
 		uval = 85;
-	if (uval > 255)
-		uval = 255;
+	if (uval > 170)
+		uval = 170;
 
 	hph_pa_bias = uval;
 
