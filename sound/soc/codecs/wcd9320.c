@@ -584,8 +584,7 @@ static u8 hph_pa_bias = 0x55;
 unsigned int anc_delay = 0;
 static bool hphl_active;
 static bool hphr_active;
-static u32 hph_chopper = 0x24;
-static u32 hph_autochopper = 0x38;
+static unsigned int chopper_bypass;
 
 static bool hpwidget(void)
 {
@@ -853,36 +852,27 @@ TAIKO_A_RX_HPH_AUTO_CHOP 0x1A4
 TAIKO_A_RX_HPH_CHOP_CTL 0x1A5
 */
 
-static u32 read_chopper(void)
-{
-	return wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_CHOP_CTL);
-}
-
 static void write_chopper(void)
 {
-	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_CHOP_CTL, hph_chopper);
-}
-
-static u32 read_autochopper(void)
-{
-	return wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_AUTO_CHOP);
+	if (chopper_bypass)
+		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_CHOP_CTL, 0x24);
 }
 
 static void write_autochopper(void)
 {
-	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_AUTO_CHOP, hph_autochopper);
+	if (chopper_bypass)
+		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_AUTO_CHOP, 0x38);
 }
 
 /* Lazy wrapper until there are more bias regs added */
-static void update_bias(unsigned short reg)
+static void update_bias(void)
 {
-	if (reg == TAIKO_A_RX_HPH_BIAS_PA)
-		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, reg, hph_pa_bias);
+	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_BIAS_PA, hph_pa_bias);
 }
 
 static void update_control_regs(void)
 {
-	update_bias(TAIKO_A_RX_HPH_BIAS_PA);
+	update_bias();
 	write_hpf_cutoff(TAIKO_A_CDC_RX1_B4_CTL);
 	write_hpf_cutoff(TAIKO_A_CDC_RX2_B4_CTL);
 	write_hpf_cutoff(TAIKO_A_CDC_RX7_B4_CTL);
@@ -7875,13 +7865,13 @@ static ssize_t compander1_show(struct kobject *kobj,
 						"COMP1_SHUT_DOWN_STATUS", compread(TAIKO_A_CDC_COMP1_SHUT_DOWN_STATUS));
 }
 
-static ssize_t chopper_show(struct kobject *kobj,
+static ssize_t chopper_bypass_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%d\n", read_chopper());
+	return sprintf(buf, "%d\n", chopper_bypass);
 }
 
-static ssize_t chopper_store(struct kobject *kobj,
+static ssize_t chopper_bypass_store(struct kobject *kobj,
 			   struct kobj_attribute *attr, const char *buf, size_t count) {
 	int uval;
 
@@ -7889,32 +7879,11 @@ static ssize_t chopper_store(struct kobject *kobj,
 
 	if (uval < 0)
 		uval = 0;
-	if (uval > 255)
-		uval = 255;
+	if (uval > 1)
+		uval = 1;
 
-	hph_chopper = uval;
+	chopper_bypass = uval;
 	write_chopper();
-	return count;
-}
-
-static ssize_t autochopper_show(struct kobject *kobj,
-		struct kobj_attribute *attr, char *buf)
-{
-	return sprintf(buf, "%d\n", read_autochopper());
-}
-
-static ssize_t autochopper_store(struct kobject *kobj,
-			   struct kobj_attribute *attr, const char *buf, size_t count) {
-	int uval;
-
-	sscanf(buf, "%d", &uval);
-
-	if (uval < 0)
-		uval = 0;
-	if (uval > 255)
-		uval = 255;
-
-	hph_autochopper = uval;
 	write_autochopper();
 	return count;
 }
@@ -8455,7 +8424,7 @@ static ssize_t hph_pa_bias_store(struct kobject *kobj,
 
 	hph_pa_bias = uval;
 
-	update_bias(TAIKO_A_RX_HPH_BIAS_PA);
+	update_bias();
 
 	return count;
 }
@@ -8485,15 +8454,10 @@ static struct kobj_attribute compander1_attribute =
 		compander1_show,
 		NULL);
 
-static struct kobj_attribute chopper_attribute =
+static struct kobj_attribute chopper_bypass_attribute =
 	__ATTR(chopper, 0644,
-		chopper_show,
-		chopper_store);
-
-static struct kobj_attribute autochopper_attribute =
-	__ATTR(autochopper, 0644,
-		autochopper_show,
-		autochopper_store);
+		chopper_bypass_show,
+		chopper_bypass_store);
 
 static struct kobj_attribute headphone_gain_attribute =
 	__ATTR(headphone_gain, 0644,
@@ -8592,8 +8556,7 @@ static struct kobj_attribute hph_pa_bias_attribute =
 
 static struct attribute *sound_control_attrs[] = {
 		&compander1_attribute.attr,
-		&chopper_attribute.attr,
-		&autochopper_attribute.attr,
+		&chopper_bypass_attribute.attr,
 		&headphone_gain_attribute.attr,
 		&hph_poweramp_gain_attribute.attr,
 		&hph_poweramp_gain_raw_attribute.attr,
