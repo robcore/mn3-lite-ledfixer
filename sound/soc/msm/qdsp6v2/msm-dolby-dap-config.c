@@ -558,7 +558,7 @@ static int map_device_to_port_id(int device)
 	int port_id = SLIMBUS_0_RX;
 	device = DEVICE_OUT_ALL;
 	/*update the device when single stream to multiple device is handled*/
-	if (device == DEVICE_OUT_ALL) {
+	if (device == DEVICE_OUT_ALL)
 		port_id = PRIMARY_I2S_RX | SLIMBUS_0_RX | HDMI_RX |
 				INT_BT_SCO_RX | INT_FM_RX |
 				RT_PROXY_PORT_001_RX |
@@ -566,9 +566,7 @@ static int map_device_to_port_id(int device)
 				MI2S_RX | SECONDARY_I2S_RX |
 				SLIMBUS_1_RX | SLIMBUS_4_RX | SLIMBUS_3_RX |
 				AFE_PORT_ID_SECONDARY_MI2S_RX;
-	} else {
-		/* update port_id based on the device */
-	}
+	/* update port_id based on the device */
 	return port_id;
 }
 
