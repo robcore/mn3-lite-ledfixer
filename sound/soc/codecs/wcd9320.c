@@ -585,6 +585,7 @@ unsigned int anc_delay = 0;
 static bool hphl_active;
 static bool hphr_active;
 static unsigned int chopper_bypass;
+static int bypass_static_pa;
 
 static bool hpwidget(void)
 {
@@ -7429,32 +7430,35 @@ static int wcd9xxx_prepare_static_pa(struct wcd9xxx_mbhc *mbhc,
 	struct snd_soc_codec *codec = mbhc->codec;
 
 	const struct wcd9xxx_reg_mask_val reg_set_paon[] = {
-		{WCD9XXX_A_RX_HPH_OCP_CTL, 0x18, 0x00},
-		{WCD9XXX_A_RX_HPH_L_TEST, 0x1, 0x0},
-		{WCD9XXX_A_RX_HPH_R_TEST, 0x1, 0x0},
-		{WCD9XXX_A_RX_HPH_BIAS_WG_OCP, 0xff, 0x1A},
-		{WCD9XXX_A_RX_HPH_CNP_WG_CTL, 0xff, 0xDB},
-		{WCD9XXX_A_RX_HPH_CNP_WG_TIME, 0xff, 0x15},
-		{WCD9XXX_A_CDC_RX1_B6_CTL, 0xff, 0x81},
-		{WCD9XXX_A_CDC_CLK_RX_B1_CTL, 0x01, 0x01},
-		{WCD9XXX_A_RX_HPH_CHOP_CTL, 0xff, 0xA4},
-		{WCD9XXX_A_RX_HPH_L_GAIN, 0xff, 0x2C},
-		{WCD9XXX_A_CDC_RX2_B6_CTL, 0xff, 0x81},
-		{WCD9XXX_A_CDC_CLK_RX_B1_CTL, 0x02, 0x02},
-		{WCD9XXX_A_RX_HPH_R_GAIN, 0xff, 0x2C},
-		{WCD9XXX_A_NCP_CLK, 0xff, 0xFC},
-		{WCD9XXX_A_BUCK_CTRL_CCL_3, 0xff, 0x60},
-		{WCD9XXX_A_RX_COM_BIAS, 0xff, 0x80},
-		{WCD9XXX_A_BUCK_MODE_3, 0xff, 0xC6},
-		{WCD9XXX_A_BUCK_MODE_4, 0xff, 0xE6},
-		{WCD9XXX_A_BUCK_MODE_5, 0xff, 0x02},
-		{WCD9XXX_A_BUCK_MODE_1, 0xff, 0xA1},
-		{WCD9XXX_A_NCP_EN, 0xff, 0xFF},
-		{WCD9XXX_A_BUCK_MODE_5, 0xff, 0x7B},
-		{WCD9XXX_A_CDC_CLSH_B1_CTL, 0xff, 0xE6},
-		{WCD9XXX_A_RX_HPH_L_DAC_CTL, 0xff, 0xC0},
-		{WCD9XXX_A_RX_HPH_R_DAC_CTL, 0xff, 0xC0},
+		{TAIKO_A_RX_HPH_OCP_CTL, 0x18, 0x00},
+		{TAIKO_A_RX_HPH_L_TEST, 0x1, 0x0},
+		{TAIKO_A_RX_HPH_R_TEST, 0x1, 0x0},
+		{TAIKO_A_RX_HPH_BIAS_WG_OCP, 0xff, 0x1A},
+		{TAIKO_A_RX_HPH_CNP_WG_CTL, 0xff, 0xDB},
+		{TAIKO_A_RX_HPH_CNP_WG_TIME, 0xff, 0x15},
+		{TAIKO_A_CDC_RX1_B6_CTL, 0xff, 0x81},
+		{TAIKO_A_CDC_CLK_RX_B1_CTL, 0x01, 0x01},
+		{TAIKO_A_RX_HPH_CHOP_CTL, 0xff, 0xA4},
+		{TAIKO_A_RX_HPH_L_GAIN, 0xff, 0x2C},
+		{TAIKO_A_CDC_RX2_B6_CTL, 0xff, 0x81},
+		{TAIKO_A_CDC_CLK_RX_B1_CTL, 0x02, 0x02},
+		{TAIKO_A_RX_HPH_R_GAIN, 0xff, 0x2C},
+		{TAIKO_A_NCP_CLK, 0xff, 0xFC},
+		{TAIKO_A_BUCK_CTRL_CCL_3, 0xff, 0x60},
+		{TAIKO_A_RX_COM_BIAS, 0xff, 0x80},
+		{TAIKO_A_BUCK_MODE_3, 0xff, 0xC6},
+		{TAIKO_A_BUCK_MODE_4, 0xff, 0xE6},
+		{TAIKO_A_BUCK_MODE_5, 0xff, 0x02},
+		{TAIKO_A_BUCK_MODE_1, 0xff, 0xA1},
+		{TAIKO_A_NCP_EN, 0xff, 0xFF},
+		{TAIKO_A_BUCK_MODE_5, 0xff, 0x7B},
+		{TAIKO_A_CDC_CLSH_B1_CTL, 0xff, 0xE6},
+		{TAIKO_A_RX_HPH_L_DAC_CTL, 0xff, 0xC0},
+		{TAIKO_A_RX_HPH_R_DAC_CTL, 0xff, 0xC0},
 	};
+
+	if (bypass_static_pa)
+		goto bypass;
 
 	for (i = 0; i < ARRAY_SIZE(reg_set_paon); i++)
 		wcd9xxx_soc_update_bits_push(codec, lh,
@@ -7462,6 +7466,7 @@ static int wcd9xxx_prepare_static_pa(struct wcd9xxx_mbhc *mbhc,
 					     reg_set_paon[i].mask,
 					     reg_set_paon[i].val, 0);
 	pr_info("%s: PAs are prepared\n", __func__);
+bypass:
 	update_control_regs();
 	write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN, false);
 	write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_R_GAIN, false);
@@ -7473,6 +7478,9 @@ static int wcd9xxx_enable_static_pa(struct wcd9xxx_mbhc *mbhc, bool enable)
 	struct snd_soc_codec *codec = mbhc->codec;
 	const int wg_time = snd_soc_read(codec, WCD9XXX_A_RX_HPH_CNP_WG_TIME) *
 			    TAIKO_WG_TIME_FACTOR_US;
+
+	if (bypass_static_pa)
+		return 0;
 
 	snd_soc_update_bits(codec, WCD9XXX_A_RX_HPH_CNP_EN, 0x30,
 				    enable ? 0x30 : 0x0);
@@ -7890,6 +7898,27 @@ static ssize_t chopper_bypass_store(struct kobject *kobj,
 	chopper_bypass = uval;
 	write_chopper();
 	write_autochopper();
+	return count;
+}
+
+static ssize_t bypass_static_pa_show(struct kobject *kobj,
+		struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%d\n", bypass_static_pa);
+}
+
+static ssize_t bypass_static_pa_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count) {
+	int uval;
+
+	sscanf(buf, "%d", &uval);
+
+	if (uval < 0)
+		uval = 0;
+	if (uval > 1)
+		uval = 1;
+
+	bypass_static_pa = uval;
 	return count;
 }
 
