@@ -75,6 +75,7 @@
 
 /* RX_HPH_CNP_WG_TIME increases by 0.24ms */
 #define TAIKO_WG_TIME_FACTOR_US	240
+#define ZDET_RAMP_WAIT_US 18000
 
 static atomic_t kp_taiko_priv;
 
@@ -7489,7 +7490,6 @@ static int taiko_setup_zdet(struct wcd9xxx_mbhc *mbhc,
 	int ret = 0;
 	struct snd_soc_codec *codec = mbhc->codec;
 	struct taiko_priv *taiko = snd_soc_codec_get_drvdata(codec);
-	const int ramp_wait_us = 18 * 1000;
 
 #define __wr(reg, mask, value)						  \
 	do {								  \
@@ -7551,22 +7551,22 @@ static int taiko_setup_zdet(struct wcd9xxx_mbhc *mbhc,
 		/* Start the PA ramp on HPH L and R */
 		snd_soc_write(codec, WCD9XXX_A_CDC_PA_RAMP_B2_CTL, 0x05);
 		/* Ramp generator takes ~17ms */
-		usleep_range(ramp_wait_us,
-				ramp_wait_us + WCD9XXX_USLEEP_RANGE_MARGIN_US);
+		usleep_range(ZDET_RAMP_WAIT_US,
+				ZDET_RAMP_WAIT_US + WCD9XXX_USLEEP_RANGE_MARGIN_US);
 
 		/* Disable Ical */
 		snd_soc_write(codec, WCD9XXX_A_CDC_PA_RAMP_B2_CTL, 0x00);
 		/* Ramp generator takes ~17ms */
-		usleep_range(ramp_wait_us,
-				ramp_wait_us + WCD9XXX_USLEEP_RANGE_MARGIN_US);
+		usleep_range(ZDET_RAMP_WAIT_US,
+				ZDET_RAMP_WAIT_US + WCD9XXX_USLEEP_RANGE_MARGIN_US);
 		//update_hph_pa_gain();
 		break;
 	case PA_DISABLE:
 		/* Ramp HPH L & R back to Zero */
 		snd_soc_write(codec, WCD9XXX_A_CDC_PA_RAMP_B2_CTL, 0x0A);
 		/* Ramp generator takes ~17ms */
-		usleep_range(ramp_wait_us,
-				ramp_wait_us + WCD9XXX_USLEEP_RANGE_MARGIN_US);
+		usleep_range(ZDET_RAMP_WAIT_US,
+				ZDET_RAMP_WAIT_US + WCD9XXX_USLEEP_RANGE_MARGIN_US);
 		snd_soc_write(codec, WCD9XXX_A_CDC_PA_RAMP_B2_CTL, 0x00);
 
 		/* Clean up starts */
