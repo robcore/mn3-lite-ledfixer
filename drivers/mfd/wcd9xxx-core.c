@@ -126,11 +126,11 @@ static unsigned int sound_control_override = 0;
 void lock_sound_control(struct wcd9xxx_core_resource *core_res,
 						unsigned int lockval) {
 	struct wcd9xxx *wcd9xxx = (struct wcd9xxx *) core_res->parent;
-	if (unlikely(lockval < 0))
+/*	if (unlikely(lockval < 0))
 		lockval = 0;
 	if (unlikely(lockval > 1))
 		lockval = 1;
-
+*/
 	mutex_lock(&wcd9xxx->io_lock);
 	sound_control_override = lockval;
 	mutex_unlock(&wcd9xxx->io_lock);
@@ -171,51 +171,49 @@ static int __wcd9xxx_reg_write(struct wcd9xxx *wcd9xxx,
 							   unsigned short reg, u8 val)
 {
 	int ret;
-	bool need_fixup = false;
 
 	mutex_lock(&wcd9xxx->io_lock);
 	if (sound_control_override) {
 		ret = wcd9xxx_write(wcd9xxx, reg, 1, &val, false);
 		mutex_unlock(&wcd9xxx->io_lock);
 		return ret;
-	} else {
-		if (sound_control_reserved(reg)) {
-			mutex_unlock(&wcd9xxx->io_lock);
-			need_fixup = true;
-		} else {
-			ret = wcd9xxx_write(wcd9xxx, reg, 1, &val, false);
-			mutex_unlock(&wcd9xxx->io_lock);
-			return ret;
-		}
 	}
-	if (need_fixup) {
-		lock_sound_control(&wcd9xxx->core_res, 1);
+	mutex_unlock(&wcd9xxx->io_lock);
+
+	if (!sound_control_reserved(reg)) {
 		mutex_lock(&wcd9xxx->io_lock);
-		switch (reg) {
-			case 0x2B7:
-				if (val == 172)
-					ret = wcd9xxx_write(wcd9xxx, reg, 1, &val, false);
-				else
-					ret = wcd9xxx_write(wcd9xxx, reg, 1, &hphl_cached_gain, false);
-				break;
-			case 0x2BF:
-				if (val == 172)
-					ret = wcd9xxx_write(wcd9xxx, reg, 1, &val, false);
-				else
-					ret = wcd9xxx_write(wcd9xxx, reg, 1, &hphr_cached_gain, false);
-				break;
-			case 0x2E7:
-				if (val == 172)
-					ret = wcd9xxx_write(wcd9xxx, reg, 1, &val, false);
-				else
-					ret = wcd9xxx_write(wcd9xxx, reg, 1, &speaker_cached_gain, false);
-				break;
-			default:
-				break;
-		}
+		ret = wcd9xxx_write(wcd9xxx, reg, 1, &val, false);
 		mutex_unlock(&wcd9xxx->io_lock);
-		lock_sound_control(&wcd9xxx->core_res, 0);
+		return ret;
 	}
+
+
+	lock_sound_control(&wcd9xxx->core_res, 1);
+	mutex_lock(&wcd9xxx->io_lock);
+	switch (reg) {
+		case 0x2B7:
+			if (val == 172)
+				ret = wcd9xxx_write(wcd9xxx, reg, 1, &val, false);
+			else
+				ret = wcd9xxx_write(wcd9xxx, reg, 1, &hphl_cached_gain, false);
+			break;
+		case 0x2BF:
+			if (val == 172)
+				ret = wcd9xxx_write(wcd9xxx, reg, 1, &val, false);
+			else
+				ret = wcd9xxx_write(wcd9xxx, reg, 1, &hphr_cached_gain, false);
+			break;
+		case 0x2E7:
+			if (val == 172)
+				ret = wcd9xxx_write(wcd9xxx, reg, 1, &val, false);
+			else
+				ret = wcd9xxx_write(wcd9xxx, reg, 1, &speaker_cached_gain, false);
+			break;
+		default:
+			break;
+	}
+	mutex_unlock(&wcd9xxx->io_lock);
+	lock_sound_control(&wcd9xxx->core_res, 0);
 
 	return ret;
 }
