@@ -852,7 +852,11 @@ static void write_hpf_cutoff(unsigned short reg)
 
 static u32 read_chopper_raw(void)
 {
-	return wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_CHOP_CTL);
+	u32 localchop;
+	localchop = wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_CHOP_CTL);
+	if (hph_chopper_raw != localchop)
+		hph_chopper_raw = localchop;
+	return hph_chopper_raw;
 }
 
 static void write_chopper_raw(void)
@@ -862,7 +866,11 @@ static void write_chopper_raw(void)
 
 static u32 read_autochopper_raw(void)
 {
-	return wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_AUTO_CHOP);
+	u32 localauto;
+	localauto = wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_AUTO_CHOP);
+	if (hph_autochopper_raw != localauto)
+		hph_autochopper_raw = localauto;
+	return hph_autochopper_raw;
 }
 
 static void write_autochopper_raw(void)
