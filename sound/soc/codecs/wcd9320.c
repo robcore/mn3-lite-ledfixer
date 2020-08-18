@@ -584,8 +584,8 @@ static u8 hph_pa_bias = 0x55;
 unsigned int anc_delay = 0;
 static bool hphl_active;
 static bool hphr_active;
-static u32 hph_chopper_raw = 0x24;
-static u32 hph_autochopper_raw = 0x38;
+static u32 hph_chopper_raw;
+static u32 hph_autochopper_raw;
 static unsigned int chopper_bypass;
 static int bypass_static_pa;
 
@@ -8929,7 +8929,8 @@ static int taiko_codec_probe(struct snd_soc_codec *codec)
 	}
 
 	update_control_regs();
-
+	read_chopper_raw();
+	read_autochopper_raw();
 	return ret;
 
 err_irq:
