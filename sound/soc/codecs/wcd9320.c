@@ -7447,10 +7447,10 @@ static int wcd9xxx_prepare_static_pa(struct wcd9xxx_mbhc *mbhc,
 		{TAIKO_A_CDC_RX1_B6_CTL, 0xff, 0x81},
 		{TAIKO_A_CDC_CLK_RX_B1_CTL, 0x01, 0x01},
 		{TAIKO_A_RX_HPH_CHOP_CTL, 0xff, 0xA4},
-		{TAIKO_A_RX_HPH_L_GAIN, 0xff, 0x2C},
+//		{TAIKO_A_RX_HPH_L_GAIN, 0xff, 0x2C},
 		{TAIKO_A_CDC_RX2_B6_CTL, 0xff, 0x81},
 		{TAIKO_A_CDC_CLK_RX_B1_CTL, 0x02, 0x02},
-		{TAIKO_A_RX_HPH_R_GAIN, 0xff, 0x2C},
+//		{TAIKO_A_RX_HPH_R_GAIN, 0xff, 0x2C},
 		{TAIKO_A_NCP_CLK, 0xff, 0xFC},
 		{TAIKO_A_BUCK_CTRL_CCL_3, 0xff, 0x60},
 		{TAIKO_A_RX_COM_BIAS, 0xff, 0x80},
@@ -7468,11 +7468,14 @@ static int wcd9xxx_prepare_static_pa(struct wcd9xxx_mbhc *mbhc,
 	if (bypass_static_pa)
 		goto bypass;
 
-	for (i = 0; i < ARRAY_SIZE(reg_set_paon); i++)
+	for (i = 0; i < ARRAY_SIZE(reg_set_paon); i++) {
+		if (chopper_bypass && reg_set_paon[i].reg == TAIKO_A_RX_HPH_CHOP_CTL)
+			continue;
 		wcd9xxx_soc_update_bits_push(codec, lh,
 					     reg_set_paon[i].reg,
 					     reg_set_paon[i].mask,
 					     reg_set_paon[i].val, 0);
+	}
 	pr_info("%s: PAs are prepared\n", __func__);
 bypass:
 	update_control_regs();
