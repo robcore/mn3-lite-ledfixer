@@ -4822,6 +4822,7 @@ static int taiko_prepare(struct snd_pcm_substream *substream,
 
 	if (substream->stream) {
 		taiko_p->clsh_d.hs_perf_mode_enabled = false;
+		update_control_regs();
 		return 0;
 	}
 	pr_info("%s(): substream = %s. stream = %d. dai->name = %s."
@@ -4844,6 +4845,8 @@ static int taiko_prepare(struct snd_pcm_substream *substream,
 				snd_soc_update_bits(codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20);
 			pr_info("%s(): HS peformance mode Disabled - No Headphone Playback", __func__);
 			update_control_regs();
+			write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN, true);
+			write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_R_GAIN, true);
 			return 0;
 	}
 
@@ -4868,9 +4871,12 @@ static int taiko_prepare(struct snd_pcm_substream *substream,
 
 	kfree(wlist);
 
-	if (!found_hs_pa)
+	if (!found_hs_pa) {
+		update_control_regs();
+		write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN, true);
+		write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_R_GAIN, true);
 		return 0;
-
+	}
 
 
 	pr_info("%s(): rate = %u. bit_width = %u.  hs compander_enabled = %u",
@@ -4898,6 +4904,8 @@ static int taiko_prepare(struct snd_pcm_substream *substream,
 	}
 
 	update_control_regs();
+	write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN, false);
+	write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_R_GAIN, false);
 
 	return 0;
 }
@@ -5346,7 +5354,7 @@ static int taiko_hw_params(struct snd_pcm_substream *substream,
 			snd_soc_update_bits(codec, TAIKO_A_CDC_CLK_TX_I2S_CTL,
 					    0x07, tx_fs_rate);
 		} else {
-			taiko->dai[dai->id].rate   = params_rate(params);
+			taiko->dai[dai->id].rate = params_rate(params);
 		}
 		break;
 
@@ -5379,7 +5387,7 @@ static int taiko_hw_params(struct snd_pcm_substream *substream,
 					    0x03, (rx_fs_rate >> 0x05));
 		} else {
 			taiko_set_rxsb_port_format(params, dai);
-			taiko->dai[dai->id].rate   = params_rate(params);
+			taiko->dai[dai->id].rate = params_rate(params);
 		}
 		break;
 	default:
