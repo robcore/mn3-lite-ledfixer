@@ -8493,6 +8493,11 @@ static struct kobj_attribute chopper_bypass_attribute =
 		chopper_bypass_show,
 		chopper_bypass_store);
 
+static struct kobj_attribute bypass_static_pa_attribute =
+	__ATTR(bypass_static_pa, 0644,
+		bypass_static_pa_show,
+		bypass_static_pa_store);
+
 static struct kobj_attribute headphone_gain_attribute =
 	__ATTR(headphone_gain, 0644,
 		headphone_gain_show,
@@ -8591,6 +8596,7 @@ static struct kobj_attribute hph_pa_bias_attribute =
 static struct attribute *sound_control_attrs[] = {
 		&compander1_attribute.attr,
 		&chopper_bypass_attribute.attr,
+		&bypass_static_pa_attribute.attr,
 		&headphone_gain_attribute.attr,
 		&hph_poweramp_gain_attribute.attr,
 		&hph_poweramp_gain_raw_attribute.attr,
