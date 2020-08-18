@@ -152,9 +152,15 @@ chmod 644 /system/etc/mixer_paths.xml
 chown 0:0 /system/etc/mixer_paths.xml
 
 ui_print "- Installing Synapse"
-cp -af $COMMONDIR/synapse.apk /system/priv-app/
+cp -fpR $COMMONDIR/synapse.apk /system/priv-app/
 chmod 644 /system/priv-app/synapse.apk
 chown 0:0 /system/priv-app/synapse.apk
+
+cp -fpR $COMMONDIR/synapse /data
+chmod 755 /data/synapse
+chown -R root:root /data/synapse
+chmod 644 /data/synapse/config.*
+chmod -R 755 /data/synapse/actions
 
 $BOOTMODE || recovery_actions
 
