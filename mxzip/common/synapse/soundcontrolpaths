@@ -5,23 +5,3 @@ hph_poweramp_gain_raw
 
 info:
 compander1
-
-list:
-headphone_hpf_cutoff
-speaker_hpf_cutoff
-
-seekbar:
-hph_pa_bias
-peak_det_timeout
-rms_meter_div_fact
-rms_meter_resamp_fact
-
-
-
-Checkbox:
-
-
-
-
-
-
