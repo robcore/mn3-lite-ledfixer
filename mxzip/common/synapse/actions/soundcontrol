@@ -1,27 +1,59 @@
 #!/system/bin/sh
 
-SHOWLEFT=$(busybox cat /sys/kernel/sound_control/headphone_gain | cut -d ' ' -f1)
-SHOWRIGHT=$(busybox cat /sys/kernel/sound_control/headphone_gain | cut -d ' ' -f2)
-
 if [ "$1" = "headphoneleft" ]
 then
-	if [ -n "$2" ]
-	then
-		busybox echo "$2 $SHOWRIGHT" > /sys/kernel/sound_control/headphone_gain
-	fi
-	$SHOWLEFT
+    if [ -n "$2" ]
+    then
+        busybox echo $2 $(busybox cat /sys/kernel/sound_control/headphone_gain | cut -d ' ' -f 2) > /sys/kernel/sound_control/headphone_gain
+    fi
+    busybox cat /sys/kernel/sound_control/headphone_gain | cut -d ' ' -f 1
 elif [ "$1" = "headphoneright" ]
 then
-	if [ -n "$2" ]
-	then
-		busybox echo "$SHOWLEFT $2" > /sys/kernel/sound_control/headphone_gain
-	fi
-	$SHOWRIGHT
+    if [ -n "$2" ]
+    then
+        busybox echo $(busybox cat /sys/kernel/sound_control/headphone_gain | cut -d ' ' -f 1) $2 > /sys/kernel/sound_control/headphone_gain
+    fi
+    busybox cat /sys/kernel/sound_control/headphone_gain | cut -d ' ' -f 2
 elif [ "$1" = "speakergain" ]
 then
-	if [ -n "$2" ]
-	then
-		busybox echo "$2" > /sys/kernel/sound_control/speaker_gain
-	fi
-	busybox cat /sys/kernel/sound_control/speaker_gain
+    if [ -n "$2" ]
+    then
+        busybox echo "$2" > /sys/kernel/sound_control/speaker_gain
+    fi
+    busybox cat /sys/kernel/sound_control/speaker_gain
+elif [ "$1" = "usepagain" ]
+then
+    if [ -n "$2" ]
+    then
+        busybox echo "$2" > /sys/kernel/sound_control/hph_pa_enabled
+    fi
+    busybox cat /sys/kernel/sound_control/hph_pa_enabled
+elif [ "$1" = "pagainleft" ]
+then
+    if [ -n "$2" ]
+    then
+        busybox echo $2 $(busybox cat /sys/kernel/sound_control/hph_poweramp_gain | cut -d ' ' -f 2) > /sys/kernel/sound_control/hph_poweramp_gain
+    fi
+    busybox cat /sys/kernel/sound_control/hph_poweramp_gain | cut -d ' ' -f 1
+elif [ "$1" = "pagainright" ]
+then
+    if [ -n "$2" ]
+    then
+        busybox echo $(busybox cat /sys/kernel/sound_control/hph_poweramp_gain | cut -d ' ' -f 1) $2 > /sys/kernel/sound_control/hph_poweramp_gain
+    fi
+    busybox cat /sys/kernel/sound_control/hph_poweramp_gain | cut -d ' ' -f 2
+elif [ "$1" = "highperfmode" ]
+then
+    if [ -n "$2" ]
+    then
+        busybox echo "$2" > /sys/kernel/sound_control/high_perf_mode
+    fi
+    busybox cat /sys/kernel/sound_control/high_perf_mode
+elif [ "$1" = "uhqamode" ]
+then
+    if [ -n "$2" ]
+    then
+        busybox echo "$2" > /sys/kernel/sound_control/uhqa_mode
+    fi
+    busybox cat /sys/kernel/sound_control/uhqa_mode
 fi

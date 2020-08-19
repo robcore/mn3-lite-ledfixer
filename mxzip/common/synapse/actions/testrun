@@ -2,5 +2,5 @@
 
 if [ "$1" = "firstrun" ]
 then
-	busybox echo "Machin3x"
+    busybox echo "Machin3x"
 fi
