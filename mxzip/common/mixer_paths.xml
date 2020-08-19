@@ -162,69 +162,6 @@
 
 	<ctl name="TTY Mode" value="OFF" />
 	<ctl name="SPK Status" value="0" />
-
-    <ctl name="IIR1 Band1" id ="0" value="268435456" />
-    <ctl name="IIR1 Band1" id ="1" value="0" />
-    <ctl name="IIR1 Band1" id ="2" value="0" />
-    <ctl name="IIR1 Band1" id ="3" value="0" />
-    <ctl name="IIR1 Band1" id ="4" value="0" />
-    <ctl name="IIR1 Band2" id ="0" value="268435456" />
-    <ctl name="IIR1 Band2" id ="1" value="0" />
-    <ctl name="IIR1 Band2" id ="2" value="0" />
-    <ctl name="IIR1 Band2" id ="3" value="0" />
-    <ctl name="IIR1 Band2" id ="4" value="0" />
-    <ctl name="IIR1 Band3" id ="0" value="268435456" />
-    <ctl name="IIR1 Band3" id ="1" value="0" />
-    <ctl name="IIR1 Band3" id ="2" value="0" />
-    <ctl name="IIR1 Band3" id ="3" value="0" />
-    <ctl name="IIR1 Band3" id ="4" value="0" />
-    <ctl name="IIR1 Band4" id ="0" value="268435456" />
-    <ctl name="IIR1 Band4" id ="1" value="0" />
-    <ctl name="IIR1 Band4" id ="2" value="0" />
-    <ctl name="IIR1 Band4" id ="3" value="0" />
-    <ctl name="IIR1 Band4" id ="4" value="0" />
-    <ctl name="IIR1 Band5" id ="0" value="268435456" />
-    <ctl name="IIR1 Band5" id ="1" value="0" />
-    <ctl name="IIR1 Band5" id ="2" value="0" />
-    <ctl name="IIR1 Band5" id ="3" value="0" />
-    <ctl name="IIR1 Band5" id ="4" value="0" />
-    <ctl name="IIR1 Enable Band1" value="0" />
-    <ctl name="IIR1 Enable Band2" value="0" />
-    <ctl name="IIR1 Enable Band3" value="0" />
-    <ctl name="IIR1 Enable Band4" value="0" />
-    <ctl name="IIR1 Enable Band5" value="0" />
-    <ctl name="IIR1 INP1 Volume" value="0" />
-    <ctl name="IIR2 Band1" id ="0" value="268435456" />
-    <ctl name="IIR2 Band1" id ="1" value="0" />
-    <ctl name="IIR2 Band1" id ="2" value="0" />
-    <ctl name="IIR2 Band1" id ="3" value="0" />
-    <ctl name="IIR2 Band1" id ="4" value="0" />
-    <ctl name="IIR2 Band2" id ="0" value="268435456" />
-    <ctl name="IIR2 Band2" id ="1" value="0" />
-    <ctl name="IIR2 Band2" id ="2" value="0" />
-    <ctl name="IIR2 Band2" id ="3" value="0" />
-    <ctl name="IIR2 Band2" id ="4" value="0" />
-    <ctl name="IIR2 Band3" id ="0" value="268435456" />
-    <ctl name="IIR2 Band3" id ="1" value="0" />
-    <ctl name="IIR2 Band3" id ="2" value="0" />
-    <ctl name="IIR2 Band3" id ="3" value="0" />
-    <ctl name="IIR2 Band3" id ="4" value="0" />
-    <ctl name="IIR2 Band4" id ="0" value="268435456" />
-    <ctl name="IIR2 Band4" id ="1" value="0" />
-    <ctl name="IIR2 Band4" id ="2" value="0" />
-    <ctl name="IIR2 Band4" id ="3" value="0" />
-    <ctl name="IIR2 Band4" id ="4" value="0" />
-    <ctl name="IIR2 Band5" id ="0" value="268435456" />
-    <ctl name="IIR2 Band5" id ="1" value="0" />
-    <ctl name="IIR2 Band5" id ="2" value="0" />
-    <ctl name="IIR2 Band5" id ="3" value="0" />
-    <ctl name="IIR2 Band5" id ="4" value="0" />
-    <ctl name="IIR2 Enable Band1" value="0" />
-    <ctl name="IIR2 Enable Band2" value="0" />
-    <ctl name="IIR2 Enable Band3" value="0" />
-    <ctl name="IIR2 Enable Band4" value="0" />
-    <ctl name="IIR2 Enable Band5" value="0" />
-    <ctl name="IIR2 INP1 Volume" value="0" />
 	<!-- end of initial mixer settings -->
 
 	<!-- ================================================================ -->
@@ -360,80 +297,6 @@
 		<ctl name="DAC1 Switch" value="1" />
 	</path>
 
-   <path name="sidetone-iir">
-        <!-- Bright EQ settings -->
-        <ctl name="IIR1 Band1" id ="0" value="268435456" />
-        <ctl name="IIR1 Band1" id ="1" value="437586353" />
-        <ctl name="IIR1 Band1" id ="2" value="173832276" />
-        <ctl name="IIR1 Band1" id ="3" value="163410814" />
-        <ctl name="IIR1 Band1" id ="4" value="1059274509" />
-        <ctl name="IIR1 Band2" id ="0" value="268435456" />
-        <ctl name="IIR1 Band2" id ="1" value="646483181" />
-        <ctl name="IIR1 Band2" id ="2" value="167392513" />
-        <ctl name="IIR1 Band2" id ="3" value="810804778" />
-        <ctl name="IIR1 Band2" id ="4" value="202564853" />
-        <ctl name="IIR1 Band3" id ="0" value="268435456" />
-        <ctl name="IIR1 Band3" id ="1" value="815970282" />
-        <ctl name="IIR1 Band3" id ="2" value="203683363" />
-        <ctl name="IIR1 Band3" id ="3" value="607081275" />
-        <ctl name="IIR1 Band3" id ="4" value="214739442" />
-        <ctl name="IIR1 Band4" id ="0" value="268435456" />
-        <ctl name="IIR1 Band4" id ="1" value="701510207" />
-        <ctl name="IIR1 Band4" id ="2" value="227853067" />
-        <ctl name="IIR1 Band4" id ="3" value="713299986" />
-        <ctl name="IIR1 Band4" id ="4" value="220868877" />
-        <ctl name="IIR1 Band5" id ="0" value="268435456" />
-        <ctl name="IIR1 Band5" id ="1" value="635336802" />
-        <ctl name="IIR1 Band5" id ="2" value="222416777" />
-        <ctl name="IIR1 Band5" id ="3" value="645853902" />
-        <ctl name="IIR1 Band5" id ="4" value="221548546" />
-        <ctl name="IIR2 Band1" id ="0" value="268435456" />
-        <ctl name="IIR2 Band1" id ="1" value="437586353" />
-        <ctl name="IIR2 Band1" id ="2" value="173832276" />
-        <ctl name="IIR2 Band1" id ="3" value="163410814" />
-        <ctl name="IIR2 Band1" id ="4" value="1059274509" />
-        <ctl name="IIR2 Band2" id ="0" value="268435456" />
-        <ctl name="IIR2 Band2" id ="1" value="646483181" />
-        <ctl name="IIR2 Band2" id ="2" value="167392513" />
-        <ctl name="IIR2 Band2" id ="3" value="810804778" />
-        <ctl name="IIR2 Band2" id ="4" value="202564853" />
-        <ctl name="IIR2 Band3" id ="0" value="268435456" />
-        <ctl name="IIR2 Band3" id ="1" value="815970282" />
-        <ctl name="IIR2 Band3" id ="2" value="203683363" />
-        <ctl name="IIR2 Band3" id ="3" value="607081275" />
-        <ctl name="IIR2 Band3" id ="4" value="214739442" />
-        <ctl name="IIR2 Band4" id ="0" value="268435456" />
-        <ctl name="IIR2 Band4" id ="1" value="701510207" />
-        <ctl name="IIR2 Band4" id ="2" value="227853067" />
-        <ctl name="IIR2 Band4" id ="3" value="713299986" />
-        <ctl name="IIR2 Band4" id ="4" value="220868877" />
-        <ctl name="IIR2 Band5" id ="0" value="268435456" />
-        <ctl name="IIR2 Band5" id ="1" value="635336802" />
-        <ctl name="IIR2 Band5" id ="2" value="222416777" />
-        <ctl name="IIR2 Band5" id ="3" value="645853902" />
-        <ctl name="IIR2 Band5" id ="4" value="221548546" />
-        <ctl name="IIR1 Enable Band1" value="1" />
-        <ctl name="IIR1 Enable Band2" value="1" />
-        <ctl name="IIR1 Enable Band3" value="1" />
-        <ctl name="IIR1 Enable Band4" value="1" />
-        <ctl name="IIR1 Enable Band5" value="1" />
-        <ctl name="IIR2 Enable Band1" value="1" />
-        <ctl name="IIR2 Enable Band2" value="1" />
-        <ctl name="IIR2 Enable Band3" value="1" />
-        <ctl name="IIR2 Enable Band4" value="1" />
-        <ctl name="IIR2 Enable Band5" value="1" />
-    </path>
-
-    <path name="sidetone-headphones">
-        <path name="sidetone-iir" />
-        <ctl name="IIR1 INP1 MUX" value="RX1" />
-        <ctl name="IIR2 INP1 MUX" value="RX2" />
-        <ctl name="IIR1 INP1 Volume" value="64" />
-        <ctl name="IIR2 INP1 Volume" value="64" />
-        <ctl name="RX1 MIX2 INP1" value="IIR1" />
-        <ctl name="RX2 MIX2 INP1" value="IIR1" />
-    </path>
-
 	<path name="ear">
 		<ctl name="DAC1 Switch" value="0" />
 		<ctl name="EAR PA Gain" value="POS_0_DB" />
@@ -554,7 +417,6 @@
 
 	<path name="headset">
 		<path name="ear" />
-        <path name="sidetone-headphones">
 		<ctl name="HPHL Volume" value="20" />
 		<ctl name="HPHR Volume" value="20" />
 		<ctl name="RX1 Digital Volume" value="84" />
