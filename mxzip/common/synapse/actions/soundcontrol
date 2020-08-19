@@ -56,4 +56,67 @@ then
         busybox echo "$2" > /sys/kernel/sound_control/uhqa_mode
     fi
     busybox cat /sys/kernel/sound_control/uhqa_mode
+elif [ "$1" = "chopbypass" ]
+then
+    if [ -n "$2" ]
+    then
+        busybox echo "$2" > /sys/kernel/sound_control/chopper_bypass
+    fi
+    busybox cat /sys/kernel/sound_control/chopper_bypass
+elif [ "$1" = "staticpabypass" ]
+then
+    if [ -n "$2" ]
+    then
+        busybox echo "$2" > /sys/kernel/sound_control/bypass_static_pa
+    fi
+    busybox cat /sys/kernel/sound_control/bypass_static_pa
+elif [ "$1" = "anc_delay" ]
+then
+    if [ -n "$2" ]
+    then
+        busybox echo "$2" > /sys/kernel/sound_control/anc_delay
+    fi
+    busybox cat /sys/kernel/sound_control/anc_delay
+elif [ "$1" = "headphone_hpf_bypass" ]
+then
+    if [ -n "$2" ]
+    then
+        busybox echo "$2" > /sys/kernel/sound_control/headphone_hpf_bypass
+    fi
+    busybox cat /sys/kernel/sound_control/headphone_hpf_bypass
+elif [ "$1" = "speaker_hpf_bypass" ]
+then
+    if [ -n "$2" ]
+    then
+        busybox echo "$2" > /sys/kernel/sound_control/speaker_hpf_bypass
+    fi
+    busybox cat /sys/kernel/sound_control/speaker_hpf_bypass
+elif [ "$1" = "interpolator_boost" ]
+then
+    if [ -n "$2" ]
+    then
+        busybox echo "$2" > /sys/kernel/sound_control/interpolator_boost
+    fi
+    busybox cat /sys/kernel/sound_control/interpolator_boost
+elif [ "$1" = "compander_gain_lock" ]
+then
+    if [ -n "$2" ]
+    then
+        busybox echo "$2" > /sys/kernel/sound_control/compander_gain_lock
+    fi
+    busybox cat /sys/kernel/sound_control/compander_gain_lock
+elif [ "$1" = "compander_gain_boost" ]
+then
+    if [ -n "$2" ]
+    then
+        busybox echo "$2" > /sys/kernel/sound_control/compander_gain_boost
+    fi
+    busybox cat /sys/kernel/sound_control/compander_gain_boost
+#elif [ "$1" = "" ]
+#then
+#    if [ -n "$2" ]
+#    then
+#        busybox echo "$2" > /sys/kernel/sound_control/
+#    fi
+#    busybox cat /sys/kernel/sound_control/
 fi

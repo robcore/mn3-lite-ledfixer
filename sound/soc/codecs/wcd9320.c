@@ -8312,34 +8312,26 @@ static ssize_t headphone_hpf_cutoff_show(struct kobject *kobj,
 
 	leftval = read_hpf_cutoff(TAIKO_A_CDC_RX1_B4_CTL);
 	rightval = read_hpf_cutoff(TAIKO_A_CDC_RX2_B4_CTL);
-
-	return sprintf(buf, "%d %d\n", leftval, rightval);
+    if (leftval != rightval) {
+        hphl_hpf_cutoff = hphr_hpf_cutoff;
+        write_hpf_cutoff(TAIKO_A_CDC_RX1_B4_CTL);
+    	write_hpf_cutoff(TAIKO_A_CDC_RX2_B4_CTL);
+    }
+	return sprintf(buf, "%d\n", leftval);
 }
 
 static ssize_t headphone_hpf_cutoff_store(struct kobject *kobj,
 		struct kobj_attribute *attr, const char *buf, size_t count)
 {
-	int leftinput, rightinput, dualinput;
+	int input;
 
-	if (sscanf(buf, "%d %d", &leftinput, &rightinput) == 2) {
-		if (leftinput < 0)
-			leftinput = 0;
-		if (leftinput > 2)
-			leftinput = 2;
-		if (rightinput < 0)
-			rightinput = 0;
-		if (rightinput > 2)
-			rightinput = 2;
-		hphl_hpf_cutoff = (u8)leftinput;
-		hphr_hpf_cutoff = (u8)rightinput;
-	} else if (sscanf(buf, "%d", &dualinput) == 1) {
-		if (dualinput < 0)
-			dualinput = 0;
-		if (dualinput > 2)
-			dualinput = 2;
-		hphl_hpf_cutoff = (u8)dualinput;
-		hphr_hpf_cutoff = (u8)dualinput;
-	}
+    sscanf(buf, "%d", &input);
+	if (input < 0)
+		input = 0;
+	if (input > 2)
+		input = 2;
+	hphl_hpf_cutoff = (u8)input;
+	hphr_hpf_cutoff = (u8)input;
 
 	write_hpf_cutoff(TAIKO_A_CDC_RX1_B4_CTL);
 	write_hpf_cutoff(TAIKO_A_CDC_RX2_B4_CTL);
@@ -8402,34 +8394,27 @@ static ssize_t headphone_hpf_bypass_show(struct kobject *kobj,
 
 	leftval = read_hpf_bypass(TAIKO_A_CDC_RX1_B5_CTL);
 	rightval = read_hpf_bypass(TAIKO_A_CDC_RX2_B5_CTL);
+    if (leftval != rightval) {
+        hphl_hpf_bypass = hphr_hpf_bypass;
+        write_hpf_bypass(TAIKO_A_CDC_RX1_B5_CTL);
+        write_hpf_bypass(TAIKO_A_CDC_RX2_B5_CTL);
+    }
 
-	return sprintf(buf, "%d %d\n", leftval, rightval);
+	return sprintf(buf, "%d\n", leftval);
 }
 
 static ssize_t headphone_hpf_bypass_store(struct kobject *kobj,
 		struct kobj_attribute *attr, const char *buf, size_t count)
 {
-	int leftinput, rightinput, dualinput;
+	int input;
 
-	if (sscanf(buf, "%d %d", &leftinput, &rightinput) == 2) {
-		if (leftinput < 0)
-			leftinput = 0;
-		if (leftinput > 1)
-			leftinput = 1;
-		if (rightinput < 0)
-			rightinput = 0;
-		if (rightinput > 1)
-			rightinput = 1;
-		hphl_hpf_bypass = (u8)leftinput;
-		hphr_hpf_bypass = (u8)rightinput;
-	} else if (sscanf(buf, "%d", &dualinput) == 1) {
-		if (dualinput < 0)
-			dualinput = 0;
-		if (dualinput > 1)
-			dualinput = 1;
-		hphl_hpf_bypass = (u8)dualinput;
-		hphr_hpf_bypass = (u8)dualinput;
-	}
+    sscanf(buf, "%d", &input);
+	if (input < 0)
+		input = 0;
+	if (input > 1)
+		input = 1;
+	hphl_hpf_bypass = (u8)input;
+	hphr_hpf_bypass = (u8)input;
 
 	write_hpf_bypass(TAIKO_A_CDC_RX1_B5_CTL);
 	write_hpf_bypass(TAIKO_A_CDC_RX2_B5_CTL);

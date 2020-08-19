@@ -97,6 +97,10 @@ chmod 666 /sys/module/lowmemorykiller/parameters/cost
 chmod 666 /sys/module/lowmemorykiller/parameters/adj
 chmod 666 /sys/module/lowmemorykiller/parameters/minfree
 resetprop ro.ril.enable.amr.wideband 1
+if [ -f "/data/synapse/config.json" ]
+then
+    rm /data/synapse/config.json
+fi
 #echo 32 > /sys/module/lowmemorykiller/parameters/cost;
 
 #echo 0 > /sys/module/subsystem_restart/parameters/enable_ramdumps;
