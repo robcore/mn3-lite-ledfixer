@@ -1,0 +1,27 @@
+#!/system/bin/sh
+
+SHOWLEFT=$(busybox cat /sys/kernel/sound_control/headphone_gain | cut -d ' ' -f1)
+SHOWRIGHT=$(busybox cat /sys/kernel/sound_control/headphone_gain | cut -d ' ' -f2)
+
+if [ "$1" = "headphoneleft" ]
+then
+	if [ -n "$2" ]
+	then
+		busybox echo "$2 $SHOWRIGHT" > /sys/kernel/sound_control/headphone_gain
+	fi
+	$SHOWLEFT
+elif [ "$1" = "headphoneright" ]
+then
+	if [ -n "$2" ]
+	then
+		busybox echo "$SHOWLEFT $2" > /sys/kernel/sound_control/headphone_gain
+	fi
+	$SHOWRIGHT
+elif [ "$1" = "speakergain" ]
+then
+	if [ -n "$2" ]
+	then
+		busybox echo "$2" > /sys/kernel/sound_control/speaker_gain
+	fi
+	busybox cat /sys/kernel/sound_control/speaker_gain
+fi
