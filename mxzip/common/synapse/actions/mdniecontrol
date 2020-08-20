@@ -216,11 +216,4 @@ then
         busybox echo $(busybox cat /sys/kernel/mdnie_control/override/yellow | cut -d ' ' -f 1) $(busybox cat /sys/kernel/mdnie_control/override/yellow | cut -d ' ' -f 2) $2 > /sys/kernel/mdnie_control/override/yellow
     fi
     busybox cat /sys/kernel/mdnie_control/override/yellow | cut -d ' ' -f 3
-#elif [ "$1" = "" ]
-#then
-#    if [ -n "$2" ]
-#    then
-#        busybox echo "$2" > /sys/kernel/mdnie_control/override/
-#    fi
-#    busybox cat /sys/kernel/mdnie_control/override/
 fi
