@@ -69,6 +69,153 @@ then
         busybox echo $(busybox cat /sys/kernel/mdnie_control/override/black | cut -d ' ' -f 1) $(busybox cat /sys/kernel/mdnie_control/override/black | cut -d ' ' -f 2) $2 > /sys/kernel/mdnie_control/override/black
     fi
     busybox cat /sys/kernel/mdnie_control/override/black | cut -d ' ' -f 3
+elif [ "$1" = "whitered" ]
+then
+    if [ -n "$2" ]
+    then
+        busybox echo $2 $(busybox cat /sys/kernel/mdnie_control/override/white | cut -d ' ' -f 2) $(busybox cat /sys/kernel/mdnie_control/override/white | cut -d ' ' -f 3) > /sys/kernel/mdnie_control/override/white
+    fi
+    busybox cat /sys/kernel/mdnie_control/override/white | cut -d ' ' -f 1
+elif [ "$1" = "whitegreen" ]
+then
+    if [ -n "$2" ]
+    then
+        busybox echo $(busybox cat /sys/kernel/mdnie_control/override/white | cut -d ' ' -f 1) $2 $(busybox cat /sys/kernel/mdnie_control/override/white | cut -d ' ' -f 3) > /sys/kernel/mdnie_control/override/white
+    fi
+    busybox cat /sys/kernel/mdnie_control/override/white | cut -d ' ' -f 2
+elif [ "$1" = "whiteblue" ]
+then
+    if [ -n "$2" ]
+    then
+        busybox echo $(busybox cat /sys/kernel/mdnie_control/override/white | cut -d ' ' -f 1) $(busybox cat /sys/kernel/mdnie_control/override/white | cut -d ' ' -f 2) $2 > /sys/kernel/mdnie_control/override/white
+    fi
+    busybox cat /sys/kernel/mdnie_control/override/white | cut -d ' ' -f 3
+elif [ "$1" = "redred" ]
+then
+    if [ -n "$2" ]
+    then
+        busybox echo $2 $(busybox cat /sys/kernel/mdnie_control/override/red | cut -d ' ' -f 2) $(busybox cat /sys/kernel/mdnie_control/override/red | cut -d ' ' -f 3) > /sys/kernel/mdnie_control/override/red
+    fi
+    busybox cat /sys/kernel/mdnie_control/override/red | cut -d ' ' -f 1
+elif [ "$1" = "redgreen" ]
+then
+    if [ -n "$2" ]
+    then
+        busybox echo $(busybox cat /sys/kernel/mdnie_control/override/red | cut -d ' ' -f 1) $2 $(busybox cat /sys/kernel/mdnie_control/override/red | cut -d ' ' -f 3) > /sys/kernel/mdnie_control/override/red
+    fi
+    busybox cat /sys/kernel/mdnie_control/override/red | cut -d ' ' -f 2
+elif [ "$1" = "redblue" ]
+then
+    if [ -n "$2" ]
+    then
+        busybox echo $(busybox cat /sys/kernel/mdnie_control/override/red | cut -d ' ' -f 1) $(busybox cat /sys/kernel/mdnie_control/override/red | cut -d ' ' -f 2) $2 > /sys/kernel/mdnie_control/override/red
+    fi
+    busybox cat /sys/kernel/mdnie_control/override/red | cut -d ' ' -f 3
+elif [ "$1" = "greenred" ]
+then
+    if [ -n "$2" ]
+    then
+        busybox echo $2 $(busybox cat /sys/kernel/mdnie_control/override/green | cut -d ' ' -f 2) $(busybox cat /sys/kernel/mdnie_control/override/green | cut -d ' ' -f 3) > /sys/kernel/mdnie_control/override/green
+    fi
+    busybox cat /sys/kernel/mdnie_control/override/green | cut -d ' ' -f 1
+elif [ "$1" = "greengreen" ]
+then
+    if [ -n "$2" ]
+    then
+        busybox echo $(busybox cat /sys/kernel/mdnie_control/override/green | cut -d ' ' -f 1) $2 $(busybox cat /sys/kernel/mdnie_control/override/green | cut -d ' ' -f 3) > /sys/kernel/mdnie_control/override/green
+    fi
+    busybox cat /sys/kernel/mdnie_control/override/green | cut -d ' ' -f 2
+elif [ "$1" = "greenblue" ]
+then
+    if [ -n "$2" ]
+    then
+        busybox echo $(busybox cat /sys/kernel/mdnie_control/override/green | cut -d ' ' -f 1) $(busybox cat /sys/kernel/mdnie_control/override/green | cut -d ' ' -f 2) $2 > /sys/kernel/mdnie_control/override/green
+    fi
+    busybox cat /sys/kernel/mdnie_control/override/green | cut -d ' ' -f 3
+elif [ "$1" = "bluered" ]
+then
+    if [ -n "$2" ]
+    then
+        busybox echo $2 $(busybox cat /sys/kernel/mdnie_control/override/blue | cut -d ' ' -f 2) $(busybox cat /sys/kernel/mdnie_control/override/blue | cut -d ' ' -f 3) > /sys/kernel/mdnie_control/override/blue
+    fi
+    busybox cat /sys/kernel/mdnie_control/override/blue | cut -d ' ' -f 1
+elif [ "$1" = "bluegreen" ]
+then
+    if [ -n "$2" ]
+    then
+        busybox echo $(busybox cat /sys/kernel/mdnie_control/override/blue | cut -d ' ' -f 1) $2 $(busybox cat /sys/kernel/mdnie_control/override/blue | cut -d ' ' -f 3) > /sys/kernel/mdnie_control/override/blue
+    fi
+    busybox cat /sys/kernel/mdnie_control/override/blue | cut -d ' ' -f 2
+elif [ "$1" = "blueblue" ]
+then
+    if [ -n "$2" ]
+    then
+        busybox echo $(busybox cat /sys/kernel/mdnie_control/override/blue | cut -d ' ' -f 1) $(busybox cat /sys/kernel/mdnie_control/override/blue | cut -d ' ' -f 2) $2 > /sys/kernel/mdnie_control/override/blue
+    fi
+    busybox cat /sys/kernel/mdnie_control/override/blue | cut -d ' ' -f 3
+elif [ "$1" = "magentared" ]
+then
+    if [ -n "$2" ]
+    then
+        busybox echo $2 $(busybox cat /sys/kernel/mdnie_control/override/magenta | cut -d ' ' -f 2) $(busybox cat /sys/kernel/mdnie_control/override/magenta | cut -d ' ' -f 3) > /sys/kernel/mdnie_control/override/magenta
+    fi
+    busybox cat /sys/kernel/mdnie_control/override/magenta | cut -d ' ' -f 1
+elif [ "$1" = "magentagreen" ]
+then
+    if [ -n "$2" ]
+    then
+        busybox echo $(busybox cat /sys/kernel/mdnie_control/override/magenta | cut -d ' ' -f 1) $2 $(busybox cat /sys/kernel/mdnie_control/override/magenta | cut -d ' ' -f 3) > /sys/kernel/mdnie_control/override/magenta
+    fi
+    busybox cat /sys/kernel/mdnie_control/override/magenta | cut -d ' ' -f 2
+elif [ "$1" = "magentablue" ]
+then
+    if [ -n "$2" ]
+    then
+        busybox echo $(busybox cat /sys/kernel/mdnie_control/override/magenta | cut -d ' ' -f 1) $(busybox cat /sys/kernel/mdnie_control/override/magenta | cut -d ' ' -f 2) $2 > /sys/kernel/mdnie_control/override/magenta
+    fi
+    busybox cat /sys/kernel/mdnie_control/override/magenta | cut -d ' ' -f 3
+elif [ "$1" = "cyanred" ]
+then
+    if [ -n "$2" ]
+    then
+        busybox echo $2 $(busybox cat /sys/kernel/mdnie_control/override/cyan | cut -d ' ' -f 2) $(busybox cat /sys/kernel/mdnie_control/override/cyan | cut -d ' ' -f 3) > /sys/kernel/mdnie_control/override/cyan
+    fi
+    busybox cat /sys/kernel/mdnie_control/override/cyan | cut -d ' ' -f 1
+elif [ "$1" = "cyangreen" ]
+then
+    if [ -n "$2" ]
+    then
+        busybox echo $(busybox cat /sys/kernel/mdnie_control/override/cyan | cut -d ' ' -f 1) $2 $(busybox cat /sys/kernel/mdnie_control/override/cyan | cut -d ' ' -f 3) > /sys/kernel/mdnie_control/override/cyan
+    fi
+    busybox cat /sys/kernel/mdnie_control/override/cyan | cut -d ' ' -f 2
+elif [ "$1" = "cyanblue" ]
+then
+    if [ -n "$2" ]
+    then
+        busybox echo $(busybox cat /sys/kernel/mdnie_control/override/cyan | cut -d ' ' -f 1) $(busybox cat /sys/kernel/mdnie_control/override/cyan | cut -d ' ' -f 2) $2 > /sys/kernel/mdnie_control/override/cyan
+    fi
+    busybox cat /sys/kernel/mdnie_control/override/cyan | cut -d ' ' -f 3
+elif [ "$1" = "yellowred" ]
+then
+    if [ -n "$2" ]
+    then
+        busybox echo $2 $(busybox cat /sys/kernel/mdnie_control/override/yellow | cut -d ' ' -f 2) $(busybox cat /sys/kernel/mdnie_control/override/yellow | cut -d ' ' -f 3) > /sys/kernel/mdnie_control/override/yellow
+    fi
+    busybox cat /sys/kernel/mdnie_control/override/yellow | cut -d ' ' -f 1
+elif [ "$1" = "yellowgreen" ]
+then
+    if [ -n "$2" ]
+    then
+        busybox echo $(busybox cat /sys/kernel/mdnie_control/override/yellow | cut -d ' ' -f 1) $2 $(busybox cat /sys/kernel/mdnie_control/override/yellow | cut -d ' ' -f 3) > /sys/kernel/mdnie_control/override/yellow
+    fi
+    busybox cat /sys/kernel/mdnie_control/override/yellow | cut -d ' ' -f 2
+elif [ "$1" = "yellowblue" ]
+then
+    if [ -n "$2" ]
+    then
+        busybox echo $(busybox cat /sys/kernel/mdnie_control/override/yellow | cut -d ' ' -f 1) $(busybox cat /sys/kernel/mdnie_control/override/yellow | cut -d ' ' -f 2) $2 > /sys/kernel/mdnie_control/override/yellow
+    fi
+    busybox cat /sys/kernel/mdnie_control/override/yellow | cut -d ' ' -f 3
 #elif [ "$1" = "" ]
 #then
 #    if [ -n "$2" ]
