@@ -791,7 +791,7 @@ static ssize_t hijack_store(struct kobject *kobj,
 /* LITE_CONTROL_1[4] */
 static ssize_t effect_mask_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "Decimal:%u\nHex:0x%x\n", LITE_CONTROL_1[4], LITE_CONTROL_1[4]);
+	return sprintf(buf, "Dec:%u\nHex:0x%x\n", LITE_CONTROL_1[4], LITE_CONTROL_1[4]);
 }
 
 /* offset_mode 
