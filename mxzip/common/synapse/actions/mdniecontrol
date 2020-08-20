@@ -44,9 +44,9 @@ then
     busybox cat /sys/kernel/mdnie_control/sharpen_extra
 elif [ "$1" = "effect_mask" ]
 then
-    while read -r LINE; 
-    do 
-        printf "%s\n" "$LINE"; 
+    while read -r MLINE
+    do
+        echo $MLINE@n
     done < /sys/kernel/mdnie_control/effect_mask
 #elif [ "$1" = "" ]
 #then

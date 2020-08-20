@@ -220,6 +220,6 @@ elif [ "$1" = "compander1" ]
 then
     while read -r LINE; 
     do 
-        printf "%s\n" "$LINE"; 
+        printf "%s\n" $LINE@n;
     done < /sys/kernel/sound_control/compander1
 fi
