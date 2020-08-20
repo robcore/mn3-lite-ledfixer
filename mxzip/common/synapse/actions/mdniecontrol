@@ -48,13 +48,6 @@ then
     do
         echo $MLINE@n
     done < /sys/kernel/mdnie_control/effect_mask
-elif [ "$1" = "" ]
-then
-    if [ -n "$2" ]
-    then
-        busybox echo "$2" > /sys/kernel/mdnie_control/override/
-    fi
-    busybox cat /sys/kernel/mdnie_control/override/
 elif [ "$1" = "blackred" ]
 then
     if [ -n "$2" ]
