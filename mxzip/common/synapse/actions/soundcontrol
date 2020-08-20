@@ -218,5 +218,8 @@ then
     busybox cat /sys/kernel/sound_control/hph_pa_bias
 elif [ "$1" = "compander1" ]
 then
-    busybox cat /sys/kernel/sound_control/compander1
+    while read -r LINE; 
+    do 
+        printf "%s\n" "$LINE"; 
+    done < /sys/kernel/sound_control/compander1
 fi

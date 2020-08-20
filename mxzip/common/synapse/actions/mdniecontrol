@@ -1,0 +1,58 @@
+#!/system/bin/sh
+
+if [ "$1" = "hijack" ]
+then
+    if [ -n "$2" ]
+    then
+        busybox echo "$2" > /sys/kernel/mdnie_control/hijack
+    fi
+    busybox cat /sys/kernel/mdnie_control/hijack
+elif [ "$1" = "bypass" ]
+then
+    if [ -n "$2" ]
+    then
+        busybox echo "$2" > /sys/kernel/mdnie_control/bypass
+    fi
+    busybox cat /sys/kernel/mdnie_control/bypass
+elif [ "$1" = "chroma" ]
+then
+    if [ -n "$2" ]
+    then
+        busybox echo "$2" > /sys/kernel/mdnie_control/chroma
+    fi
+    busybox cat /sys/kernel/mdnie_control/chroma
+elif [ "$1" = "gamma" ]
+then
+    if [ -n "$2" ]
+    then
+        busybox echo "$2" > /sys/kernel/mdnie_control/gamma
+    fi
+    busybox cat /sys/kernel/mdnie_control/gamma
+elif [ "$1" = "sharpen" ]
+then
+    if [ -n "$2" ]
+    then
+        busybox echo "$2" > /sys/kernel/mdnie_control/sharpen
+    fi
+    busybox cat /sys/kernel/mdnie_control/sharpen
+elif [ "$1" = "sharpen_extra" ]
+then
+    if [ -n "$2" ]
+    then
+        busybox echo "$2" > /sys/kernel/mdnie_control/sharpen_extra
+    fi
+    busybox cat /sys/kernel/mdnie_control/sharpen_extra
+elif [ "$1" = "effect_mask" ]
+then
+    while read -r LINE; 
+    do 
+        printf "%s\n" "$LINE"; 
+    done < /sys/kernel/mdnie_control/effect_mask
+#elif [ "$1" = "" ]
+#then
+#    if [ -n "$2" ]
+#    then
+#        busybox echo "$2" > /sys/kernel/mdnie_control/override/
+#    fi
+#    busybox cat /sys/kernel/mdnie_control/override/
+fi
