@@ -549,6 +549,11 @@ u8 hphl_cached_gain;
 u8 hphr_cached_gain;
 u8 speaker_cached_gain;
 
+/* RX4 routed from right to left side */
+u8 crossleft_cached_gain = 241; /* 241 = -15 */
+/* RX3 routed from left to right side */
+u8 crossright_cached_gain = 241; /* 241 = -15 */
+
 static u8 hphl_hpf_cutoff;
 static u8 hphr_hpf_cutoff;
 static u8 speaker_hpf_cutoff;
@@ -600,6 +605,15 @@ static void update_headphone_gain(void) {
 	lock_sound_control(&sound_control_codec_ptr->core_res, 1);
 	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX1_VOL_CTL_B2_CTL, hphl_cached_gain);
 	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX2_VOL_CTL_B2_CTL, hphr_cached_gain);
+	lock_sound_control(&sound_control_codec_ptr->core_res, 0);
+}
+
+static void update_crossfeed_gain(void) {
+	if (!hpwidget())
+		return;
+	lock_sound_control(&sound_control_codec_ptr->core_res, 1);
+	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX4_VOL_CTL_B2_CTL, crossleft_cached_gain);
+	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX3_VOL_CTL_B2_CTL, crossright_cached_gain);
 	lock_sound_control(&sound_control_codec_ptr->core_res, 0);
 }
 
@@ -3963,6 +3977,7 @@ static int taiko_hph_pa_event(struct snd_soc_dapm_widget *w,
 			hpwidget_right = true;
 
 		update_headphone_gain();
+        update_crossfeed_gain();
 		if (hph_pa_enabled) {
 			if (w->shift == 5)
 				write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN, false);
@@ -8125,6 +8140,68 @@ static ssize_t headphone_gain_store(struct kobject *kobj, struct kobj_attribute 
 	return count;
 }
 
+static ssize_t crossfeed_gain_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+	int leftval, rightval, templeft, tempright;
+
+	leftval = show_sound_value(TAIKO_A_CDC_RX4_VOL_CTL_B2_CTL);
+	if (leftval == -84) {
+		templeft = crossleft_cached_gain;
+
+		if ((templeft > 171) && (templeft < 256))
+			templeft -= 256;
+	} else {
+		templeft = leftval;
+	}
+
+	rightval = show_sound_value(TAIKO_A_CDC_RX3_VOL_CTL_B2_CTL);
+	if (rightval == -84) {
+		tempright = crossright_cached_gain;
+
+		if ((tempright > 171) && (tempright < 256))
+			tempright -= 256;
+	} else {
+		tempright = rightval;
+	}
+
+	return sprintf(buf, "%d %d\n", templeft, tempright);
+}
+
+static ssize_t crossfeed_gain_store(struct kobject *kobj, struct kobj_attribute *attr, const char *buf, size_t count)
+{
+
+	int leftinput, rightinput, dualinput;
+
+	if (sscanf(buf, "%d %d", &leftinput, &rightinput) == 2) {
+		leftinput = clamp_val(leftinput, -84, 40);
+		rightinput = clamp_val(rightinput, -84, 40);
+		if (leftinput < 0)
+			crossleft_cached_gain = (u8)(leftinput + 256);
+		else
+			crossleft_cached_gain = (u8)leftinput;
+		if (rightinput < 0)
+			crossright_cached_gain = (u8)(rightinput + 256);
+		else
+			crossright_cached_gain = (u8)rightinput;
+	} else if (sscanf(buf, "%d", &dualinput) == 1) {
+			dualinput = clamp_val(dualinput, -84, 40);
+
+		if (dualinput < 0) {
+			crossleft_cached_gain = (u8)(dualinput + 256);
+			crossright_cached_gain = (u8)(dualinput + 256);
+		} else {
+			crossleft_cached_gain = (u8)dualinput;
+			crossright_cached_gain = (u8)dualinput;
+		}
+	} else {
+		return -EINVAL;
+	}
+
+	update_crossfeed_gain();
+
+	return count;
+}
+
 static ssize_t hph_poweramp_gain_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf)
 {
@@ -8639,6 +8716,11 @@ static struct kobj_attribute headphone_gain_attribute =
 		headphone_gain_show,
 		headphone_gain_store);
 
+static struct kobj_attribute crossfeed_gain_attribute =
+	__ATTR(crossfeed_gain, 0644,
+		crossfeed_gain_show,
+		crossfeed_gain_store);
+
 static struct kobj_attribute hph_poweramp_gain_attribute =
 	__ATTR(hph_poweramp_gain, 0644,
 		hph_poweramp_gain_show,
@@ -8736,6 +8818,7 @@ static struct attribute *sound_control_attrs[] = {
 		&chopper_bypass_attribute.attr,
 		&bypass_static_pa_attribute.attr,
 		&headphone_gain_attribute.attr,
+		&crossfeed_gain_attribute.attr,
 		&hph_poweramp_gain_attribute.attr,
 		&hph_poweramp_gain_raw_attribute.attr,
 		&speaker_gain_attribute.attr,
