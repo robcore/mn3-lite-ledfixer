@@ -136,9 +136,10 @@ void lock_sound_control(struct wcd9xxx_core_resource *core_res,
 extern u8 hphl_cached_gain;
 extern u8 hphr_cached_gain;
 extern u8 speaker_cached_gain;
+#if 0
 extern u8 crossleft_cached_gain; /* RX4 routed from right to left side */
 extern u8 crossright_cached_gain; /* RX3 routed from left to right side */
-
+#endif
 int wcd9xxx_irq_init(struct wcd9xxx_core_resource *);
 void wcd9xxx_irq_exit(struct wcd9xxx_core_resource *);
 int wcd9xxx_core_res_resume(

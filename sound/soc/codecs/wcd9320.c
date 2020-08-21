@@ -549,11 +549,12 @@ u8 hphl_cached_gain;
 u8 hphr_cached_gain;
 u8 speaker_cached_gain;
 
+#if 0
 /* RX4 routed from right to left side */
 u8 crossleft_cached_gain = 241; /* 241 = -15 */
 /* RX3 routed from left to right side */
 u8 crossright_cached_gain = 241; /* 241 = -15 */
-
+#endif
 static u8 hphl_hpf_cutoff;
 static u8 hphr_hpf_cutoff;
 static u8 speaker_hpf_cutoff;
@@ -608,6 +609,7 @@ static void update_headphone_gain(void) {
 	lock_sound_control(&sound_control_codec_ptr->core_res, 0);
 }
 
+#if 0
 static void update_crossfeed_gain(void) {
 	if (!hpwidget())
 		return;
@@ -616,6 +618,7 @@ static void update_crossfeed_gain(void) {
 	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX3_VOL_CTL_B2_CTL, crossright_cached_gain);
 	lock_sound_control(&sound_control_codec_ptr->core_res, 0);
 }
+#endif
 
 static int read_hph_poweramp_gain(unsigned short reg, bool cached)
 {
@@ -3977,7 +3980,9 @@ static int taiko_hph_pa_event(struct snd_soc_dapm_widget *w,
 			hpwidget_right = true;
 
 		update_headphone_gain();
+#if 0
         update_crossfeed_gain();
+#endif
 		if (hph_pa_enabled) {
 			if (w->shift == 5)
 				write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN, false);
@@ -8140,6 +8145,7 @@ static ssize_t headphone_gain_store(struct kobject *kobj, struct kobj_attribute 
 	return count;
 }
 
+#if 0
 static ssize_t crossfeed_gain_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
 	int leftval, rightval, templeft, tempright;
@@ -8201,7 +8207,7 @@ static ssize_t crossfeed_gain_store(struct kobject *kobj, struct kobj_attribute 
 
 	return count;
 }
-
+#endif
 static ssize_t hph_poweramp_gain_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf)
 {
@@ -8715,11 +8721,12 @@ static struct kobj_attribute headphone_gain_attribute =
 	__ATTR(headphone_gain, 0644,
 		headphone_gain_show,
 		headphone_gain_store);
-
+#if 0
 static struct kobj_attribute crossfeed_gain_attribute =
 	__ATTR(crossfeed_gain, 0644,
 		crossfeed_gain_show,
 		crossfeed_gain_store);
+#endif
 
 static struct kobj_attribute hph_poweramp_gain_attribute =
 	__ATTR(hph_poweramp_gain, 0644,
@@ -8818,7 +8825,9 @@ static struct attribute *sound_control_attrs[] = {
 		&chopper_bypass_attribute.attr,
 		&bypass_static_pa_attribute.attr,
 		&headphone_gain_attribute.attr,
+#if 0
 		&crossfeed_gain_attribute.attr,
+#endif
 		&hph_poweramp_gain_attribute.attr,
 		&hph_poweramp_gain_raw_attribute.attr,
 		&speaker_gain_attribute.attr,

@@ -14,20 +14,6 @@ then
         busybox echo $(busybox cat /sys/kernel/sound_control/headphone_gain | cut -d ' ' -f 1) $2 > /sys/kernel/sound_control/headphone_gain
     fi
     busybox cat /sys/kernel/sound_control/headphone_gain | cut -d ' ' -f 2
-elif [ "$1" = "crossfeedleft" ]
-then
-    if [ -n "$2" ]
-    then
-        busybox echo $2 $(busybox cat /sys/kernel/sound_control/crossfeed_gain | cut -d ' ' -f 2) > /sys/kernel/sound_control/crossfeed_gain
-    fi
-    busybox cat /sys/kernel/sound_control/crossfeed_gain | cut -d ' ' -f 1
-elif [ "$1" = "crossfeedright" ]
-then
-    if [ -n "$2" ]
-    then
-        busybox echo $(busybox cat /sys/kernel/sound_control/crossfeed_gain | cut -d ' ' -f 1) $2 > /sys/kernel/sound_control/crossfeed_gain
-    fi
-    busybox cat /sys/kernel/sound_control/crossfeed_gain | cut -d ' ' -f 2
 elif [ "$1" = "speaker_gain" ]
 then
     if [ -n "$2" ]
