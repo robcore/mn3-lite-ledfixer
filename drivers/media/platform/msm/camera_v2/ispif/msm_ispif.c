@@ -144,7 +144,7 @@ static int msm_ispif_reset_hw(struct ispif_device *ispif)
 		ispif_8974_reset_clk_info, reset_clk,
 		ARRAY_SIZE(ispif_8974_reset_clk_info), 1);
 	if (rc < 0) {
-		pr_err("%s: cannot enable clock, error = %d",
+		pr_err("%s: cannot enable clock, error = %d\n",
 			__func__, rc);
 	}
 
@@ -179,13 +179,13 @@ static int msm_ispif_reset_hw(struct ispif_device *ispif)
 			goto end;
 		}
 	}
-	pr_info("%s: ISPIF reset hw done", __func__);
+	pr_info("%s: ISPIF reset hw done\n", __func__);
 end:
 	rc = msm_cam_clk_enable(&ispif->pdev->dev,
 		ispif_8974_reset_clk_info, reset_clk,
 		ARRAY_SIZE(ispif_8974_reset_clk_info), 0);
 	if (rc < 0) {
-		pr_err("%s: cannot disable clock, error = %d",
+		pr_err("%s: cannot disable clock, error = %d\n",
 			__func__, rc);
 	}
 	return rc;
@@ -204,7 +204,7 @@ static int msm_ispif_clk_ahb_enable(struct ispif_device *ispif, int enable)
 		ispif_8974_ahb_clk_info, &ispif->ahb_clk,
 		ARRAY_SIZE(ispif_8974_ahb_clk_info), enable);
 	if (rc < 0) {
-		pr_err("%s: cannot enable clock, error = %d",
+		pr_err("%s: cannot enable clock, error = %d\n",
 			__func__, rc);
 	}
 
@@ -951,7 +951,7 @@ static int msm_ispif_init(struct ispif_device *ispif,
 
 	rc = msm_ispif_clk_ahb_enable(ispif, 1);
 	if (rc) {
-		pr_err("%s: ahb_clk enable failed", __func__);
+		pr_err("%s: ahb_clk enable failed\n", __func__);
 		goto error_ahb;
 	}
 
