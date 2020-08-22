@@ -548,6 +548,8 @@ static unsigned short tx_digital_gain_reg[] = {
 u8 hphl_cached_gain;
 u8 hphr_cached_gain;
 u8 speaker_cached_gain;
+u8 iir1_cached_gain;
+u8 iir2_cached_gain;
 
 #if 0
 /* RX4 routed from right to left side */
@@ -613,7 +615,20 @@ static void update_headphone_gain(void) {
 	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX2_VOL_CTL_B2_CTL, hphr_cached_gain);
 	lock_sound_control(&sound_control_codec_ptr->core_res, 0);
 }
-
+/*
+	SOC_SINGLE_S8_TLV("IIR1 INP1 Volume", TAIKO_A_CDC_IIR1_GAIN_B1_CTL, -84,
+		40, digital_gain),
+	SOC_SINGLE_S8_TLV("IIR2 INP1 Volume", TAIKO_A_CDC_IIR2_GAIN_B1_CTL, -84,
+		40, digital_gain),
+*/
+static void update_iir_gain(void) {
+	if (!hpwidget())
+		return;
+	lock_sound_control(&sound_control_codec_ptr->core_res, 1);
+	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_IIR1_GAIN_B1_CTL, iir1_cached_gain);
+	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_IIR2_GAIN_B1_CTL, iir2_cached_gain);
+	lock_sound_control(&sound_control_codec_ptr->core_res, 0);
+}
 #if 0
 static void update_crossfeed_gain(void) {
 	if (!hpwidget())
@@ -3986,6 +4001,7 @@ static int taiko_hph_pa_event(struct snd_soc_dapm_widget *w,
 			hpwidget_right = true;
 
 		update_headphone_gain();
+        update_iir_gain();
 #if 0
         update_crossfeed_gain();
 #endif
@@ -8147,6 +8163,83 @@ static ssize_t headphone_gain_store(struct kobject *kobj, struct kobj_attribute 
 	}
 
 	update_headphone_gain();
+    
+	return count;
+}
+
+/*
+	SOC_SINGLE_S8_TLV("IIR1 INP1 Volume", TAIKO_A_CDC_IIR1_GAIN_B1_CTL, -84,
+		40, digital_gain),
+	SOC_SINGLE_S8_TLV("IIR2 INP1 Volume", TAIKO_A_CDC_IIR2_GAIN_B1_CTL, -84,
+		40, digital_gain),
+*/
+
+static ssize_t iir1_gain_show(struct kobject *kobj,
+		struct kobj_attribute *attr, char *buf) {
+	int iirval, tempval;
+
+	iirval = show_sound_value(TAIKO_A_CDC_IIR1_GAIN_B1_CTL);
+	if (iirval == -84) {
+		tempval = iir1_cached_gain;
+
+		if ((tempval > 171) && (tempval < 256))
+			tempval -= 256;
+	} else {
+		tempval = iirval;
+	}
+
+	return sprintf(buf, "%d\n", tempval);
+}
+
+static ssize_t iir1_gain_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count) {
+	int iirinput;
+
+	sscanf(buf, "%d", &iirinput);
+
+	iirinput = clamp_val(iirinput, -84, 40);
+
+	if (iirinput < 0)
+		iir1_cached_gain = (u8)(iirinput + 256);
+	else
+		iir1_cached_gain = (u8)iirinput;
+
+	update_iir_gain();
+
+	return count;
+}
+
+static ssize_t iir2_gain_show(struct kobject *kobj,
+		struct kobj_attribute *attr, char *buf) {
+	int iirval, tempval;
+
+	iirval = show_sound_value(TAIKO_A_CDC_IIR2_GAIN_B1_CTL);
+	if (iirval == -84) {
+		tempval = iir2_cached_gain;
+
+		if ((tempval > 171) && (tempval < 256))
+			tempval -= 256;
+	} else {
+		tempval = iirval;
+	}
+
+	return sprintf(buf, "%d\n", tempval);
+}
+
+static ssize_t iir2_gain_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count) {
+	int iirinput;
+
+	sscanf(buf, "%d", &iirinput);
+
+	iirinput = clamp_val(iirinput, -84, 40);
+
+	if (iirinput < 0)
+		iir2_cached_gain = (u8)(iirinput + 256);
+	else
+		iir2_cached_gain = (u8)iirinput;
+
+	update_iir_gain();
 
 	return count;
 }
@@ -8761,6 +8854,16 @@ static struct kobj_attribute speaker_gain_attribute =
 		speaker_gain_show,
 		speaker_gain_store);
 
+static struct kobj_attribute iir1_gain_attribute =
+	__ATTR(iir1_gain, 0644,
+		iir1_gain_show,
+		iir1_gain_store);
+
+static struct kobj_attribute iir2_gain_attribute =
+	__ATTR(iir2_gain, 0644,
+		iir2_gain_show,
+		iir2_gain_store);
+
 static struct kobj_attribute uhqa_mode_attribute =
 	__ATTR(uhqa_mode, 0644,
 		uhqa_mode_show,
@@ -8849,6 +8952,8 @@ static struct attribute *sound_control_attrs[] = {
 		&hph_poweramp_gain_attribute.attr,
 		&hph_poweramp_gain_raw_attribute.attr,
 		&speaker_gain_attribute.attr,
+		&iir1_gain_attribute.attr,
+		&iir2_gain_attribute.attr,
 		&uhqa_mode_attribute.attr,
 		&high_perf_mode_attribute.attr,
 		&interpolator_boost_attribute.attr,

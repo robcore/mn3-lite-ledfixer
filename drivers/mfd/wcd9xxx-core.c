@@ -121,10 +121,14 @@ EXPORT_SYMBOL(wcd9xxx_reg_read);
 extern u8 hphl_cached_gain;
 extern u8 hphr_cached_gain;
 extern u8 speaker_cached_gain;
+extern u8 iir1_cached_gain; /*0x340*/
+extern u8 iir2_cached_gain; /*0x350*/
+
 #if 0
 extern u8 crossleft_cached_gain; /* RX4 routed from right to left side Port: RX4 -> 0x2CF */
 extern u8 crossright_cached_gain; /* RX3 routed from left to right side Port: RX3 -> 0x2C7*/
 #endif
+
 static unsigned int sound_control_override = 0;
 void lock_sound_control(struct wcd9xxx_core_resource *core_res,
 						unsigned int lockval) {
@@ -146,6 +150,8 @@ static bool sound_control_reserved(unsigned short reg)
 		case 0x2B7:
 		case 0x2BF:
 		case 0x2E7:
+        case 0x340:
+        case 0x350:
 #if 0
         case 0x2CF:
         case 0x2C7:
@@ -215,6 +221,18 @@ static int __wcd9xxx_reg_write(struct wcd9xxx *wcd9xxx,
 				ret = wcd9xxx_write(wcd9xxx, reg, 1, &val, false);
 			else
 				ret = wcd9xxx_write(wcd9xxx, reg, 1, &speaker_cached_gain, false);
+			break;
+		case 0x340:
+			if (val == 172)
+				ret = wcd9xxx_write(wcd9xxx, reg, 1, &val, false);
+			else
+				ret = wcd9xxx_write(wcd9xxx, reg, 1, &iir1_cached_gain, false);
+			break;
+		case 0x350:
+			if (val == 172)
+				ret = wcd9xxx_write(wcd9xxx, reg, 1, &val, false);
+			else
+				ret = wcd9xxx_write(wcd9xxx, reg, 1, &iir2_cached_gain, false);
 			break;
 #if 0
 		case 0x2CF:
