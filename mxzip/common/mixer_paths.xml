@@ -56,6 +56,71 @@
 	<ctl name="RX1 MIX1 INP2" value="ZERO" />
 	<ctl name="RX1 MIX1 INP1" value="ZERO" />
 
+	<ctl name="IIR1 INP1 Volume" value="0" />
+	<ctl name="IIR2 INP1 Volume" value="0" />
+
+    <ctl name="IIR1 Band1" id ="0" value="268435456" />
+    <ctl name="IIR1 Band1" id ="1" value="0" />
+    <ctl name="IIR1 Band1" id ="2" value="0" />
+    <ctl name="IIR1 Band1" id ="3" value="0" />
+    <ctl name="IIR1 Band1" id ="4" value="0" />
+    <ctl name="IIR1 Band2" id ="0" value="268435456" />
+    <ctl name="IIR1 Band2" id ="1" value="0" />
+    <ctl name="IIR1 Band2" id ="2" value="0" />
+    <ctl name="IIR1 Band2" id ="3" value="0" />
+    <ctl name="IIR1 Band2" id ="4" value="0" />
+    <ctl name="IIR1 Band3" id ="0" value="268435456" />
+    <ctl name="IIR1 Band3" id ="1" value="0" />
+    <ctl name="IIR1 Band3" id ="2" value="0" />
+    <ctl name="IIR1 Band3" id ="3" value="0" />
+    <ctl name="IIR1 Band3" id ="4" value="0" />
+    <ctl name="IIR1 Band4" id ="0" value="268435456" />
+    <ctl name="IIR1 Band4" id ="1" value="0" />
+    <ctl name="IIR1 Band4" id ="2" value="0" />
+    <ctl name="IIR1 Band4" id ="3" value="0" />
+    <ctl name="IIR1 Band4" id ="4" value="0" />
+    <ctl name="IIR1 Band5" id ="0" value="268435456" />
+    <ctl name="IIR1 Band5" id ="1" value="0" />
+    <ctl name="IIR1 Band5" id ="2" value="0" />
+    <ctl name="IIR1 Band5" id ="3" value="0" />
+    <ctl name="IIR1 Band5" id ="4" value="0" />
+    <ctl name="IIR1 Enable Band1" value="0" />
+    <ctl name="IIR1 Enable Band2" value="0" />
+    <ctl name="IIR1 Enable Band3" value="0" />
+    <ctl name="IIR1 Enable Band4" value="0" />
+    <ctl name="IIR1 Enable Band5" value="0" />
+ <!-- IIR2 filter coefficients; same as IIR1 -->
+    <ctl name="IIR2 Band1" id ="0" value="268435456" />
+    <ctl name="IIR2 Band1" id ="1" value="0" />
+    <ctl name="IIR2 Band1" id ="2" value="0" />
+    <ctl name="IIR2 Band1" id ="3" value="0" />
+    <ctl name="IIR2 Band1" id ="4" value="0" />
+    <ctl name="IIR2 Band2" id ="0" value="268435456" />
+    <ctl name="IIR2 Band2" id ="1" value="0" />
+    <ctl name="IIR2 Band2" id ="2" value="0" />
+    <ctl name="IIR2 Band2" id ="3" value="0" />
+    <ctl name="IIR2 Band2" id ="4" value="0" />
+    <ctl name="IIR2 Band3" id ="0" value="268435456" />
+    <ctl name="IIR2 Band3" id ="1" value="0" />
+    <ctl name="IIR2 Band3" id ="2" value="0" />
+    <ctl name="IIR2 Band3" id ="3" value="0" />
+    <ctl name="IIR2 Band3" id ="4" value="0" />
+    <ctl name="IIR2 Band4" id ="0" value="268435456" />
+    <ctl name="IIR2 Band4" id ="1" value="0" />
+    <ctl name="IIR2 Band4" id ="2" value="0" />
+    <ctl name="IIR2 Band4" id ="3" value="0" />
+    <ctl name="IIR2 Band4" id ="4" value="0" />
+    <ctl name="IIR2 Band5" id ="0" value="268435456" />
+    <ctl name="IIR2 Band5" id ="1" value="0" />
+    <ctl name="IIR2 Band5" id ="2" value="0" />
+    <ctl name="IIR2 Band5" id ="3" value="0" />
+    <ctl name="IIR2 Band5" id ="4" value="0" />
+    <ctl name="IIR2 Enable Band1" value="0" />
+    <ctl name="IIR2 Enable Band2" value="0" />
+    <ctl name="IIR2 Enable Band3" value="0" />
+    <ctl name="IIR2 Enable Band4" value="0" />
+    <ctl name="IIR2 Enable Band5" value="0" />
+
 	<ctl name="RX1 Digital Volume" value="0" />
 	<ctl name="RX2 Digital Volume" value="0" />
 	<ctl name="RX3 Digital Volume" value="0" />
@@ -68,11 +133,11 @@
 	<ctl name="LINEOUT2 Volume" value="0" />
 	<ctl name="LINEOUT3 Volume" value="0" />
 	<ctl name="LINEOUT4 Volume" value="0" />
-	
+
 	<ctl name="SPK DRV Volume" value="0" />
 
 	<ctl name="EAR PA Gain" value="POS_0_DB" />
-	
+
 	<ctl name="DAC1 Switch" value="0" />
 
 	<ctl name="COMP0 Switch" value="0" />
@@ -209,7 +274,7 @@
 	<path name="jam-framework-capture">
 		<ctl name="MultiMedia10 Mixer SLIM_0_TX" value="1" />
 	</path>
-	
+
 	<!-- tunnel -->
 	<path name="compress-offload-playback">
 		<ctl name="SLIMBUS_0_RX Audio Mixer MultiMedia4" value="1" />
@@ -262,7 +327,7 @@
 		<ctl name="AUX_PCM_RX_Voice Mixer Voip" value="1" />
 		<ctl name="Voip_Tx Mixer AUX_PCM_TX_Voip" value="1" />
 	</path>
-	
+
 	<path name="incall-rec-uplink">
 		<ctl name="MultiMedia1 Mixer VOC_REC_UL" value="1" />
 	</path>
@@ -274,7 +339,7 @@
 	<path name="incall-rec-uplink-and-downlink">
 		<ctl name="MultiMedia1 Mixer VOC_REC_UL" value="1" />
 		<ctl name="MultiMedia1 Mixer VOC_REC_DL" value="1" />
-	</path>	
+	</path>
 	<!-- end of Verb -->
 
 	<!-- ================================================================ -->
@@ -314,7 +379,7 @@
 		<ctl name="RX3 MIX1 INP1" value="RX2" />
 		<ctl name="RX5 MIX1 INP1" value="RX1" />
 	</path>
-	
+
 	<path name="spk-lineout">
 		<ctl name="SLIM RX1 MUX" value="AIF1_PB" />
 		<ctl name="SLIM RX2 MUX" value="AIF1_PB" />
@@ -423,16 +488,24 @@
 		<ctl name="SLIM_0_RX Channels" value="Two" />
 		<ctl name="RX1 MIX1 INP1" value="RX1" />
 		<ctl name="RX2 MIX1 INP1" value="RX2" />
-	<!-- Volume Boost! -->
+        <!-- Volume Boost! -->
 		<ctl name="RX1 MIX1 INP2" value="RX1" />
 		<ctl name="RX2 MIX1 INP2" value="RX2" />
-	<!-- Volume Boost End! -->
+        <!-- Volume Boost End! -->
+        <!-- Sidetone -->
+        <ctl name="IIR1 INP1 MUX" value="RX1" />
+        <ctl name="IIR2 INP1 MUX" value="RX2" />
+        <ctl name="RX1 MIX2 INP1" value="IIR1" />
+        <ctl name="RX2 MIX2 INP1" value="IIR2" />
+        <!-- Sidetone End -->
 		<ctl name="CLASS_H_DSM MUX" value="DSM_HPHL_RX1" />
 		<ctl name="HPHL Volume" value="20" />
 		<ctl name="HPHR Volume" value="20" />
 		<ctl name="HPHL DAC Switch" value="1" />
 		<ctl name="RX1 Digital Volume" value="84" />
 		<ctl name="RX2 Digital Volume" value="84" />
+        <ctl name="IIR1 INP1 Volume" value="74" />
+        <ctl name="IIR2 INP1 Volume" value="74" />
 		<ctl name="COMP1 Switch" value="1" />
 	</path>
 

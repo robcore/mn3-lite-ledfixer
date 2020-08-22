@@ -2080,7 +2080,8 @@ static const char * const rx_mix1_text[] = {
 };
 
 static const char * const rx_mix2_text[] = {
-	"ZERO", "SRC1", "SRC2", "IIR1", "IIR2"
+	"ZERO", "SRC1", "SRC2", "IIR1", "IIR2", "RX1", "RX2", "RX3", "RX4",
+		"RX5", "RX6", "RX7"
 };
 
 static const char * const rx_rdac5_text[] = {
@@ -2233,22 +2234,22 @@ static const struct soc_enum rx7_mix1_inp2_chain_enum =
 	SOC_ENUM_SINGLE(TAIKO_A_CDC_CONN_RX7_B1_CTL, 4, 12, rx_mix1_text);
 
 static const struct soc_enum rx1_mix2_inp1_chain_enum =
-	SOC_ENUM_SINGLE(TAIKO_A_CDC_CONN_RX1_B3_CTL, 0, 5, rx_mix2_text);
+	SOC_ENUM_SINGLE(TAIKO_A_CDC_CONN_RX1_B3_CTL, 0, 12, rx_mix2_text);
 
 static const struct soc_enum rx1_mix2_inp2_chain_enum =
-	SOC_ENUM_SINGLE(TAIKO_A_CDC_CONN_RX1_B3_CTL, 3, 5, rx_mix2_text);
+	SOC_ENUM_SINGLE(TAIKO_A_CDC_CONN_RX1_B3_CTL, 3, 12, rx_mix2_text);
 
 static const struct soc_enum rx2_mix2_inp1_chain_enum =
-	SOC_ENUM_SINGLE(TAIKO_A_CDC_CONN_RX2_B3_CTL, 0, 5, rx_mix2_text);
+	SOC_ENUM_SINGLE(TAIKO_A_CDC_CONN_RX2_B3_CTL, 0, 12, rx_mix2_text);
 
 static const struct soc_enum rx2_mix2_inp2_chain_enum =
-	SOC_ENUM_SINGLE(TAIKO_A_CDC_CONN_RX2_B3_CTL, 3, 5, rx_mix2_text);
+	SOC_ENUM_SINGLE(TAIKO_A_CDC_CONN_RX2_B3_CTL, 3, 12, rx_mix2_text);
 
 static const struct soc_enum rx7_mix2_inp1_chain_enum =
-	SOC_ENUM_SINGLE(TAIKO_A_CDC_CONN_RX7_B3_CTL, 0, 5, rx_mix2_text);
+	SOC_ENUM_SINGLE(TAIKO_A_CDC_CONN_RX7_B3_CTL, 0, 12, rx_mix2_text);
 
 static const struct soc_enum rx7_mix2_inp2_chain_enum =
-	SOC_ENUM_SINGLE(TAIKO_A_CDC_CONN_RX7_B3_CTL, 3, 5, rx_mix2_text);
+	SOC_ENUM_SINGLE(TAIKO_A_CDC_CONN_RX7_B3_CTL, 3, 12, rx_mix2_text);
 
 static const struct soc_enum rx_rdac5_enum =
 	SOC_ENUM_SINGLE(TAIKO_A_CDC_CONN_MISC, 2, 2, rx_rdac5_text);
