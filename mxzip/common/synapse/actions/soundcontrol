@@ -21,6 +21,20 @@ then
         busybox echo "$2" > /sys/kernel/sound_control/speaker_gain
     fi
     busybox cat /sys/kernel/sound_control/speaker_gain
+elif [ "$1" = "iir1_gain" ]
+then
+    if [ -n "$2" ]
+    then
+        busybox echo "$2" > /sys/kernel/sound_control/iir1_gain
+    fi
+    busybox cat /sys/kernel/sound_control/iir1_gain
+elif [ "$1" = "iir2_gain" ]
+then
+    if [ -n "$2" ]
+    then
+        busybox echo "$2" > /sys/kernel/sound_control/iir2_gain
+    fi
+    busybox cat /sys/kernel/sound_control/iir2_gain
 elif [ "$1" = "usepagain" ]
 then
     if [ -n "$2" ]
