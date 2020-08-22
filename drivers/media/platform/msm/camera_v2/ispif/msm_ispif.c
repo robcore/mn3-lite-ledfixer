@@ -1173,14 +1173,14 @@ static int __devinit ispif_probe(struct platform_device *pdev)
 	ispif->mem = platform_get_resource_byname(pdev,
 		IORESOURCE_MEM, "ispif");
 	if (!ispif->mem) {
-		pr_err("%s: no mem resource?\n", __func__);
+		pr_err("%s: no mem resource\n", __func__);
 		rc = -ENODEV;
 		goto error;
 	}
 	ispif->irq = platform_get_resource_byname(pdev,
 		IORESOURCE_IRQ, "ispif");
 	if (!ispif->irq) {
-		pr_err("%s: no irq resource?\n", __func__);
+		pr_err("%s: no irq resource\n", __func__);
 		rc = -ENODEV;
 		goto error;
 	}
