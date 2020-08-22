@@ -14,6 +14,13 @@ then
         busybox echo "$2" > /sys/kernel/mdnie_control/bypass
     fi
     busybox cat /sys/kernel/mdnie_control/bypass
+elif [ "$1" = "force_500cd" ]
+then
+    if [ -n "$2" ]
+    then
+        busybox echo "$2" > /sys/devices/virtual/lcd/panel/force_500cd
+    fi
+    busybox cat /sys/devices/virtual/lcd/panel/force_500cd
 elif [ "$1" = "chroma" ]
 then
     if [ -n "$2" ]
