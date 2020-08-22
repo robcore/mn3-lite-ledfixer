@@ -259,7 +259,6 @@ static struct dentry *__sdcardfs_lookup(struct dentry *dentry,
 				 * but, the current implementation just returns an error
 				 * because the sdcard daemon also regards this case as 
 				 * a lookup fail. */
-				printk(KERN_INFO "sdcardfs: base obbpath is not available\n"); 
 				sdcardfs_put_reset_orig_path(dentry);
 				goto out;
 			}
@@ -343,9 +342,6 @@ struct dentry *sdcardfs_lookup(struct inode *dir, struct dentry *dentry,
 	if(!check_caller_access_to_name(parent->d_inode, dentry->d_name.name,
 						sbi->options.derive, 0, 0)) {
 		ret = ERR_PTR(-EACCES);
-		printk(KERN_INFO "%s: need to check the caller's gid in packages.list\n" 
-                         "	dentry: %s, task:%s\n",
-						 __func__, dentry->d_name.name, current->comm);
 		goto out_err;
         }
 	

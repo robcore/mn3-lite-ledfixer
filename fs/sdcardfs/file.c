@@ -65,7 +65,6 @@ static ssize_t sdcardfs_write(struct file *file, const char __user *buf,
 
 	/* check disk space */
 	if (!check_min_free_space(dentry, count, 0)) {
-		printk(KERN_INFO "No minimum free space.\n");
 		return -ENOSPC;
 	}
 
@@ -160,8 +159,6 @@ static int sdcardfs_mmap(struct file *file, struct vm_area_struct *vma)
 	lower_file = sdcardfs_lower_file(file);
 	if (willwrite && !lower_file->f_mapping->a_ops->writepage) {
 		err = -EINVAL;
-		printk(KERN_ERR "sdcardfs: lower file system does not "
-		       "support writeable mmap\n");
 		goto out;
 	}
 
@@ -173,14 +170,12 @@ static int sdcardfs_mmap(struct file *file, struct vm_area_struct *vma)
 	if (!SDCARDFS_F(file)->lower_vm_ops) {
 		err = lower_file->f_op->mmap(lower_file, vma);
 		if (err) {
-			printk(KERN_ERR "sdcardfs: lower mmap failed %d\n", err);
 			goto out;
 		}
 		saved_vm_ops = vma->vm_ops; /* save: came from lower ->mmap */
 		err = do_munmap(current->mm, vma->vm_start,
 				vma->vm_end - vma->vm_start);
 		if (err) {
-			printk(KERN_ERR "sdcardfs: do_munmap failed %d\n", err);
 			goto out;
 		}
 	}
@@ -223,11 +218,6 @@ static int sdcardfs_open(struct inode *inode, struct file *file)
 	if(!check_caller_access_to_name(parent->d_inode, dentry->d_name.name,
 				sbi->options.derive,
 				open_flags_to_access_mode(file->f_flags), has_rw)) {
-#if 0
-		printk(KERN_INFO "%s: need to check the caller's gid in packages.list\n"
-                         "	dentry: %s, task:%s\n",
-						 __func__, dentry->d_name.name, current->comm);
-#endif
 		err = -EACCES;
 		goto out_err;
 	}

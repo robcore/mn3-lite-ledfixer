@@ -60,11 +60,6 @@ static int sdcardfs_create(struct inode *dir, struct dentry *dentry,
 
 	int has_rw = get_caller_has_rw_locked(sbi->pkgl_id, sbi->options.derive);
 	if(!check_caller_access_to_name(dir, dentry->d_name.name, sbi->options.derive, 1, has_rw)) {
-#if 0
-		printk(KERN_INFO "%s: need to check the caller's gid in packages.list\n"
-						 "  dentry: %s, task:%s\n",
-						 __func__, dentry->d_name.name, current->comm);
-#endif
 		err = -EACCES;
 		goto out_eacces;
 	}
@@ -167,9 +162,6 @@ static int sdcardfs_unlink(struct inode *dir, struct dentry *dentry)
 
 	int has_rw = get_caller_has_rw_locked(sbi->pkgl_id, sbi->options.derive);
 	if(!check_caller_access_to_name(dir, dentry->d_name.name, sbi->options.derive, 1, has_rw)) {
-		printk(KERN_INFO "%s: need to check the caller's gid in packages.list\n" 
-						 "  dentry: %s, task:%s\n",
-						 __func__, dentry->d_name.name, current->comm);
 		err = -EACCES;
 		goto out_eacces;
 	}
@@ -259,8 +251,6 @@ static int touch(char *abs_path, mode_t mode) {
 			return 0;
 		}
 		else {
-			printk(KERN_ERR "sdcardfs: failed to open(%s): %ld\n",
-						abs_path, PTR_ERR(filp));
 			return PTR_ERR(filp);
 		}
 	}
@@ -286,11 +276,6 @@ static int sdcardfs_mkdir(struct inode *dir, struct dentry *dentry, umode_t mode
 
 	int has_rw = get_caller_has_rw_locked(sbi->pkgl_id, sbi->options.derive);
 	if(!check_caller_access_to_name(dir, dentry->d_name.name, sbi->options.derive, 1, has_rw)) {
-#if 0
-		printk(KERN_INFO "%s: need to check the caller's gid in packages.list\n"
-						 "  dentry: %s, task:%s\n",
-						 __func__, dentry->d_name.name, current->comm);
-#endif
 		err = -EACCES;
 		goto out_eacces;
 	}
@@ -300,7 +285,6 @@ static int sdcardfs_mkdir(struct inode *dir, struct dentry *dentry, umode_t mode
 
 	/* check disk space */
 	if (!check_min_free_space(dentry, 0, 1)) {
-		printk(KERN_INFO "sdcardfs: No minimum free space.\n");
 		err = -ENOSPC;
 		goto out_revert;
 	}
@@ -367,14 +351,12 @@ static int sdcardfs_mkdir(struct inode *dir, struct dentry *dentry, umode_t mode
 
 		page_buf = (char *)__get_free_page(GFP_KERNEL);
 		if (!page_buf) {
-			printk(KERN_ERR "sdcardfs: failed to allocate page buf\n");
 			goto out;
 		}
 
 		nomedia_dir_name = d_absolute_path(&lower_path, page_buf, PAGE_SIZE);
 		if (IS_ERR(nomedia_dir_name)) {
 			free_page((unsigned long)page_buf);
-			printk(KERN_ERR "sdcardfs: failed to get .nomedia dir name\n");
 			goto out;
 		}
 
@@ -383,7 +365,6 @@ static int sdcardfs_mkdir(struct inode *dir, struct dentry *dentry, umode_t mode
 		nomedia_fullpath = kzalloc(fullpath_namelen + 1, GFP_KERNEL);
 		if (!nomedia_fullpath) {
 			free_page((unsigned long)page_buf);
-			printk(KERN_ERR "sdcardfs: failed to allocate .nomedia fullpath buf\n");
 			goto out;
 		}
 
@@ -392,8 +373,6 @@ static int sdcardfs_mkdir(struct inode *dir, struct dentry *dentry, umode_t mode
 		strcat(nomedia_fullpath, "/.nomedia");
 		touch_err = touch(nomedia_fullpath, 0664);
 		if (touch_err) {
-			printk(KERN_ERR "sdcardfs: failed to touch(%s): %d\n",
-							nomedia_fullpath, touch_err);
 			kfree(nomedia_fullpath);
 			goto out;
 		}
@@ -421,9 +400,6 @@ static int sdcardfs_rmdir(struct inode *dir, struct dentry *dentry)
 
 	int has_rw = get_caller_has_rw_locked(sbi->pkgl_id, sbi->options.derive);
 	if(!check_caller_access_to_name(dir, dentry->d_name.name, sbi->options.derive, 1, has_rw)) {
-		printk(KERN_INFO "%s: need to check the caller's gid in packages.list\n"
-						 "  dentry: %s, task:%s\n",
-						  __func__, dentry->d_name.name, current->comm);
 		err = -EACCES;
 		goto out_eacces;
 	}
@@ -523,9 +499,6 @@ static int sdcardfs_rename(struct inode *old_dir, struct dentry *old_dentry,
 			sbi->options.derive, 1, has_rw) ||
 		!check_caller_access_to_name(new_dir, new_dentry->d_name.name,
 			sbi->options.derive, 1, has_rw)) {
-		printk(KERN_INFO "%s: need to check the caller's gid in packages.list\n"
-						 "  new dentry: %s, task:%s\n",
-						 __func__, new_dentry->d_name.name, current->comm);
 		err = -EACCES;
 		goto out_eacces;
 	}
@@ -722,9 +695,6 @@ static int sdcardfs_getattr(struct vfsmount *mnt, struct dentry *dentry,
 	if(!check_caller_access_to_name(parent->d_inode, dentry->d_name.name,
 						sbi->options.derive, 0, 0)) {
 		dput(parent);
-		printk(KERN_INFO "%s: need to check the caller's gid in packages.list\n"
-						 "  dentry: %s, task:%s\n",
-						 __func__, dentry->d_name.name, current->comm);
 		return -EACCES;
 	}
 	dput(parent);
@@ -779,9 +749,6 @@ static int sdcardfs_setattr(struct dentry *dentry, struct iattr *ia)
 		parent = dget_parent(dentry);
 		if(!check_caller_access_to_name(parent->d_inode, dentry->d_name.name,
 						sbi->options.derive, 1, has_rw)) {
-			printk(KERN_INFO "%s: need to check the caller's gid in packages.list\n"
-							 "  dentry: %s, task:%s\n",
-							 __func__, dentry->d_name.name, current->comm);
 			err = -EACCES;
 		}
 		dput(parent);
