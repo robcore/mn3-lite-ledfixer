@@ -8364,6 +8364,7 @@ static ssize_t high_perf_mode_store(struct kobject *kobj,
 
     if (hpwidget_any())
         return count;
+
 	high_perf_mode = uval;
 	return count;
 }
