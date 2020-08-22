@@ -495,8 +495,8 @@
         <!-- Sidetone -->
         <ctl name="IIR1 INP1 MUX" value="RX1" />
         <ctl name="IIR2 INP1 MUX" value="RX2" />
-        <ctl name="RX1 MIX2 INP1" value="IIR1" />
-        <ctl name="RX2 MIX2 INP1" value="IIR2" />
+        <ctl name="RX1 MIX2 INP1" value="IIR2" />
+        <ctl name="RX2 MIX2 INP1" value="IIR1" />
         <!-- Sidetone End -->
 		<ctl name="CLASS_H_DSM MUX" value="DSM_HPHL_RX1" />
 		<ctl name="HPHL Volume" value="20" />
@@ -504,8 +504,8 @@
 		<ctl name="HPHL DAC Switch" value="1" />
 		<ctl name="RX1 Digital Volume" value="84" />
 		<ctl name="RX2 Digital Volume" value="84" />
-        <ctl name="IIR1 INP1 Volume" value="74" />
-        <ctl name="IIR2 INP1 Volume" value="74" />
+        <ctl name="IIR1 INP1 Volume" value="69" />
+        <ctl name="IIR2 INP1 Volume" value="69" />
 		<ctl name="COMP1 Switch" value="1" />
 	</path>
 
