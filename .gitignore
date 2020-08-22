@@ -116,6 +116,8 @@ scripts/mkqcdtbootimg/mkqcdtbootimg
 config.*
 magiskbackup
 mxzip/boot.img
+mxzip/common/boot.img
+mxzip/common/synapse.apk
 .lastzip
 .starttime
 .endtime
@@ -128,5 +130,3 @@ wtflog.txt
 dolbydumpprops.txt
 arch/arm/configs/mxconfig.recent
 mxtempusb
-mxzip/common/boot.img
-mxzip/common/synapse.apk
