@@ -157,8 +157,8 @@
 	<ctl name="ES325 RX1 Enable" value="ZERO" />
 	<ctl name="ES325 RX2 Enable" value="ZERO" />
 	<ctl name="Internal Route Config" value="5" />
-	<ctl name="VEQ Enable" value="0" />
-	<ctl name="BWE Enable" value="0" />
+	<ctl name="VEQ Enable" value="OFF" />
+	<ctl name="BWE Enable" value="OFF" />
 
 	<ctl name="TTY Mode" value="OFF" />
 	<ctl name="SPK Status" value="0" />
@@ -416,6 +416,8 @@
 	</path>
 
 	<path name="headset">
+        <ctl name="VEQ Enable" value="OFF" />
+    	<ctl name="BWE Enable" value="OFF" />
 		<ctl name="DAC1 Switch" value="0" />
 		<ctl name="EAR PA Gain" value="POS_0_DB" />
 		<ctl name="SLIM RX1 MUX" value="AIF1_PB" />
@@ -428,9 +430,9 @@
 		<ctl name="RX2 MIX1 INP2" value="RX2" />
 	<!-- Volume Boost End! -->
 		<ctl name="CLASS_H_DSM MUX" value="DSM_HPHL_RX1" />
-		<ctl name="HPHL DAC Switch" value="1" />
 		<ctl name="HPHL Volume" value="20" />
 		<ctl name="HPHR Volume" value="20" />
+		<ctl name="HPHL DAC Switch" value="1" />
 		<ctl name="RX1 Digital Volume" value="84" />
 		<ctl name="RX2 Digital Volume" value="84" />
 		<ctl name="COMP1 Switch" value="1" />
@@ -683,8 +685,8 @@
 		<ctl name="EAR PA Gain" value="POS_4P5_DB" />
 		<ctl name="RX1 Digital Volume" value="84" />
 		<ctl name="ES325 RX1 Enable" value="1" />
-		<ctl name="VEQ Enable" value="0" />
-		<ctl name="BWE Enable" value="0" />
+		<ctl name="VEQ Enable" value="OFF" />
+		<ctl name="BWE Enable" value="OFF" />
 	</path>
 
 	<path name="voice-call-handset-hac">
@@ -707,8 +709,8 @@
 		<ctl name="RX7 Digital Volume" value="84" />
 		<ctl name="SPK DRV Volume" value="8" />
 		<ctl name="ES325 RX1 Enable" value="1" />
-		<ctl name="VEQ Enable" value="0" />
-		<ctl name="BWE Enable" value="0" />
+		<ctl name="VEQ Enable" value="OFF" />
+		<ctl name="BWE Enable" value="OFF" />
 	</path>
 
 	<path name="voice-call-headset">
