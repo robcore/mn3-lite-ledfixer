@@ -8121,8 +8121,7 @@ static ssize_t headphone_gain_store(struct kobject *kobj, struct kobj_attribute 
 	int leftinput, rightinput, dualinput;
 
 	if (sscanf(buf, "%d %d", &leftinput, &rightinput) == 2) {
-		leftinput = clamp_val(leftinp    if (hpwidget_any())
-        return count;ut, -84, 40);
+		leftinput = clamp_val(leftinput, -84, 40);
 		rightinput = clamp_val(rightinput, -84, 40);
 		if (leftinput < 0)
 			hphl_cached_gain = (u8)(leftinput + 256);
