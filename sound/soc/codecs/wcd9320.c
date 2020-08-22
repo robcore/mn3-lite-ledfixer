@@ -600,6 +600,11 @@ static bool hpwidget(void)
 	return hpwidget_left && hpwidget_right;
 }
 
+static bool hpwidget_any(void)
+{
+    return hpwidget_left || hpwidget_right;
+}
+
 static void update_headphone_gain(void) {
 	if (!hpwidget())
 		return;
@@ -752,7 +757,7 @@ static void write_hpf_bypass(unsigned short reg)
 	unsigned int shift = 2;
 	unsigned int mask = (1 << fls(1)) - 1;
 	unsigned int val, val_mask, old, new;
-	unsigned int input_value;
+	unsigned short input_value;
 
 	switch (reg) {
 		case TAIKO_A_CDC_RX1_B5_CTL:
@@ -8116,7 +8121,8 @@ static ssize_t headphone_gain_store(struct kobject *kobj, struct kobj_attribute 
 	int leftinput, rightinput, dualinput;
 
 	if (sscanf(buf, "%d %d", &leftinput, &rightinput) == 2) {
-		leftinput = clamp_val(leftinput, -84, 40);
+		leftinput = clamp_val(leftinp    if (hpwidget_any())
+        return count;ut, -84, 40);
 		rightinput = clamp_val(rightinput, -84, 40);
 		if (leftinput < 0)
 			hphl_cached_gain = (u8)(leftinput + 256);
@@ -8334,6 +8340,9 @@ static ssize_t uhqa_mode_store(struct kobject *kobj,
 	if (uval > 1)
 		uval = 1;
 
+    if (hpwidget_any())
+        return count;
+
 	uhqa_mode = uval;
 	return count;
 }
@@ -8354,6 +8363,8 @@ static ssize_t high_perf_mode_store(struct kobject *kobj,
 	if (uval > 1)
 		uval = 1;
 
+    if (hpwidget_any())
+        return count;
 	high_perf_mode = uval;
 	return count;
 }
@@ -8393,6 +8404,9 @@ static ssize_t hph_pa_enabled_store(struct kobject *kobj,
 		uval = 0;
 	if (uval > 1)
 		uval = 1;
+
+    if (hpwidget_any())
+        return count;
 
 	hph_pa_enabled = uval;
 	return count;
@@ -8664,6 +8678,9 @@ static ssize_t hph_pa_bias_store(struct kobject *kobj,
 		uval = 85;
 	if (uval > 170)
 		uval = 170;
+
+    if (hpwidget_any())
+        return count;
 
 	hph_pa_bias = uval;
 
