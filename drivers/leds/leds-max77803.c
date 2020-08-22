@@ -206,7 +206,7 @@ static int max77803_led_get_en_value(struct max77803_led_data *led_data, int on)
 int max77803_led_en(int onoff, int mode)
 {
 	if (!flash_torch_en)
-        return -EINVAl;
+        return -EINVAL;
 
     /* enable/disable */
     if (onoff) {
