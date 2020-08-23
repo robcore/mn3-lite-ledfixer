@@ -2,3 +2,7 @@
 
 sleep 3600
 input keyevent KEYCODE_SLEEP
+if [ -f "/data/synapse/sleeplate.lock" ]
+then
+    rm /data/synapse/sleeplate.lock
+fi

@@ -1,0 +1,16 @@
+#!/system/bin/sh
+
+if [ "$1" = "label" ]
+then
+    busybox echo "Machin3x"
+elif [ "$1" = "sleeptimer" ]
+then
+    if [ -f "/data/synapse/sleeplate.lock" ]
+    then
+        echo "Sleeptimer already Running"
+    else
+        echo 'RUN' > /data/synapse/sleeplate.lock
+        /sbin/sleeplate &
+        echo "Sleeptimer Running"
+    fi
+fi
