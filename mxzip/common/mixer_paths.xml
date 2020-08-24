@@ -486,17 +486,71 @@
 		<ctl name="SLIM RX1 MUX" value="AIF1_PB" />
 		<ctl name="SLIM RX2 MUX" value="AIF1_PB" />
 		<ctl name="SLIM_0_RX Channels" value="Two" />
-		<ctl name="RX1 MIX1 INP1" value="RX1" />
-		<ctl name="RX2 MIX1 INP1" value="RX2" />
+        <ctl name="IIR1 INP1 MUX" value="RX1" />
+        <ctl name="IIR2 INP1 MUX" value="RX2" />
+		<ctl name="RX1 MIX1 INP1" value="IIR1" />
+		<ctl name="RX2 MIX1 INP1" value="IIR2" />
         <!-- Volume Boost! -->
-		<ctl name="RX1 MIX1 INP2" value="RX1" />
-		<ctl name="RX2 MIX1 INP2" value="RX2" />
+		<!-- <ctl name="RX1 MIX1 INP2" value="RX1" /> -->
+		<!-- <ctl name="RX2 MIX1 INP2" value="RX2" /> -->
         <!-- Volume Boost End! -->
 		<ctl name="CLASS_H_DSM MUX" value="DSM_HPHL_RX1" />
 		<ctl name="HPHL Volume" value="20" />
 		<ctl name="HPHR Volume" value="20" />
 		<ctl name="COMP1 Switch" value="1" />
 		<ctl name="HPHL DAC Switch" value="1" />
+		<ctl name="IIR1 Band1" id="0" value="332509558" />
+		<ctl name="IIR1 Band1" id="1" value="816976097" />
+		<ctl name="IIR1 Band1" id="2" value="89274269" />
+		<ctl name="IIR1 Band1" id="3" value="816976097" />
+		<ctl name="IIR1 Band1" id="4" value="153348372" />
+		<ctl name="IIR2 Band1" id="0" value="332509558" />
+		<ctl name="IIR2 Band1" id="1" value="816976097" />
+		<ctl name="IIR2 Band1" id="2" value="89274269" />
+		<ctl name="IIR2 Band1" id="3" value="816976097" />
+		<ctl name="IIR2 Band1" id="4" value="153348372" />
+		<ctl name="IIR1 Band2" id="0" value="268729516" />
+		<ctl name="IIR1 Band2" id="1" value="537756128" />
+		<ctl name="IIR1 Band2" id="2" value="267274988" />
+		<ctl name="IIR1 Band2" id="3" value="537756128" />
+		<ctl name="IIR1 Band2" id="4" value="267569048" />
+		<ctl name="IIR2 Band2" id="0" value="268729516" />
+		<ctl name="IIR2 Band2" id="1" value="537756128" />
+		<ctl name="IIR2 Band2" id="2" value="267274988" />
+		<ctl name="IIR2 Band2" id="3" value="537756128" />
+		<ctl name="IIR2 Band2" id="4" value="267569048" />
+		<ctl name="IIR1 Band3" id="0" value="268435456" />
+		<ctl name="IIR1 Band3" id="1" value="0" />
+		<ctl name="IIR1 Band3" id="2" value="0" />
+		<ctl name="IIR1 Band3" id="3" value="0" />
+		<ctl name="IIR1 Band3" id="4" value="0" />
+		<ctl name="IIR2 Band3" id="0" value="268435456" />
+		<ctl name="IIR2 Band3" id="1" value="0" />
+		<ctl name="IIR2 Band3" id="2" value="0" />
+		<ctl name="IIR2 Band3" id="3" value="0" />
+		<ctl name="IIR2 Band3" id="4" value="0" />
+		<ctl name="IIR1 Band4" id="0" value="268435456" />
+		<ctl name="IIR1 Band4" id="1" value="0" />
+		<ctl name="IIR1 Band4" id="2" value="0" />
+		<ctl name="IIR1 Band4" id="3" value="0" />
+		<ctl name="IIR1 Band4" id="4" value="0" />
+		<ctl name="IIR2 Band4" id="0" value="268435456" />
+		<ctl name="IIR2 Band4" id="1" value="0" />
+		<ctl name="IIR2 Band4" id="2" value="0" />
+		<ctl name="IIR2 Band4" id="3" value="0" />
+		<ctl name="IIR2 Band4" id="4" value="0" />
+		<ctl name="IIR1 Band5" id="0" value="268435456" />
+		<ctl name="IIR1 Band5" id="1" value="0" />
+		<ctl name="IIR1 Band5" id="2" value="0" />
+		<ctl name="IIR1 Band5" id="3" value="0" />
+		<ctl name="IIR1 Band5" id="4" value="0" />
+		<ctl name="IIR2 Band5" id="0" value="268435456" />
+		<ctl name="IIR2 Band5" id="1" value="0" />
+		<ctl name="IIR2 Band5" id="2" value="0" />
+		<ctl name="IIR2 Band5" id="3" value="0" />
+		<ctl name="IIR2 Band5" id="4" value="0" />
+		<ctl name="IIR1 INP1 Volume" value="77" />
+		<ctl name="IIR2 INP1 Volume" value="77" />
 		<ctl name="RX1 Digital Volume" value="84" />
 		<ctl name="RX2 Digital Volume" value="84" />
 	</path>
