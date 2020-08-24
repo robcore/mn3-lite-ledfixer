@@ -283,28 +283,20 @@
  * The minimum number of bits of entropy before we wake up a read on
  * /dev/random.  Should be enough to do a significant reseed.
  */
-#ifdef CONFIG_CRYPTO_FIPS
 static int random_read_wakeup_thresh = 256;
-#else
-static int random_read_wakeup_thresh = 64;
-#endif
 /*
  * If the entropy count falls under this number of bits, then we
  * should wake up processes which are selecting or polling on write
  * access to /dev/random.
  */
-#ifdef CONFIG_CRYPTO_FIPS
 static int random_write_wakeup_thresh = 320;
-#else
-static int random_write_wakeup_thresh = 128;
-#endif
 
 /*
  * When the input pool goes over trickle_thresh, start dropping most
  * samples to avoid wasting CPU time and reduce lock contention.
  */
 
-static int trickle_thresh __read_mostly = INPUT_POOL_WORDS * 28;
+static int trickle_thresh __read_mostly = 3584;
 
 static DEFINE_PER_CPU(int, trickle_count);
 
