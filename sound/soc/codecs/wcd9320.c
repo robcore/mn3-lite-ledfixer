@@ -548,8 +548,8 @@ static unsigned short tx_digital_gain_reg[] = {
 u8 hphl_cached_gain;
 u8 hphr_cached_gain;
 u8 speaker_cached_gain;
-u8 iir1_cached_gain = 196; /*-60dB*/
-u8 iir2_cached_gain = 196; /*-60dB*/
+u8 iir1_cached_gain;
+u8 iir2_cached_gain;
 
 #if 0
 /* RX4 routed from right to left side */

@@ -511,6 +511,17 @@
 		<ctl name="HPHR Volume" value="20" />
 		<ctl name="COMP1 Switch" value="1" />
 		<ctl name="HPHL DAC Switch" value="1" />
+        <ctl name="IIR1 Enable Band1" value="On" />
+        <ctl name="IIR1 Enable Band2" value="On" />
+        <ctl name="IIR1 Enable Band3" value="On" />
+        <ctl name="IIR1 Enable Band4" value="On" />
+        <ctl name="IIR1 Enable Band5" value="On" />
+        <ctl name="IIR2 Enable Band1" value="On" />
+        <ctl name="IIR2 Enable Band2" value="On" />
+        <ctl name="IIR2 Enable Band3" value="On" />
+        <ctl name="IIR2 Enable Band4" value="On" />
+        <ctl name="IIR2 Enable Band5" value="On" />
+
 		<ctl name="IIR1 Band1" id="0" value="332509558" />
 		<ctl name="IIR1 Band1" id="1" value="816976097" />
 		<ctl name="IIR1 Band1" id="2" value="89274269" />
