@@ -26,7 +26,6 @@ config OF_SELFTEST
 
 config OF_FLATTREE
 	bool
-	select DTC
 
 config OF_EARLY_FLATTREE
 	bool
