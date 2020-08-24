@@ -5,6 +5,13 @@ export USE_CCACHE="1"
 export CCACHE_NLEVELS="8"
 env KCONFIG_NOTIMESTAMP=true &>/dev/null
 
+if [ "$2" = "noclean" ]
+then
+    NOCLEAN=1
+else
+    NOCLEAN=0
+fi
+
 RDIR="/root/mn3lite"
 BUILDIR="$RDIR/build"
 KDIR="$BUILDIR/arch/arm/boot"
@@ -120,39 +127,41 @@ getmxrecent() {
 
 clean_build() {
 
-	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
-	getmxrecent
-	if [ "$1" = "standalone" ]
-	then
-		echo -ne "Cleaning build         \r"; \
-		make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -j16 clean
-		echo -ne "Cleaning build.        \r"; \
-		make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -j16 distclean
-		echo -ne "Cleaning build..       \r"; \
-		make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -j16 mrproper
-	else
-		echo -ne "Cleaning build         \r"; \
-		make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -j16 clean &>/dev/null
-		echo -ne "Cleaning build.        \r"; \
-		make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -j16 distclean &>/dev/null
-		echo -ne "Cleaning build..       \r"; \
-		make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -j16 mrproper &>/dev/null
-	fi
-	echo -ne "Cleaning build...      \r"; \
-	takeouttrash &>/dev/null
-	echo -ne "Cleaning build....     \r"; \
-	rm -rf "$BUILDIR" &>/dev/null
-	echo -ne "Cleaning build.....    \r"; \
-	rm "$ZIPFOLDER/common/boot.img" &>/dev/null
-	echo -ne "Cleaning build......   \r"; \
-	make -C "$RDIR/scripts/mkqcdtbootimg" clean &>/dev/null
-	echo -ne "Cleaning build.......  \r"; \
-	rm -rf "$RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg" &>/dev/null
-	echo -ne "Cleaning build........ \r"; \
-	echo -ne "                       \r"; \
-	echo -ne "Cleaned                \r"; \
-	echo -e "\n"
-
+    if [ "NOCLEAN" = "0" ]
+    then
+    	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
+    	getmxrecent
+    	if [ "$1" = "standalone" ]
+    	then
+    		echo -ne "Cleaning build         \r"; \
+    		make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -j16 clean
+    		echo -ne "Cleaning build.        \r"; \
+    		make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -j16 distclean
+    		echo -ne "Cleaning build..       \r"; \
+    		make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -j16 mrproper
+    	else
+    		echo -ne "Cleaning build         \r"; \
+    		make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -j16 clean &>/dev/null
+    		echo -ne "Cleaning build.        \r"; \
+    		make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -j16 distclean &>/dev/null
+    		echo -ne "Cleaning build..       \r"; \
+    		make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -j16 mrproper &>/dev/null
+    	fi
+    	echo -ne "Cleaning build...      \r"; \
+    	takeouttrash &>/dev/null
+    	echo -ne "Cleaning build....     \r"; \
+    	rm -rf "$BUILDIR" &>/dev/null
+    	echo -ne "Cleaning build.....    \r"; \
+    	rm "$ZIPFOLDER/common/boot.img" &>/dev/null
+    	echo -ne "Cleaning build......   \r"; \
+    	make -C "$RDIR/scripts/mkqcdtbootimg" clean &>/dev/null
+    	echo -ne "Cleaning build.......  \r"; \
+    	rm -rf "$RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg" &>/dev/null
+    	echo -ne "Cleaning build........ \r"; \
+    	echo -ne "                       \r"; \
+    	echo -ne "Cleaned                \r"; \
+    	echo -e "\n"
+    fi
 }
 
 warnandfail() {
