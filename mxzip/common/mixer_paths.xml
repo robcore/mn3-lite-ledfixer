@@ -55,9 +55,19 @@
 	<ctl name="RX1 MIX1 INP3" value="ZERO" />
 	<ctl name="RX1 MIX1 INP2" value="ZERO" />
 	<ctl name="RX1 MIX1 INP1" value="ZERO" />
+	<ctl name="IIR2 INP1 MUX" value="ZERO" />
+	<ctl name="IIR2 INP2 MUX" value="ZERO" />
+	<ctl name="IIR1 INP1 MUX" value="ZERO" />
+	<ctl name="IIR1 INP2 MUX" value="ZERO" />
 
 	<ctl name="IIR1 INP1 Volume" value="0" />
+	<ctl name="IIR1 INP2 Volume" value="0" />
+	<ctl name="IIR1 INP3 Volume" value="0" />
+	<ctl name="IIR1 INP4 Volume" value="0" />
 	<ctl name="IIR2 INP1 Volume" value="0" />
+	<ctl name="IIR2 INP2 Volume" value="0" />
+	<ctl name="IIR2 INP3 Volume" value="0" />
+	<ctl name="IIR2 INP4 Volume" value="0" />
 
     <ctl name="IIR1 Band1" id ="0" value="268435456" />
     <ctl name="IIR1 Band1" id ="1" value="0" />
@@ -490,6 +500,8 @@
         <ctl name="IIR2 INP1 MUX" value="RX2" />
 		<ctl name="RX1 MIX1 INP1" value="IIR1" />
 		<ctl name="RX2 MIX1 INP1" value="IIR2" />
+		<ctl name="RX1 MIX1 INP2" value="IIR1" />
+		<ctl name="RX2 MIX1 INP2" value="IIR2" />
         <!-- Volume Boost! -->
 		<!-- <ctl name="RX1 MIX1 INP2" value="RX1" /> -->
 		<!-- <ctl name="RX2 MIX1 INP2" value="RX2" /> -->
@@ -549,8 +561,8 @@
 		<ctl name="IIR2 Band5" id="2" value="0" />
 		<ctl name="IIR2 Band5" id="3" value="0" />
 		<ctl name="IIR2 Band5" id="4" value="0" />
-		<ctl name="IIR1 INP1 Volume" value="77" />
-		<ctl name="IIR2 INP1 Volume" value="77" />
+		<ctl name="IIR1 INP1 Volume" value="39" />
+		<ctl name="IIR2 INP1 Volume" value="39" />
 		<ctl name="RX1 Digital Volume" value="84" />
 		<ctl name="RX2 Digital Volume" value="84" />
 	</path>
