@@ -713,34 +713,34 @@ static void wcd9xxx_clr_and_turnon_hph_padac(struct wcd9xxx_mbhc *mbhc)
 
 	if (test_and_clear_bit(WCD9XXX_HPHR_DAC_OFF_ACK,
 			       &mbhc->hph_pa_dac_state)) {
-		pr_debug("%s: HPHR clear flag and enable DAC\n", __func__);
+		pr_info("%s: HPHR clear flag and enable DAC\n", __func__);
 		snd_soc_update_bits(codec, WCD9XXX_A_RX_HPH_R_DAC_CTL,
 				    0xC0, 0xC0);
 	}
 	if (test_and_clear_bit(WCD9XXX_HPHL_DAC_OFF_ACK,
 				&mbhc->hph_pa_dac_state)) {
-		pr_debug("%s: HPHL clear flag and enable DAC\n", __func__);
+		pr_info("%s: HPHL clear flag and enable DAC\n", __func__);
 		snd_soc_update_bits(codec, WCD9XXX_A_RX_HPH_L_DAC_CTL,
 				    0x80, 0x80);
 	}
 
 	if (test_and_clear_bit(WCD9XXX_HPHR_PA_OFF_ACK,
 			       &mbhc->hph_pa_dac_state)) {
-		pr_debug("%s: HPHR clear flag and enable PA\n", __func__);
+		pr_info("%s: HPHR clear flag and enable PA\n", __func__);
 		snd_soc_update_bits(codec, WCD9XXX_A_RX_HPH_CNP_EN, 0x10,
 				    1 << 4);
 		pa_turned_on = true;
 	}
 	if (test_and_clear_bit(WCD9XXX_HPHL_PA_OFF_ACK,
 			       &mbhc->hph_pa_dac_state)) {
-		pr_debug("%s: HPHL clear flag and enable PA\n", __func__);
+		pr_info("%s: HPHL clear flag and enable PA\n", __func__);
 		snd_soc_update_bits(codec, WCD9XXX_A_RX_HPH_CNP_EN, 0x20, 1
 				    << 5);
 		pa_turned_on = true;
 	}
 
 	if (pa_turned_on) {
-		pr_debug("%s: PA was turned on by MBHC and not by DAPM\n",
+		pr_info("%s: PA was turned on by MBHC and not by DAPM\n",
 			 __func__);
 		usleep_range(wg_time * 1000, wg_time * 1000 + 50);
 	}
