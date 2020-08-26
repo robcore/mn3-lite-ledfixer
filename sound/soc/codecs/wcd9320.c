@@ -932,10 +932,11 @@ static void write_autochopper(void)
 		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_AUTO_CHOP, 0x38);
 }
 
-/* Lazy wrapper until there are more bias regs added */
 static void update_bias(void)
 {
+    mutex_lock(&direct_codec->mutex);
 	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_BIAS_PA, hph_pa_bias);
+    mutex_unlock(&direct_codec->mutex);
 }
 
 static void update_control_regs(void)
@@ -7228,61 +7229,9 @@ static const struct wcd9xxx_reg_mask_val taiko_reg_defaults[] = {
 	TAIKO_REG_VAL(TAIKO_A_CDC_CLK_OTHR_CTL, 0x00),
 	TAIKO_REG_VAL(TAIKO_A_CDC_CONN_MAD, 0x01),
 
-	/* Set HPH Path to low power mode */
-	TAIKO_REG_VAL(TAIKO_A_RX_HPH_BIAS_PA, 0x55),
-
 	/* BUCK default */
 	TAIKO_REG_VAL(WCD9XXX_A_BUCK_CTRL_CCL_4, 0x51),
 	TAIKO_REG_VAL(WCD9XXX_A_BUCK_CTRL_CCL_1, 0x5B),
-};
-
-static const struct wcd9xxx_reg_mask_val taiko_1_0_reg_defaults[] = {
-	/*
-	 * The following only need to be written for Taiko 1.0 parts.
-	 * Taiko 2.0 will have appropriate defaults for these registers.
-	 */
-
-	/* Required defaults for class H operation */
-	TAIKO_REG_VAL(TAIKO_A_RX_HPH_CHOP_CTL, 0xF4),
-	TAIKO_REG_VAL(TAIKO_A_BIAS_CURR_CTL_2, 0x08),
-	TAIKO_REG_VAL(WCD9XXX_A_BUCK_CTRL_CCL_3, 0x60),
-
-	/* Choose max non-overlap time for NCP */
-	TAIKO_REG_VAL(TAIKO_A_NCP_CLK, 0xFC),
-	/* Use 25mV/50mV for deltap/m to reduce ripple */
-	TAIKO_REG_VAL(WCD9XXX_A_BUCK_CTRL_VCL_1, 0x08),
-	/*
-	 * Set DISABLE_MODE_SEL<1:0> to 0b10 (disable PWM in auto mode).
-	 * Note that the other bits of this register will be changed during
-	 * Rx PA bring up.
-	 */
-	TAIKO_REG_VAL(WCD9XXX_A_BUCK_MODE_3, 0xCE),
-	/*Reduce EAR DAC bias to 70% */
-	TAIKO_REG_VAL(TAIKO_A_RX_EAR_BIAS_PA, 0x76),
-	/* Reduce LINE DAC bias to 70% */
-#if !defined(CONFIG_MACH_VIENNA_LTE) && !defined(CONFIG_MACH_LT03_LTE) && !defined(CONFIG_MACH_PICASSO_LTE) && !defined(CONFIG_SEC_H_PROJECT) && !defined(CONFIG_SEC_FRESCO_PROJECT) && !defined(CONFIG_MACH_KS01EUR)
-	TAIKO_REG_VAL(TAIKO_A_RX_LINE_BIAS_PA, 0x78),
-#else
-	TAIKO_REG_VAL(TAIKO_A_RX_LINE_BIAS_PA, 0x7A),
-	/* Reduce HPH DAC bias to 70% */
-	TAIKO_REG_VAL(TAIKO_A_RX_HPH_BIAS_PA, 0x7A),
-#endif
-
-	/*
-	 * There is a diode to pull down the micbias while doing
-	 * insertion detection.  This diode can cause leakage.
-	 * Set bit 0 to 1 to prevent leakage.
-	 * Setting this bit of micbias 2 prevents leakage for all other micbias.
-	 */
-	TAIKO_REG_VAL(TAIKO_A_MICB_2_MBHC, 0x41),
-
-	/* Disable TX7 internal biasing path which can cause leakage */
-	TAIKO_REG_VAL(TAIKO_A_TX_SUP_SWITCH_CTRL_1, 0xBF),
-	/* Enable MICB 4 VDDIO switch to prevent leakage */
-	TAIKO_REG_VAL(TAIKO_A_MICB_4_MBHC, 0x81),
-
-	/* Close leakage on the spkdrv */
-	TAIKO_REG_VAL(TAIKO_A_SPKR_DRV_DBG_PWRSTG, 0x24),
 };
 
 /*
@@ -7304,13 +7253,8 @@ static const struct wcd9xxx_reg_mask_val taiko_2_0_reg_defaults[] = {
 	TAIKO_REG_VAL(TAIKO_A_BUCK_CTRL_CCL_4, 0x51),
 	TAIKO_REG_VAL(TAIKO_A_NCP_DTEST, 0x10),
 	TAIKO_REG_VAL(TAIKO_A_RX_HPH_CHOP_CTL, 0xA4),
-#if !defined(CONFIG_MACH_VIENNA_LTE) && !defined(CONFIG_MACH_LT03_LTE) && !defined(CONFIG_MACH_PICASSO_LTE) && !defined(CONFIG_SEC_H_PROJECT) && !defined(CONFIG_SEC_FRESCO_PROJECT) && !defined(CONFIG_MACH_KS01EUR)
+	TAIKO_REG_VAL(TAIKO_A_RX_HPH_BIAS_PA, 0x55), /*0x7A*/
 	TAIKO_REG_VAL(TAIKO_A_RX_HPH_OCP_CTL, 0x6B),
-#else
-	/*TAIKO_REG_VAL(TAIKO_A_RX_HPH_BIAS_PA, 0x7A),*/
-	TAIKO_REG_VAL(TAIKO_A_RX_HPH_BIAS_PA, 0x55),
-	TAIKO_REG_VAL(TAIKO_A_RX_HPH_OCP_CTL, 0x6B),
-#endif
 	TAIKO_REG_VAL(TAIKO_A_RX_HPH_CNP_WG_CTL, 0xDA),
 	TAIKO_REG_VAL(TAIKO_A_RX_HPH_CNP_WG_TIME, 0x15),
 	TAIKO_REG_VAL(TAIKO_A_RX_EAR_BIAS_PA, 0x76),
@@ -7364,18 +7308,13 @@ static void taiko_update_reg_defaults(struct snd_soc_codec *codec)
 		snd_soc_write(codec, taiko_reg_defaults[i].reg,
 			      taiko_reg_defaults[i].val);
 
-	if (TAIKO_IS_1_0(taiko_core->version)) {
-		for (i = 0; i < ARRAY_SIZE(taiko_1_0_reg_defaults); i++)
-			snd_soc_write(codec, taiko_1_0_reg_defaults[i].reg,
-				      taiko_1_0_reg_defaults[i].val);
-		if (spkr_drv_wrnd == 1)
-			snd_soc_write(codec, TAIKO_A_SPKR_DRV_EN, 0xEF);
-	} else {
-		for (i = 0; i < ARRAY_SIZE(taiko_2_0_reg_defaults); i++)
-			snd_soc_write(codec, taiko_2_0_reg_defaults[i].reg,
-				      taiko_2_0_reg_defaults[i].val);
-		spkr_drv_wrnd = -1;
-	}
+	for (i = 0; i < ARRAY_SIZE(taiko_2_0_reg_defaults); i++) {
+        if (taiko_2_0_reg_defaults[i].reg == TAIKO_A_RX_HPH_BIAS_PA)
+            continue;
+		snd_soc_write(codec, taiko_2_0_reg_defaults[i].reg,
+			      taiko_2_0_reg_defaults[i].val);
+    }
+	spkr_drv_wrnd = -1;
 }
 
 static const struct wcd9xxx_reg_mask_val taiko_codec_reg_init_val[] = {
@@ -8773,12 +8712,10 @@ static ssize_t hph_pa_bias_store(struct kobject *kobj,
 	if (uval > 170)
 		uval = 170;
 
-    if (hpwidget_any())
-        return count;
-
 	hph_pa_bias = uval;
 
-	update_bias();
+    if (!hpwidget_any())
+    	update_bias();
 
 	return count;
 }
