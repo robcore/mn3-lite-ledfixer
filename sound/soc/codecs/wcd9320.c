@@ -3018,10 +3018,6 @@ static int taiko_codec_enable_lineout(struct snd_soc_dapm_widget *w,
 		usleep_range(5000, 5100);
 		break;
 	case SND_SOC_DAPM_POST_PMD:
-		wcd9xxx_clsh_fsm(codec, &taiko->clsh_d,
-						 WCD9XXX_CLSH_STATE_LO,
-						 WCD9XXX_CLSH_REQ_DISABLE,
-						 WCD9XXX_CLSH_EVENT_POST_PA);
 		snd_soc_update_bits(codec, lineout_gain_reg, 0x40, 0x00);
 		pr_debug("%s: sleeping 5 ms after %s PA turn off\n",
 				__func__, w->name);
@@ -4016,17 +4012,6 @@ static int taiko_hph_pa_event(struct snd_soc_dapm_widget *w,
 		/* Let MBHC module know PA turned off */
 		wcd9xxx_resmgr_notifier_call(&taiko->resmgr, e_post_off);
 
-		if (!high_perf_mode) {
-			wcd9xxx_clsh_fsm(codec, &taiko->clsh_d,
-						 req_clsh_state,
-						 WCD9XXX_CLSH_REQ_DISABLE,
-						 WCD9XXX_CLSH_EVENT_POST_PA);
-		} else {
-			wcd9xxx_enable_high_perf_mode(codec, &taiko->clsh_d,
-						req_clsab_state,
-						WCD9XXX_CLSAB_REQ_DISABLE);
-		}
-
 		break;
 	}
 	return 0;
@@ -4097,6 +4082,10 @@ static int taiko_lineout_dac_event(struct snd_soc_dapm_widget *w,
 
 	case SND_SOC_DAPM_POST_PMD:
 		snd_soc_update_bits(codec, w->reg, 0x40, 0x00);
+		wcd9xxx_clsh_fsm(codec, &taiko->clsh_d,
+						 WCD9XXX_CLSH_STATE_LO,
+						 WCD9XXX_CLSH_REQ_DISABLE,
+						 WCD9XXX_CLSH_EVENT_POST_PA);
 		break;
 	}
 	return 0;
