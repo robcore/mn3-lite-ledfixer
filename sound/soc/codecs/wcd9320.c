@@ -587,7 +587,7 @@ static unsigned int compander_gain_lock;
 static unsigned int compander_gain_boost;
 static u32 sc_peak_det_timeout = 15;
 static u32 sc_rms_meter_div_fact = 15;
-static u32 sc_rms_meter_resamp_fact = 240;
+static u32 sc_rms_meter_resamp_fact = 255;
 static u8 hph_pa_bias = 0x55;
 unsigned int anc_delay = 0;
 static bool hphl_active;
@@ -718,6 +718,14 @@ static void write_hph_poweramp_gain(unsigned short reg, bool mute)
 	new = (old & ~val_mask) | (val & val_mask);
 	if (old != new)
 		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, reg, new);
+	mutex_unlock(&direct_codec->mutex);
+}
+
+static void write_hph_raw(unsigned int value)
+{
+	mutex_lock(&direct_codec->mutex);
+	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, WCD9XXX_A_RX_HPH_L_GAIN, value);
+	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, WCD9XXX_A_RX_HPH_R_GAIN, value);
 	mutex_unlock(&direct_codec->mutex);
 }
 
@@ -898,7 +906,9 @@ static u32 read_chopper_raw(void)
 
 static void write_chopper_raw(void)
 {
+    mutex_lock(&direct_codec->mutex);
 	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_CHOP_CTL, hph_chopper_raw);
+    mutex_unlock(&direct_codec->mutex);
 }
 
 static u32 read_autochopper_raw(void)
@@ -912,7 +922,9 @@ static u32 read_autochopper_raw(void)
 
 static void write_autochopper_raw(void)
 {
+    mutex_lock(&direct_codec->mutex);
 	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_AUTO_CHOP, hph_autochopper_raw);
+    mutex_unlock(&direct_codec->mutex);
 }
 
 /*
@@ -920,20 +932,22 @@ TAIKO_A_RX_HPH_AUTO_CHOP 0x1A4
 TAIKO_A_RX_HPH_CHOP_CTL 0x1A5
 */
 
-static void write_chopper(void)
+static void write_choppers(void)
 {
-	if (chopper_bypass)
+	if (chopper_bypass) {
+        mutex_lock(&direct_codec->mutex);
 		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_CHOP_CTL, 0x24);
+        wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_AUTO_CHOP, 0x38);
+        mutex_unlock(&direct_codec->mutex);
+    }
 }
 
-static void write_autochopper(void)
-{
-	if (chopper_bypass)
-		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_AUTO_CHOP, 0x38);
-}
-
+/* TODO: get a decent variable telling us if the headphone jack is plugged or not because this
+         should NOT be changed when that is the case */
 static void update_bias(void)
 {
+    if (hpwidget_any())
+        return;
     mutex_lock(&direct_codec->mutex);
 	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_BIAS_PA, hph_pa_bias);
     mutex_unlock(&direct_codec->mutex);
@@ -948,8 +962,7 @@ static void update_control_regs(void)
 	write_hpf_bypass(TAIKO_A_CDC_RX1_B5_CTL);
 	write_hpf_bypass(TAIKO_A_CDC_RX2_B5_CTL);
 	write_hpf_bypass(TAIKO_A_CDC_RX7_B5_CTL);
-	write_chopper();
-	write_autochopper();
+	write_choppers();
 }
 
 static int spkr_drv_wrnd = 1;
@@ -8018,8 +8031,7 @@ static ssize_t chopper_bypass_store(struct kobject *kobj,
 		uval = 1;
 
 	chopper_bypass = uval;
-	write_chopper();
-	write_autochopper();
+	write_choppers();
 	return count;
 }
 
@@ -8183,69 +8195,6 @@ static ssize_t iir2_gain_store(struct kobject *kobj,
 	return count;
 }
 
-#if 0
-static ssize_t crossfeed_gain_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
-{
-	int leftval, rightval, templeft, tempright;
-
-	leftval = show_sound_value(TAIKO_A_CDC_RX4_VOL_CTL_B2_CTL);
-	if (leftval == -84) {
-		templeft = crossleft_cached_gain;
-
-		if ((templeft > 171) && (templeft < 256))
-			templeft -= 256;
-	} else {
-		templeft = leftval;
-	}
-
-	rightval = show_sound_value(TAIKO_A_CDC_RX3_VOL_CTL_B2_CTL);
-	if (rightval == -84) {
-		tempright = crossright_cached_gain;
-
-		if ((tempright > 171) && (tempright < 256))
-			tempright -= 256;
-	} else {
-		tempright = rightval;
-	}
-
-	return sprintf(buf, "%d %d\n", templeft, tempright);
-}
-
-static ssize_t crossfeed_gain_store(struct kobject *kobj, struct kobj_attribute *attr, const char *buf, size_t count)
-{
-
-	int leftinput, rightinput, dualinput;
-
-	if (sscanf(buf, "%d %d", &leftinput, &rightinput) == 2) {
-		leftinput = clamp_val(leftinput, -84, 40);
-		rightinput = clamp_val(rightinput, -84, 40);
-		if (leftinput < 0)
-			crossleft_cached_gain = (u8)(leftinput + 256);
-		else
-			crossleft_cached_gain = (u8)leftinput;
-		if (rightinput < 0)
-			crossright_cached_gain = (u8)(rightinput + 256);
-		else
-			crossright_cached_gain = (u8)rightinput;
-	} else if (sscanf(buf, "%d", &dualinput) == 1) {
-			dualinput = clamp_val(dualinput, -84, 40);
-
-		if (dualinput < 0) {
-			crossleft_cached_gain = (u8)(dualinput + 256);
-			crossright_cached_gain = (u8)(dualinput + 256);
-		} else {
-			crossleft_cached_gain = (u8)dualinput;
-			crossright_cached_gain = (u8)dualinput;
-		}
-	} else {
-		return -EINVAL;
-	}
-
-	update_crossfeed_gain();
-
-	return count;
-}
-#endif
 static ssize_t hph_poweramp_gain_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf)
 {
@@ -8314,9 +8263,8 @@ static ssize_t hph_poweramp_gain_raw_store(struct kobject *kobj,
 		val = 0;
 	if (val > 255)
 		val = 255;
-	
-	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, WCD9XXX_A_RX_HPH_L_GAIN, val);
-	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, WCD9XXX_A_RX_HPH_R_GAIN, val);
+
+    write_hph_raw(val);
 
 	return count;
 }
@@ -8675,7 +8623,7 @@ static ssize_t rms_meter_div_fact_store(struct kobject *kobj,
 
 static ssize_t rms_meter_resamp_fact_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf) {
-	return sprintf(buf, "%u\n", sc_rms_meter_resamp_fact >> 4);
+	return sprintf(buf, "%u\n", sc_rms_meter_resamp_fact);
 }
 
 static ssize_t rms_meter_resamp_fact_store(struct kobject *kobj,
@@ -8686,10 +8634,10 @@ static ssize_t rms_meter_resamp_fact_store(struct kobject *kobj,
 
 	if (uval < 0)
 		uval = 0;
-	if (uval > 15)
-		uval = 15;
+	if (uval > 255)
+		uval = 255;
 
-	sc_rms_meter_resamp_fact = uval << 4;
+	sc_rms_meter_resamp_fact = uval;
 
 	return count;
 }
