@@ -953,6 +953,22 @@ static void update_bias(void)
     mutex_unlock(&direct_codec->mutex);
 }
 
+static void update_interpolator(void)
+{
+    if (!hpwidget() || !interpolator_boost)
+        return;
+
+	snd_soc_write(direct_codec,
+			TAIKO_A_CDC_COMP1_B3_CTL,
+				sc_rms_meter_resamp_fact);
+	snd_soc_update_bits(direct_codec,
+		    TAIKO_A_CDC_COMP1_B2_CTL,
+			    0xF0, sc_rms_meter_div_fact << 4);
+	snd_soc_update_bits(direct_codec,
+			TAIKO_A_CDC_COMP1_B2_CTL,
+				0x0F, sc_peak_det_timeout);
+}
+
 static void update_control_regs(void)
 {
 	update_bias();
@@ -8537,6 +8553,7 @@ static ssize_t peak_det_timeout_store(struct kobject *kobj,
 		uval = 15;
 
 	sc_peak_det_timeout = uval;
+    update_interpolator();
 
 	return count;
 }
@@ -8558,6 +8575,7 @@ static ssize_t rms_meter_div_fact_store(struct kobject *kobj,
 		uval = 15;
 
 	sc_rms_meter_div_fact = uval;
+    update_interpolator();
 
 	return count;
 }
@@ -8579,7 +8597,7 @@ static ssize_t rms_meter_resamp_fact_store(struct kobject *kobj,
 		uval = 255;
 
 	sc_rms_meter_resamp_fact = uval;
-
+    update_interpolator();
 	return count;
 }
 
