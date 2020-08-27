@@ -1559,15 +1559,7 @@ static int taiko_config_compander(struct snd_soc_dapm_widget *w,
 		u32 sc_rms_meter_resamp_fact = 0xA0;
 */
 		if (interpolator_boost) { 
-			snd_soc_write(codec,
-						TAIKO_A_CDC_COMP0_B3_CTL + (comp * 8),
-						sc_rms_meter_resamp_fact);
-			snd_soc_update_bits(codec,
-					    TAIKO_A_CDC_COMP0_B2_CTL + (comp * 8),
-					    0xF0, sc_rms_meter_div_fact << 4);
-			snd_soc_update_bits(codec,
-						TAIKO_A_CDC_COMP0_B2_CTL + (comp * 8),
-						0x0F, sc_peak_det_timeout);
+            update_interpolator();
 		} else {
 			snd_soc_write(codec, TAIKO_A_CDC_COMP0_B3_CTL + (comp * 8),
 				      comp_params->rms_meter_resamp_fact);
