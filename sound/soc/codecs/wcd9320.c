@@ -621,13 +621,9 @@ static void mx_update_bits(unsigned short reg,
 static void mx_update_bits_locked(unsigned short reg,
 				unsigned int mask, unsigned int value)
 {
-    unsigned int old, new;
     mutex_lock(&direct_codec->mutex);
-	old = wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, reg);
-	new = (old & ~mask) | (value & mask);
-	if (old != new)
-		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, reg, new);
-    mutex_unlock(&direct_codec->mutex);
+	mx_update_bits(reg, mask, value);
+	mutex_unlock(&direct_codec->mutex);
 }
 
 static void update_headphone_gain(void) {
@@ -692,8 +688,7 @@ static int read_hph_poweramp_gain(unsigned short reg, bool cached)
 
 static void write_hph_poweramp_gain(unsigned short reg, bool mute)
 {
-	unsigned int val, val_mask, old, new;
-	bool change;
+	unsigned int val, val_mask;
 	unsigned int local_cached_gain;
 
 	if (!hph_pa_enabled) {
@@ -724,24 +719,15 @@ static void write_hph_poweramp_gain(unsigned short reg, bool mute)
 			hphr_active = true;
 		}
 	}
-	snd_soc_update_bits(direct_codec, reg, 32, 32);
 
+	mx_update_bits(reg, 32, 32);
 	val = local_cached_gain & hph_poweramp_mask;
 	val = HPH_RX_GAIN_MAX - val;
 	val_mask = hph_poweramp_mask << HPH_PA_SHIFT;
 	val = val << HPH_PA_SHIFT;
 
 	/*snd_soc_update_bits_locked(codec, reg, val_mask, val);*/
-	mutex_lock(&direct_codec->mutex);
-	old = wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, reg);
-	if (old < 0) {
-		mutex_unlock(&direct_codec->mutex);
-		return;
-	}
-	new = (old & ~val_mask) | (val & val_mask);
-	if (old != new)
-		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, reg, new);
-	mutex_unlock(&direct_codec->mutex);
+    mx_update_bits_locked(reg, val_mask, val);
 }
 
 static void write_hph_raw(unsigned int value)
@@ -822,12 +808,7 @@ static void write_hpf_bypass(unsigned short reg)
 	val_mask = mask << shift;
 	val = val << shift;
 	/*snd_soc_update_bits_locked(codec, reg, val_mask, val);*/
-	mutex_lock(&direct_codec->mutex);
-	old = wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, reg);
-	new = (old & ~val_mask) | (val & val_mask);
-	if (old != new)
-		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, reg, new);
-	mutex_unlock(&direct_codec->mutex);
+    mx_update_bits_locked(reg, val_mask, val);
 }
 
 /*
@@ -902,12 +883,7 @@ static void write_hpf_cutoff(unsigned short reg)
 	mask = (bitmask - 1) << 0;
 
 	/*snd_soc_update_bits_locked(codec, e->reg, mask, val);*/
-	mutex_lock(&direct_codec->mutex);
-	old = wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, reg);
-	new = (old & ~mask) | (val & mask);
-	if (old != new)
-		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, reg, new);
-	mutex_unlock(&direct_codec->mutex);
+    mx_update_bits_locked(reg, mask, val);
 }
 
 static u32 read_chopper_raw(void)
