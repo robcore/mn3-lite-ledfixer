@@ -1574,12 +1574,13 @@ static int taiko_config_compander(struct snd_soc_dapm_widget *w,
                                 TAIKO_A_CDC_COMP0_B2_CTL + (comp * 8),
                                 0x0F, comp_params->peak_det_timeout);
 		}
-
+        update_interpolator();
 		break;
 	case SND_SOC_DAPM_PRE_PMD:
         interpolator_enabled = false;
         taiko_discharge_comp(codec, comp);
         /* Worst case timeout for compander CnP sleep timeout */
+        update_interpolator();
     	usleep_range(3000, 3100);
 		/* Disable compander */
 		snd_soc_update_bits(codec,
