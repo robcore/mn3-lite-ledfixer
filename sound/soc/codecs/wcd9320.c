@@ -579,7 +579,7 @@ static u8 hphr_pa_cached_gain = 20;
 unsigned int hph_poweramp_mask = 31; /* (1 << fls(max)) - 1 */
 static unsigned int uhqa_mode = 0;
 static unsigned int high_perf_mode;
-static unsigned int interpolator_boost = 0;
+static unsigned int interpolator_boost = 1;
 static bool hpwidget_left = false;
 static bool hpwidget_right = false;
 static bool spkwidget = false;
@@ -587,7 +587,7 @@ static unsigned int compander_gain_lock;
 static unsigned int compander_gain_boost;
 static u32 sc_peak_det_timeout = 15;
 static u32 sc_rms_meter_div_fact = 15;
-static u32 sc_rms_meter_resamp_fact = 255;
+static u32 sc_rms_meter_resamp_fact = 240;
 static u8 hph_pa_bias = 0x55;
 unsigned int anc_delay = 0;
 static bool hphl_active;
@@ -969,11 +969,7 @@ static void update_bias(void)
 
 static void update_interpolator(void)
 {
-
-
-
-
-    if (!hpwidget() || !interpolator_boost)
+    if (!interpolator_boost)
         return;
 
 	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res,
@@ -987,7 +983,6 @@ static void update_interpolator(void)
 
 static void update_control_regs(void)
 {
-	update_bias();
 	write_hpf_cutoff(TAIKO_A_CDC_RX1_B4_CTL);
 	write_hpf_cutoff(TAIKO_A_CDC_RX2_B4_CTL);
 	write_hpf_cutoff(TAIKO_A_CDC_RX7_B4_CTL);
@@ -995,6 +990,7 @@ static void update_control_regs(void)
 	write_hpf_bypass(TAIKO_A_CDC_RX2_B5_CTL);
 	write_hpf_bypass(TAIKO_A_CDC_RX7_B5_CTL);
 	write_choppers();
+	update_bias();
 }
 
 static int spkr_drv_wrnd = 1;
@@ -1575,16 +1571,23 @@ static int taiko_config_compander(struct snd_soc_dapm_widget *w,
 		u32 sc_rms_meter_resamp_fact = 0xA0;
 */
 		if (interpolator_boost) { 
-            update_interpolator();
+            snd_soc_write(codec, TAIKO_A_CDC_COMP0_B3_CTL + (comp * 8),
+             			  sc_rms_meter_resamp_fact);
+			snd_soc_update_bits(codec,
+                                TAIKO_A_CDC_COMP0_B2_CTL + (comp * 8),
+                                0xF0, sc_rms_meter_div_fact << 4);
+			snd_soc_update_bits(codec,
+                                TAIKO_A_CDC_COMP0_B2_CTL + (comp * 8),
+                                0x0F, sc_peak_det_timeout);
 		} else {
 			snd_soc_write(codec, TAIKO_A_CDC_COMP0_B3_CTL + (comp * 8),
-				      comp_params->rms_meter_resamp_fact);
+                          comp_params->rms_meter_resamp_fact);
 			snd_soc_update_bits(codec,
-					    TAIKO_A_CDC_COMP0_B2_CTL + (comp * 8),
-					    0xF0, comp_params->rms_meter_div_fact << 4);
+                                TAIKO_A_CDC_COMP0_B2_CTL + (comp * 8),
+                                0xF0, comp_params->rms_meter_div_fact << 4);
 			snd_soc_update_bits(codec,
-						TAIKO_A_CDC_COMP0_B2_CTL + (comp * 8),
-						0x0F, comp_params->peak_det_timeout);
+                                TAIKO_A_CDC_COMP0_B2_CTL + (comp * 8),
+                                0x0F, comp_params->peak_det_timeout);
 		}
 
 		break;
@@ -3638,6 +3641,7 @@ static int taiko_codec_enable_interpolator(struct snd_soc_dapm_widget *w,
 				  );
 		break;
 	}
+    update_control_regs();
 	return 0;
 }
 
@@ -4010,7 +4014,7 @@ static int taiko_hph_pa_event(struct snd_soc_dapm_widget *w,
 			pr_info("%s: hpwidget_left enabled\n", __func__);
 		else if (w->shift == 4)
 			pr_info("%s: hpwidget_right enabled\n", __func__);
-
+        update_control_regs();
 		break;
 	case SND_SOC_DAPM_PRE_PMD:
 		if (hph_pa_enabled) {
@@ -4062,6 +4066,7 @@ static int taiko_codec_enable_anc_hph(struct snd_soc_dapm_widget *w,
 			msleep(30);
 		}
 		ret = taiko_hph_pa_event(w, kcontrol, event);
+        update_control_regs();
 		break;
 	case SND_SOC_DAPM_PRE_PMD:
 		if (w->shift == 5) {
@@ -4970,6 +4975,7 @@ static int taiko_prepare(struct snd_pcm_substream *substream,
 	if (!paths) {
 		dev_err(dai->dev, "%s(): found no audio playback paths\n",
 			__func__);
+        update_control_regs();
 		return 0;
 	}
 
@@ -4987,9 +4993,9 @@ static int taiko_prepare(struct snd_pcm_substream *substream,
 	kfree(wlist);
 
 	if (!found_hs_pa) {
-		update_control_regs();
 		write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN, true);
 		write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_R_GAIN, true);
+        update_control_regs();
 		return 0;
 	}
 
@@ -5018,10 +5024,10 @@ static int taiko_prepare(struct snd_pcm_substream *substream,
 		}
 	}
 
-	update_control_regs();
+
 	write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN, false);
 	write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_R_GAIN, false);
-
+	update_control_regs();
 	return 0;
 }
 
