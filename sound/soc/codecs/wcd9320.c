@@ -7908,14 +7908,17 @@ COMP1_SHUT_DOWN_STATUS 0x376
 static ssize_t compander1_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%s%d\n%s%d\n%s%d\n%s%d\n%s%d\n%s%d\n%s%d\n",
+	return sprintf(buf, "%s%d\n%s%d\n%s%d\n%s%d\n%s%d\n%s%d\n%s%d\n%s%d\n%s%d\n%s%d\n",
 						"B1_CTL:", compread(TAIKO_A_CDC_COMP1_B1_CTL),
 						"B2_CTL:", compread(TAIKO_A_CDC_COMP1_B2_CTL),
 						"B3_CTL:", compread(TAIKO_A_CDC_COMP1_B3_CTL),
 						"B4_CTL:", compread(TAIKO_A_CDC_COMP1_B4_CTL),
 						"B5_CTL:", compread(TAIKO_A_CDC_COMP1_B5_CTL),
 						"B6_CTL:", compread(TAIKO_A_CDC_COMP1_B6_CTL),
-						"SHUT_DOWN_STATUS:", compread(TAIKO_A_CDC_COMP1_SHUT_DOWN_STATUS));
+                        "HPH_L_STATUS:", compread(TAIKO_A_RX_HPH_L_STATUS),
+                        "HPH_R_STATUS:", compread(TAIKO_A_RX_HPH_R_STATUS),
+						"CNP_DIS_STATUS:", compread(TAIKO_A_CDC_COMP1_SHUT_DOWN_STATUS)
+                        "CNP_EN_STATUS:", compread(TAIKO_A_RX_HPH_CNP_EN));
 }
 
 static ssize_t chopper_raw_show(struct kobject *kobj,
