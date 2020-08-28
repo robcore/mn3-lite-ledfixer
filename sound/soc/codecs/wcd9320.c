@@ -607,6 +607,28 @@ static bool hpwidget_any(void)
     return hpwidget_left || hpwidget_right;
 }
 
+static void mx_update_bits(unsigned short reg,
+				unsigned int mask, unsigned int value)
+{
+    unsigned int old, new;
+	old = wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, reg);
+	new = (old & ~mask) | (value & mask);
+	if (old != new)
+		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, reg, new);
+}
+
+static void mx_update_bits_locked(unsigned short reg,
+				unsigned int mask, unsigned int value)
+{
+    unsigned int old, new;
+    mutex_lock(&direct_codec->mutex);
+	old = wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, reg);
+	new = (old & ~mask) | (value & mask);
+	if (old != new)
+		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, reg, new);
+    mutex_unlock(&direct_codec->mutex);
+}
+
 static void update_headphone_gain(void) {
 	if (!hpwidget())
 		return;
@@ -801,10 +823,6 @@ static void write_hpf_bypass(unsigned short reg)
 	/*snd_soc_update_bits_locked(codec, reg, val_mask, val);*/
 	mutex_lock(&direct_codec->mutex);
 	old = wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, reg);
-	if (old < 0) {
-		mutex_unlock(&direct_codec->mutex);
-		return;
-	}
 	new = (old & ~val_mask) | (val & val_mask);
 	if (old != new)
 		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, reg, new);
@@ -885,10 +903,6 @@ static void write_hpf_cutoff(unsigned short reg)
 	/*snd_soc_update_bits_locked(codec, e->reg, mask, val);*/
 	mutex_lock(&direct_codec->mutex);
 	old = wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, reg);
-	if (old < 0) {
-		mutex_unlock(&direct_codec->mutex);
-		return;
-	}
 	new = (old & ~mask) | (val & mask);
 	if (old != new)
 		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, reg, new);
@@ -955,18 +969,20 @@ static void update_bias(void)
 
 static void update_interpolator(void)
 {
+
+
+
+
     if (!hpwidget() || !interpolator_boost)
         return;
 
-	snd_soc_write(direct_codec,
+	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res,
 			TAIKO_A_CDC_COMP1_B3_CTL,
-				sc_rms_meter_resamp_fact);
-	snd_soc_update_bits(direct_codec,
-		    TAIKO_A_CDC_COMP1_B2_CTL,
-			    0xF0, sc_rms_meter_div_fact << 4);
-	snd_soc_update_bits(direct_codec,
-			TAIKO_A_CDC_COMP1_B2_CTL,
-				0x0F, sc_peak_det_timeout);
+			sc_rms_meter_resamp_fact);
+	mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL,
+		    0xF0, sc_rms_meter_div_fact << 4);
+	mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL,
+			0x0F, sc_peak_det_timeout);
 }
 
 static void update_control_regs(void)
