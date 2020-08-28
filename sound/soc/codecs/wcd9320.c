@@ -7933,7 +7933,7 @@ static ssize_t compander1_show(struct kobject *kobj,
 						"B6_CTL:", compread(TAIKO_A_CDC_COMP1_B6_CTL),
                         "HPH_L_STATUS:", compread(TAIKO_A_RX_HPH_L_STATUS),
                         "HPH_R_STATUS:", compread(TAIKO_A_RX_HPH_R_STATUS),
-						"CNP_DIS_STATUS:", compread(TAIKO_A_CDC_COMP1_SHUT_DOWN_STATUS)
+						"CNP_DIS_STATUS:", compread(TAIKO_A_CDC_COMP1_SHUT_DOWN_STATUS),
                         "CNP_EN_STATUS:", compread(TAIKO_A_RX_HPH_CNP_EN));
 }
 
