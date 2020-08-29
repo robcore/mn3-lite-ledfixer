@@ -70,6 +70,13 @@ then
         busybox echo "$2" > /sys/kernel/sound_control/uhqa_mode
     fi
     busybox cat /sys/kernel/sound_control/uhqa_mode
+elif [ "$1" = "autochopper" ]
+then
+    if [ -n "$2" ]
+    then
+        busybox echo "$2" > /sys/kernel/sound_control/autochopper
+    fi
+    busybox cat /sys/kernel/sound_control/autochopper
 elif [ "$1" = "chopbypass" ]
 then
     if [ -n "$2" ]

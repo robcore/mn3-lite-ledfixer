@@ -594,7 +594,7 @@ unsigned int anc_delay = 0;
 static bool hphl_active;
 static bool hphr_active;
 static u32 hph_chopper_raw;
-static u32 hph_autochopper_raw;
+static u32 hph_autochopper = 1;
 static unsigned int chopper_bypass;
 static int bypass_static_pa;
 
@@ -902,20 +902,17 @@ static void write_chopper_raw(void)
     mutex_unlock(&direct_codec->mutex);
 }
 
-static u32 read_autochopper_raw(void)
+static void write_autochopper(unsigned int enable)
 {
-	u32 localauto;
-	localauto = wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_AUTO_CHOP);
-	if (hph_autochopper_raw != localauto)
-		hph_autochopper_raw = localauto;
-	return hph_autochopper_raw;
-}
-
-static void write_autochopper_raw(void)
-{
-    mutex_lock(&direct_codec->mutex);
-	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_AUTO_CHOP, hph_autochopper_raw);
-    mutex_unlock(&direct_codec->mutex);
+    if (enable) {
+        mutex_lock(&direct_codec->mutex);
+    	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_AUTO_CHOP, 61);
+        mutex_unlock(&direct_codec->mutex);
+    } else {
+        mutex_lock(&direct_codec->mutex);
+    	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_AUTO_CHOP, 56);
+        mutex_unlock(&direct_codec->mutex);
+    }
 }
 
 /*
@@ -923,12 +920,11 @@ TAIKO_A_RX_HPH_AUTO_CHOP 0x1A4
 TAIKO_A_RX_HPH_CHOP_CTL 0x1A5
 */
 
-static void write_choppers(void)
+static void write_chopper(void)
 {
 	if (chopper_bypass) {
         mutex_lock(&direct_codec->mutex);
 		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_CHOP_CTL, 0x24);
-        wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_AUTO_CHOP, 0x38);
         mutex_unlock(&direct_codec->mutex);
     }
 }
@@ -974,7 +970,7 @@ static void update_control_regs(void)
 	write_hpf_bypass(TAIKO_A_CDC_RX1_B5_CTL);
 	write_hpf_bypass(TAIKO_A_CDC_RX2_B5_CTL);
 	write_hpf_bypass(TAIKO_A_CDC_RX7_B5_CTL);
-	write_choppers();
+	write_chopper();
 	update_bias();
 }
 
@@ -7955,13 +7951,13 @@ static ssize_t chopper_raw_store(struct kobject *kobj,
 	return count;
 }
 
-static ssize_t autochopper_raw_show(struct kobject *kobj,
+static ssize_t autochopper_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%d\n", read_autochopper_raw());
+	return sprintf(buf, "%d\n", hph_autochopper);
 }
 
-static ssize_t autochopper_raw_store(struct kobject *kobj,
+static ssize_t autochopper_store(struct kobject *kobj,
 			   struct kobj_attribute *attr, const char *buf, size_t count) {
 	int uval;
 
@@ -7969,11 +7965,11 @@ static ssize_t autochopper_raw_store(struct kobject *kobj,
 
 	if (uval < 0)
 		uval = 0;
-	if (uval > 255)
-		uval = 255;
+	if (uval > 1)
+		uval = 1;
 
-	hph_autochopper_raw = uval;
-	write_autochopper_raw();
+	hph_autochopper = uval;
+	write_autochopper(hph_autochopper);
 	return count;
 }
 
@@ -7995,7 +7991,7 @@ static ssize_t chopper_bypass_store(struct kobject *kobj,
 		uval = 1;
 
 	chopper_bypass = uval;
-	write_choppers();
+	write_chopper();
 	return count;
 }
 
@@ -8664,10 +8660,10 @@ static struct kobj_attribute chopper_raw_attribute =
 		chopper_raw_show,
 		chopper_raw_store);
 
-static struct kobj_attribute autochopper_raw_attribute =
-	__ATTR(autochopper_raw, 0644,
-		autochopper_raw_show,
-		autochopper_raw_store);
+static struct kobj_attribute autochopper_attribute =
+	__ATTR(autochopper, 0644,
+		autochopper_show,
+		autochopper_store);
 
 static struct kobj_attribute chopper_bypass_attribute =
 	__ATTR(chopper_bypass, 0644,
@@ -8793,7 +8789,7 @@ static struct kobj_attribute hph_pa_bias_attribute =
 static struct attribute *sound_control_attrs[] = {
 		&compander1_attribute.attr,
 		&chopper_raw_attribute.attr,
-		&autochopper_raw_attribute.attr,
+		&autochopper_attribute.attr,
 		&chopper_bypass_attribute.attr,
 		&bypass_static_pa_attribute.attr,
 		&headphone_gain_attribute.attr,
@@ -9018,9 +9014,9 @@ static int taiko_codec_probe(struct snd_soc_codec *codec)
 		pr_warn("%s kobject create failed!\n", __func__);
 	}
 
-	update_control_regs();
 	read_chopper_raw();
-	read_autochopper_raw();
+	update_control_regs();
+    write_autochopper(hph_autochopper);
 	return ret;
 
 err_irq:
