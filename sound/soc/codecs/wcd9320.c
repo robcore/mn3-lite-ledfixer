@@ -594,7 +594,7 @@ unsigned int anc_delay = 0;
 static bool hphl_active;
 static bool hphr_active;
 static u32 hph_chopper_raw;
-static u32 hph_autochopper = 1;
+static u32 hph_autochopper;
 static unsigned int chopper_bypass;
 static int bypass_static_pa;
 
