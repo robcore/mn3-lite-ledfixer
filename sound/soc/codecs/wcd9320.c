@@ -906,11 +906,13 @@ static void write_autochopper(unsigned int enable)
 {
     if (enable) {
         mutex_lock(&direct_codec->mutex);
-    	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_AUTO_CHOP, 61);
+    	//wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_AUTO_CHOP, 61);
+        mx_update_bits(TAIKO_A_RX_HPH_AUTO_CHOP, 5, 5);
         mutex_unlock(&direct_codec->mutex);
     } else {
         mutex_lock(&direct_codec->mutex);
-    	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_AUTO_CHOP, 56);
+    	//wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_AUTO_CHOP, 56);
+        mx_update_bits(TAIKO_A_RX_HPH_AUTO_CHOP, 5, 0);
         mutex_unlock(&direct_codec->mutex);
     }
 }
@@ -928,8 +930,8 @@ static void write_chopper(void)
 		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_CHOP_CTL, 0x24);
         mutex_unlock(&direct_codec->mutex);
 #endif
-        mx_update_bits(TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x0);
-        mx_update_bits(TAIKO_A_RX_HPH_CHOP_CTL, 0x80, 0x0);
+        mx_update_bits(TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x00);
+        mx_update_bits(TAIKO_A_RX_HPH_CHOP_CTL, 0x80, 0x00);
     }
 }
 
