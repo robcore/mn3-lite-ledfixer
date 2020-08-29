@@ -181,5 +181,26 @@ install_magisk
 $BOOTMODE || recovery_cleanup
 rm -rf $TMPDIR
 
+ui_print "- Removing Additional Nonsense"
+if [ -d "/data/adb/magisk/synapse" ]
+then
+    rm -rf "/data/adb/magisk/synapse"
+fi
+
+if [ -d "/data/adb/magisk/wifi" ]
+then
+    rm -rf "/data/adb/magisk/wifi"
+fi
+
+if [ -f "/data/adb/magisk/synapse.apk" ]
+then
+    rm "/data/adb/magisk/synapse.apk"
+fi
+
+if [ -f "/data/adb/magisk/mixer_paths.xml" ]
+then
+    rm "/data/adb/magisk/mixer_paths.xml"
+fi
+
 ui_print "- Done"
 exit 0
