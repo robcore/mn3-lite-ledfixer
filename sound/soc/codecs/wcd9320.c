@@ -971,6 +971,7 @@ static void update_control_regs(void)
 	write_hpf_bypass(TAIKO_A_CDC_RX2_B5_CTL);
 	write_hpf_bypass(TAIKO_A_CDC_RX7_B5_CTL);
 	write_chopper();
+    write_autochopper(hph_autochopper);
 	update_bias();
 }
 
@@ -9016,7 +9017,6 @@ static int taiko_codec_probe(struct snd_soc_codec *codec)
 
 	read_chopper_raw();
 	update_control_regs();
-    write_autochopper(hph_autochopper);
 	return ret;
 
 err_irq:
