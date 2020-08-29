@@ -923,9 +923,13 @@ TAIKO_A_RX_HPH_CHOP_CTL 0x1A5
 static void write_chopper(void)
 {
 	if (chopper_bypass) {
+#if 0
         mutex_lock(&direct_codec->mutex);
 		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_CHOP_CTL, 0x24);
         mutex_unlock(&direct_codec->mutex);
+#endif
+        mx_update_bits(TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x0);
+        mx_update_bits(TAIKO_A_RX_HPH_CHOP_CTL, 0x80, 0x0);
     }
 }
 
