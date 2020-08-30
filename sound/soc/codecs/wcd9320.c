@@ -144,7 +144,17 @@ static struct afe_param_cdc_reg_cfg audio_reg_cfg[] = {
 	},
 	{
 		1,
-		(TAIKO_REGISTER_START_OFFSET + TAIKO_SB_PGD_PORT_RX_BASE),
+		(TAIKO_REGISTER_START_OFFSET + TA        if (wavegen_override) {
+    		/* Wavegen to 20 msec */
+    		snd_soc_write(codec, TAIKO_A_RX_HPH_CNP_WG_CTL, 0xDB);
+    		snd_soc_write(codec, TAIKO_A_RX_HPH_CNP_WG_TIME, 0x58);
+    		snd_soc_write(codec, TAIKO_A_RX_HPH_BIAS_WG_OCP, 0x1A);
+        } else {
+    		/* Wavegen to 5 msec */
+    		snd_soc_write(codec, TAIKO_A_RX_HPH_CNP_WG_CTL, 0xDA);
+    		snd_soc_write(codec, TAIKO_A_RX_HPH_CNP_WG_TIME, 0x15);
+    		snd_soc_write(codec, TAIKO_A_RX_HPH_BIAS_WG_OCP, 0x2A);
+        }IKO_SB_PGD_PORT_RX_BASE),
 		SB_PGD_PORT_RX_ENABLE_N, 0x1, 8, 0x1
 	},
 	{	1,
@@ -752,6 +762,21 @@ static void update_speaker_gain(void)
 	lock_sound_control(&sound_control_codec_ptr->core_res, 1);
 	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX7_VOL_CTL_B2_CTL, speaker_cached_gain);
 	lock_sound_control(&sound_control_codec_ptr->core_res, 0);
+}
+
+static void update_wavegen(void)
+{
+        if (wavegen_override) {
+    		/* Wavegen to 20 msec */
+    		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_CNP_WG_CTL, 0xDB);
+    		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_CNP_WG_TIME, 0x58);
+    		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_BIAS_WG_OCP, 0x1A);
+        } else {
+    		/* Wavegen to 5 msec */
+    		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_CNP_WG_CTL, 0xDA);
+    		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_CNP_WG_TIME, 0x15);
+    		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_BIAS_WG_OCP, 0x2A);
+        }
 }
 
 /*
@@ -7969,17 +7994,7 @@ static ssize_t wavegen_override_store(struct kobject *kobj,
 
 	wavegen_override = uval;
     if (hpwidget()) {
-        if (wavegen_override) {
-    		/* Wavegen to 20 msec */
-    		snd_soc_write(codec, TAIKO_A_RX_HPH_CNP_WG_CTL, 0xDB);
-    		snd_soc_write(codec, TAIKO_A_RX_HPH_CNP_WG_TIME, 0x58);
-    		snd_soc_write(codec, TAIKO_A_RX_HPH_BIAS_WG_OCP, 0x1A);
-        } else {
-    		/* Wavegen to 5 msec */
-    		snd_soc_write(codec, TAIKO_A_RX_HPH_CNP_WG_CTL, 0xDA);
-    		snd_soc_write(codec, TAIKO_A_RX_HPH_CNP_WG_TIME, 0x15);
-    		snd_soc_write(codec, TAIKO_A_RX_HPH_BIAS_WG_OCP, 0x2A);
-        }
+        update_wavegen();
     }
 	return count;
 }
