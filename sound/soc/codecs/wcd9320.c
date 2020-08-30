@@ -77,6 +77,8 @@
 #define TAIKO_WG_TIME_FACTOR_US	240
 #define ZDET_RAMP_WAIT_US 18000
 
+#define regread(reg) wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, reg)
+
 static atomic_t kp_taiko_priv;
 
 static struct afe_param_slimbus_slave_port_cfg taiko_slimbus_slave_port_cfg = {
@@ -7919,44 +7921,37 @@ COMP1_B6_CTL 0x375
 COMP1_SHUT_DOWN_STATUS 0x376
 */
 
-#define compread(reg) wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, reg)
 static ssize_t compander1_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%s%d\n%s%d\n%s%d\n%s%d\n%s%d\n%s%d\n%s%d\n%s%d\n%s%d\n%s%d\n%s%d\n",
-						"B1_CTL:", compread(TAIKO_A_CDC_COMP1_B1_CTL),
-						"B2_CTL:", compread(TAIKO_A_CDC_COMP1_B2_CTL),
-						"B3_CTL:", compread(TAIKO_A_CDC_COMP1_B3_CTL),
-						"B4_CTL:", compread(TAIKO_A_CDC_COMP1_B4_CTL),
-						"B5_CTL:", compread(TAIKO_A_CDC_COMP1_B5_CTL),
-						"B6_CTL:", compread(TAIKO_A_CDC_COMP1_B6_CTL),
-                        "HPH_L_STATUS:", compread(TAIKO_A_RX_HPH_L_STATUS),
-                        "HPH_R_STATUS:", compread(TAIKO_A_RX_HPH_R_STATUS),
-						"CNP_DIS_STATUS:", compread(TAIKO_A_CDC_COMP1_SHUT_DOWN_STATUS),
-                        "CNP_EN_STATUS:", compread(TAIKO_A_RX_HPH_CNP_EN),
-                        "AUTOCHOP:", compread(TAIKO_A_RX_HPH_AUTO_CHOP));
+	return sprintf(buf, "%s%d\n%s%d\n%s%d\n%s%d\n%s%d\n%s%d\n%s%d\n",
+						"B1_CTL:", regread(TAIKO_A_CDC_COMP1_B1_CTL),
+						"B2_CTL:", regread(TAIKO_A_CDC_COMP1_B2_CTL),
+						"B3_CTL:", regread(TAIKO_A_CDC_COMP1_B3_CTL),
+						"B4_CTL:", regread(TAIKO_A_CDC_COMP1_B4_CTL),
+						"B5_CTL:", regread(TAIKO_A_CDC_COMP1_B5_CTL),
+						"B6_CTL:", regread(TAIKO_A_CDC_COMP1_B6_CTL),
+						"CNP_DIS_STATUS:", regread(TAIKO_A_CDC_COMP1_SHUT_DOWN_STATUS));
 }
 
-static ssize_t chopper_raw_show(struct kobject *kobj,
+static ssize_t hph_status_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%d\n", read_chopper_raw());
+	return sprintf(buf, "HPH_L_STATUS:%d\nHPH_R_STATUS:%d\n",
+                   reg_read(TAIKO_A_RX_HPH_L_STATUS)
+                   reg_read(TAIKO_A_RX_HPH_R_STATUS));
 }
 
-static ssize_t chopper_raw_store(struct kobject *kobj,
-			   struct kobj_attribute *attr, const char *buf, size_t count) {
-	int uval;
+static ssize_t chopper_show(struct kobject *kobj,
+		struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "Chopper:%d\n", reg_read(TAIKO_A_RX_HPH_CHOP_CTL));
+}
 
-	sscanf(buf, "%d", &uval);
-
-	if (uval < 0)
-		uval = 0;
-	if (uval > 255)
-		uval = 255;
-
-	hph_chopper_raw = uval;
-	write_chopper_raw();
-	return count;
+static ssize_t autochopper_raw_show(struct kobject *kobj,
+		struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "Autochopper:%d\n", reg_read(TAIKO_A_RX_HPH_AUTO_CHOP));
 }
 
 static ssize_t autochopper_show(struct kobject *kobj,
@@ -8663,10 +8658,20 @@ static struct kobj_attribute compander1_attribute =
 		compander1_show,
 		NULL);
 
+static struct kobj_attribute hph_status_attribute =
+	__ATTR(hph_status, 0444,
+		hph_status_show,
+		NULL);
+
 static struct kobj_attribute chopper_raw_attribute =
-	__ATTR(chopper_raw, 0644,
-		chopper_raw_show,
-		chopper_raw_store);
+	__ATTR(chopper, 0644,
+		chopper_show,
+		NULL);
+
+static struct kobj_attribute autochopper_raw_attribute =
+	__ATTR(autochopper_raw, 0644,
+		autochopper_raw_show,
+		NULL);
 
 static struct kobj_attribute autochopper_attribute =
 	__ATTR(autochopper, 0644,
@@ -8796,7 +8801,9 @@ static struct kobj_attribute hph_pa_bias_attribute =
 
 static struct attribute *sound_control_attrs[] = {
 		&compander1_attribute.attr,
-		&chopper_raw_attribute.attr,
+		&hph_status_attribute.attr,
+		&chopper_attribute.attr,
+		&autochopper_raw_attribute.attr,
 		&autochopper_attribute.attr,
 		&chopper_bypass_attribute.attr,
 		&bypass_static_pa_attribute.attr,
