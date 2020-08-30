@@ -591,7 +591,7 @@ static unsigned int compander_gain_boost;
 static u32 sc_peak_det_timeout = 15;
 static u32 sc_rms_meter_div_fact = 15;
 static u32 sc_rms_meter_resamp_fact = 240;
-static u8 hph_pa_bias = 0x55;
+static u8 hph_pa_bias = 0x7A;
 unsigned int anc_delay = 0;
 static bool hphl_active;
 static bool hphr_active;
