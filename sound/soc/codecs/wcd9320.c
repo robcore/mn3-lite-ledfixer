@@ -7916,8 +7916,8 @@ static ssize_t hph_status_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf)
 {
 	return sprintf(buf, "HPH_L_STATUS:%s\nHPH_R_STATUS:%s\n",
-                   (regread(TAIKO_A_RX_HPH_L_STATUS) == 8 ? "On" : "Off"),
-                   (regread(TAIKO_A_RX_HPH_R_STATUS) == 8 ? "On" : "Off"));
+                   (regread(TAIKO_A_RX_HPH_L_STATUS) == PA_STAT_ON ? "On" : "Off"),
+                   (regread(TAIKO_A_RX_HPH_R_STATUS) == PA_STAT_ON ? "On" : "Off"));
 }
 
 static ssize_t chopper_show(struct kobject *kobj,
