@@ -610,9 +610,9 @@ static bool hpwidget_any(void)
 }
 
 static void mx_update_bits(unsigned short reg,
-				unsigned int mask, unsigned int value)
+				u8 mask, u8 value)
 {
-    unsigned int old, new;
+    u8 old, new;
 	old = wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, reg);
 	new = (old & ~mask) | (value & mask);
 	if (old != new)
@@ -620,7 +620,7 @@ static void mx_update_bits(unsigned short reg,
 }
 
 static void mx_update_bits_locked(unsigned short reg,
-				unsigned int mask, unsigned int value)
+				u8 mask, u8 value)
 {
     mutex_lock(&direct_codec->mutex);
 	mx_update_bits(reg, mask, value);
