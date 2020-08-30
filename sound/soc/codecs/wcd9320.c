@@ -595,7 +595,6 @@ static u8 hph_pa_bias = 0x55;
 unsigned int anc_delay = 0;
 static bool hphl_active;
 static bool hphr_active;
-static u32 hph_chopper_raw;
 static u32 hph_autochopper;
 static unsigned int chopper_bypass;
 static int bypass_static_pa;
@@ -886,22 +885,6 @@ static void write_hpf_cutoff(unsigned short reg)
 
 	/*snd_soc_update_bits_locked(codec, e->reg, mask, val);*/
     mx_update_bits_locked(reg, mask, val);
-}
-
-static u32 read_chopper_raw(void)
-{
-	u32 localchop;
-	localchop = wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_CHOP_CTL);
-	if (hph_chopper_raw != localchop)
-		hph_chopper_raw = localchop;
-	return hph_chopper_raw;
-}
-
-static void write_chopper_raw(void)
-{
-    mutex_lock(&direct_codec->mutex);
-	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_CHOP_CTL, hph_chopper_raw);
-    mutex_unlock(&direct_codec->mutex);
 }
 
 static void write_autochopper(unsigned int enable)
@@ -9029,7 +9012,6 @@ static int taiko_codec_probe(struct snd_soc_codec *codec)
 		pr_warn("%s kobject create failed!\n", __func__);
 	}
 
-	read_chopper_raw();
 	update_control_regs();
 	return ret;
 
