@@ -583,8 +583,6 @@ static unsigned int uhqa_mode = 0;
 static unsigned int high_perf_mode;
 static unsigned int interpolator_boost = 1;
 static bool interpolator_enabled;
-static bool hpwidget_left = false;
-static bool hpwidget_right = false;
 static bool spkwidget = false;
 static unsigned int compander_gain_lock;
 static unsigned int compander_gain_boost;
@@ -593,21 +591,29 @@ static u32 sc_rms_meter_div_fact = 15;
 static u32 sc_rms_meter_resamp_fact = 240;
 static u8 hph_pa_bias = 0x7A;
 unsigned int anc_delay = 0;
-static bool hphl_active;
-static bool hphr_active;
 static u32 hph_autochopper;
 static unsigned int chopper_bypass;
 static unsigned int bypass_static_pa;
 static unsigned int wavegen_override;
 
+#define PA_STAT_ON 8
+#define PA_STAT_OFF 4
+
+static bool poweramp_active(void)
+{
+    return (regread(TAIKO_A_RX_HPH_L_STATUS) == PA_STAT_ON &&
+            regread(TAIKO_A_RX_HPH_R_STATUS) == PA_STAT_ON);
+}
+
 static bool hpwidget(void)
 {
-	return hpwidget_left && hpwidget_right;
+	return poweramp_active();
 }
 
 static bool hpwidget_any(void)
 {
-    return hpwidget_left || hpwidget_right;
+    return (regread(TAIKO_A_RX_HPH_L_STATUS) == PA_STAT_ON ||
+            regread(TAIKO_A_RX_HPH_R_STATUS) == PA_STAT_ON);
 }
 
 static void mx_update_bits(unsigned short reg,
@@ -693,34 +699,20 @@ static void write_hph_poweramp_gain(unsigned short reg, bool mute)
 	unsigned int val, val_mask;
 	unsigned int local_cached_gain;
 
-	if (!hph_pa_enabled) {
-		hphl_active = false;
-		hphr_active = false;
+	if (!hph_pa_enabled)
 		return;
-	}
+
 	if (reg != WCD9XXX_A_RX_HPH_L_GAIN &&
 		reg != WCD9XXX_A_RX_HPH_R_GAIN)
 		return;
 
 
-
-	if (reg == WCD9XXX_A_RX_HPH_L_GAIN) {
-		if (mute) {
-			local_cached_gain = 0;
-			hphl_active = false;
-		} else {
-			local_cached_gain = hphl_pa_cached_gain;
-			hphl_active = true;
-		}
-	} else if (reg == WCD9XXX_A_RX_HPH_R_GAIN) {
-		if (mute) {
-			local_cached_gain = 0;
-			hphr_active = false;
-		} else {
+	if (mute)
+    	local_cached_gain = 0;
+	else if (reg == WCD9XXX_A_RX_HPH_L_GAIN)
+		local_cached_gain = hphl_pa_cached_gain;
+	else if (reg == WCD9XXX_A_RX_HPH_R_GAIN)
 			local_cached_gain = hphr_pa_cached_gain;
-			hphr_active = true;
-		}
-	}
 
 	mx_update_bits(reg, 32, 32);
 	val = local_cached_gain & hph_poweramp_mask;
@@ -738,11 +730,6 @@ static void write_hph_raw(unsigned int value)
 	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, WCD9XXX_A_RX_HPH_L_GAIN, value);
 	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, WCD9XXX_A_RX_HPH_R_GAIN, value);
 	mutex_unlock(&direct_codec->mutex);
-}
-
-static bool poweramp_active(void)
-{
-	return (hphl_active && hphr_active);
 }
 
 static void update_speaker_gain(void)
@@ -4000,11 +3987,6 @@ static int taiko_hph_pa_event(struct snd_soc_dapm_widget *w,
 						 WCD9XXX_CLSH_EVENT_POST_PA);
 		}
 
-		if (w->shift == 5)
-			hpwidget_left = true;
-		else if (w->shift == 4)
-			hpwidget_right = true;
-
 		update_headphone_gain();
         update_iir_gain();
 #if 0
@@ -4016,10 +3998,6 @@ static int taiko_hph_pa_event(struct snd_soc_dapm_widget *w,
 			else if (w->shift == 4)
 				write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_R_GAIN, false);
 		}
-		if (w->shift == 5)
-			pr_info("%s: hpwidget_left enabled\n", __func__);
-		else if (w->shift == 4)
-			pr_info("%s: hpwidget_right enabled\n", __func__);
         update_control_regs();
 		break;
 	case SND_SOC_DAPM_PRE_PMD:
@@ -4031,18 +4009,7 @@ static int taiko_hph_pa_event(struct snd_soc_dapm_widget *w,
 		}
 		break;
 	case SND_SOC_DAPM_POST_PMD:
-		if (w->shift == 5)
-			hpwidget_left = false;
-		else if (w->shift == 4)
-			hpwidget_right = false;
-
 		usleep_range(13000, 13000);
-//		pr_debug("%s: sleep 13000us after %s PA disable\n", __func__, w->name);
-		if (w->shift == 5)
-			pr_info("%s: hpwidget_left disabled\n", __func__);
-		else if (w->shift == 4)
-			pr_info("%s: hpwidget_right disabled\n", __func__);
-
 		/* Let MBHC module know PA turned off */
 		wcd9xxx_resmgr_notifier_call(&taiko->resmgr, e_post_off);
 
@@ -7948,9 +7915,9 @@ static ssize_t compander1_show(struct kobject *kobj,
 static ssize_t hph_status_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "HPH_L_STATUS:%d\nHPH_R_STATUS:%d\n",
-                   regread(TAIKO_A_RX_HPH_L_STATUS),
-                   regread(TAIKO_A_RX_HPH_R_STATUS));
+	return sprintf(buf, "HPH_L_STATUS:%s\nHPH_R_STATUS:%s\n",
+                   (regread(TAIKO_A_RX_HPH_L_STATUS) == 8 ? "On" : "Off"),
+                   (regread(TAIKO_A_RX_HPH_R_STATUS) == 8 ? "On" : "Off"));
 }
 
 static ssize_t chopper_show(struct kobject *kobj,
