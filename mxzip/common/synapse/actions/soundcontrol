@@ -243,4 +243,22 @@ then
     do 
         printf "%s\n" $LINE@n;
     done < /sys/kernel/sound_control/compander1
+elif [ "$1" = "hph_status" ]
+then
+    while read -r LINE; 
+    do 
+        printf "%s\n" $LINE@n;
+    done < /sys/kernel/sound_control/hph_status
+elif [ "$1" = "autochopper_raw" ]
+then
+    while read -r LINE; 
+    do 
+        printf "%s\n" $LINE@n;
+    done < /sys/kernel/sound_control/autochopper_raw
+elif [ "$1" = "chopper" ]
+then
+    while read -r LINE; 
+    do 
+        printf "%s\n" $LINE@n;
+    done < /sys/kernel/sound_control/chopper
 fi
