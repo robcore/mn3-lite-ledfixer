@@ -144,17 +144,7 @@ static struct afe_param_cdc_reg_cfg audio_reg_cfg[] = {
 	},
 	{
 		1,
-		(TAIKO_REGISTER_START_OFFSET + TA        if (wavegen_override) {
-    		/* Wavegen to 20 msec */
-    		snd_soc_write(codec, TAIKO_A_RX_HPH_CNP_WG_CTL, 0xDB);
-    		snd_soc_write(codec, TAIKO_A_RX_HPH_CNP_WG_TIME, 0x58);
-    		snd_soc_write(codec, TAIKO_A_RX_HPH_BIAS_WG_OCP, 0x1A);
-        } else {
-    		/* Wavegen to 5 msec */
-    		snd_soc_write(codec, TAIKO_A_RX_HPH_CNP_WG_CTL, 0xDA);
-    		snd_soc_write(codec, TAIKO_A_RX_HPH_CNP_WG_TIME, 0x15);
-    		snd_soc_write(codec, TAIKO_A_RX_HPH_BIAS_WG_OCP, 0x2A);
-        }IKO_SB_PGD_PORT_RX_BASE),
+		(TAIKO_REGISTER_START_OFFSET + TAIKO_SB_PGD_PORT_RX_BASE),
 		SB_PGD_PORT_RX_ENABLE_N, 0x1, 8, 0x1
 	},
 	{	1,
