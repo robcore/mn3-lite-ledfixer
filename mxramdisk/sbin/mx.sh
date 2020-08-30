@@ -74,6 +74,7 @@ then
 	chmod 755 "/sbin/zip"
 fi
 
+ln -s /sbin/magisk /sbin/resetprop
 # Init.d
 chmod -R 755 /system/etc/init.d;
 chown -R 0:2000 /system/etc/init.d;
