@@ -133,6 +133,13 @@ then
         busybox echo "$2" > /sys/kernel/sound_control/compander_gain_boost
     fi
     busybox cat /sys/kernel/sound_control/compander_gain_boost
+elif [ "$1" = "wavegen_override" ]
+then
+    if [ -n "$2" ]
+    then
+        busybox echo "$2" > /sys/kernel/sound_control/wavegen_override
+    fi
+    busybox cat /sys/kernel/sound_control/wavegen_override
 elif [ "$1" = "hpfdefault" ]
 then
     if [ "$(busybox cat /sys/kernel/sound_control/headphone_hpf_cutoff)" = "0" ]
