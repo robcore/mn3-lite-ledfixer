@@ -1307,9 +1307,17 @@ static int taiko_set_compander(struct snd_kcontrol *kcontrol,
 	if (hph_pa_enabled && comp == COMPANDER_1) {
 		/* Wavegen to 20 msec */
 		taiko->comp_enabled[comp] = 0;
-		snd_soc_write(codec, TAIKO_A_RX_HPH_CNP_WG_CTL, 0xDB);
-		snd_soc_write(codec, TAIKO_A_RX_HPH_CNP_WG_TIME, 0x58);
-		snd_soc_write(codec, TAIKO_A_RX_HPH_BIAS_WG_OCP, 0x1A);
+        if (wavegen_override) {
+    		/* Wavegen to 20 msec */
+    		snd_soc_write(codec, TAIKO_A_RX_HPH_CNP_WG_CTL, 0xDB);
+    		snd_soc_write(codec, TAIKO_A_RX_HPH_CNP_WG_TIME, 0x58);
+    		snd_soc_write(codec, TAIKO_A_RX_HPH_BIAS_WG_OCP, 0x1A);
+        } else {
+    		/* Wavegen to 5 msec */
+    		snd_soc_write(codec, TAIKO_A_RX_HPH_CNP_WG_CTL, 0xDA);
+    		snd_soc_write(codec, TAIKO_A_RX_HPH_CNP_WG_TIME, 0x15);
+    		snd_soc_write(codec, TAIKO_A_RX_HPH_BIAS_WG_OCP, 0x2A);
+        }
 
 		/* Disable CHOPPER block */
 		snd_soc_update_bits(codec,
@@ -7960,6 +7968,19 @@ static ssize_t wavegen_override_store(struct kobject *kobj,
 		uval = 1;
 
 	wavegen_override = uval;
+    if (hpwidget) {
+        if (wavegen_override) {
+    		/* Wavegen to 20 msec */
+    		snd_soc_write(codec, TAIKO_A_RX_HPH_CNP_WG_CTL, 0xDB);
+    		snd_soc_write(codec, TAIKO_A_RX_HPH_CNP_WG_TIME, 0x58);
+    		snd_soc_write(codec, TAIKO_A_RX_HPH_BIAS_WG_OCP, 0x1A);
+        } else {
+    		/* Wavegen to 5 msec */
+    		snd_soc_write(codec, TAIKO_A_RX_HPH_CNP_WG_CTL, 0xDA);
+    		snd_soc_write(codec, TAIKO_A_RX_HPH_CNP_WG_TIME, 0x15);
+    		snd_soc_write(codec, TAIKO_A_RX_HPH_BIAS_WG_OCP, 0x2A);
+        }
+    }
 	return count;
 }
 
