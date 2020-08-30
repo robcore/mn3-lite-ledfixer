@@ -7938,20 +7938,20 @@ static ssize_t hph_status_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf)
 {
 	return sprintf(buf, "HPH_L_STATUS:%d\nHPH_R_STATUS:%d\n",
-                   reg_read(TAIKO_A_RX_HPH_L_STATUS)
-                   reg_read(TAIKO_A_RX_HPH_R_STATUS));
+                   regread(TAIKO_A_RX_HPH_L_STATUS),
+                   regread(TAIKO_A_RX_HPH_R_STATUS));
 }
 
 static ssize_t chopper_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "Chopper:%d\n", reg_read(TAIKO_A_RX_HPH_CHOP_CTL));
+	return sprintf(buf, "Chopper:%d\n", regread(TAIKO_A_RX_HPH_CHOP_CTL));
 }
 
 static ssize_t autochopper_raw_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "Autochopper:%d\n", reg_read(TAIKO_A_RX_HPH_AUTO_CHOP));
+	return sprintf(buf, "Autochopper:%d\n", regread(TAIKO_A_RX_HPH_AUTO_CHOP));
 }
 
 static ssize_t autochopper_show(struct kobject *kobj,
@@ -8663,7 +8663,7 @@ static struct kobj_attribute hph_status_attribute =
 		hph_status_show,
 		NULL);
 
-static struct kobj_attribute chopper_raw_attribute =
+static struct kobj_attribute chopper_attribute =
 	__ATTR(chopper, 0644,
 		chopper_show,
 		NULL);
