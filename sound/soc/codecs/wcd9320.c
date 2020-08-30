@@ -1456,6 +1456,11 @@ static int taiko_config_compander(struct snd_soc_dapm_widget *w,
 	pr_info("%s: %s event %d compander %d, enabled %d", __func__,
 		 w->name, event, comp, taiko->comp_enabled[comp]);
 	if (comp == COMPANDER_1 && hph_pa_enabled) {
+        interpolator_enabled = false;
+        taiko_discharge_comp(codec, comp);
+        /* Worst case timeout for compander CnP sleep timeout */
+        update_interpolator();
+    	usleep_range(3000, 3100);
 		/* Disable compander */
 		snd_soc_update_bits(codec,
 				    TAIKO_A_CDC_COMP0_B1_CTL + (comp * 8),
@@ -1476,6 +1481,7 @@ static int taiko_config_compander(struct snd_soc_dapm_widget *w,
 		taiko_config_gain_compander(codec, comp, false);
 		write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN, false);
 		write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_R_GAIN, false);
+        return 0;
 	}
 	
 	if (!taiko->comp_enabled[comp])
