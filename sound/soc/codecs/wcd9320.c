@@ -594,7 +594,6 @@ unsigned int anc_delay = 0;
 static u32 hph_autochopper;
 static unsigned int chopper_bypass;
 static unsigned int bypass_static_pa;
-static unsigned int wavegen_override;
 
 #define PA_STAT_ON 8
 #define PA_STAT_OFF 4
@@ -739,21 +738,6 @@ static void update_speaker_gain(void)
 	lock_sound_control(&sound_control_codec_ptr->core_res, 1);
 	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_CDC_RX7_VOL_CTL_B2_CTL, speaker_cached_gain);
 	lock_sound_control(&sound_control_codec_ptr->core_res, 0);
-}
-
-static void update_wavegen(void)
-{
-        if (wavegen_override) {
-    		/* Wavegen to 20 msec */
-    		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_CNP_WG_CTL, 0xDB);
-    		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_CNP_WG_TIME, 0x58);
-    		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_BIAS_WG_OCP, 0x1A);
-        } else {
-    		/* Wavegen to 5 msec */
-    		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_CNP_WG_CTL, 0xDA);
-    		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_CNP_WG_TIME, 0x15);
-    		wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, TAIKO_A_RX_HPH_BIAS_WG_OCP, 0x2A);
-        }
 }
 
 /*
@@ -1307,19 +1291,11 @@ static int taiko_set_compander(struct snd_kcontrol *kcontrol,
 	int value = ucontrol->value.integer.value[0];
 
 	if (hph_pa_enabled && comp == COMPANDER_1) {
-		/* Wavegen to 20 msec */
 		taiko->comp_enabled[comp] = 0;
-        if (wavegen_override) {
-    		/* Wavegen to 20 msec */
-    		snd_soc_write(codec, TAIKO_A_RX_HPH_CNP_WG_CTL, 0xDB);
-    		snd_soc_write(codec, TAIKO_A_RX_HPH_CNP_WG_TIME, 0x58);
-    		snd_soc_write(codec, TAIKO_A_RX_HPH_BIAS_WG_OCP, 0x1A);
-        } else {
-    		/* Wavegen to 5 msec */
-    		snd_soc_write(codec, TAIKO_A_RX_HPH_CNP_WG_CTL, 0xDA);
-    		snd_soc_write(codec, TAIKO_A_RX_HPH_CNP_WG_TIME, 0x15);
-    		snd_soc_write(codec, TAIKO_A_RX_HPH_BIAS_WG_OCP, 0x2A);
-        }
+   		/* Wavegen to 5 msec */
+   		snd_soc_write(codec, TAIKO_A_RX_HPH_CNP_WG_CTL, 0xDA);
+   		snd_soc_write(codec, TAIKO_A_RX_HPH_CNP_WG_TIME, 0x15);
+   		snd_soc_write(codec, TAIKO_A_RX_HPH_BIAS_WG_OCP, 0x2A);
 
 		/* Disable CHOPPER block */
 		snd_soc_update_bits(codec,
@@ -1341,18 +1317,10 @@ static int taiko_set_compander(struct snd_kcontrol *kcontrol,
 
 	if (comp == COMPANDER_1 &&
 			taiko->comp_enabled[comp] == 1) {
-
-        if (wavegen_override) {
-    		/* Wavegen to 20 msec */
-    		snd_soc_write(codec, TAIKO_A_RX_HPH_CNP_WG_CTL, 0xDB);
-    		snd_soc_write(codec, TAIKO_A_RX_HPH_CNP_WG_TIME, 0x58);
-    		snd_soc_write(codec, TAIKO_A_RX_HPH_BIAS_WG_OCP, 0x1A);
-        } else {
-    		/* Wavegen to 5 msec */
-    		snd_soc_write(codec, TAIKO_A_RX_HPH_CNP_WG_CTL, 0xDA);
-    		snd_soc_write(codec, TAIKO_A_RX_HPH_CNP_WG_TIME, 0x15);
-    		snd_soc_write(codec, TAIKO_A_RX_HPH_BIAS_WG_OCP, 0x2A);
-        }
+   		/* Wavegen to 5 msec */
+   		snd_soc_write(codec, TAIKO_A_RX_HPH_CNP_WG_CTL, 0xDA);
+   		snd_soc_write(codec, TAIKO_A_RX_HPH_CNP_WG_TIME, 0x15);
+   		snd_soc_write(codec, TAIKO_A_RX_HPH_BIAS_WG_OCP, 0x2A);
 		/* Enable Chopper */
 		if (!chopper_bypass)
 			snd_soc_update_bits(codec,
@@ -7932,30 +7900,6 @@ static ssize_t autochopper_raw_show(struct kobject *kobj,
 	return sprintf(buf, "Autochopper:%d\n", regread(TAIKO_A_RX_HPH_AUTO_CHOP));
 }
 
-static ssize_t wavegen_override_show(struct kobject *kobj,
-		struct kobj_attribute *attr, char *buf)
-{
-	return sprintf(buf, "%d\n", wavegen_override);
-}
-
-static ssize_t wavegen_override_store(struct kobject *kobj,
-			   struct kobj_attribute *attr, const char *buf, size_t count) {
-	int uval;
-
-	sscanf(buf, "%d", &uval);
-
-	if (uval < 0)
-		uval = 0;
-	if (uval > 1)
-		uval = 1;
-
-	wavegen_override = uval;
-    if (hpwidget()) {
-        update_wavegen();
-    }
-	return count;
-}
-
 static ssize_t autochopper_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf)
 {
@@ -8675,11 +8619,6 @@ static struct kobj_attribute autochopper_raw_attribute =
 		autochopper_raw_show,
 		NULL);
 
-static struct kobj_attribute wavegen_override_attribute =
-	__ATTR(wavegen_override, 0644,
-		wavegen_override_show,
-		wavegen_override_store);
-
 static struct kobj_attribute autochopper_attribute =
 	__ATTR(autochopper, 0644,
 		autochopper_show,
@@ -8811,7 +8750,6 @@ static struct attribute *sound_control_attrs[] = {
 		&hph_status_attribute.attr,
 		&chopper_attribute.attr,
 		&autochopper_raw_attribute.attr,
-        &wavegen_override_attribute.attr,
 		&autochopper_attribute.attr,
 		&chopper_bypass_attribute.attr,
 		&bypass_static_pa_attribute.attr,
