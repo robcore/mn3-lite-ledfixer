@@ -256,6 +256,12 @@ then
     do 
         printf "%s\n" $LINE@n;
     done < /sys/kernel/sound_control/hph_status
+elif [ "$1" = "class_h_control" ]
+then
+    while read -r LINE; 
+    do 
+        printf "%s\n" $LINE@n;
+    done < /sys/kernel/sound_control/class_h_control
 elif [ "$1" = "autochopper_raw" ]
 then
     while read -r LINE; 
