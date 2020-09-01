@@ -8049,6 +8049,14 @@ static ssize_t bypass_static_pa_store(struct kobject *kobj,
 	bypass_static_pa = uval;
 	return count;
 }
+/*
+		snd_soc_update_bits(codec, TABLA_A_CDC_RX1_B6_CTL,
+				    0x02, gain_offset.half_db_gain);
+TABLA_A_CDC_RX1_B6_CTL
+*/
+static ssize_t hph_halfdb_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+}
 
 static ssize_t headphone_gain_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
