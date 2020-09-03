@@ -688,29 +688,24 @@ static void update_crossfeed_gain(void)
 }
 #endif
 
-static int read_hph_poweramp_gain(unsigned short reg, bool cached)
+static int read_hph_poweramp_gain(unsigned short reg)
 {
 	int rawval, outval;
 
-	if (reg != WCD9XXX_A_RX_HPH_L_GAIN && reg != WCD9XXX_A_RX_HPH_R_GAIN)
-		return -EINVAL;
-
 	if (reg == WCD9XXX_A_RX_HPH_L_GAIN) {
-		if (cached) {
-			return hphl_pa_cached_gain;
-		} else {
-			rawval = (regread(WCD9XXX_A_RX_HPH_L_GAIN) >> HPH_PA_SHIFT) & hph_poweramp_mask;
-			outval = HPH_RX_GAIN_MAX - rawval;
-			return outval;
-		}
+        if (!hp_widget())
+            return hphl_pa_cached_gain;
+		rawval = (regread(WCD9XXX_A_RX_HPH_L_GAIN) >> HPH_PA_SHIFT) & hph_poweramp_mask;
+		outval = HPH_RX_GAIN_MAX - rawval;
+        if (!hp_widget() || !outval)
+            return hphl_pa_cached_gain;
+		return outval;
 	} else if (reg == WCD9XXX_A_RX_HPH_R_GAIN) {
-		if (cached) {
-			return hphr_pa_cached_gain;
-		} else {
-			rawval = (regread(WCD9XXX_A_RX_HPH_R_GAIN) >> HPH_PA_SHIFT) & hph_poweramp_mask;
-			outval = HPH_RX_GAIN_MAX - rawval;
-			return outval;
-		}
+		rawval = (regread(WCD9XXX_A_RX_HPH_R_GAIN) >> HPH_PA_SHIFT) & hph_poweramp_mask;
+		outval = HPH_RX_GAIN_MAX - rawval;
+        if (!hp_widget() || !outval)
+            return hphr_pa_cached_gain;
+		return outval;
 	}
 	return -EINVAL;
 }
@@ -719,9 +714,6 @@ static void write_hph_poweramp_gain(unsigned short reg, bool mute)
 {
 	unsigned int val, val_mask;
 	unsigned int local_cached_gain;
-
-	if (!hph_pa_enabled)
-		return;
 
 	if (reg != WCD9XXX_A_RX_HPH_L_GAIN &&
 		reg != WCD9XXX_A_RX_HPH_R_GAIN)
@@ -735,7 +727,11 @@ static void write_hph_poweramp_gain(unsigned short reg, bool mute)
 	else if (reg == WCD9XXX_A_RX_HPH_R_GAIN)
 			local_cached_gain = hphr_pa_cached_gain;
 
-	mx_update_bits(reg, 32, 32);
+	if (hph_pa_enabled)
+        mx_update_bits(reg, 32, 32);
+    else
+        mx_update_bits(reg, 32, 0);
+
 	val = local_cached_gain & hph_poweramp_mask;
 	val = HPH_RX_GAIN_MAX - val;
 	val_mask = hph_poweramp_mask << HPH_PA_SHIFT;
@@ -3780,8 +3776,7 @@ static int taiko_hphl_dac_event(struct snd_soc_dapm_widget *w,
 	case SND_SOC_DAPM_POST_PMD:
 		snd_soc_update_bits(codec, TAIKO_A_CDC_CLK_RDAC_CLK_EN_CTL,
 							0x02, 0x00);
-		if (hph_pa_enabled)
-			write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN, true);
+		write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN, true);
 		if (!high_perf_mode) {
 			wcd9xxx_clsh_fsm(codec, &taiko_p->clsh_d,
 						 WCD9XXX_CLSH_STATE_HPHL,
@@ -3836,8 +3831,7 @@ static int taiko_hphr_dac_event(struct snd_soc_dapm_widget *w,
 		snd_soc_update_bits(codec, TAIKO_A_CDC_CLK_RDAC_CLK_EN_CTL,
 							0x04, 0x00);
 		snd_soc_update_bits(codec, w->reg, 0x40, 0x00);
-		if (hph_pa_enabled)
-			write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_R_GAIN, true);
+		write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_R_GAIN, true);
 		if (!high_perf_mode) {
 			wcd9xxx_clsh_fsm(codec, &taiko_p->clsh_d,
 						 WCD9XXX_CLSH_STATE_HPHR,
@@ -8250,8 +8244,8 @@ static ssize_t hph_poweramp_gain_show(struct kobject *kobj,
 {
 	int leftval, rightval;
 
-   	leftval = read_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN, true);
-    rightval = read_hph_poweramp_gain(WCD9XXX_A_RX_HPH_R_GAIN, true);
+   	leftval = read_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN);
+    rightval = read_hph_poweramp_gain(WCD9XXX_A_RX_HPH_R_GAIN);
 
 	return sprintf(buf, "%d %d\n", leftval, rightval);
 }
