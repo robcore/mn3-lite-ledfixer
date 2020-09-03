@@ -3924,6 +3924,7 @@ fail_cmd:
 
 int q6asm_get_sa_ep(struct audio_client *ac)
 {
+#if 0
 	int sz = 0;
 	int rc = 0;
 	struct asm_stream_cmd_get_pp_params_v2 cmd;
@@ -3953,6 +3954,9 @@ int q6asm_get_sa_ep(struct audio_client *ac)
 
 fail_cmd:
 	return rc;
+#else
+    return 0;
+#endif
 }
 
 int q6asm_equalizer(struct audio_client *ac, void *eq_p)
