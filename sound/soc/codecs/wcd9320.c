@@ -693,17 +693,15 @@ static int read_hph_poweramp_gain(unsigned short reg)
 	int rawval, outval;
 
 	if (reg == WCD9XXX_A_RX_HPH_L_GAIN) {
-        if (!hp_widget())
-            return hphl_pa_cached_gain;
 		rawval = (regread(WCD9XXX_A_RX_HPH_L_GAIN) >> HPH_PA_SHIFT) & hph_poweramp_mask;
 		outval = HPH_RX_GAIN_MAX - rawval;
-        if (!hp_widget() || !outval)
+        if (!hpwidget() || !outval)
             return hphl_pa_cached_gain;
 		return outval;
 	} else if (reg == WCD9XXX_A_RX_HPH_R_GAIN) {
 		rawval = (regread(WCD9XXX_A_RX_HPH_R_GAIN) >> HPH_PA_SHIFT) & hph_poweramp_mask;
 		outval = HPH_RX_GAIN_MAX - rawval;
-        if (!hp_widget() || !outval)
+        if (!hpwidget() || !outval)
             return hphr_pa_cached_gain;
 		return outval;
 	}
