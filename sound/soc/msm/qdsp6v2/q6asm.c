@@ -3565,6 +3565,8 @@ int q6asm_set_volume(struct audio_client *ac, int volume)
 		goto fail_cmd;
 	}
 
+    pr_info("%s: Setting Volume to: %d\n", __func__, volume);
+
 	sz = sizeof(struct asm_volume_ctrl_master_gain);
 	q6asm_add_hdr_async(ac, &vol.hdr, sz, TRUE);
 	atomic_set(&ac->cmd_state, 1);
@@ -3906,7 +3908,7 @@ int q6asm_set_sa_ep(struct audio_client *ac,int *param)
 	cmd.data.param_size = cmd.param.data_payload_size - sizeof(cmd.data);
 	cmd.data.reserved = 0;
 
-	/* SA EP paramerters */
+	/* SA EP parameters */
 	cmd.enable = param[0];
 	cmd.score = param[1];
 	printk("%s: %d %d\n", __func__, cmd.enable, cmd.score);
@@ -3922,12 +3924,11 @@ fail_cmd:
 
 int q6asm_get_sa_ep(struct audio_client *ac)
 {
-#if 0
 	int sz = 0;
-	int rc  = 0;
+	int rc = 0;
 	struct asm_stream_cmd_get_pp_params_v2 cmd;
 
-	if(ac == NULL) {
+	if (ac == NULL) {
 		printk("%s: audio client is null\n", __func__);
 		return -1;
 	}
@@ -3952,9 +3953,6 @@ int q6asm_get_sa_ep(struct audio_client *ac)
 
 fail_cmd:
 	return rc;
-#else
-	return 0;
-#endif
 }
 
 int q6asm_equalizer(struct audio_client *ac, void *eq_p)
