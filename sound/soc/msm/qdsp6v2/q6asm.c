@@ -3467,6 +3467,7 @@ int q6asm_set_lrgain(struct audio_client *ac, int left_gain, int right_gain)
 		goto fail_cmd;
 	}
 
+    pr_info("%s: Setting Gains. Left: %d Right:%d\n", __func__, left_gain, right_gain);
 	sz = sizeof(struct asm_volume_ctrl_lr_chan_gain);
 	q6asm_add_hdr_async(ac, &lrgain.hdr, sz, TRUE);
 	atomic_set(&ac->cmd_state, 1);
