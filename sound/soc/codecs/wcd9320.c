@@ -77,9 +77,8 @@
 #define TAIKO_WG_TIME_FACTOR_US	240
 #define ZDET_RAMP_WAIT_US 18000
 
-#define regread(reg) wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, reg)
-#define regwrite(reg, value) wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, reg, value);
-
+static struct wcd9xxx *sound_control_codec_ptr;
+static struct snd_soc_codec *direct_codec;
 static atomic_t kp_taiko_priv;
 
 static struct afe_param_slimbus_slave_port_cfg taiko_slimbus_slave_port_cfg = {
@@ -570,11 +569,6 @@ static u8 speaker_hpf_bypass;
 #define HPH_RX_GAIN_MAX 20
 #define HPH_PA_SHIFT 0
 #define HPH_PA_GAIN_MASK GENMASK(4, 0)
-static struct wcd9xxx *sound_control_codec_ptr;
-static struct snd_soc_codec *direct_codec;
-static int taiko_write(struct snd_soc_codec *codec, unsigned int reg,
-	unsigned int value);
-static unsigned int wcd9xxx_hw_revision;
 
 static unsigned int hph_pa_enabled = 0;
 static u8 hphl_pa_cached_gain = 20;
@@ -589,7 +583,7 @@ static unsigned int compander_gain_lock;
 static unsigned int compander_gain_boost;
 static u32 sc_peak_det_timeout = 15;
 static u32 sc_rms_meter_div_fact = 15;
-static u32 sc_rms_meter_resamp_fact = 240;
+static u32 sc_rms_meter_resamp_fact = 255;
 static u8 hph_pa_bias = 0x7A;
 unsigned int anc_delay = 0;
 static u32 hph_autochopper;
@@ -603,23 +597,15 @@ static bool interpolator_enabled;
 #define PA_STAT_ON 8
 #define PA_STAT_OFF 4
 
-static bool hpwidget(void)
+static int regread(unsigned short reg)
 {
-    return ((regread(TAIKO_A_RX_HPH_L_STATUS) == PA_STAT_ON &&
-            regread(TAIKO_A_RX_HPH_R_STATUS) == PA_STAT_ON) ||
-			(hpwidget_left && hpwidget_right));
+    return wcd9xxx_reg_read(&sound_control_codec_ptr->core_res, reg);
 }
 
-static bool poweramp_active(void)
+static void regwrite(unsigned short reg, u8 value)
 {
-	return (hph_pa_enabled && hpwidget());
-}
-
-static bool hpwidget_any(void)
-{
-    return (regread(TAIKO_A_RX_HPH_L_STATUS) == PA_STAT_ON ||
-            regread(TAIKO_A_RX_HPH_R_STATUS) == PA_STAT_ON ||
-			hpwidget_left || hpwidget_right);
+    if (value != regread(reg))
+        wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, reg, value);
 }
 
 static void mx_update_bits(unsigned short reg,
@@ -640,7 +626,27 @@ static void mx_update_bits_locked(unsigned short reg,
 	mutex_unlock(&direct_codec->mutex);
 }
 
-static void update_headphone_gain(void) {
+static bool hpwidget(void)
+{
+    return ((regread(TAIKO_A_RX_HPH_L_STATUS) == PA_STAT_ON &&
+            regread(TAIKO_A_RX_HPH_R_STATUS) == PA_STAT_ON) ||
+			(hpwidget_left && hpwidget_right));
+}
+
+static bool poweramp_active(void)
+{
+	return (hph_pa_enabled && hpwidget());
+}
+
+static bool hpwidget_any(void)
+{
+    return (regread(TAIKO_A_RX_HPH_L_STATUS) == PA_STAT_ON ||
+            regread(TAIKO_A_RX_HPH_R_STATUS) == PA_STAT_ON ||
+			hpwidget_left || hpwidget_right);
+}
+
+static void update_headphone_gain(void)
+{
 	if (!hpwidget())
 		return;
 	lock_sound_control(&sound_control_codec_ptr->core_res, 1);
@@ -654,7 +660,8 @@ static void update_headphone_gain(void) {
 	SOC_SINGLE_S8_TLV("IIR2 INP1 Volume", TAIKO_A_CDC_IIR2_GAIN_B1_CTL, -84,
 		40, digital_gain),
 */
-static void update_iir_gain(void) {
+static void update_iir_gain(void)
+{
 	if (!hpwidget())
 		return;
 	lock_sound_control(&sound_control_codec_ptr->core_res, 1);
@@ -663,7 +670,8 @@ static void update_iir_gain(void) {
 	lock_sound_control(&sound_control_codec_ptr->core_res, 0);
 }
 #if 0
-static void update_crossfeed_gain(void) {
+static void update_crossfeed_gain(void)
+{
 	if (!hpwidget())
 		return;
 	lock_sound_control(&sound_control_codec_ptr->core_res, 1);
@@ -940,9 +948,9 @@ static void update_interpolator(void)
         return;
 
     if (interpolator_enabled) {
-    	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res,
-    			TAIKO_A_CDC_COMP1_B3_CTL,
-    			sc_rms_meter_resamp_fact);
+        	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res,
+        			TAIKO_A_CDC_COMP1_B3_CTL,
+        			sc_rms_meter_resamp_fact);
     	mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL,
     		    0xF0, sc_rms_meter_div_fact << 4);
     	mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL,
@@ -1442,6 +1450,7 @@ static enum wcd9xxx_buck_volt taiko_codec_get_buck_mv(
 			break;
 		}
 	}
+    pr_info("%s: Buck Voltage: %d\n", __func__, buck_volt);
 	return buck_volt;
 }
 
@@ -7968,7 +7977,8 @@ static ssize_t wavegen_override_show(struct kobject *kobj,
 }
 
 static ssize_t wavegen_override_store(struct kobject *kobj,
-			   struct kobj_attribute *attr, const char *buf, size_t count) {
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
 	int uval;
 
 	sscanf(buf, "%d", &uval);
@@ -7992,7 +8002,8 @@ static ssize_t autochopper_show(struct kobject *kobj,
 }
 
 static ssize_t autochopper_store(struct kobject *kobj,
-			   struct kobj_attribute *attr, const char *buf, size_t count) {
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
 	int uval;
 
 	sscanf(buf, "%d", &uval);
@@ -8014,7 +8025,8 @@ static ssize_t chopper_bypass_show(struct kobject *kobj,
 }
 
 static ssize_t chopper_bypass_store(struct kobject *kobj,
-			   struct kobj_attribute *attr, const char *buf, size_t count) {
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
 	int uval;
 
 	sscanf(buf, "%d", &uval);
@@ -8036,7 +8048,8 @@ static ssize_t bypass_static_pa_show(struct kobject *kobj,
 }
 
 static ssize_t bypass_static_pa_store(struct kobject *kobj,
-			   struct kobj_attribute *attr, const char *buf, size_t count) {
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
 	int uval;
 
 	sscanf(buf, "%d", &uval);
@@ -8128,7 +8141,8 @@ static ssize_t headphone_gain_store(struct kobject *kobj, struct kobj_attribute 
 */
 
 static ssize_t iir1_gain_show(struct kobject *kobj,
-		struct kobj_attribute *attr, char *buf) {
+		struct kobj_attribute *attr, char *buf)
+{
 	int iirval, tempval;
 
 	iirval = show_sound_value(TAIKO_A_CDC_IIR1_GAIN_B1_CTL);
@@ -8145,7 +8159,8 @@ static ssize_t iir1_gain_show(struct kobject *kobj,
 }
 
 static ssize_t iir1_gain_store(struct kobject *kobj,
-			   struct kobj_attribute *attr, const char *buf, size_t count) {
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
 	int iirinput;
 
 	sscanf(buf, "%d", &iirinput);
@@ -8163,7 +8178,8 @@ static ssize_t iir1_gain_store(struct kobject *kobj,
 }
 
 static ssize_t iir2_gain_show(struct kobject *kobj,
-		struct kobj_attribute *attr, char *buf) {
+		struct kobj_attribute *attr, char *buf)
+{
 	int iirval, tempval;
 
 	iirval = show_sound_value(TAIKO_A_CDC_IIR2_GAIN_B1_CTL);
@@ -8180,7 +8196,8 @@ static ssize_t iir2_gain_show(struct kobject *kobj,
 }
 
 static ssize_t iir2_gain_store(struct kobject *kobj,
-			   struct kobj_attribute *attr, const char *buf, size_t count) {
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
 	int iirinput;
 
 	sscanf(buf, "%d", &iirinput);
@@ -8272,7 +8289,8 @@ static ssize_t hph_poweramp_gain_raw_store(struct kobject *kobj,
 }
 
 static ssize_t speaker_gain_show(struct kobject *kobj,
-		struct kobj_attribute *attr, char *buf) {
+		struct kobj_attribute *attr, char *buf)
+{
 	int spkval, tempval;
 
 	spkval = show_sound_value(TAIKO_A_CDC_RX7_VOL_CTL_B2_CTL);
@@ -8289,7 +8307,8 @@ static ssize_t speaker_gain_show(struct kobject *kobj,
 }
 
 static ssize_t speaker_gain_store(struct kobject *kobj,
-			   struct kobj_attribute *attr, const char *buf, size_t count) {
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
 	int spkinput;
 
 	sscanf(buf, "%d", &spkinput);
@@ -8307,12 +8326,14 @@ static ssize_t speaker_gain_store(struct kobject *kobj,
 }
 
 static ssize_t uhqa_mode_show(struct kobject *kobj,
-		struct kobj_attribute *attr, char *buf) {
+		struct kobj_attribute *attr, char *buf)
+{
 	return sprintf(buf, "%u\n", uhqa_mode);
 }
 
 static ssize_t uhqa_mode_store(struct kobject *kobj,
-			   struct kobj_attribute *attr, const char *buf, size_t count) {
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
 	int uval;
 
 	sscanf(buf, "%d", &uval);
@@ -8330,12 +8351,14 @@ static ssize_t uhqa_mode_store(struct kobject *kobj,
 }
 
 static ssize_t high_perf_mode_show(struct kobject *kobj,
-		struct kobj_attribute *attr, char *buf) {
+		struct kobj_attribute *attr, char *buf)
+{
 	return sprintf(buf, "%u\n", high_perf_mode);
 }
 
 static ssize_t high_perf_mode_store(struct kobject *kobj,
-			   struct kobj_attribute *attr, const char *buf, size_t count) {
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
 	int uval;
 
 	sscanf(buf, "%d", &uval);
@@ -8353,12 +8376,14 @@ static ssize_t high_perf_mode_store(struct kobject *kobj,
 }
 
 static ssize_t interpolator_boost_show(struct kobject *kobj,
-		struct kobj_attribute *attr, char *buf) {
+		struct kobj_attribute *attr, char *buf)
+{
 	return sprintf(buf, "%u\n", interpolator_boost);
 }
 
 static ssize_t interpolator_boost_store(struct kobject *kobj,
-			   struct kobj_attribute *attr, const char *buf, size_t count) {
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
 	int uval;
 
 	sscanf(buf, "%d", &uval);
@@ -8373,12 +8398,14 @@ static ssize_t interpolator_boost_store(struct kobject *kobj,
 }
 
 static ssize_t hph_pa_enabled_show(struct kobject *kobj,
-		struct kobj_attribute *attr, char *buf) {
+		struct kobj_attribute *attr, char *buf)
+{
 	return sprintf(buf, "%u\n", hph_pa_enabled);
 }
 
 static ssize_t hph_pa_enabled_store(struct kobject *kobj,
-			   struct kobj_attribute *attr, const char *buf, size_t count) {
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
 	int uval;
 
 	sscanf(buf, "%d", &uval);
@@ -8396,12 +8423,14 @@ static ssize_t hph_pa_enabled_store(struct kobject *kobj,
 }
 
 static ssize_t compander_gain_lock_show(struct kobject *kobj,
-		struct kobj_attribute *attr, char *buf) {
+		struct kobj_attribute *attr, char *buf)
+{
 	return sprintf(buf, "%u\n", compander_gain_lock);
 }
 
 static ssize_t compander_gain_lock_store(struct kobject *kobj,
-			   struct kobj_attribute *attr, const char *buf, size_t count) {
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
 	int uval;
 
 	sscanf(buf, "%d", &uval);
@@ -8416,12 +8445,14 @@ static ssize_t compander_gain_lock_store(struct kobject *kobj,
 }
 
 static ssize_t compander_gain_boost_show(struct kobject *kobj,
-		struct kobj_attribute *attr, char *buf) {
+		struct kobj_attribute *attr, char *buf)
+{
 	return sprintf(buf, "%u\n", compander_gain_boost);
 }
 
 static ssize_t compander_gain_boost_store(struct kobject *kobj,
-			   struct kobj_attribute *attr, const char *buf, size_t count) {
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
 	int uval;
 
 	sscanf(buf, "%d", &uval);
@@ -8481,12 +8512,14 @@ static ssize_t headphone_hpf_cutoff_store(struct kobject *kobj,
 */
 
 static ssize_t speaker_hpf_cutoff_show(struct kobject *kobj,
-		struct kobj_attribute *attr, char *buf) {
+		struct kobj_attribute *attr, char *buf)
+{
 	return sprintf(buf, "%u\n", read_hpf_cutoff(TAIKO_A_CDC_RX7_B4_CTL));
 }
 
 static ssize_t speaker_hpf_cutoff_store(struct kobject *kobj,
-			   struct kobj_attribute *attr, const char *buf, size_t count) {
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
 	int uval;
 
 	sscanf(buf, "%d", &uval);
@@ -8559,12 +8592,14 @@ static ssize_t headphone_hpf_bypass_store(struct kobject *kobj,
 }
 
 static ssize_t speaker_hpf_bypass_show(struct kobject *kobj,
-		struct kobj_attribute *attr, char *buf) {
+		struct kobj_attribute *attr, char *buf)
+{
 	return sprintf(buf, "%u\n", read_hpf_bypass(TAIKO_A_CDC_RX7_B5_CTL));
 }
 
 static ssize_t speaker_hpf_bypass_store(struct kobject *kobj,
-			   struct kobj_attribute *attr, const char *buf, size_t count) {
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
 	int uval;
 
 	sscanf(buf, "%d", &uval);
@@ -8582,12 +8617,14 @@ static ssize_t speaker_hpf_bypass_store(struct kobject *kobj,
 }
 
 static ssize_t peak_det_timeout_show(struct kobject *kobj,
-		struct kobj_attribute *attr, char *buf) {
+		struct kobj_attribute *attr, char *buf)
+{
 	return sprintf(buf, "%u\n", sc_peak_det_timeout);
 }
 
 static ssize_t peak_det_timeout_store(struct kobject *kobj,
-			   struct kobj_attribute *attr, const char *buf, size_t count) {
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
 	int uval;
 
 	sscanf(buf, "%d", &uval);
@@ -8604,12 +8641,14 @@ static ssize_t peak_det_timeout_store(struct kobject *kobj,
 }
 
 static ssize_t rms_meter_div_fact_show(struct kobject *kobj,
-		struct kobj_attribute *attr, char *buf) {
+		struct kobj_attribute *attr, char *buf)
+{
 	return sprintf(buf, "%u\n", sc_rms_meter_div_fact);
 }
 
 static ssize_t rms_meter_div_fact_store(struct kobject *kobj,
-			   struct kobj_attribute *attr, const char *buf, size_t count) {
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
 	int uval;
 
 	sscanf(buf, "%d", &uval);
@@ -8626,22 +8665,24 @@ static ssize_t rms_meter_div_fact_store(struct kobject *kobj,
 }
 
 static ssize_t rms_meter_resamp_fact_show(struct kobject *kobj,
-		struct kobj_attribute *attr, char *buf) {
-	return sprintf(buf, "%u\n", sc_rms_meter_resamp_fact >> 4);
+		struct kobj_attribute *attr, char *buf)
+{
+    return sprintf(buf, "%u\n", sc_rms_meter_resamp_fact);
 }
 
 static ssize_t rms_meter_resamp_fact_store(struct kobject *kobj,
-			   struct kobj_attribute *attr, const char *buf, size_t count) {
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
 	int uval;
 
 	sscanf(buf, "%d", &uval);
 
 	if (uval < 1)
 		uval = 1;
-	if (uval > 15)
-		uval = 15;
+	if (uval > 255)
+		uval = 255;
 
-	sc_rms_meter_resamp_fact = uval << 4;
+   	sc_rms_meter_resamp_fact = uval;
     update_interpolator();
 	return count;
 }
@@ -8673,12 +8714,14 @@ static ssize_t hph_pa_bias_store(struct kobject *kobj,
 }
 
 static ssize_t anc_delay_show(struct kobject *kobj,
-		struct kobj_attribute *attr, char *buf) {
+		struct kobj_attribute *attr, char *buf)
+{
 	return sprintf(buf, "%u\n", anc_delay);
 }
 
 static ssize_t anc_delay_store(struct kobject *kobj,
-			   struct kobj_attribute *attr, const char *buf, size_t count) {
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
 	int uval;
 
 	sscanf(buf, "%d", &uval);
@@ -8944,7 +8987,6 @@ static int taiko_codec_probe(struct snd_soc_codec *codec)
 	wcd9xxx_clsh_init(&taiko->clsh_d, &taiko->resmgr);
 
 	rco_clk_rate = TAIKO_MCLK_CLK_9P6MHZ;
-	wcd9xxx_hw_revision = 2;
 #if !defined(CONFIG_SAMSUNG_JACK) && !defined(CONFIG_MUIC_DET_JACK)
 	/* init and start mbhc */
 	ret = wcd9xxx_mbhc_init(&taiko->mbhc, &taiko->resmgr, codec,
