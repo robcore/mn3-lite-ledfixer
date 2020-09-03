@@ -8920,6 +8920,11 @@ static struct kobj_attribute hph_pa_enabled_attribute =
 		hph_pa_enabled_show,
 		hph_pa_enabled_store);
 
+static struct kobj_attribute force_hph_pa_attribute =
+	__ATTR(force_hph_pa, 0644,
+		force_hph_pa_show,
+		force_hph_pa_store);
+
 static struct kobj_attribute compander_gain_lock_attribute =
 	__ATTR(compander_gain_lock, 0644,
 		compander_gain_lock_show,
@@ -9003,6 +9008,7 @@ static struct attribute *sound_control_attrs[] = {
 		&high_perf_mode_attribute.attr,
 		&interpolator_boost_attribute.attr,
 		&hph_pa_enabled_attribute.attr,
+		&force_hph_pa_attribute.attr,
 		&compander_gain_lock_attribute.attr,
 		&compander_gain_boost_attribute.attr,
 		&anc_delay_attribute.attr,
