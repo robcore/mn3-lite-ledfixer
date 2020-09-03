@@ -562,8 +562,8 @@ u8 crossright_cached_gain = 241; /* 241 = -15 */
 static u8 hphl_hpf_cutoff;
 static u8 hphr_hpf_cutoff;
 static u8 speaker_hpf_cutoff;
-static u8 hphl_hpf_bypass;
-static u8 hphr_hpf_bypass;
+static u8 hphl_hpf_bypass = 1;
+static u8 hphr_hpf_bypass = 1;
 static u8 speaker_hpf_bypass;
 
 #define HPH_RX_GAIN_MAX 20
@@ -571,7 +571,6 @@ static u8 speaker_hpf_bypass;
 #define HPH_PA_GAIN_MASK GENMASK(4, 0)
 
 static unsigned int hph_pa_enabled = 0;
-static unsigned int force_hph_pa = 0;
 static u8 hphl_pa_cached_gain = 20;
 static u8 hphr_pa_cached_gain = 20;
 static unsigned int hph_poweramp_mask = 31; /* (1 << fls(max)) - 1 */
@@ -721,7 +720,7 @@ static void write_hph_poweramp_gain(unsigned short reg, bool mute)
 	unsigned int val, val_mask;
 	unsigned int local_cached_gain;
 
-	if (!hph_pa_enabled && !force_hph_pa)
+	if (!hph_pa_enabled)
 		return;
 
 	if (reg != WCD9XXX_A_RX_HPH_L_GAIN &&
@@ -1376,10 +1375,8 @@ static int taiko_set_compander(struct snd_kcontrol *kcontrol,
 		snd_soc_write(codec, TAIKO_A_NCP_DTEST, 0x20);
 		pr_debug("%s: Enabled Chopper and set wavegen to 5 msec\n",
 				__func__);
-        if (force_hph_pa) {
-			write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN, false);
-			write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_R_GAIN, false);
-        }
+		write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN, false);
+    	write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_R_GAIN, false);
 	} else if (comp == COMPANDER_1 &&
 			taiko->comp_enabled[comp] == 0) {
 		/* Wavegen to 20 msec */
@@ -1394,10 +1391,8 @@ static int taiko_set_compander(struct snd_kcontrol *kcontrol,
 		snd_soc_write(codec, TAIKO_A_NCP_DTEST, 0x10);
 		pr_debug("%s: Disabled Chopper and set wavegen to 20 msec\n",
 				__func__);
-        if (force_hph_pa) {
-			write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN, true);
-			write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_R_GAIN, true);
-        }
+		write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN, true);
+		write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_R_GAIN, true);
 	}
 	return 0;
 }
@@ -1413,20 +1408,10 @@ static int taiko_config_gain_compander(struct snd_soc_codec *codec,
 				    1 << 2, !enable << 2);
 		break;
 	case COMPANDER_1:
-        if (force_hph_pa) {
-            if (enable) {
-    			write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN, false);
-        		write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_R_GAIN, false);
-            } else {
-                write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN, true);
-        		write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_R_GAIN, true);
-            }
-        } else {
-    		snd_soc_update_bits(codec, WCD9XXX_A_RX_HPH_L_GAIN,
-    				    1 << 5, !enable << 5);
-    		snd_soc_update_bits(codec, WCD9XXX_A_RX_HPH_R_GAIN,
-    				    1 << 5, !enable << 5);
-        }
+   		snd_soc_update_bits(codec, WCD9XXX_A_RX_HPH_L_GAIN,
+   				    1 << 5, !enable << 5);
+   		snd_soc_update_bits(codec, WCD9XXX_A_RX_HPH_R_GAIN,
+   				    1 << 5, !enable << 5);
 		break;
 	case COMPANDER_2:
 		snd_soc_update_bits(codec, TAIKO_A_RX_LINE_1_GAIN,
@@ -1612,10 +1597,6 @@ static int taiko_config_compander(struct snd_soc_dapm_widget *w,
                                 0x0F, comp_params->peak_det_timeout);
 		}
         update_interpolator();
-        if (force_hph_pa) {
-			write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN, false);
-			write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_R_GAIN, false);
-        }
 		break;
 	case SND_SOC_DAPM_PRE_PMD:
         interpolator_enabled = false;
@@ -1640,10 +1621,8 @@ static int taiko_config_compander(struct snd_soc_dapm_widget *w,
 				    mask << comp_shift[comp], 0);
 
 		/* Set gain source to register */
-		if (hph_pa_enabled || force_hph_pa) {
-			write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN, true);
-			write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_R_GAIN, true);
-		}
+		write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN, true);
+		write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_R_GAIN, true);
 		taiko_config_gain_compander(codec, comp, false);
 		break;
 	default:
@@ -3792,7 +3771,7 @@ static int taiko_hphl_dac_event(struct snd_soc_dapm_widget *w,
 		snd_soc_update_bits(codec, TAIKO_A_CDC_RX1_B4_CTL, 0x30, 0x10);
 		write_hpf_cutoff(TAIKO_A_CDC_RX1_B4_CTL);
 		write_hpf_bypass(TAIKO_A_CDC_RX1_B5_CTL);
-		if (hph_pa_enabled || force_hph_pa)
+		if (hph_pa_enabled)
 			write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN, false);
 		break;
 	case SND_SOC_DAPM_PRE_PMD:
@@ -3802,7 +3781,7 @@ static int taiko_hphl_dac_event(struct snd_soc_dapm_widget *w,
 	case SND_SOC_DAPM_POST_PMD:
 		snd_soc_update_bits(codec, TAIKO_A_CDC_CLK_RDAC_CLK_EN_CTL,
 							0x02, 0x00);
-		if (hph_pa_enabled || force_hph_pa)
+		if (hph_pa_enabled)
 			write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN, true);
 		if (!high_perf_mode) {
 			wcd9xxx_clsh_fsm(codec, &taiko_p->clsh_d,
@@ -3848,7 +3827,7 @@ static int taiko_hphr_dac_event(struct snd_soc_dapm_widget *w,
 		snd_soc_update_bits(codec, TAIKO_A_CDC_RX2_B4_CTL, 0x30, 0x10);
 		write_hpf_cutoff(TAIKO_A_CDC_RX2_B4_CTL);
 		write_hpf_bypass(TAIKO_A_CDC_RX2_B5_CTL);
-		if (hph_pa_enabled || force_hph_pa)
+		if (hph_pa_enabled)
 			write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_R_GAIN, false);
 		break;
 	case SND_SOC_DAPM_PRE_PMD:
@@ -3859,7 +3838,7 @@ static int taiko_hphr_dac_event(struct snd_soc_dapm_widget *w,
 		snd_soc_update_bits(codec, TAIKO_A_CDC_CLK_RDAC_CLK_EN_CTL,
 							0x04, 0x00);
 		snd_soc_update_bits(codec, w->reg, 0x40, 0x00);
-		if (hph_pa_enabled || force_hph_pa)
+		if (hph_pa_enabled)
 			write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_R_GAIN, true);
 		if (!high_perf_mode) {
 			wcd9xxx_clsh_fsm(codec, &taiko_p->clsh_d,
@@ -4029,7 +4008,7 @@ static int taiko_hph_pa_event(struct snd_soc_dapm_widget *w,
 #if 0
         update_crossfeed_gain();
 #endif
-		if (hph_pa_enabled || force_hph_pa) {
+		if (hph_pa_enabled) {
 			if (w->shift == 5)
 				write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN, false);
 			else if (w->shift == 4)
@@ -4042,7 +4021,7 @@ static int taiko_hph_pa_event(struct snd_soc_dapm_widget *w,
         update_control_regs();
 		break;
 	case SND_SOC_DAPM_PRE_PMD:
-		if (hph_pa_enabled || force_hph_pa) {
+		if (hph_pa_enabled) {
 			if (w->shift == 5)
 				write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN, true);
 			else if (w->shift == 4)
@@ -4987,7 +4966,7 @@ static int taiko_prepare(struct snd_pcm_substream *substream,
 			taiko_p->comp_enabled[COMPANDER_1]);
 
 	if (!taiko_p->comp_enabled[COMPANDER_1] &&
-		(!hpwidget() && !hph_pa_enabled && !force_hph_pa)) {
+		(!hpwidget() && !hph_pa_enabled)) {
 			taiko_p->clsh_d.hs_perf_mode_enabled = false;
 			if (!chopper_bypass)
 				snd_soc_update_bits(codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20);
@@ -7762,17 +7741,17 @@ static int taiko_post_reset_cb(struct wcd9xxx *wcd9xxx)
 
 	mutex_lock(&codec->mutex);
 
-        if (codec->reg_def_copy) {
-            pr_debug("%s: Update ASOC cache", __func__);
-            kfree(codec->reg_cache);
-            codec->reg_cache = kmemdup(codec->reg_def_copy,
+    if (codec->reg_def_copy) {
+        pr_info("%s: Update ASOC cache", __func__);
+        kfree(codec->reg_cache);
+        codec->reg_cache = kmemdup(codec->reg_def_copy,
                                             codec->reg_size, GFP_KERNEL);
-            if (!codec->reg_cache) {
-                pr_debug("%s: Cache update failed!\n", __func__);
-                mutex_unlock(&codec->mutex);
-                return -ENOMEM;
-            }
+        if (!codec->reg_cache) {
+            mutex_unlock(&codec->mutex);
+            pr_info("%s: Cache update failed!\n", __func__);
+            return -ENOMEM;
         }
+    }
 
 	taiko_update_reg_defaults(codec);
 	if (wcd9xxx->mclk_rate == TAIKO_MCLK_CLK_12P288MHZ)
@@ -8268,43 +8247,14 @@ static ssize_t hph_pa_enabled_store(struct kobject *kobj,
 	return count;
 }
 
-static ssize_t force_hph_pa_show(struct kobject *kobj,
-		struct kobj_attribute *attr, char *buf)
-{
-	return sprintf(buf, "%u\n", force_hph_pa);
-}
-
-static ssize_t force_hph_pa_store(struct kobject *kobj,
-			   struct kobj_attribute *attr, const char *buf, size_t count)
-{
-	int uval;
-
-	sscanf(buf, "%d", &uval);
-
-	if (uval < 0)
-		uval = 0;
-	if (uval > 1)
-		uval = 1;
-
-    if (hpwidget_any())
-        return count;
-
-	force_hph_pa = uval;
-	return count;
-}
-
 static ssize_t hph_poweramp_gain_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf)
 {
 	int leftval, rightval;
 
-    if (hpwidget()) {
-    	leftval = read_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN, false);
-        rightval = read_hph_poweramp_gain(WCD9XXX_A_RX_HPH_R_GAIN, false);
-    } else {
-    	leftval = read_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN, true);
-        rightval = read_hph_poweramp_gain(WCD9XXX_A_RX_HPH_R_GAIN, true);
-    }
+   	leftval = read_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN, true);
+    rightval = read_hph_poweramp_gain(WCD9XXX_A_RX_HPH_R_GAIN, true);
+
 	return sprintf(buf, "%d %d\n", leftval, rightval);
 }
 
@@ -8920,11 +8870,6 @@ static struct kobj_attribute hph_pa_enabled_attribute =
 		hph_pa_enabled_show,
 		hph_pa_enabled_store);
 
-static struct kobj_attribute force_hph_pa_attribute =
-	__ATTR(force_hph_pa, 0644,
-		force_hph_pa_show,
-		force_hph_pa_store);
-
 static struct kobj_attribute compander_gain_lock_attribute =
 	__ATTR(compander_gain_lock, 0644,
 		compander_gain_lock_show,
@@ -9008,7 +8953,6 @@ static struct attribute *sound_control_attrs[] = {
 		&high_perf_mode_attribute.attr,
 		&interpolator_boost_attribute.attr,
 		&hph_pa_enabled_attribute.attr,
-		&force_hph_pa_attribute.attr,
 		&compander_gain_lock_attribute.attr,
 		&compander_gain_boost_attribute.attr,
 		&anc_delay_attribute.attr,
