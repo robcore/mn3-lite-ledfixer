@@ -105,13 +105,20 @@ then
         busybox echo "$2" > /sys/kernel/sound_control/anc_delay
     fi
     busybox cat /sys/kernel/sound_control/anc_delay
-elif [ "$1" = "headphone_hpf_bypass" ]
+elif [ "$1" = "headphone_left_hpf_bypass" ]
 then
     if [ -n "$2" ]
     then
-        busybox echo "$2" > /sys/kernel/sound_control/headphone_hpf_bypass
+        busybox echo "$2" > /sys/kernel/sound_control/headphone_left_hpf_bypass
     fi
-    busybox cat /sys/kernel/sound_control/headphone_hpf_bypass
+    busybox cat /sys/kernel/sound_control/headphone_left_hpf_bypass
+elif [ "$1" = "headphone_right_hpf_bypass" ]
+then
+    if [ -n "$2" ]
+    then
+        busybox echo "$2" > /sys/kernel/sound_control/headphone_right_hpf_bypass
+    fi
+    busybox cat /sys/kernel/sound_control/headphone_right_hpf_bypass
 elif [ "$1" = "speaker_hpf_bypass" ]
 then
     if [ -n "$2" ]
@@ -147,53 +154,55 @@ then
         busybox echo "$2" > /sys/kernel/sound_control/wavegen_override
     fi
     busybox cat /sys/kernel/sound_control/wavegen_override
-elif [ "$1" = "hpfdefault" ]
-then
-    if [ "$(busybox cat /sys/kernel/sound_control/headphone_hpf_cutoff)" = "0" ]
-    then
-        busybox echo "4"
-    elif [ "$(busybox cat /sys/kernel/sound_control/headphone_hpf_cutoff)" = "1" ]
-    then
-        busybox echo "75"
-    elif [ "$(busybox cat /sys/kernel/sound_control/headphone_hpf_cutoff)" = "2" ]
-    then
-        busybox echo "150"
-    fi
-elif [ "$1" = "headphone_hpf_cutoff" ]
+elif [ "$1" = "headphone_left_hpf_cutoff" ]
 then
     if [ -n "$2" ]
     then
         if [ "$2" = "4" ]
         then
-            busybox echo "0" > /sys/kernel/sound_control/headphone_hpf_cutoff
+            busybox echo "0" > /sys/kernel/sound_control/headphone_left_hpf_cutoff
         elif [ "$2" = "75" ]
         then
-            busybox echo "1" > /sys/kernel/sound_control/headphone_hpf_cutoff
+            busybox echo "1" > /sys/kernel/sound_control/headphone_left_hpf_cutoff
         elif [ "$2" = "150" ]
         then
-            busybox echo "2" > /sys/kernel/sound_control/headphone_hpf_cutoff
+            busybox echo "2" > /sys/kernel/sound_control/headphone_left_hpf_cutoff
         fi
     fi
 
-    if [ "$(busybox cat /sys/kernel/sound_control/headphone_hpf_cutoff)" = "0" ]
+    if [ "$(busybox cat /sys/kernel/sound_control/headphone_left_hpf_cutoff)" = "0" ]
     then
         busybox echo "4"
-    elif [ "$(busybox cat /sys/kernel/sound_control/headphone_hpf_cutoff)" = "1" ]
+    elif [ "$(busybox cat /sys/kernel/sound_control/headphone_left_hpf_cutoff)" = "1" ]
     then
         busybox echo "75"
-    elif [ "$(busybox cat /sys/kernel/sound_control/headphone_hpf_cutoff)" = "2" ]
+    elif [ "$(busybox cat /sys/kernel/sound_control/headphone_left_hpf_cutoff)" = "2" ]
     then
         busybox echo "150"
     fi
-elif [ "$1" = "spkhpfdefault" ]
+elif [ "$1" = "headphone_right_hpf_cutoff" ]
 then
-    if [ "$(busybox cat /sys/kernel/sound_control/speaker_hpf_cutoff)" = "0" ]
+    if [ -n "$2" ]
+    then
+        if [ "$2" = "4" ]
+        then
+            busybox echo "0" > /sys/kernel/sound_control/headphone_right_hpf_cutoff
+        elif [ "$2" = "75" ]
+        then
+            busybox echo "1" > /sys/kernel/sound_control/headphone_right_hpf_cutoff
+        elif [ "$2" = "150" ]
+        then
+            busybox echo "2" > /sys/kernel/sound_control/headphone_right_hpf_cutoff
+        fi
+    fi
+
+    if [ "$(busybox cat /sys/kernel/sound_control/headphone_right_hpf_cutoff)" = "0" ]
     then
         busybox echo "4"
-    elif [ "$(busybox cat /sys/kernel/sound_control/speaker_hpf_cutoff)" = "1" ]
+    elif [ "$(busybox cat /sys/kernel/sound_control/headphone_right_hpf_cutoff)" = "1" ]
     then
         busybox echo "75"
-    elif [ "$(busybox cat /sys/kernel/sound_control/speaker_hpf_cutoff)" = "2" ]
+    elif [ "$(busybox cat /sys/kernel/sound_control/headphone_right_hpf_cutoff)" = "2" ]
     then
         busybox echo "150"
     fi
