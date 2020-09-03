@@ -42,6 +42,13 @@ then
         busybox echo "$2" > /sys/kernel/sound_control/hph_pa_enabled
     fi
     busybox cat /sys/kernel/sound_control/hph_pa_enabled
+elif [ "$1" = "force_hph_pa" ]
+then
+    if [ -n "$2" ]
+    then
+        busybox echo "$2" > /sys/kernel/sound_control/force_hph_pa
+    fi
+    busybox cat /sys/kernel/sound_control/force_hph_pa
 elif [ "$1" = "pagainleft" ]
 then
     if [ -n "$2" ]
