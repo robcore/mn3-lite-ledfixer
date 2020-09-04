@@ -871,39 +871,9 @@ static void write_hpf_bypass(unsigned short reg)
 	______________________________________________________________
 */
 
-static int read_hpf_cutoff(unsigned short reg)
-{
-	unsigned int val, bitmask, local_reg_val;
-
-	switch (reg) {
-		case TAIKO_A_CDC_RX1_B4_CTL:
-		case TAIKO_A_CDC_RX2_B4_CTL:
-		case TAIKO_A_CDC_RX7_B4_CTL:
-			break;
-		default:
-			return -EINVAL;
-	}
-
-	for (bitmask = 1; bitmask < 3; bitmask <<= 1)
-		;
-	val = regread(reg);
-	local_reg_val = (val >> 0) & (bitmask - 1);
-
-	return local_reg_val;
-}
-
 static void write_hpf_cutoff(unsigned short reg)
 {
 	unsigned int val, mask, bitmask, tempold, old, new;
-
-	switch (reg) {
-		case TAIKO_A_CDC_RX1_B4_CTL:
-		case TAIKO_A_CDC_RX2_B4_CTL:
-		case TAIKO_A_CDC_RX7_B4_CTL:
-			break;
-		default:
-			return;
-	}
 
 	for (bitmask = 1; bitmask < 3; bitmask <<= 1)
 		;
@@ -918,13 +888,48 @@ static void write_hpf_cutoff(unsigned short reg)
 			val = speaker_hpf_cutoff << 0;
 			break;
 		default:
-			break;
+			return;
 	}
 
 	mask = (bitmask - 1) << 0;
 
 	/*snd_soc_update_bits_locked(codec, e->reg, mask, val);*/
     mx_update_bits_locked(reg, mask, val);
+}
+
+static int read_hpf_cutoff(unsigned short reg)
+{
+	unsigned int val, bitmask, local_reg_val;
+
+	for (bitmask = 1; bitmask < 3; bitmask <<= 1)
+		;
+	val = regread(reg);
+	local_reg_val = (val >> 0) & (bitmask - 1);
+
+	switch (reg) {
+		case TAIKO_A_CDC_RX1_B4_CTL:
+			if (local_reg_val != hphl_hpf_cutoff) {
+                write_hpf_cutoff(TAIKO_A_CDC_RX1_B4_CTL);
+                local_reg_val = hphl_hpf_cutoff;
+            }
+   			break;
+		case TAIKO_A_CDC_RX2_B4_CTL:
+			if (local_reg_val != hphr_hpf_cutoff) {
+                write_hpf_cutoff(TAIKO_A_CDC_RX2_B4_CTL);
+                local_reg_val = hphr_hpf_cutoff;
+            }
+			break;
+		case TAIKO_A_CDC_RX7_B4_CTL:
+			if (local_reg_val != speaker_hpf_cutoff) {
+                write_hpf_cutoff(TAIKO_A_CDC_RX7_B4_CTL);
+                local_reg_val = speaker_hpf_cutoff;
+            }
+			break;
+		default:
+			return;
+	}
+
+	return local_reg_val;
 }
 
 static void write_autochopper(unsigned int enable)
