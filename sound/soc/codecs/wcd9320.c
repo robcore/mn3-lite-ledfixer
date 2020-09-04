@@ -38,6 +38,7 @@
 #include <linux/pm_qos.h>
 #include <linux/pm.h>
 #include <mach/cpuidle.h>
+#include <linux/wakelock.h>
 #include "wcd9320.h"
 #include "wcd9xxx-resmgr.h"
 #include "wcd9xxx-common.h"
@@ -80,7 +81,8 @@
 static struct wcd9xxx *sound_control_codec_ptr;
 static struct snd_soc_codec *direct_codec;
 static atomic_t kp_taiko_priv;
-struct wakeup_source mx_playback_wake_lock;
+struct wake_lock hph_playback_wake_lock;
+struct wake_lock spk_playback_wake_lock;
 
 static struct afe_param_slimbus_slave_port_cfg taiko_slimbus_slave_port_cfg = {
 	.minor_version = 1,
@@ -634,19 +636,36 @@ static void mx_update_bits_locked(unsigned short reg,
 	mutex_unlock(&direct_codec->mutex);
 }
 
-static void mx_wake_lock(void)
+static void hph_wake_lock(void)
 {
-    if (mx_playback_wake_lock.active)
+    if (wake_lock_active(&hph_playback_wake_lock))
         return;
 
-    __pm_stay_awake(&mx_playback_wake_lock);
+    wake_lock(&hph_playback_wake_lock);
 }
 
-static void mx_wake_unlock(void)
+static void hph_wake_unlock(void)
 {
-    if (!mx_playback_wake_lock.active)
+    if (!wake_lock_active(&hph_playback_wake_lock))
         return;
-    __pm_relax(&mx_playback_wake_lock);
+
+    wake_unlock(&hph_playback_wake_lock);
+}
+
+static void spk_wake_lock(void)
+{
+    if (wake_lock_active(&spk_playback_wake_lock))
+        return;
+
+    wake_lock(&spk_playback_wake_lock);
+}
+
+static void spk_wake_unlock(void)
+{
+    if (!wake_lock_active(&spk_playback_wake_lock))
+        return;
+
+    wake_unlock(&spk_playback_wake_lock);
 }
 
 static bool hpwidget(void)
@@ -654,11 +673,11 @@ static bool hpwidget(void)
     if ((regread(TAIKO_A_RX_HPH_L_STATUS) == PA_STAT_ON &&
          regread(TAIKO_A_RX_HPH_R_STATUS) == PA_STAT_ON) ||
          (hpwidget_left && hpwidget_right)) {
-        mx_wake_lock();
+        hph_wake_lock();
         return true;
     }
 
-    mx_wake_unlock();
+    hph_wake_unlock();
     return false;
 }
 
@@ -672,6 +691,17 @@ static bool hpwidget_any(void)
     return (regread(TAIKO_A_RX_HPH_L_STATUS) == PA_STAT_ON ||
             regread(TAIKO_A_RX_HPH_R_STATUS) == PA_STAT_ON ||
 			hpwidget_left || hpwidget_right);
+}
+
+static bool spkwidget_active(void)
+{
+    if (spkwidget) {
+        spk_wake_lock();
+        return true;
+    }
+
+    spk_wake_unlock();
+    return false;
 }
 
 static void update_headphone_gain(void)
@@ -771,7 +801,7 @@ static void write_hph_raw(unsigned int value)
 
 static void update_speaker_gain(void)
 {
-	if (!spkwidget)
+	if (!spkwidget_active())
 		return;
 	lock_sound_control(&sound_control_codec_ptr->core_res, 1);
 	regwrite(TAIKO_A_CDC_RX7_VOL_CTL_B2_CTL, speaker_cached_gain);
@@ -9236,7 +9266,8 @@ static int taiko_codec_probe(struct snd_soc_codec *codec)
 	}
 
 	update_control_regs();
-    wakeup_source_init(&mx_playback_wake_lock, "mxplayback");
+    wake_lock_init(&spk_playback_wake_lock, WAKE_LOCK_SUSPEND, "mx_spk_playback");
+    wake_lock_init(&hph_playback_wake_lock, WAKE_LOCK_SUSPEND, "mx_hph_playback");
 	return ret;
 
 err_irq:
@@ -9271,7 +9302,8 @@ static int taiko_codec_remove(struct snd_soc_codec *codec)
 	taiko->spkdrv_reg = NULL;
 
 	kfree(taiko);
-    wakeup_source_trash(&mx_playback_wake_lock);
+    wake_lock_destroy(&spk_playback_wake_lock);
+    wake_lock_destroy(&hph_playback_wake_lock);
 	return 0;
 }
 static struct snd_soc_codec_driver soc_codec_dev_taiko = {
