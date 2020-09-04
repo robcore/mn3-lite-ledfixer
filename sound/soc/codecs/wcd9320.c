@@ -926,7 +926,7 @@ static int read_hpf_cutoff(unsigned short reg)
             }
 			break;
 		default:
-			return;
+			return -EINVAL;
 	}
 
 	return local_reg_val;
