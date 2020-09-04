@@ -80,6 +80,7 @@
 static struct wcd9xxx *sound_control_codec_ptr;
 static struct snd_soc_codec *direct_codec;
 static atomic_t kp_taiko_priv;
+struct wakeup_source mx_playback_wake_lock;
 
 static struct afe_param_slimbus_slave_port_cfg taiko_slimbus_slave_port_cfg = {
 	.minor_version = 1,
@@ -633,11 +634,32 @@ static void mx_update_bits_locked(unsigned short reg,
 	mutex_unlock(&direct_codec->mutex);
 }
 
+static void mx_wake_lock(void)
+{
+    if (mx_playback_wake_lock.active)
+        return;
+
+    __pm_stay_awake(&mx_playback_wake_lock);
+}
+
+static void mx_wake_unlock(void)
+{
+    if (!mx_playback_wake_lock.active)
+        return;
+    __pm_relax(&mx_playback_wake_lock);
+}
+
 static bool hpwidget(void)
 {
-    return ((regread(TAIKO_A_RX_HPH_L_STATUS) == PA_STAT_ON &&
-            regread(TAIKO_A_RX_HPH_R_STATUS) == PA_STAT_ON) ||
-			(hpwidget_left && hpwidget_right));
+    if ((regread(TAIKO_A_RX_HPH_L_STATUS) == PA_STAT_ON &&
+         regread(TAIKO_A_RX_HPH_R_STATUS) == PA_STAT_ON) ||
+         (hpwidget_left && hpwidget_right)) {
+        mx_wake_lock();
+        return true;
+    }
+
+    mx_wake_unlock();
+    return false;
 }
 
 static bool poweramp_active(void)
@@ -9209,6 +9231,7 @@ static int taiko_codec_probe(struct snd_soc_codec *codec)
 	}
 
 	update_control_regs();
+    wakeup_source_init(&mx_playback_wake_lock, "mxplayback");
 	return ret;
 
 err_irq:
@@ -9243,6 +9266,7 @@ static int taiko_codec_remove(struct snd_soc_codec *codec)
 	taiko->spkdrv_reg = NULL;
 
 	kfree(taiko);
+    wakeup_source_trash(&mx_playback_wake_lock);
 	return 0;
 }
 static struct snd_soc_codec_driver soc_codec_dev_taiko = {
