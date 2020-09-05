@@ -1624,6 +1624,8 @@ static int taiko_config_compander(struct snd_soc_dapm_widget *w,
 		snd_soc_update_bits(codec, TAIKO_A_CDC_COMP0_B1_CTL +
 				    (comp * 8), enable_mask, enable_mask);
 
+        if (comp == COMPANDER_1)
+            interpolator_enabled = true;
 		taiko_discharge_comp(codec, comp);
         /* Worst case timeout for compander CnP sleep timeout */
     	usleep_range(3000, 3100);
@@ -1636,7 +1638,6 @@ static int taiko_config_compander(struct snd_soc_dapm_widget *w,
 		u32 sc_rms_meter_div_fact = 0xD;
 		u32 sc_rms_meter_resamp_fact = 0xA0;
 */
-        interpolator_enabled = true;
         if (comp != COMPANDER_1) {
 			snd_soc_write(codec, TAIKO_A_CDC_COMP0_B3_CTL + (comp * 8),
                           comp_params->rms_meter_resamp_fact);
@@ -1650,7 +1651,8 @@ static int taiko_config_compander(struct snd_soc_dapm_widget *w,
         update_interpolator();
 		break;
 	case SND_SOC_DAPM_PRE_PMD:
-        interpolator_enabled = false;
+        if (comp == COMPANDER_1)
+            interpolator_enabled = false;
         taiko_discharge_comp(codec, comp);
         /* Worst case timeout for compander CnP sleep timeout */
         usleep_range(3000, 3100);
