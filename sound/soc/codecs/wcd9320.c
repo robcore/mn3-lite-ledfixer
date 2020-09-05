@@ -1002,14 +1002,23 @@ static void update_bias(void)
 
 static void update_interpolator(void)
 {
-    if (interpolator_boost && interpolator_enabled) {
-        wcd9xxx_reg_write(&sound_control_codec_ptr->core_res,
-        		TAIKO_A_CDC_COMP1_B3_CTL,
-        		sc_rms_meter_resamp_fact);
-    	mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL,
-    		    0xF0, sc_rms_meter_div_fact << 4);
-    	mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL,
-    			0x0F, sc_peak_det_timeout);
+    if (interpolator_boost) {
+        if (interpolator_enabled) {
+            wcd9xxx_reg_write(&sound_control_codec_ptr->core_res,
+            		TAIKO_A_CDC_COMP1_B3_CTL,
+            		sc_rms_meter_resamp_fact);
+            mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL,
+            	    0xF0, sc_rms_meter_div_fact << 4);
+            mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL,
+            		0x0F, sc_peak_det_timeout);
+        } else {
+           	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res,
+        			TAIKO_A_CDC_COMP1_B3_CTL,
+        			0x01);
+        	mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL,
+        		    0xF0, 0x05 << 4);
+            usleep_range(3000, 3100);
+        }
     } else {
         if (interpolator_enabled) {
             wcd9xxx_reg_write(&sound_control_codec_ptr->core_res,
