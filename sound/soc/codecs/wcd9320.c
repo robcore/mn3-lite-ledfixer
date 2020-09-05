@@ -1004,6 +1004,12 @@ static void update_interpolator(void)
 {
     if (interpolator_boost) {
         if (interpolator_enabled) {
+           	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res,
+        			TAIKO_A_CDC_COMP1_B3_CTL,
+        			0x01);
+        	mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL,
+        		    0xF0, 0x05 << 4);
+            usleep_range(3000, 3100);
             wcd9xxx_reg_write(&sound_control_codec_ptr->core_res,
             		TAIKO_A_CDC_COMP1_B3_CTL,
             		sc_rms_meter_resamp_fact);
@@ -1021,6 +1027,12 @@ static void update_interpolator(void)
         }
     } else {
         if (interpolator_enabled) {
+           	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res,
+        			TAIKO_A_CDC_COMP1_B3_CTL,
+        			0x01);
+        	mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL,
+        		    0xF0, 0x05 << 4);
+            usleep_range(3000, 3100);
             wcd9xxx_reg_write(&sound_control_codec_ptr->core_res,
                     TAIKO_A_CDC_COMP1_B3_CTL,
                     0x28);
@@ -1553,9 +1565,6 @@ static int taiko_config_compander(struct snd_soc_dapm_widget *w,
 	pr_info("%s: %s event %d compander %d, enabled %d", __func__,
 		 w->name, event, comp, taiko->comp_enabled[comp]);
 	if (comp == COMPANDER_1 && hph_pa_enabled) {
-		taiko_discharge_comp(codec, comp);
-        /* Worst case timeout for compander CnP sleep timeout */
-    	usleep_range(3000, 3100);
         interpolator_enabled = false;
         update_interpolator();
     	/* Disable compander */
@@ -1635,10 +1644,11 @@ static int taiko_config_compander(struct snd_soc_dapm_widget *w,
 
         if (comp == COMPANDER_1)
             interpolator_enabled = true;
-		taiko_discharge_comp(codec, comp);
-        /* Worst case timeout for compander CnP sleep timeout */
-    	usleep_range(3000, 3100);
-
+        if (comp != COMPANDER_1) {
+    		taiko_discharge_comp(codec, comp);
+            /* Worst case timeout for compander CnP sleep timeout */
+        	usleep_range(3000, 3100);
+        }
 		/* Set sample rate dependent paramater */
 /*		.peak_det_timeout = 0x0B,
 		.rms_meter_div_fact = 0xC,
@@ -1657,15 +1667,19 @@ static int taiko_config_compander(struct snd_soc_dapm_widget *w,
                                 TAIKO_A_CDC_COMP0_B2_CTL + (comp * 8),
                                 0x0F, comp_params->peak_det_timeout);
 		}
-        update_interpolator();
+        if (comp == COMPANDER_1)
+            update_interpolator();
 		break;
 	case SND_SOC_DAPM_PRE_PMD:
         if (comp == COMPANDER_1)
             interpolator_enabled = false;
-        taiko_discharge_comp(codec, comp);
-        /* Worst case timeout for compander CnP sleep timeout */
-        usleep_range(3000, 3100);
-        update_interpolator();
+        if (comp != COMPANDER_1) {
+            taiko_discharge_comp(codec, comp);
+            /* Worst case timeout for compander CnP sleep timeout */
+            usleep_range(3000, 3100);
+        }
+        if (comp == COMPANDER_1)
+            update_interpolator();
 		/* Disable compander */
 		snd_soc_update_bits(codec,
 				    TAIKO_A_CDC_COMP0_B1_CTL + (comp * 8),
