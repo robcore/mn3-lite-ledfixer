@@ -42,7 +42,7 @@ fi
 print_title "Magisk $PRETTY_VER Installer"
 
 ui_print " ";
-ui_print "MACHINEX";
+ui_print "MACHIN3X";
 ui_print "Adjusting jiggawattage in flux capacitor";
 
 is_mounted /data || mount /data || is_mounted /cache || mount /cache
