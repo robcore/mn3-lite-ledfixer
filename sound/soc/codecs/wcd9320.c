@@ -939,20 +939,20 @@ static int read_hpf_cutoff(unsigned short reg)
 	switch (reg) {
 		case TAIKO_A_CDC_RX1_B4_CTL:
 			if (local_reg_val != hphl_hpf_cutoff) {
-                write_hpf_cutoff(TAIKO_A_CDC_RX1_B4_CTL);
                 local_reg_val = hphl_hpf_cutoff;
+                write_hpf_cutoff(TAIKO_A_CDC_RX1_B4_CTL);
             }
    			break;
 		case TAIKO_A_CDC_RX2_B4_CTL:
 			if (local_reg_val != hphr_hpf_cutoff) {
-                write_hpf_cutoff(TAIKO_A_CDC_RX2_B4_CTL);
                 local_reg_val = hphr_hpf_cutoff;
+                write_hpf_cutoff(TAIKO_A_CDC_RX2_B4_CTL);
             }
 			break;
 		case TAIKO_A_CDC_RX7_B4_CTL:
 			if (local_reg_val != speaker_hpf_cutoff) {
-                write_hpf_cutoff(TAIKO_A_CDC_RX7_B4_CTL);
                 local_reg_val = speaker_hpf_cutoff;
+                write_hpf_cutoff(TAIKO_A_CDC_RX7_B4_CTL);
             }
 			break;
 		default:
@@ -995,29 +995,38 @@ static void update_bias(void)
 {
     if (hpwidget_any())
         return;
-	regwrite(TAIKO_A_RX_HPH_BIAS_PA, hph_pa_bias);
-    regwrite(TAIKO_A_RX_HPH_BIAS_CNP, compander_bias);
+
+	mx_update_bits_locked(TAIKO_A_RX_HPH_BIAS_PA, 0xff, hph_pa_bias);
+    mx_update_bits_locked(TAIKO_A_RX_HPH_BIAS_CNP, 0xff, compander_bias);
 }
 
 static void update_interpolator(void)
 {
-    if (!interpolator_boost)
-        return;
-
-    if (interpolator_enabled) {
-        	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res,
-        			TAIKO_A_CDC_COMP1_B3_CTL,
-        			sc_rms_meter_resamp_fact);
+    if (interpolator_boost && interpolator_enabled) {
+        wcd9xxx_reg_write(&sound_control_codec_ptr->core_res,
+        		TAIKO_A_CDC_COMP1_B3_CTL,
+        		sc_rms_meter_resamp_fact);
     	mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL,
     		    0xF0, sc_rms_meter_div_fact << 4);
     	mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL,
     			0x0F, sc_peak_det_timeout);
     } else {
-       	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res,
-    			TAIKO_A_CDC_COMP1_B3_CTL,
-    			0x01);
-    	mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL,
-    		    0xF0, 0x05 << 4);
+        if (interpolator_enabled) {
+            wcd9xxx_reg_write(&sound_control_codec_ptr->core_res,
+                    TAIKO_A_CDC_COMP1_B3_CTL,
+                    0x28);
+            mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL,
+                    0xF0, 0x0B << 0x4);
+            mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL,
+                    0x0F, 0x09);
+        } else {
+           	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res,
+        			TAIKO_A_CDC_COMP1_B3_CTL,
+        			0x01);
+        	mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL,
+        		    0xF0, 0x05 << 4);
+            usleep_range(3000, 3100);
+        }
     }
 }
 
@@ -1535,12 +1544,12 @@ static int taiko_config_compander(struct snd_soc_dapm_widget *w,
 	pr_info("%s: %s event %d compander %d, enabled %d", __func__,
 		 w->name, event, comp, taiko->comp_enabled[comp]);
 	if (comp == COMPANDER_1 && hph_pa_enabled) {
-        interpolator_enabled = false;
-        taiko_discharge_comp(codec, comp);
+		taiko_discharge_comp(codec, comp);
         /* Worst case timeout for compander CnP sleep timeout */
-        update_interpolator();
     	usleep_range(3000, 3100);
-		/* Disable compander */
+        interpolator_enabled = false;
+        update_interpolator();
+    	/* Disable compander */
 		snd_soc_update_bits(codec,
 				    TAIKO_A_CDC_COMP0_B1_CTL + (comp * 8),
 				    enable_mask, 0x00);
@@ -1628,16 +1637,7 @@ static int taiko_config_compander(struct snd_soc_dapm_widget *w,
 		u32 sc_rms_meter_resamp_fact = 0xA0;
 */
         interpolator_enabled = true;
-		if (interpolator_boost) { 
-            snd_soc_write(codec, TAIKO_A_CDC_COMP0_B3_CTL + (comp * 8),
-             			  sc_rms_meter_resamp_fact);
-			snd_soc_update_bits(codec,
-                                TAIKO_A_CDC_COMP0_B2_CTL + (comp * 8),
-                                0xF0, sc_rms_meter_div_fact << 4);
-			snd_soc_update_bits(codec,
-                                TAIKO_A_CDC_COMP0_B2_CTL + (comp * 8),
-                                0x0F, sc_peak_det_timeout);
-		} else {
+        if (comp != COMPANDER_1) {
 			snd_soc_write(codec, TAIKO_A_CDC_COMP0_B3_CTL + (comp * 8),
                           comp_params->rms_meter_resamp_fact);
 			snd_soc_update_bits(codec,
@@ -1653,8 +1653,8 @@ static int taiko_config_compander(struct snd_soc_dapm_widget *w,
         interpolator_enabled = false;
         taiko_discharge_comp(codec, comp);
         /* Worst case timeout for compander CnP sleep timeout */
+        usleep_range(3000, 3100);
         update_interpolator();
-    	usleep_range(3000, 3100);
 		/* Disable compander */
 		snd_soc_update_bits(codec,
 				    TAIKO_A_CDC_COMP0_B1_CTL + (comp * 8),
@@ -3834,6 +3834,8 @@ static int taiko_hphl_dac_event(struct snd_soc_dapm_widget *w,
 	case SND_SOC_DAPM_PRE_PMD:
 		snd_soc_update_bits(codec, TAIKO_A_CDC_RX1_B3_CTL, 0xBC, 0x00);
 		snd_soc_update_bits(codec, TAIKO_A_CDC_RX1_B4_CTL, 0x30, 0x00);
+		write_hpf_cutoff(TAIKO_A_CDC_RX1_B4_CTL);
+		write_hpf_bypass(TAIKO_A_CDC_RX1_B5_CTL);
 		break;
 	case SND_SOC_DAPM_POST_PMD:
 		snd_soc_update_bits(codec, TAIKO_A_CDC_CLK_RDAC_CLK_EN_CTL,
@@ -3888,6 +3890,8 @@ static int taiko_hphr_dac_event(struct snd_soc_dapm_widget *w,
 	case SND_SOC_DAPM_PRE_PMD:
 		snd_soc_update_bits(codec, TAIKO_A_CDC_RX2_B3_CTL, 0xBC, 0x00);
 		snd_soc_update_bits(codec, TAIKO_A_CDC_RX2_B4_CTL, 0x30, 0x00);
+		write_hpf_cutoff(TAIKO_A_CDC_RX2_B4_CTL);
+		write_hpf_bypass(TAIKO_A_CDC_RX2_B5_CTL);
 		break;
 	case SND_SOC_DAPM_POST_PMD:
 		snd_soc_update_bits(codec, TAIKO_A_CDC_CLK_RDAC_CLK_EN_CTL,
