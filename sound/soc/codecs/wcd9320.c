@@ -4240,7 +4240,7 @@ static int taiko_spk_dac_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
 	pr_debug("%s %s %d\n", __func__, w->name, event);
-    if (event == SND_SOC_DAPM_PRE_PMU) {
+    if (event == SND_SOC_DAPM_PRE_PMU || event == SND_SOC_DAPM_POST_PMD) {
     	write_hpf_cutoff(TAIKO_A_CDC_RX7_B4_CTL);
     	write_hpf_bypass(TAIKO_A_CDC_RX7_B5_CTL);
     }
@@ -6529,17 +6529,18 @@ static const struct snd_soc_dapm_widget taiko_dapm_widgets[] = {
 	/* Headphone */
 	SND_SOC_DAPM_OUTPUT("HEADPHONE"),
 	SND_SOC_DAPM_PGA_E("HPHL", TAIKO_A_RX_HPH_CNP_EN, 5, 0, NULL, 0,
-		taiko_hph_pa_event, SND_SOC_DAPM_PRE_PMU |
-		SND_SOC_DAPM_POST_PMU | SND_SOC_DAPM_POST_PMD),
+		taiko_hph_pa_event,
+        SND_SOC_DAPM_PRE_PMU | SND_SOC_DAPM_POST_PMU |
+        SND_SOC_DAPM_PRE_PMD | SND_SOC_DAPM_POST_PMD),
 	SND_SOC_DAPM_MIXER_E("HPHL DAC", TAIKO_A_RX_HPH_L_DAC_CTL, 7, 0,
 		hphl_switch, ARRAY_SIZE(hphl_switch), taiko_hphl_dac_event,
 		SND_SOC_DAPM_PRE_PMU | SND_SOC_DAPM_POST_PMU |
 		SND_SOC_DAPM_PRE_PMD | SND_SOC_DAPM_POST_PMD),
 
 	SND_SOC_DAPM_PGA_E("HPHR", TAIKO_A_RX_HPH_CNP_EN, 4, 0, NULL, 0,
-		taiko_hph_pa_event, SND_SOC_DAPM_PRE_PMU |
-		SND_SOC_DAPM_POST_PMU |	SND_SOC_DAPM_POST_PMD),
-
+		taiko_hph_pa_event,
+        SND_SOC_DAPM_PRE_PMU | SND_SOC_DAPM_POST_PMU |
+        SND_SOC_DAPM_PRE_PMD | SND_SOC_DAPM_POST_PMD),
 	SND_SOC_DAPM_DAC_E("HPHR DAC", NULL, TAIKO_A_RX_HPH_R_DAC_CTL, 7, 0,
 		taiko_hphr_dac_event,
 		SND_SOC_DAPM_PRE_PMU | SND_SOC_DAPM_POST_PMU |
