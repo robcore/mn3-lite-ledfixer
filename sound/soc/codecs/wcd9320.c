@@ -588,6 +588,7 @@ static u32 sc_peak_det_timeout = 15;
 static u32 sc_rms_meter_div_fact = 15;
 static u32 sc_rms_meter_resamp_fact = 255;
 static u8 hph_pa_bias = 0x7A;
+static unsigned int harmonic_distortion_coeffs = 0;
 
 /*
 #define TAIKO_A_RX_HPH_BIAS_CNP (0x1A8)
@@ -1049,6 +1050,34 @@ static void update_interpolator(void)
             usleep_range(3000, 3100);
         }
     }
+}
+
+static void write_hdc_left(bool enable)
+{
+	if (enable) {
+		mx_update_bits(TAIKO_A_CDC_RX1_B3_CTL, 0xBC, 0x94);
+		mx_update_bits(TAIKO_A_CDC_RX1_B4_CTL, 0x30, 0x10);
+    } else {
+		mx_update_bits(TAIKO_A_CDC_RX1_B3_CTL, 0xBC, 0x00);
+		mx_update_bits(TAIKO_A_CDC_RX1_B4_CTL, 0x30, 0x00);
+    }
+}
+
+static void write_hdc_right(bool enable)
+{
+	if (enable) {
+		mx_update_bits(TAIKO_A_CDC_RX2_B3_CTL, 0xBC, 0x94);
+		mx_update_bits(TAIKO_A_CDC_RX2_B4_CTL, 0x30, 0x10);
+    } else {
+		mx_update_bits(TAIKO_A_CDC_RX2_B3_CTL, 0xBC, 0x00);
+		mx_update_bits(TAIKO_A_CDC_RX2_B4_CTL, 0x30, 0x00);
+    }
+}
+
+static void write_hdc_dual(bool enable)
+{
+    write_hdc_left(!!enable);
+    write_hdc_right(!!enable);
 }
 
 static void update_control_regs(void)
@@ -3850,15 +3879,15 @@ static int taiko_hphl_dac_event(struct snd_soc_dapm_widget *w,
 						ret); */
 		break;
 	case SND_SOC_DAPM_POST_PMU:
-		snd_soc_update_bits(codec, TAIKO_A_CDC_RX1_B3_CTL, 0xBC, 0x94);
-		snd_soc_update_bits(codec, TAIKO_A_CDC_RX1_B4_CTL, 0x30, 0x10);
 		write_hpf_cutoff(TAIKO_A_CDC_RX1_B4_CTL);
 		write_hpf_bypass(TAIKO_A_CDC_RX1_B5_CTL);
 		write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN);
+        if (harmonic_distortion_coeffs) {
+            write_hdc_left(1);
+        }
 		break;
 	case SND_SOC_DAPM_PRE_PMD:
-		snd_soc_update_bits(codec, TAIKO_A_CDC_RX1_B3_CTL, 0xBC, 0x00);
-		snd_soc_update_bits(codec, TAIKO_A_CDC_RX1_B4_CTL, 0x30, 0x00);
+        write_hdc_left(0);
 		write_hpf_cutoff(TAIKO_A_CDC_RX1_B4_CTL);
 		write_hpf_bypass(TAIKO_A_CDC_RX1_B5_CTL);
 		break;
@@ -3906,17 +3935,17 @@ static int taiko_hphr_dac_event(struct snd_soc_dapm_widget *w,
 		}
 		break;
 	case SND_SOC_DAPM_POST_PMU:
-		snd_soc_update_bits(codec, TAIKO_A_CDC_RX2_B3_CTL, 0xBC, 0x94);
-		snd_soc_update_bits(codec, TAIKO_A_CDC_RX2_B4_CTL, 0x30, 0x10);
 		write_hpf_cutoff(TAIKO_A_CDC_RX2_B4_CTL);
 		write_hpf_bypass(TAIKO_A_CDC_RX2_B5_CTL);
 		write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_R_GAIN);
+        if (harmonic_distortion_coeffs) {
+            write_hdc_right(1);
+        }
 		break;
 	case SND_SOC_DAPM_PRE_PMD:
-		snd_soc_update_bits(codec, TAIKO_A_CDC_RX2_B3_CTL, 0xBC, 0x00);
-		snd_soc_update_bits(codec, TAIKO_A_CDC_RX2_B4_CTL, 0x30, 0x00);
 		write_hpf_cutoff(TAIKO_A_CDC_RX2_B4_CTL);
 		write_hpf_bypass(TAIKO_A_CDC_RX2_B5_CTL);
+        write_hdc_right(0);
 		break;
 	case SND_SOC_DAPM_POST_PMD:
 		snd_soc_update_bits(codec, TAIKO_A_CDC_CLK_RDAC_CLK_EN_CTL,
@@ -8557,6 +8586,34 @@ static ssize_t compander_gain_boost_store(struct kobject *kobj,
 	return count;
 }
 
+static ssize_t harmonic_distortion_coeffs_show(struct kobject *kobj,
+		struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", harmonic_distortion_coeffs);
+}
+
+static ssize_t harmonic_distortion_coeffs_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
+	int uval;
+
+	sscanf(buf, "%d", &uval);
+
+	if (uval < 0)
+		uval = 0;
+	if (uval > 1)
+		uval = 1;
+
+	harmonic_distortion_coeffs = uval;
+
+    if (harmonic_distortion_coeffs && hpwidget())
+        write_hdc_dual(harmonic_distortion_coeffs);
+    else if (!harmonic_distortion_coeffs)
+        write_hdc_dual(harmonic_distortion_coeffs);
+
+	return count;
+}
+
 /*		TAIKO_A_CDC_RX1_B4_CTL
 		TAIKO_A_CDC_RX2_B4_CTL
 		hphl_hpf_cutoff
@@ -9000,6 +9057,11 @@ static struct kobj_attribute compander_gain_boost_attribute =
 		compander_gain_boost_show,
 		compander_gain_boost_store);
 
+static struct kobj_attribute harmonic_distortion_coeffs_attribute =
+	__ATTR(harmonic_distortion_coeffs, 0644,
+		harmonic_distortion_coeffs_show,
+		harmonic_distortion_coeffs_store);
+
 static struct kobj_attribute anc_delay_attribute =
 	__ATTR(anc_delay, 0644,
 		anc_delay_show,
@@ -9085,6 +9147,7 @@ static struct attribute *sound_control_attrs[] = {
 		&hph_pa_enabled_attribute.attr,
 		&compander_gain_lock_attribute.attr,
 		&compander_gain_boost_attribute.attr,
+		&harmonic_distortion_coeffs_attribute.attr,
 		&anc_delay_attribute.attr,
 		&headphone_left_hpf_cutoff_attribute.attr,
 		&headphone_right_hpf_cutoff_attribute.attr,
