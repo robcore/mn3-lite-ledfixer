@@ -1006,8 +1006,10 @@ static void update_bias(void)
     if (hpwidget_any())
         return;
 
-	mx_update_bits_locked(TAIKO_A_RX_HPH_BIAS_PA, 0xff, hph_pa_bias);
-    mx_update_bits_locked(TAIKO_A_RX_HPH_BIAS_CNP, 0xff, compander_bias);
+    if (hph_pa_bias != regread(TAIKO_A_RX_HPH_BIAS_PA))
+    	mx_update_bits_locked(TAIKO_A_RX_HPH_BIAS_PA, 0xff, hph_pa_bias);
+    if (compander_bias != regread(TAIKO_A_RX_HPH_BIAS_CNP))
+        mx_update_bits_locked(TAIKO_A_RX_HPH_BIAS_CNP, 0xff, compander_bias);
 }
 
 static void update_interpolator(void)
