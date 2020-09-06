@@ -989,6 +989,15 @@ static void write_chopper(void)
 #endif
         mx_update_bits(TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x00);
         mx_update_bits(TAIKO_A_RX_HPH_CHOP_CTL, 0x80, 0x00);
+    } else if (hpwidget() && !hph_pa_enabled) {
+        mx_update_bits(TAIKO_A_RX_HPH_CHOP_CTL, 0x80, 0x80);
+        if (uhqa_mode)
+            mx_update_bits(TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x00);
+        else
+            mx_update_bits(TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20);
+    } else if (!hpwidget()) {
+        mx_update_bits(TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20);
+        mx_update_bits(TAIKO_A_RX_HPH_CHOP_CTL, 0x80, 0x00);
     }
 }
 
