@@ -30,8 +30,6 @@ TOOLCHAIN="/opt/toolchains/gcc-linaro-7.5.0-2019.12-x86_64_arm-linux-gnueabihf/b
 #TOOLCHAIN="/opt/toolchains/gcc-arm-9.2-2019.12-x86_64-arm-none-linux-gnueabihf/bin/arm-none-linux-gnueabihf-"
 #export ARCH="arm"
 export CROSS_COMPILE="$TOOLCHAIN"
-echo -n "$(date +%s)" > "$RDIR/.starttime"
-STARTTIME="$(cat $RDIR/.starttime)"
 
 timerprint() {
 
@@ -65,6 +63,7 @@ timerdiff() {
 
 	printf "%s" "$(date +%s)" > "$RDIR/.endtime"
 	ENDTIME="$(cat $RDIR/.endtime)"
+    STARTTIME="$(cat $RDIR/.starttime)"
 	DIFFTIME=$(( ENDTIME - STARTTIME ))
 
 }
