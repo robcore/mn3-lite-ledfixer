@@ -1020,7 +1020,7 @@ static void update_rms(void)
         			TAIKO_A_CDC_COMP1_B3_CTL,
         			0x01);
         	mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL,
-        		    0xF0, 0x05 << 4);
+        		    0xF0, 0x50);
             usleep_range(3000, 3100);
             wcd9xxx_reg_write(&sound_control_codec_ptr->core_res,
             		TAIKO_A_CDC_COMP1_B3_CTL,
@@ -1034,7 +1034,7 @@ static void update_rms(void)
         			TAIKO_A_CDC_COMP1_B3_CTL,
         			0x01);
         	mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL,
-        		    0xF0, 0x05 << 4);
+        		    0xF0, 0x50);
             usleep_range(3000, 3100);
         }
     } else {
@@ -1043,13 +1043,13 @@ static void update_rms(void)
         			TAIKO_A_CDC_COMP1_B3_CTL,
         			0x01);
         	mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL,
-        		    0xF0, 0x05 << 4);
+        		    0xF0, 0x50);
             usleep_range(3000, 3100);
             wcd9xxx_reg_write(&sound_control_codec_ptr->core_res,
                     TAIKO_A_CDC_COMP1_B3_CTL,
                     0x28);
             mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL,
-                    0xF0, 0x0B << 0x4);
+                    0xF0, 0xB0);
             mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL,
                     0x0F, 0x09);
         } else {
@@ -1057,7 +1057,7 @@ static void update_rms(void)
         			TAIKO_A_CDC_COMP1_B3_CTL,
         			0x01);
         	mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL,
-        		    0xF0, 0x05 << 4);
+        		    0xF0, 0x50);
             usleep_range(3000, 3100);
         }
     }
