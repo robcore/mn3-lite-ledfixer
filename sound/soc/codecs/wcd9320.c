@@ -603,7 +603,7 @@ static unsigned int bypass_static_pa;
 static unsigned int wavegen_override;
 /*RMS (Root Mean Squared) Power Detector*/
 static unsigned int rms_control = 1;
-static bool rms_control_enabled;
+static bool rms_enabled;
 
 #define PA_STAT_ON 8
 #define PA_STAT_OFF 4
@@ -1024,7 +1024,7 @@ static void update_rms(void)
     }
 
     if (rms_control) {
-        if (rms_control_enabled) {
+        if (rms_enabled) {
            	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res,
         			TAIKO_A_CDC_COMP1_B3_CTL,
         			0x01);
@@ -1047,7 +1047,7 @@ static void update_rms(void)
             usleep_range(3000, 3100);
         }
     } else {
-        if (rms_control_enabled) {
+        if (rms_enabled) {
            	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res,
         			TAIKO_A_CDC_COMP1_B3_CTL,
         			0x01);
@@ -1614,7 +1614,7 @@ static int taiko_config_compander(struct snd_soc_dapm_widget *w,
 	pr_info("%s: %s event %d compander %d, enabled %d", __func__,
 		 w->name, event, comp, taiko->comp_enabled[comp]);
 	if (comp == COMPANDER_1 && hph_pa_enabled) {
-        rms_control_enabled = false;
+        rms_enabled = false;
         update_rms();
     	/* Disable compander */
 		snd_soc_update_bits(codec,
@@ -1692,7 +1692,7 @@ static int taiko_config_compander(struct snd_soc_dapm_widget *w,
 				    (comp * 8), enable_mask, enable_mask);
 
         if (comp == COMPANDER_1)
-            rms_control_enabled = true;
+            rms_enabled = true;
         if (comp != COMPANDER_1) {
     		taiko_discharge_comp(codec, comp);
             /* Worst case timeout for compander CnP sleep timeout */
@@ -1721,7 +1721,7 @@ static int taiko_config_compander(struct snd_soc_dapm_widget *w,
 		break;
 	case SND_SOC_DAPM_PRE_PMD:
         if (comp == COMPANDER_1)
-            rms_control_enabled = false;
+            rms_enabled = false;
         if (comp != COMPANDER_1) {
             taiko_discharge_comp(codec, comp);
             /* Worst case timeout for compander CnP sleep timeout */
