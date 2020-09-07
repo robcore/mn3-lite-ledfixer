@@ -584,7 +584,7 @@ static bool hpwidget_right = false;
 static bool spkwidget = false;
 static unsigned int compander_gain_lock;
 static unsigned int compander_gain_boost;
-static u32 sc_rms_peak_det_timeout = 15;
+static u32 sc_peak_det_timeout = 15;
 static u32 sc_rms_meter_div_fact = 15;
 static u32 sc_rms_meter_resamp_fact = 255;
 static u8 hph_pa_bias = 0x7A;
@@ -602,8 +602,8 @@ static unsigned int chopper_bypass;
 static unsigned int bypass_static_pa;
 static unsigned int wavegen_override;
 /*RMS (Root Mean Squared) Power Detector*/
-static unsigned int rms_control = 1;
-static bool rms_enabled;
+static unsigned int interpolator_boost = 1;
+static bool interpolator_enabled;
 
 #define PA_STAT_ON 8
 #define PA_STAT_OFF 4
@@ -1012,24 +1012,15 @@ static void update_bias(void)
         mx_update_bits_locked(TAIKO_A_RX_HPH_BIAS_CNP, 0xff, compander_bias);
 }
 
-static void update_rms(void)
+static void update_interpolator(void)
 {
-    if (!hpwidget()) {
+    if (interpolator_boost) {
+        if (interpolator_enabled) {
            	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res,
         			TAIKO_A_CDC_COMP1_B3_CTL,
         			0x01);
         	mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL,
-        		    0xF0, 0x50);
-            usleep_range(3000, 3100);
-    }
-
-    if (rms_control) {
-        if (rms_enabled) {
-           	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res,
-        			TAIKO_A_CDC_COMP1_B3_CTL,
-        			0x01);
-        	mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL,
-        		    0xF0, 0x50);
+        		    0xF0, 0x05 << 4);
             usleep_range(3000, 3100);
             wcd9xxx_reg_write(&sound_control_codec_ptr->core_res,
             		TAIKO_A_CDC_COMP1_B3_CTL,
@@ -1037,28 +1028,28 @@ static void update_rms(void)
             mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL,
             	    0xF0, sc_rms_meter_div_fact << 4);
             mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL,
-            		0x0F, sc_rms_peak_det_timeout);
+            		0x0F, sc_peak_det_timeout);
         } else {
            	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res,
         			TAIKO_A_CDC_COMP1_B3_CTL,
         			0x01);
         	mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL,
-        		    0xF0, 0x50);
+        		    0xF0, 0x05 << 4);
             usleep_range(3000, 3100);
         }
     } else {
-        if (rms_enabled) {
+        if (interpolator_enabled) {
            	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res,
         			TAIKO_A_CDC_COMP1_B3_CTL,
         			0x01);
         	mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL,
-        		    0xF0, 0x50);
+        		    0xF0, 0x05 << 4);
             usleep_range(3000, 3100);
             wcd9xxx_reg_write(&sound_control_codec_ptr->core_res,
                     TAIKO_A_CDC_COMP1_B3_CTL,
                     0x28);
             mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL,
-                    0xF0, 0xB0);
+                    0xF0, 0x0B << 0x4);
             mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL,
                     0x0F, 0x09);
         } else {
@@ -1066,7 +1057,7 @@ static void update_rms(void)
         			TAIKO_A_CDC_COMP1_B3_CTL,
         			0x01);
         	mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL,
-        		    0xF0, 0x50);
+        		    0xF0, 0x05 << 4);
             usleep_range(3000, 3100);
         }
     }
@@ -1614,8 +1605,8 @@ static int taiko_config_compander(struct snd_soc_dapm_widget *w,
 	pr_info("%s: %s event %d compander %d, enabled %d", __func__,
 		 w->name, event, comp, taiko->comp_enabled[comp]);
 	if (comp == COMPANDER_1 && hph_pa_enabled) {
-        rms_enabled = false;
-        update_rms();
+        interpolator_enabled = false;
+        update_interpolator();
     	/* Disable compander */
 		snd_soc_update_bits(codec,
 				    TAIKO_A_CDC_COMP0_B1_CTL + (comp * 8),
@@ -1692,7 +1683,7 @@ static int taiko_config_compander(struct snd_soc_dapm_widget *w,
 				    (comp * 8), enable_mask, enable_mask);
 
         if (comp == COMPANDER_1)
-            rms_enabled = true;
+            interpolator_enabled = true;
         if (comp != COMPANDER_1) {
     		taiko_discharge_comp(codec, comp);
             /* Worst case timeout for compander CnP sleep timeout */
@@ -1702,7 +1693,7 @@ static int taiko_config_compander(struct snd_soc_dapm_widget *w,
 /*		.peak_det_timeout = 0x0B,
 		.rms_meter_div_fact = 0xC,
 		.rms_meter_resamp_fact = 0x50,
-		u32 sc_rms_peak_det_timeout = 0xB;
+		u32 sc_peak_det_timeout = 0xB;
 		u32 sc_rms_meter_div_fact = 0xD;
 		u32 sc_rms_meter_resamp_fact = 0xA0;
 */
@@ -1717,18 +1708,18 @@ static int taiko_config_compander(struct snd_soc_dapm_widget *w,
                                 0x0F, comp_params->peak_det_timeout);
 		}
         if (comp == COMPANDER_1)
-            update_rms();
+            update_interpolator();
 		break;
 	case SND_SOC_DAPM_PRE_PMD:
         if (comp == COMPANDER_1)
-            rms_enabled = false;
+            interpolator_enabled = false;
         if (comp != COMPANDER_1) {
             taiko_discharge_comp(codec, comp);
             /* Worst case timeout for compander CnP sleep timeout */
             usleep_range(3000, 3100);
         }
         if (comp == COMPANDER_1)
-            update_rms();
+            update_interpolator();
 		/* Disable compander */
 		snd_soc_update_bits(codec,
 				    TAIKO_A_CDC_COMP0_B1_CTL + (comp * 8),
@@ -8541,13 +8532,13 @@ static ssize_t high_perf_mode_store(struct kobject *kobj,
 	return count;
 }
 
-static ssize_t rms_control_show(struct kobject *kobj,
+static ssize_t interpolator_boost_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%u\n", rms_control);
+	return sprintf(buf, "%u\n", interpolator_boost);
 }
 
-static ssize_t rms_control_store(struct kobject *kobj,
+static ssize_t interpolator_boost_store(struct kobject *kobj,
 			   struct kobj_attribute *attr, const char *buf, size_t count)
 {
 	int uval;
@@ -8559,7 +8550,7 @@ static ssize_t rms_control_store(struct kobject *kobj,
 	if (uval > 1)
 		uval = 1;
 
-	rms_control = uval;
+	interpolator_boost = uval;
 	return count;
 }
 
@@ -8822,13 +8813,13 @@ static ssize_t speaker_hpf_bypass_store(struct kobject *kobj,
 	return count;
 }
 
-static ssize_t rms_peak_det_timeout_show(struct kobject *kobj,
+static ssize_t peak_det_timeout_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%u\n", sc_rms_peak_det_timeout);
+	return sprintf(buf, "%u\n", sc_peak_det_timeout);
 }
 
-static ssize_t rms_peak_det_timeout_store(struct kobject *kobj,
+static ssize_t peak_det_timeout_store(struct kobject *kobj,
 			   struct kobj_attribute *attr, const char *buf, size_t count)
 {
 	int uval;
@@ -8840,8 +8831,8 @@ static ssize_t rms_peak_det_timeout_store(struct kobject *kobj,
 	if (uval > 15)
 		uval = 15;
 
-	sc_rms_peak_det_timeout = uval;
-    update_rms();
+	sc_peak_det_timeout = uval;
+    update_interpolator();
 
 	return count;
 }
@@ -8865,7 +8856,7 @@ static ssize_t rms_meter_div_fact_store(struct kobject *kobj,
 		uval = 15;
 
 	sc_rms_meter_div_fact = uval;
-    update_rms();
+    update_interpolator();
 
 	return count;
 }
@@ -8889,7 +8880,7 @@ static ssize_t rms_meter_resamp_fact_store(struct kobject *kobj,
 		uval = 255;
 
    	sc_rms_meter_resamp_fact = uval;
-    update_rms();
+    update_interpolator();
 	return count;
 }
 
@@ -9058,10 +9049,10 @@ static struct kobj_attribute high_perf_mode_attribute =
 		high_perf_mode_show,
 		high_perf_mode_store);
 
-static struct kobj_attribute rms_control_attribute =
-	__ATTR(rms_control, 0644,
-		rms_control_show,
-		rms_control_store);
+static struct kobj_attribute interpolator_boost_attribute =
+	__ATTR(interpolator_boost, 0644,
+		interpolator_boost_show,
+		interpolator_boost_store);
 
 static struct kobj_attribute hph_pa_enabled_attribute =
 	__ATTR(hph_pa_enabled, 0644,
@@ -9118,10 +9109,10 @@ static struct kobj_attribute speaker_hpf_bypass_attribute =
 		speaker_hpf_bypass_show,
 		speaker_hpf_bypass_store);
 
-static struct kobj_attribute rms_peak_det_timeout_attribute =
-	__ATTR(rms_peak_det_timeout, 0644,
-		rms_peak_det_timeout_show,
-		rms_peak_det_timeout_store);
+static struct kobj_attribute peak_det_timeout_attribute =
+	__ATTR(peak_det_timeout, 0644,
+		peak_det_timeout_show,
+		peak_det_timeout_store);
 
 static struct kobj_attribute rms_meter_div_fact_attribute =
 	__ATTR(rms_meter_div_fact, 0644,
@@ -9164,7 +9155,7 @@ static struct attribute *sound_control_attrs[] = {
 		&iir2_gain_attribute.attr,
 		&uhqa_mode_attribute.attr,
 		&high_perf_mode_attribute.attr,
-		&rms_control_attribute.attr,
+		&interpolator_boost_attribute.attr,
 		&hph_pa_enabled_attribute.attr,
 		&compander_gain_lock_attribute.attr,
 		&compander_gain_boost_attribute.attr,
@@ -9176,7 +9167,7 @@ static struct attribute *sound_control_attrs[] = {
 		&headphone_left_hpf_bypass_attribute.attr,
 		&headphone_right_hpf_bypass_attribute.attr,
 		&speaker_hpf_bypass_attribute.attr,
-		&rms_peak_det_timeout_attribute.attr,
+		&peak_det_timeout_attribute.attr,
 		&rms_meter_div_fact_attribute.attr,
 		&rms_meter_resamp_fact_attribute.attr,
 		&hph_pa_bias_attribute.attr,

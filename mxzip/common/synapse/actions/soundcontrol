@@ -126,13 +126,13 @@ then
         busybox echo "$2" > /sys/kernel/sound_control/speaker_hpf_bypass
     fi
     busybox cat /sys/kernel/sound_control/speaker_hpf_bypass
-elif [ "$1" = "rms_control" ]
+elif [ "$1" = "interpolator_boost" ]
 then
     if [ -n "$2" ]
     then
-        busybox echo "$2" > /sys/kernel/sound_control/rms_control
+        busybox echo "$2" > /sys/kernel/sound_control/interpolator_boost
     fi
-    busybox cat /sys/kernel/sound_control/rms_control
+    busybox cat /sys/kernel/sound_control/interpolator_boost
 elif [ "$1" = "compander_gain_lock" ]
 then
     if [ -n "$2" ]
@@ -239,13 +239,13 @@ then
     then
         busybox echo "150"
     fi
-elif [ "$1" = "rms_peak_det_timeout" ]
+elif [ "$1" = "peak_det_timeout" ]
 then
     if [ -n "$2" ]
     then
-        busybox echo "$2" > /sys/kernel/sound_control/rms_peak_det_timeout
+        busybox echo "$2" > /sys/kernel/sound_control/peak_det_timeout
     fi
-    busybox cat /sys/kernel/sound_control/rms_peak_det_timeout
+    busybox cat /sys/kernel/sound_control/peak_det_timeout
 elif [ "$1" = "rms_meter_div_fact" ]
 then
     if [ -n "$2" ]
