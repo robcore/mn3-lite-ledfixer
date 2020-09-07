@@ -1014,6 +1014,15 @@ static void update_bias(void)
 
 static void update_rms(void)
 {
+    if (!hpwidget()) {
+           	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res,
+        			TAIKO_A_CDC_COMP1_B3_CTL,
+        			0x01);
+        	mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL,
+        		    0xF0, 0x50);
+            usleep_range(3000, 3100);
+    }
+
     if (rms_control) {
         if (rms_control_enabled) {
            	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res,
