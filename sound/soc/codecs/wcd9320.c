@@ -2056,7 +2056,14 @@ static const struct snd_kcontrol_new taiko_snd_controls[] = {
 	SOC_ENUM("RX5 HPF cut off", cf_rxmix5_enum),
 	SOC_ENUM("RX6 HPF cut off", cf_rxmix6_enum),
 //	SOC_ENUM("RX7 HPF cut off", cf_rxmix7_enum),
-
+/*
+#define SOC_SINGLE_EXT(xname, xreg, xshift, xmax, xinvert,\
+	 xhandler_get, xhandler_put) \
+{	.iface = SNDRV_CTL_ELEM_IFACE_MIXER, .name = xname, \
+	.info = snd_soc_info_volsw, \
+	.get = xhandler_get, .put = xhandler_put, \
+	.private_value = SOC_SINGLE_VALUE(xreg, xshift, xmax, xinvert) }
+*/
 	SOC_SINGLE_EXT("IIR1 Enable Band1", IIR1, BAND1, 1, 0,
 	taiko_get_iir_enable_audio_mixer, taiko_put_iir_enable_audio_mixer),
 	SOC_SINGLE_EXT("IIR1 Enable Band2", IIR1, BAND2, 1, 0,
@@ -2077,7 +2084,16 @@ static const struct snd_kcontrol_new taiko_snd_controls[] = {
 	taiko_get_iir_enable_audio_mixer, taiko_put_iir_enable_audio_mixer),
 	SOC_SINGLE_EXT("IIR2 Enable Band5", IIR2, BAND5, 1, 0,
 	taiko_get_iir_enable_audio_mixer, taiko_put_iir_enable_audio_mixer),
-
+/*
+#define SOC_SINGLE_MULTI_EXT(xname, xreg, xshift, xmax, xinvert, xcount,\
+	xhandler_get, xhandler_put) \
+{      .iface = SNDRV_CTL_ELEM_IFACE_MIXER, .name = xname, \
+	.info = snd_soc_info_multi_ext, \
+	.get = xhandler_get, .put = xhandler_put, \
+	.private_value = (unsigned long)&(struct soc_multi_mixer_control) \
+		{.reg = xreg, .shift = xshift, .rshift = xshift, .max = xmax, \
+		.count = xcount, .platform_max = xmax, .invert = xinvert} }
+*/
 	SOC_SINGLE_MULTI_EXT("IIR1 Band1", IIR1, BAND1, 255, 0, 5,
 	taiko_get_iir_band_audio_mixer, taiko_put_iir_band_audio_mixer),
 	SOC_SINGLE_MULTI_EXT("IIR1 Band2", IIR1, BAND2, 255, 0, 5,
@@ -2486,13 +2502,25 @@ static const struct soc_enum iir1_inp1_mux_enum =
 	SOC_ENUM_SINGLE(TAIKO_A_CDC_CONN_EQ1_B1_CTL, 0, 18, iir_inp1_text);
 
 static const struct soc_enum iir1_inp2_mux_enum =
-	SOC_ENUM_SINGLE(TAIKO_A_CDC_CONN_EQ1_B1_CTL, 0, 18, iir_inp2_text);
+	SOC_ENUM_SINGLE(TAIKO_A_CDC_CONN_EQ1_B2_CTL, 0, 18, iir_inp2_text);
+
+static const struct soc_enum iir1_inp3_mux_enum =
+	SOC_ENUM_SINGLE(TAIKO_A_CDC_CONN_EQ1_B3_CTL, 0, 18, iir_inp3_text);
+
+static const struct soc_enum iir1_inp4_mux_enum =
+	SOC_ENUM_SINGLE(TAIKO_A_CDC_CONN_EQ1_B4_CTL, 0, 18, iir_inp4_text);
 
 static const struct soc_enum iir2_inp1_mux_enum =
 	SOC_ENUM_SINGLE(TAIKO_A_CDC_CONN_EQ2_B1_CTL, 0, 18, iir_inp1_text);
 
 static const struct soc_enum iir2_inp2_mux_enum =
-	SOC_ENUM_SINGLE(TAIKO_A_CDC_CONN_EQ2_B1_CTL, 0, 18, iir_inp2_text);
+	SOC_ENUM_SINGLE(TAIKO_A_CDC_CONN_EQ2_B2_CTL, 0, 18, iir_inp2_text);
+
+static const struct soc_enum iir2_inp3_mux_enum =
+	SOC_ENUM_SINGLE(TAIKO_A_CDC_CONN_EQ2_B3_CTL, 0, 18, iir_inp3_text);
+
+static const struct soc_enum iir2_inp4_mux_enum =
+	SOC_ENUM_SINGLE(TAIKO_A_CDC_CONN_EQ2_B4_CTL, 0, 18, iir_inp4_text);
 
 static const struct snd_kcontrol_new rx_mix1_inp1_mux =
 	SOC_DAPM_ENUM("RX1 MIX1 INP1 Mux", rx_mix1_inp1_chain_enum);
@@ -2719,11 +2747,23 @@ static const struct snd_kcontrol_new iir1_inp1_mux =
 static const struct snd_kcontrol_new iir1_inp2_mux =
 	SOC_DAPM_ENUM("IIR1 INP2 Mux", iir1_inp2_mux_enum);
 
+static const struct snd_kcontrol_new iir1_inp3_mux =
+	SOC_DAPM_ENUM("IIR1 INP3 Mux", iir1_inp3_mux_enum);
+
+static const struct snd_kcontrol_new iir1_inp4_mux =
+	SOC_DAPM_ENUM("IIR1 INP4 Mux", iir1_inp4_mux_enum);
+
 static const struct snd_kcontrol_new iir2_inp1_mux =
 	SOC_DAPM_ENUM("IIR2 INP1 Mux", iir2_inp1_mux_enum);
 
 static const struct snd_kcontrol_new iir2_inp2_mux =
 	SOC_DAPM_ENUM("IIR2 INP2 Mux", iir2_inp2_mux_enum);
+
+static const struct snd_kcontrol_new iir2_inp3_mux =
+	SOC_DAPM_ENUM("IIR2 INP3 Mux", iir2_inp3_mux_enum);
+
+static const struct snd_kcontrol_new iir2_inp4_mux =
+	SOC_DAPM_ENUM("IIR2 INP4 Mux", iir2_inp4_mux_enum);
 
 static const struct snd_kcontrol_new anc1_mux =
 	SOC_DAPM_ENUM("ANC1 MUX Mux", anc1_mux_enum);
@@ -4806,6 +4846,44 @@ static const struct snd_soc_dapm_route audio_map[] = {
 	{"IIR1 INP2 MUX", "RX6", "SLIM RX6"},
 	{"IIR1 INP2 MUX", "RX7", "SLIM RX7"},
 
+	{"IIR1", NULL, "IIR1 INP3 MUX"},
+	{"IIR1 INP3 MUX", "DEC1", "DEC1 MUX"},
+	{"IIR1 INP3 MUX", "DEC2", "DEC2 MUX"},
+	{"IIR1 INP3 MUX", "DEC3", "DEC3 MUX"},
+	{"IIR1 INP3 MUX", "DEC4", "DEC4 MUX"},
+	{"IIR1 INP3 MUX", "DEC5", "DEC5 MUX"},
+	{"IIR1 INP3 MUX", "DEC6", "DEC6 MUX"},
+	{"IIR1 INP3 MUX", "DEC7", "DEC7 MUX"},
+	{"IIR1 INP3 MUX", "DEC8", "DEC8 MUX"},
+	{"IIR1 INP3 MUX", "DEC9", "DEC9 MUX"},
+	{"IIR1 INP3 MUX", "DEC10", "DEC10 MUX"},
+	{"IIR1 INP3 MUX", "RX1", "SLIM RX1"},
+	{"IIR1 INP3 MUX", "RX2", "SLIM RX2"},
+	{"IIR1 INP3 MUX", "RX3", "SLIM RX3"},
+	{"IIR1 INP3 MUX", "RX4", "SLIM RX4"},
+	{"IIR1 INP3 MUX", "RX5", "SLIM RX5"},
+	{"IIR1 INP3 MUX", "RX6", "SLIM RX6"},
+	{"IIR1 INP3 MUX", "RX7", "SLIM RX7"},
+
+	{"IIR1", NULL, "IIR1 INP4 MUX"},
+	{"IIR1 INP4 MUX", "DEC1", "DEC1 MUX"},
+	{"IIR1 INP4 MUX", "DEC2", "DEC2 MUX"},
+	{"IIR1 INP4 MUX", "DEC3", "DEC3 MUX"},
+	{"IIR1 INP4 MUX", "DEC4", "DEC4 MUX"},
+	{"IIR1 INP4 MUX", "DEC5", "DEC5 MUX"},
+	{"IIR1 INP4 MUX", "DEC6", "DEC6 MUX"},
+	{"IIR1 INP4 MUX", "DEC7", "DEC7 MUX"},
+	{"IIR1 INP4 MUX", "DEC8", "DEC8 MUX"},
+	{"IIR1 INP4 MUX", "DEC9", "DEC9 MUX"},
+	{"IIR1 INP4 MUX", "DEC10", "DEC10 MUX"},
+	{"IIR1 INP4 MUX", "RX1", "SLIM RX1"},
+	{"IIR1 INP4 MUX", "RX2", "SLIM RX2"},
+	{"IIR1 INP4 MUX", "RX3", "SLIM RX3"},
+	{"IIR1 INP4 MUX", "RX4", "SLIM RX4"},
+	{"IIR1 INP4 MUX", "RX5", "SLIM RX5"},
+	{"IIR1 INP4 MUX", "RX6", "SLIM RX6"},
+	{"IIR1 INP4 MUX", "RX7", "SLIM RX7"},
+
 	{"IIR2", NULL, "IIR2 INP1 MUX"},
 	{"IIR2 INP1 MUX", "DEC1", "DEC1 MUX"},
 	{"IIR2 INP1 MUX", "DEC2", "DEC2 MUX"},
@@ -4843,6 +4921,44 @@ static const struct snd_soc_dapm_route audio_map[] = {
 	{"IIR2 INP2 MUX", "RX5", "SLIM RX5"},
 	{"IIR2 INP2 MUX", "RX6", "SLIM RX6"},
 	{"IIR2 INP2 MUX", "RX7", "SLIM RX7"},
+
+	{"IIR2", NULL, "IIR2 INP3 MUX"},
+	{"IIR2 INP3 MUX", "DEC1", "DEC1 MUX"},
+	{"IIR2 INP3 MUX", "DEC2", "DEC2 MUX"},
+	{"IIR2 INP3 MUX", "DEC3", "DEC3 MUX"},
+	{"IIR2 INP3 MUX", "DEC4", "DEC4 MUX"},
+	{"IIR2 INP3 MUX", "DEC5", "DEC5 MUX"},
+	{"IIR2 INP3 MUX", "DEC6", "DEC6 MUX"},
+	{"IIR2 INP3 MUX", "DEC7", "DEC7 MUX"},
+	{"IIR2 INP3 MUX", "DEC8", "DEC8 MUX"},
+	{"IIR2 INP3 MUX", "DEC9", "DEC9 MUX"},
+	{"IIR2 INP3 MUX", "DEC10", "DEC10 MUX"},
+	{"IIR2 INP3 MUX", "RX1", "SLIM RX1"},
+	{"IIR2 INP3 MUX", "RX2", "SLIM RX2"},
+	{"IIR2 INP3 MUX", "RX3", "SLIM RX3"},
+	{"IIR2 INP3 MUX", "RX4", "SLIM RX4"},
+	{"IIR2 INP3 MUX", "RX5", "SLIM RX5"},
+	{"IIR2 INP3 MUX", "RX6", "SLIM RX6"},
+	{"IIR2 INP3 MUX", "RX7", "SLIM RX7"},
+
+	{"IIR2", NULL, "IIR2 INP4 MUX"},
+	{"IIR2 INP4 MUX", "DEC1", "DEC1 MUX"},
+	{"IIR2 INP4 MUX", "DEC2", "DEC2 MUX"},
+	{"IIR2 INP4 MUX", "DEC3", "DEC3 MUX"},
+	{"IIR2 INP4 MUX", "DEC4", "DEC4 MUX"},
+	{"IIR2 INP4 MUX", "DEC5", "DEC5 MUX"},
+	{"IIR2 INP4 MUX", "DEC6", "DEC6 MUX"},
+	{"IIR2 INP4 MUX", "DEC7", "DEC7 MUX"},
+	{"IIR2 INP4 MUX", "DEC8", "DEC8 MUX"},
+	{"IIR2 INP4 MUX", "DEC9", "DEC9 MUX"},
+	{"IIR2 INP4 MUX", "DEC10", "DEC10 MUX"},
+	{"IIR2 INP4 MUX", "RX1", "SLIM RX1"},
+	{"IIR2 INP4 MUX", "RX2", "SLIM RX2"},
+	{"IIR2 INP4 MUX", "RX3", "SLIM RX3"},
+	{"IIR2 INP4 MUX", "RX4", "SLIM RX4"},
+	{"IIR2 INP4 MUX", "RX5", "SLIM RX5"},
+	{"IIR2 INP4 MUX", "RX6", "SLIM RX6"},
+	{"IIR2 INP4 MUX", "RX7", "SLIM RX7"},
 
 	{"MIC BIAS1 Internal1", NULL, "LDO_H"},
 	{"MIC BIAS1 Internal2", NULL, "LDO_H"},
@@ -6931,9 +7047,13 @@ static const struct snd_soc_dapm_widget taiko_dapm_widgets[] = {
 	/* Sidetone */
 	SND_SOC_DAPM_MUX("IIR1 INP1 MUX", SND_SOC_NOPM, 0, 0, &iir1_inp1_mux),
 	SND_SOC_DAPM_MUX("IIR1 INP2 MUX", SND_SOC_NOPM, 0, 0, &iir1_inp2_mux),
+	SND_SOC_DAPM_MUX("IIR1 INP3 MUX", SND_SOC_NOPM, 0, 0, &iir1_inp3_mux),
+    SND_SOC_DAPM_MUX("IIR1 INP4 MUX", SND_SOC_NOPM, 0, 0, &iir1_inp4_mux),
 	SND_SOC_DAPM_MIXER("IIR1", TAIKO_A_CDC_CLK_SD_CTL, 0, 0, NULL, 0),
 	SND_SOC_DAPM_MUX("IIR2 INP1 MUX", SND_SOC_NOPM, 0, 0, &iir2_inp1_mux),
 	SND_SOC_DAPM_MUX("IIR2 INP2 MUX", SND_SOC_NOPM, 0, 0, &iir2_inp2_mux),
+	SND_SOC_DAPM_MUX("IIR2 INP3 MUX", SND_SOC_NOPM, 0, 0, &iir2_inp3_mux),
+	SND_SOC_DAPM_MUX("IIR2 INP4 MUX", SND_SOC_NOPM, 0, 0, &iir2_inp4_mux),
 	SND_SOC_DAPM_MIXER("IIR2", TAIKO_A_CDC_CLK_SD_CTL, 1, 0, NULL, 0),
 
 	/* AUX PGA */
