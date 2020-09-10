@@ -135,15 +135,6 @@
     <ctl name="IIR2 Enable Band4" value="0" />
     <ctl name="IIR2 Enable Band5" value="0" />
 
-	<ctl name="RX1 MIX1 INP1" value="ZERO" />
-	<ctl name="RX2 MIX1 INP1" value="ZERO" />
-    <!-- Volume Boost! -->
-	<ctl name="RX1 MIX1 INP2" value="ZERO" />
-	<ctl name="RX2 MIX1 INP2" value="ZERO" />
-
-	<ctl name="RX1 MIX2 INP1" value="ZERO" />
-	<ctl name="RX2 MIX2 INP1" value="ZERO" />
-
 	<ctl name="RX1 Digital Volume" value="0" />
 	<ctl name="RX2 Digital Volume" value="0" />
 	<ctl name="RX3 Digital Volume" value="0" />
@@ -156,6 +147,15 @@
 	<ctl name="LINEOUT2 Volume" value="0" />
 	<ctl name="LINEOUT3 Volume" value="0" />
 	<ctl name="LINEOUT4 Volume" value="0" />
+
+	<ctl name="RX1 MIX1 INP1" value="ZERO" />
+	<ctl name="RX2 MIX1 INP1" value="ZERO" />
+    <!-- Volume Boost! -->
+	<ctl name="RX1 MIX1 INP2" value="ZERO" />
+	<ctl name="RX2 MIX1 INP2" value="ZERO" />
+
+	<ctl name="RX1 MIX2 INP1" value="ZERO" />
+	<ctl name="RX2 MIX2 INP1" value="ZERO" />
 
 	<ctl name="SPK DRV Volume" value="0" />
 
