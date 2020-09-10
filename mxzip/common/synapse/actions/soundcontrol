@@ -304,4 +304,13 @@ then
     do 
         printf "%s\n" $LINE@n;
     done < /sys/kernel/sound_control/chopper
+elif [ "$1" = "show_iirs_locked" ]
+then
+    busybox cat /sys/kernel/sound_control/iirs_locked
+elif [ "$1" = "lock_iirs_locked" ]
+then
+    busybox echo "1" > /sys/kernel/sound_control/iirs_locked
+elif [ "$1" = "unlock_iirs_locked" ]
+then
+    busybox echo "0" > /sys/kernel/sound_control/iirs_locked
 fi

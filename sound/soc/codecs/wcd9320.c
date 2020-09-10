@@ -550,11 +550,14 @@ static unsigned short tx_digital_gain_reg[] = {
 };
 
 /* Shared values for core resource locking */
+/*TODO: set all of these to 172 by default */
 u8 hphl_cached_gain;
 u8 hphr_cached_gain;
 u8 speaker_cached_gain;
 u8 iir1_cached_gain;
 u8 iir2_cached_gain;
+u8 iir1_inp2_cached_gain;
+u8 iir2_inp2_cached_gain;
 
 #if 0
 /* RX4 routed from right to left side */
@@ -589,6 +592,7 @@ static u32 sc_rms_meter_div_fact = 15;
 static u32 sc_rms_meter_resamp_fact = 255;
 static u8 hph_pa_bias = 0x7A;
 static unsigned int harmonic_distortion_coeffs = 0;
+static unsigned int iirs_locked = 0;
 
 /*
 #define TAIKO_A_RX_HPH_BIAS_CNP (0x1A8)
@@ -727,6 +731,8 @@ static void update_iir_gain(void)
 	lock_sound_control(&sound_control_codec_ptr->core_res, 1);
 	regwrite(TAIKO_A_CDC_IIR1_GAIN_B1_CTL, iir1_cached_gain);
 	regwrite(TAIKO_A_CDC_IIR2_GAIN_B1_CTL, iir2_cached_gain);
+	regwrite(TAIKO_A_CDC_IIR1_GAIN_B2_CTL, iir1_inp2_cached_gain);
+	regwrite(TAIKO_A_CDC_IIR2_GAIN_B2_CTL, iir2_inp2_cached_gain);
 	lock_sound_control(&sound_control_codec_ptr->core_res, 0);
 }
 #if 0
@@ -1248,6 +1254,8 @@ static int taiko_put_iir_enable_audio_mixer(
 					kcontrol->private_value)->shift;
 	int value = ucontrol->value.integer.value[0];
 
+    if (iirs_locked)
+        return 0;
 	/* Mask first 5 bits, 6-8 are reserved */
 	snd_soc_update_bits(codec, (TAIKO_A_CDC_IIR1_CTL + 16 * iir_idx),
 		(1 << band_idx), (value << band_idx));
@@ -1321,23 +1329,7 @@ static int taiko_get_iir_band_audio_mixer(
 		get_iir_band_coeff(codec, iir_idx, band_idx, 3);
 	ucontrol->value.integer.value[4] =
 		get_iir_band_coeff(codec, iir_idx, band_idx, 4);
-/*
-	pr_debug("%s: IIR #%d band #%d b0 = 0x%x\n"
-		"%s: IIR #%d band #%d b1 = 0x%x\n"
-		"%s: IIR #%d band #%d b2 = 0x%x\n"
-		"%s: IIR #%d band #%d a1 = 0x%x\n"
-		"%s: IIR #%d band #%d a2 = 0x%x\n",
-		__func__, iir_idx, band_idx,
-		(uint32_t)ucontrol->value.integer.value[0],
-		__func__, iir_idx, band_idx,
-		(uint32_t)ucontrol->value.integer.value[1],
-		__func__, iir_idx, band_idx,
-		(uint32_t)ucontrol->value.integer.value[2],
-		__func__, iir_idx, band_idx,
-		(uint32_t)ucontrol->value.integer.value[3],
-		__func__, iir_idx, band_idx,
-		(uint32_t)ucontrol->value.integer.value[4]);
-*/
+
 	return 0;
 }
 
@@ -1345,6 +1337,8 @@ static void set_iir_band_coeff(struct snd_soc_codec *codec,
 				int iir_idx, int band_idx,
 				uint32_t value)
 {
+    if (iirs_locked)
+        return;
 	snd_soc_write(codec,
 		(TAIKO_A_CDC_IIR1_COEF_B2_CTL + 16 * iir_idx),
 		(value & 0xFF));
@@ -1373,6 +1367,8 @@ static int taiko_put_iir_band_audio_mixer(
 	int band_idx = ((struct soc_multi_mixer_control *)
 					kcontrol->private_value)->shift;
 
+    if (iirs_locked)
+        return 0;
 	/* Mask top bit it is reserved */
 	/* Updates addr automatically for each B2 write */
 	snd_soc_write(codec,
@@ -1390,21 +1386,6 @@ static int taiko_put_iir_band_audio_mixer(
 	set_iir_band_coeff(codec, iir_idx, band_idx,
 				ucontrol->value.integer.value[4]);
 
-	pr_debug("%s: IIR #%d band #%d b0 = 0x%x\n"
-		"%s: IIR #%d band #%d b1 = 0x%x\n"
-		"%s: IIR #%d band #%d b2 = 0x%x\n"
-		"%s: IIR #%d band #%d a1 = 0x%x\n"
-		"%s: IIR #%d band #%d a2 = 0x%x\n",
-		__func__, iir_idx, band_idx,
-		get_iir_band_coeff(codec, iir_idx, band_idx, 0),
-		__func__, iir_idx, band_idx,
-		get_iir_band_coeff(codec, iir_idx, band_idx, 1),
-		__func__, iir_idx, band_idx,
-		get_iir_band_coeff(codec, iir_idx, band_idx, 2),
-		__func__, iir_idx, band_idx,
-		get_iir_band_coeff(codec, iir_idx, band_idx, 3),
-		__func__, iir_idx, band_idx,
-		get_iir_band_coeff(codec, iir_idx, band_idx, 4));
 	return 0;
 }
 
@@ -2371,6 +2352,9 @@ static const struct soc_enum rx2_mix1_inp1_chain_enum =
 static const struct soc_enum rx2_mix1_inp2_chain_enum =
 	SOC_ENUM_SINGLE(TAIKO_A_CDC_CONN_RX2_B1_CTL, 4, 12, rx_mix1_text);
 
+static const struct soc_enum rx2_mix1_inp3_chain_enum =
+	SOC_ENUM_SINGLE(TAIKO_A_CDC_CONN_RX2_B2_CTL, 0, 12, rx_mix1_text);
+
 static const struct soc_enum rx3_mix1_inp1_chain_enum =
 	SOC_ENUM_SINGLE(TAIKO_A_CDC_CONN_RX3_B1_CTL, 0, 12, rx_mix1_text);
 
@@ -2536,6 +2520,9 @@ static const struct snd_kcontrol_new rx2_mix1_inp1_mux =
 
 static const struct snd_kcontrol_new rx2_mix1_inp2_mux =
 	SOC_DAPM_ENUM("RX2 MIX1 INP2 Mux", rx2_mix1_inp2_chain_enum);
+
+static const struct snd_kcontrol_new rx2_mix1_inp3_mux =
+	SOC_DAPM_ENUM("RX2 MIX1 INP3 Mux", rx2_mix1_inp3_chain_enum);
 
 static const struct snd_kcontrol_new rx3_mix1_inp1_mux =
 	SOC_DAPM_ENUM("RX3 MIX1 INP1 Mux", rx3_mix1_inp1_chain_enum);
@@ -4548,6 +4535,7 @@ static const struct snd_soc_dapm_route audio_map[] = {
 	{"RX1 MIX1", NULL, "RX1 MIX1 INP3"},
 	{"RX2 MIX1", NULL, "RX2 MIX1 INP1"},
 	{"RX2 MIX1", NULL, "RX2 MIX1 INP2"},
+	{"RX2 MIX1", NULL, "RX2 MIX1 INP3"},
 	{"RX3 MIX1", NULL, "RX3 MIX1 INP1"},
 	{"RX3 MIX1", NULL, "RX3 MIX1 INP2"},
 	{"RX4 MIX1", NULL, "RX4 MIX1 INP1"},
@@ -4626,6 +4614,8 @@ static const struct snd_soc_dapm_route audio_map[] = {
 	{"RX1 MIX1 INP3", "RX5", "SLIM RX5"},
 	{"RX1 MIX1 INP3", "RX6", "SLIM RX6"},
 	{"RX1 MIX1 INP3", "RX7", "SLIM RX7"},
+	{"RX1 MIX1 INP3", "IIR1", "IIR1"},
+	{"RX1 MIX1 INP3", "IIR2", "IIR2"},
 	{"RX2 MIX1 INP1", "RX1", "SLIM RX1"},
 	{"RX2 MIX1 INP1", "RX2", "SLIM RX2"},
 	{"RX2 MIX1 INP1", "RX3", "SLIM RX3"},
@@ -4644,6 +4634,15 @@ static const struct snd_soc_dapm_route audio_map[] = {
 	{"RX2 MIX1 INP2", "RX7", "SLIM RX7"},
 	{"RX2 MIX1 INP2", "IIR1", "IIR1"},
 	{"RX2 MIX1 INP2", "IIR2", "IIR2"},
+	{"RX2 MIX1 INP3", "RX1", "SLIM RX1"},
+	{"RX2 MIX1 INP3", "RX2", "SLIM RX2"},
+	{"RX2 MIX1 INP3", "RX3", "SLIM RX3"},
+	{"RX2 MIX1 INP3", "RX4", "SLIM RX4"},
+	{"RX2 MIX1 INP3", "RX5", "SLIM RX5"},
+	{"RX2 MIX1 INP3", "RX6", "SLIM RX6"},
+	{"RX2 MIX1 INP3", "RX7", "SLIM RX7"},
+	{"RX2 MIX1 INP3", "IIR1", "IIR1"},
+	{"RX2 MIX1 INP3", "IIR2", "IIR2"},
 	{"RX3 MIX1 INP1", "RX1", "SLIM RX1"},
 	{"RX3 MIX1 INP1", "RX2", "SLIM RX2"},
 	{"RX3 MIX1 INP1", "RX3", "SLIM RX3"},
@@ -6747,6 +6746,8 @@ static const struct snd_soc_dapm_widget taiko_dapm_widgets[] = {
 		&rx2_mix1_inp1_mux),
 	SND_SOC_DAPM_MUX("RX2 MIX1 INP2", SND_SOC_NOPM, 0, 0,
 		&rx2_mix1_inp2_mux),
+	SND_SOC_DAPM_MUX("RX2 MIX1 INP3", SND_SOC_NOPM, 0, 0,
+		&rx2_mix1_inp3_mux),
 	SND_SOC_DAPM_MUX("RX3 MIX1 INP1", SND_SOC_NOPM, 0, 0,
 		&rx3_mix1_inp1_mux),
 	SND_SOC_DAPM_MUX("RX3 MIX1 INP2", SND_SOC_NOPM, 0, 0,
@@ -8205,6 +8206,29 @@ static ssize_t autochopper_raw_show(struct kobject *kobj,
 	return sprintf(buf, "Autochopper:%d\n", regread(TAIKO_A_RX_HPH_AUTO_CHOP));
 }
 
+static ssize_t iirs_locked_show(struct kobject *kobj,
+		struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%d\n", iirs_locked);
+}
+
+static ssize_t iirs_locked_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
+	int uval;
+
+	sscanf(buf, "%d", &uval);
+
+	if (uval < 0)
+		uval = 0;
+	if (uval > 1)
+		uval = 1;
+
+	iirs_locked = uval;
+
+	return count;
+}
+
 static ssize_t wavegen_override_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf)
 {
@@ -8412,6 +8436,43 @@ static ssize_t iir1_gain_store(struct kobject *kobj,
 	return count;
 }
 
+static ssize_t iir1_inp2_gain_show(struct kobject *kobj,
+		struct kobj_attribute *attr, char *buf)
+{
+	int iirval, tempval;
+
+	iirval = show_sound_value(TAIKO_A_CDC_IIR1_GAIN_B1_CTL);
+	if (iirval == -84) {
+		tempval = iir1_inp2_cached_gain;
+
+		if ((tempval > 171) && (tempval < 256))
+			tempval -= 256;
+	} else {
+		tempval = iirval;
+	}
+
+	return sprintf(buf, "%d\n", tempval);
+}
+
+static ssize_t iir1_inp2_gain_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
+	int iirinput;
+
+	sscanf(buf, "%d", &iirinput);
+
+	iirinput = clamp_val(iirinput, -84, 40);
+
+	if (iirinput < 0)
+		iir1_inp2_cached_gain = (u8)(iirinput + 256);
+	else
+		iir1_inp2_cached_gain = (u8)iirinput;
+
+	update_iir_gain();
+
+	return count;
+}
+
 static ssize_t iir2_gain_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf)
 {
@@ -8443,6 +8504,43 @@ static ssize_t iir2_gain_store(struct kobject *kobj,
 		iir2_cached_gain = (u8)(iirinput + 256);
 	else
 		iir2_cached_gain = (u8)iirinput;
+
+	update_iir_gain();
+
+	return count;
+}
+
+static ssize_t iir2_inp2_gain_show(struct kobject *kobj,
+		struct kobj_attribute *attr, char *buf)
+{
+	int iirval, tempval;
+
+	iirval = show_sound_value(TAIKO_A_CDC_IIR2_GAIN_B1_CTL);
+	if (iirval == -84) {
+		tempval = iir2_inp2_cached_gain;
+
+		if ((tempval > 171) && (tempval < 256))
+			tempval -= 256;
+	} else {
+		tempval = iirval;
+	}
+
+	return sprintf(buf, "%d\n", tempval);
+}
+
+static ssize_t iir2_inp2_gain_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
+	int iirinput;
+
+	sscanf(buf, "%d", &iirinput);
+
+	iirinput = clamp_val(iirinput, -84, 40);
+
+	if (iirinput < 0)
+		iir2_inp2_cached_gain = (u8)(iirinput + 256);
+	else
+		iir2_inp2_cached_gain = (u8)iirinput;
 
 	update_iir_gain();
 
@@ -9086,6 +9184,11 @@ static struct kobj_attribute autochopper_raw_attribute =
 		autochopper_raw_show,
 		NULL);
 
+static struct kobj_attribute iirs_locked_attribute =
+	__ATTR(iirs_locked, 0644,
+		iirs_locked_show,
+		iirs_locked_store);
+
 static struct kobj_attribute wavegen_override_attribute =
 	__ATTR(wavegen_override, 0644,
 		wavegen_override_show,
@@ -9137,10 +9240,20 @@ static struct kobj_attribute iir1_gain_attribute =
 		iir1_gain_show,
 		iir1_gain_store);
 
+static struct kobj_attribute iir1_inp2_gain_attribute =
+	__ATTR(iir1_inp2_gain, 0644,
+		iir1_inp2_gain_show,
+		iir1_inp2_gain_store);
+
 static struct kobj_attribute iir2_gain_attribute =
 	__ATTR(iir2_gain, 0644,
 		iir2_gain_show,
 		iir2_gain_store);
+
+static struct kobj_attribute iir2_inp2_gain_attribute =
+	__ATTR(iir2_inp2_gain, 0644,
+		iir2_inp2_gain_show,
+		iir2_inp2_gain_store);
 
 static struct kobj_attribute uhqa_mode_attribute =
 	__ATTR(uhqa_mode, 0644,
@@ -9243,6 +9356,7 @@ static struct attribute *sound_control_attrs[] = {
         &class_h_control_attribute.attr,
 		&chopper_attribute.attr,
 		&autochopper_raw_attribute.attr,
+        &iirs_locked_attribute.attr,
         &wavegen_override_attribute.attr,
 		&autochopper_attribute.attr,
 		&chopper_bypass_attribute.attr,
@@ -9255,7 +9369,9 @@ static struct attribute *sound_control_attrs[] = {
 		&hph_poweramp_gain_raw_attribute.attr,
 		&speaker_gain_attribute.attr,
 		&iir1_gain_attribute.attr,
+		&iir1_inp2_gain_attribute.attr,
 		&iir2_gain_attribute.attr,
+		&iir2_inp2_gain_attribute.attr,
 		&uhqa_mode_attribute.attr,
 		&high_perf_mode_attribute.attr,
 		&interpolator_boost_attribute.attr,

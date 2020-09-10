@@ -123,6 +123,8 @@ extern u8 hphr_cached_gain;
 extern u8 speaker_cached_gain;
 extern u8 iir1_cached_gain; /*0x340*/
 extern u8 iir2_cached_gain; /*0x350*/
+extern u8 iir1_inp2_cached_gain; /*0x341*/
+extern u8 iir2_inp2_cached_gain; /*0x351*/
 
 #if 0
 extern u8 crossleft_cached_gain; /* RX4 routed from right to left side Port: RX4 -> 0x2CF */
@@ -151,7 +153,9 @@ static bool sound_control_reserved(unsigned short reg)
 		case 0x2BF:
 		case 0x2E7:
         case 0x340:
+        case 0x341:
         case 0x350:
+        case 0x351:
 #if 0
         case 0x2CF:
         case 0x2C7:
@@ -234,20 +238,18 @@ static int __wcd9xxx_reg_write(struct wcd9xxx *wcd9xxx,
 			else
 				ret = wcd9xxx_write(wcd9xxx, reg, 1, &iir2_cached_gain, false);
 			break;
-#if 0
-		case 0x2CF:
+		case 0x341:
 			if (val == 172)
 				ret = wcd9xxx_write(wcd9xxx, reg, 1, &val, false);
 			else
-				ret = wcd9xxx_write(wcd9xxx, reg, 1, &crossleft_cached_gain, false);
+				ret = wcd9xxx_write(wcd9xxx, reg, 1, &iir1_inp2_cached_gain, false);
 			break;
-		case 0x2C7:
+		case 0x351:
 			if (val == 172)
 				ret = wcd9xxx_write(wcd9xxx, reg, 1, &val, false);
 			else
-				ret = wcd9xxx_write(wcd9xxx, reg, 1, &crossright_cached_gain, false);
+				ret = wcd9xxx_write(wcd9xxx, reg, 1, &iir2_inp2_cached_gain, false);
 			break;
-#endif
 		default:
 			break;
 	}
