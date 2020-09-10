@@ -8441,7 +8441,7 @@ static ssize_t iir1_inp2_gain_show(struct kobject *kobj,
 {
 	int iirval, tempval;
 
-	iirval = show_sound_value(TAIKO_A_CDC_IIR1_GAIN_B1_CTL);
+	iirval = show_sound_value(TAIKO_A_CDC_IIR1_GAIN_B2_CTL);
 	if (iirval == -84) {
 		tempval = iir1_inp2_cached_gain;
 
@@ -8515,7 +8515,7 @@ static ssize_t iir2_inp2_gain_show(struct kobject *kobj,
 {
 	int iirval, tempval;
 
-	iirval = show_sound_value(TAIKO_A_CDC_IIR2_GAIN_B1_CTL);
+	iirval = show_sound_value(TAIKO_A_CDC_IIR2_GAIN_B2_CTL);
 	if (iirval == -84) {
 		tempval = iir2_inp2_cached_gain;
 
