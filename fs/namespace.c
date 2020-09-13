@@ -20,6 +20,7 @@
 #include <linux/fs_struct.h>	/* get_fs_root et.al. */
 #include <linux/fsnotify.h>	/* fsnotify_vfsmount_delete */
 #include <linux/uaccess.h>
+#include <linux/proc_fs.h>
 #include "pnode.h"
 #include "internal.h"
 
@@ -2631,16 +2632,16 @@ static int mntns_install(struct nsproxy *nsproxy, void *ns)
 	struct mnt_namespace *mnt_ns = ns;
 	struct path root;
 
-	if (fs->users != 1)
-		return -EINVAL;
+//	if (fs->users != 1)
+//		return -EINVAL;
 
 	get_mnt_ns(mnt_ns);
 	put_mnt_ns(nsproxy->mnt_ns);
 	nsproxy->mnt_ns = mnt_ns;
 
 	/* Find the root */
-	root.mnt    = mnt_ns->root;
-	root.dentry = mnt_ns->root->mnt_root;
+	root.mnt    = &mnt_ns->root->mnt;
+	root.dentry = mnt_ns->root->mnt.mnt_root;
 	path_get(&root);
 	while(d_mountpoint(root.dentry) && follow_down(&root))
 		;
@@ -2658,7 +2659,8 @@ static int mntns_install(struct nsproxy *nsproxy, void *ns)
 }
 
 const struct proc_ns_operations mntns_operations = {
-	.name		= PROC_NSNAME("mnt"),
+	.name		= "mnt",
+    .type		= CLONE_NEWNS,
 	.get		= mntns_get,
 	.put		= mntns_put,
 	.install	= mntns_install,
