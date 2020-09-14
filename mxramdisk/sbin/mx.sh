@@ -74,15 +74,42 @@ then
 	chmod 755 "/sbin/zip"
 fi
 
-ln -s /sbin/magisk /sbin/resetprop
-ln -s /sbin/magiskinit /sbin/magiskpolicy
-ln -s /sbin/magisk /sbin/su
-ln -s /sbin/magiskinit /sbin/supolicy
+if [ -f "/sbin/resetprop" ] || [ -L "/sbin/resetprop" ]
+then
+    rm "/sbin/resetprop"
+    ln -s "/sbin/magisk" "/sbin/resetprop"
+else
+    ln -s "/sbin/magisk" "/sbin/resetprop"
+fi
+
+if [ -f "/sbin/magiskpolicy" ] || [ -L "/sbin/magiskpolicy" ]
+then
+    rm "/sbin/magiskpolicy"
+    ln -s "/sbin/magiskinit" "/sbin/magiskpolicy"
+else
+    ln -s "/sbin/magiskinit" "/sbin/magiskpolicy"
+fi
+
+if [ -f "/sbin/su" ] || [ -L "/sbin/su" ]
+then
+    rm "/sbin/su"
+    ln -s "/sbin/magisk" "/sbin/su"
+else
+    ln -s "/sbin/magisk" "/sbin/su"
+fi
+
+if [ -f "/sbin/supolicy" ] || [ -L "/sbin/supolicy" ]
+then
+    rm "/sbin/supolicy"
+    ln -s "/sbin/magiskinit" "/sbin/supolicy"
+else
+    ln -s "/sbin/magiskinit" "/sbin/supolicy"
+fi
 
 # Init.d
-chmod -R 755 /system/etc/init.d;
-chown -R 0:2000 /system/etc/init.d;
-chmod 755 /sys
+chmod -R 755 "/system/etc/init.d"
+chown -R 0:2000 "/system/etc/init.d"
+chmod 755 "/sys"
 
 #echo '1267200' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
 #echo '1267200' > /sys/devices/system/cpu/cpu1/cpufreq/scaling_min_freq
@@ -98,13 +125,13 @@ chmod 755 /sys
 #fi
 
 # Set correct r/w permissions for LMK parameters
-chmod 666 /sys/module/lowmemorykiller/parameters/cost
-chmod 666 /sys/module/lowmemorykiller/parameters/adj
-chmod 666 /sys/module/lowmemorykiller/parameters/minfree
+chmod 666 "/sys/module/lowmemorykiller/parameters/cost"
+chmod 666 "/sys/module/lowmemorykiller/parameters/adj"
+chmod 666 "/sys/module/lowmemorykiller/parameters/minfree"
 resetprop ro.ril.enable.amr.wideband 1
 if [ -f "/data/synapse/config.json" ]
 then
-    rm /data/synapse/config.json
+    rm "/data/synapse/config.json"
 fi
 #echo 32 > /sys/module/lowmemorykiller/parameters/cost;
 
@@ -300,12 +327,12 @@ supolicy --live "permissive *"
 
 #supolicy --live "allow s_untrusted_app default_prop property_service { set }"
 #/system/xbin/busybox run-parts /system/etc/init.d/
-chmod 755 /sbin/sleeplate
-chown 0:2000 /sbin/sleeplate
+chmod 755 "/sbin/sleeplate"
+chown 0:2000 "/sbin/sleeplate"
 echo 0 > /sys/fs/selinux/enforce
-chmod 666 /sys/block/mmcblk0/queue/scheduler
-chmod 666 /sys/block/mmcblk0rpmb/queue/scheduler
-chmod 666 /sys/block/mmcblk1/queue/scheduler
+chmod 666 "/sys/block/mmcblk0/queue/scheduler"
+chmod 666 "/sys/block/mmcblk0rpmb/queue/scheduler"
+chmod 666 "/sys/block/mmcblk1/queue/scheduler"
 #echo "deadline" > /sys/block/mmcblk0/queue/scheduler
 #echo "deadline" > /sys/block/mmcblk1/queue/scheduler
 #echo "cfq" > /sys/block/mmcblk0rpmb/queue/scheduler
