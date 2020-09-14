@@ -8701,10 +8701,8 @@ static ssize_t uhqa_mode_store(struct kobject *kobj,
 	if (uval > 1)
 		uval = 1;
 
-    if (hpwidget_any())
-        return count;
-
 	uhqa_mode = uval;
+    write_chopper();
 	return count;
 }
 
