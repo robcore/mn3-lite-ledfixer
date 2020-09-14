@@ -327,6 +327,9 @@ then
 elif [ "$1" = "unlock_iirs_locked" ]
 then
     busybox echo "0" > /sys/kernel/sound_control/iirs_locked
+elif [ "$1" = "headphone_dac_enabled" ]
+then
+    busybox cat /sys/kernel/sound_control/headphone_dac_enabled
 elif [ "$1" = "secjack_state" ]
 then
     if [ "$(busybox cat /sys/kernel/sound_control/secjack_state)" = "0" ]
@@ -334,9 +337,9 @@ then
         busybox echo "UNPLUGGED"
     elif [ "$(busybox cat /sys/kernel/sound_control/secjack_state)" = "1" ]
     then
-        busybox echo "HEADPHONES"
+        busybox echo "HEADPHONES WITH MIC"
     elif [ "$(busybox cat /sys/kernel/sound_control/secjack_state)" = "2" ]
     then
-        busybox echo "HEADPHONES WITH MIC"
+        busybox echo "HEADPHONES"
     fi
 fi

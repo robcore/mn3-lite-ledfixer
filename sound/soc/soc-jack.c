@@ -102,6 +102,15 @@ void snd_soc_jack_report(struct snd_soc_jack *jack, int status, int mask)
 	jack->status &= ~mask;
 	jack->status |= status & mask;
 
+	if (mask & WCD9XXX_JACK_MASK) {
+		if (status == SEC_JACK_NO_DEVICE)
+            secjack_state = SEC_JACK_NO_DEVICE;
+		else if (status == SND_JACK_HEADPHONE)
+            secjack_state = SEC_HEADSET_3POLE;
+		else if (status == SND_JACK_HEADSET)
+            secjack_state = SEC_HEADSET_4POLE;
+	}
+
 	/* The DAPM sync is expensive enough to be worth skipping.
 	 * However, empty mask means pin synchronization is desired. */
 	if (mask && (jack->status == oldstatus))

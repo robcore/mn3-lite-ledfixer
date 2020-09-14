@@ -8168,6 +8168,18 @@ COMP1_B6_CTL 0x375
 COMP1_SHUT_DOWN_STATUS 0x376
 */
 
+static ssize_t headphone_dac_enabled_show(struct kobject *kobj,
+        struct kobj_attribute *attr, char *buf)
+{
+	u8 hphl_reg_val = 0;
+	u8 hphr_reg_val = 0;
+	hphl_reg_val = regread(WCD9XXX_A_RX_HPH_L_DAC_CTL);
+	hphr_reg_val = regread(WCD9XXX_A_RX_HPH_R_DAC_CTL);
+	return sprintf(buf, "Left:%s Right:%s\n", (hphl_reg_val & 0xC0) ? "On" : "Off",
+                                              (hphr_reg_val & 0xC0) ? "On" : "Off");
+}
+
+
 static ssize_t secjack_state_show(struct kobject *kobj,
         struct kobj_attribute *attr, char *buf)
 {
@@ -9111,8 +9123,7 @@ static ssize_t hph_pa_bias_store(struct kobject *kobj,
 
 	hph_pa_bias = uval;
 
-    if (!hpwidget_any() && !spkwidget_active() &&
-        !secjack_state)
+    if (!hpwidget_any() && !spkwidget_active())
     	update_bias();
 
 	return count;
@@ -9138,8 +9149,7 @@ static ssize_t compander_bias_store(struct kobject *kobj,
 
 	compander_bias = uval;
 
-    if (!hpwidget_any() && !spkwidget_active() &&
-        !secjack_state)
+    if (!hpwidget_any() && !spkwidget_active())
     	update_bias();
 
 	return count;
@@ -9166,6 +9176,11 @@ static ssize_t anc_delay_store(struct kobject *kobj,
 	anc_delay = uval;
 	return count;
 }
+
+static struct kobj_attribute headphone_dac_enabled_attribute =
+	__ATTR(headphone_dac_enabled, 0444,
+		headphone_dac_enabled_show,
+		NULL);
 
 static struct kobj_attribute secjack_state_attribute =
 	__ATTR(secjack_state, 0444,
@@ -9364,6 +9379,7 @@ static struct kobj_attribute compander_bias_attribute =
 		compander_bias_store);
 
 static struct attribute *sound_control_attrs[] = {
+        &headphone_dac_enabled_attribute.attr,
         &secjack_state_attribute.attr,
 		&compander1_attribute.attr,
 		&hph_status_attribute.attr,
