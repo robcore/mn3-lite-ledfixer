@@ -95,69 +95,11 @@ chmod -R 755 /system/etc/init.d;
 chown -R 0:2000 /system/etc/init.d;
 rm -rf /data/magisk_backup*
 
-ui_print "- Importing updated WiFi Firmware"
-if [ ! -d "/system/etc/wifi/backups" ]
-then
-	mkdir /system/etc/wifi/backups
-	cp -af /system/etc/wifi/bcmdhd_apsta.bin /system/etc/wifi/backups/
-	cp -af /system/etc/wifi/bcmdhd_ibss.bin /system/etc/wifi/backups/
-	cp -af /system/etc/wifi/bcmdhd_mfg.bin /system/etc/wifi/backups/
-	cp -af /system/etc/wifi/bcmdhd_sta.bin /system/etc/wifi/backups/
-	cp -af /system/etc/wifi/nvram_mfg.txt /system/etc/wifi/backups/
-	cp -af /system/etc/wifi/nvram_mfg.txt_murata /system/etc/wifi/backups/
-	cp -af /system/etc/wifi/nvram_mfg.txt_muratafem1 /system/etc/wifi/backups/
-	cp -af /system/etc/wifi/nvram_net.txt /system/etc/wifi/backups/
-	cp -af /system/etc/wifi/nvram_net.txt_murata /system/etc/wifi/backups/
-	cp -af /system/etc/wifi/nvram_net.txt_muratafem1 /system/etc/wifi/backups/
-	cp -af /system/etc/wifi/p2p_supplicant_overlay.conf /system/etc/wifi/backups/
-	cp -af /system/etc/wifi/WCNSS_qcom_cfg.ini /system/etc/wifi/backups/
-	cp -af /system/etc/wifi/wpa_supplicant.conf /system/etc/wifi/backups/
-	cp -af /system/etc/wifi/wpa_supplicant_overlay.conf /system/etc/wifi/backups/
-fi
-
-cp -af $COMMONDIR/wifi/bcmdhd_apsta.bin /system/etc/wifi/
-cp -af $COMMONDIR/wifi/bcmdhd_ibss.bin /system/etc/wifi/
-cp -af $COMMONDIR/wifi/bcmdhd_mfg.bin /system/etc/wifi/
-cp -af $COMMONDIR/wifi/bcmdhd_sta.bin /system/etc/wifi/
-cp -af $COMMONDIR/wifi/nvram_mfg.txt /system/etc/wifi/
-cp -af $COMMONDIR/wifi/nvram_mfg.txt_murata /system/etc/wifi/
-cp -af $COMMONDIR/wifi/nvram_mfg.txt_muratafem1 /system/etc/wifi/
-cp -af $COMMONDIR/wifi/nvram_net.txt /system/etc/wifi/
-cp -af $COMMONDIR/wifi/nvram_net.txt_murata /system/etc/wifi/
-cp -af $COMMONDIR/wifi/nvram_net.txt_muratafem1 /system/etc/wifi/
-cp -af $COMMONDIR/wifi/p2p_supplicant_overlay.conf /system/etc/wifi/
-cp -af $COMMONDIR/wifi/WCNSS_qcom_cfg.ini /system/etc/wifi/
-cp -af $COMMONDIR/wifi/wpa_supplicant.conf /system/etc/wifi/
-cp -af $COMMONDIR/wifi/wpa_supplicant_overlay.conf /system/etc/wifi/
-
-chmod 644 /system/etc/wifi/bcmdhd_apsta.bin
-chmod 644 /system/etc/wifi/bcmdhd_ibss.bin
-chmod 644 /system/etc/wifi/bcmdhd_mfg.bin
-chmod 644 /system/etc/wifi/bcmdhd_sta.bin
-chmod 644 /system/etc/wifi/nvram_mfg.txt
-chmod 644 /system/etc/wifi/nvram_mfg.txt_murata
-chmod 644 /system/etc/wifi/nvram_mfg.txt_muratafem1
-chmod 644 /system/etc/wifi/nvram_net.txt
-chmod 644 /system/etc/wifi/nvram_net.txt_murata
-chmod 644 /system/etc/wifi/nvram_net.txt_muratafem1
-chmod 644 /system/etc/wifi/p2p_supplicant_overlay.conf
-chmod 644 /system/etc/wifi/WCNSS_qcom_cfg.ini
-chmod 644 /system/etc/wifi/wpa_supplicant.conf
-chmod 644 /system/etc/wifi/wpa_supplicant_overlay.conf
-
 ui_print "- Replacing Mixer Paths"
 rm /system/etc/mixer_paths.xml
 cp -af $COMMONDIR/mixer_paths.xml /system/etc/mixer_paths.xml
 chmod 644 /system/etc/mixer_paths.xml
 chown 0:0 /system/etc/mixer_paths.xml
-
-ui_print "- Installing Synapse"
-if [ ! -f "/system/priv-app/synapse.apk" ]
-then
-	cp -fpR $COMMONDIR/synapse.apk /system/priv-app/
-	chmod 644 /system/priv-app/synapse.apk
-	chown 0:0 /system/priv-app/synapse.apk
-fi
 
 cp -fpR $COMMONDIR/synapse /data
 chmod 755 /data/synapse
@@ -167,6 +109,17 @@ chmod -R 755 /data/synapse/actions
 if [ -f "/data/synapse/config.json" ]
 then
     rm /data/synapse/config.json
+fi
+
+ui_print "- Removing Additional Nonsense"
+if [ -d "/data/adb/magisk/synapse" ]
+then
+    rm -rf "/data/adb/magisk/synapse"
+fi
+
+if [ -f "/data/adb/magisk/mixer_paths.xml" ]
+then
+    rm "/data/adb/magisk/mixer_paths.xml"
 fi
 
 $BOOTMODE || recovery_actions
@@ -180,27 +133,6 @@ install_magisk
 # Cleanups
 $BOOTMODE || recovery_cleanup
 rm -rf $TMPDIR
-
-ui_print "- Removing Additional Nonsense"
-if [ -d "/data/adb/magisk/synapse" ]
-then
-    rm -rf "/data/adb/magisk/synapse"
-fi
-
-if [ -d "/data/adb/magisk/wifi" ]
-then
-    rm -rf "/data/adb/magisk/wifi"
-fi
-
-if [ -f "/data/adb/magisk/synapse.apk" ]
-then
-    rm "/data/adb/magisk/synapse.apk"
-fi
-
-if [ -f "/data/adb/magisk/mixer_paths.xml" ]
-then
-    rm "/data/adb/magisk/mixer_paths.xml"
-fi
 
 ui_print "- Done"
 exit 0

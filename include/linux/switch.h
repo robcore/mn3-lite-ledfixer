@@ -49,5 +49,6 @@ static inline int switch_get_state(struct switch_dev *sdev)
 }
 
 extern void switch_set_state(struct switch_dev *sdev, int state);
+extern int secjack_state;
 
 #endif /* __LINUX_SWITCH_H__ */

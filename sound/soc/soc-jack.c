@@ -35,7 +35,7 @@ struct switch_dev android_switch = {
 	.name = "h2w",
 };
 
-unsigned int sec_jacked;
+int secjack_state;
 
 /**
  * snd_soc_jack_new - Create a new jack
@@ -145,12 +145,16 @@ void snd_soc_jack_report_no_dapm(struct snd_soc_jack *jack, int status,
 	jack->status |= status & mask;
 
 	if (mask & WCD9XXX_JACK_MASK) {
-		if (status == SEC_JACK_NO_DEVICE)
+		if (status == SEC_JACK_NO_DEVICE) {
 			switch_set_state(&android_switch, SEC_JACK_NO_DEVICE);
-		else if (status == SND_JACK_HEADPHONE)
+            secjack_state = SEC_JACK_NO_DEVICE;
+		} else if (status == SND_JACK_HEADPHONE) {
 			switch_set_state(&android_switch, SEC_HEADSET_3POLE);
-		else if (status == SND_JACK_HEADSET)
+            secjack_state = SEC_HEADSET_3POLE;
+		} else if (status == SND_JACK_HEADSET) {
 			switch_set_state(&android_switch, SEC_HEADSET_4POLE);
+            secjack_state = SEC_HEADSET_4POLE;
+        }
 	}
 
 	snd_jack_report(jack->jack, jack->status);

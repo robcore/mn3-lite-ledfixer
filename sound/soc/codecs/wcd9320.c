@@ -39,6 +39,7 @@
 #include <linux/pm.h>
 #include <mach/cpuidle.h>
 #include <linux/wakelock.h>
+#include <linux/switch.h>
 #include "wcd9320.h"
 #include "wcd9xxx-resmgr.h"
 #include "wcd9xxx-common.h"
@@ -83,6 +84,7 @@ static struct snd_soc_codec *direct_codec;
 static atomic_t kp_taiko_priv;
 struct wake_lock hph_playback_wake_lock;
 struct wake_lock spk_playback_wake_lock;
+extern int secjack_state;
 
 static struct afe_param_slimbus_slave_port_cfg taiko_slimbus_slave_port_cfg = {
 	.minor_version = 1,
@@ -8166,6 +8168,12 @@ COMP1_B6_CTL 0x375
 COMP1_SHUT_DOWN_STATUS 0x376
 */
 
+static ssize_t secjack_state_show(struct kobject *kobj,
+        struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%d\n", secjack_state);
+}
+
 static ssize_t compander1_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf)
 {
@@ -9103,7 +9111,8 @@ static ssize_t hph_pa_bias_store(struct kobject *kobj,
 
 	hph_pa_bias = uval;
 
-    if (!hpwidget_any())
+    if (!hpwidget_any() && !spkwidget_active() &&
+        !secjack_state)
     	update_bias();
 
 	return count;
@@ -9129,7 +9138,8 @@ static ssize_t compander_bias_store(struct kobject *kobj,
 
 	compander_bias = uval;
 
-    if (!hpwidget_any())
+    if (!hpwidget_any() && !spkwidget_active() &&
+        !secjack_state)
     	update_bias();
 
 	return count;
@@ -9156,6 +9166,11 @@ static ssize_t anc_delay_store(struct kobject *kobj,
 	anc_delay = uval;
 	return count;
 }
+
+static struct kobj_attribute secjack_state_attribute =
+	__ATTR(secjack_state, 0444,
+		secjack_state_show,
+		NULL);
 
 static struct kobj_attribute compander1_attribute =
 	__ATTR(compander1, 0444,
@@ -9349,6 +9364,7 @@ static struct kobj_attribute compander_bias_attribute =
 		compander_bias_store);
 
 static struct attribute *sound_control_attrs[] = {
+        &secjack_state_attribute.attr,
 		&compander1_attribute.attr,
 		&hph_status_attribute.attr,
         &class_h_control_attribute.attr,

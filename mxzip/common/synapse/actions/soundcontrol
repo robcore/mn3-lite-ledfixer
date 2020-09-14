@@ -233,7 +233,7 @@ then
     then
         if [ "$2" = "4" ]
         then
-            busybox echo "0" > /sys/kernel/sound_control/speaker_hpf_cutoff
+            busybox echo "0" > /sys/kernel/sound_controlsecjack_state/speaker_hpf_cutoff
         elif [ "$2" = "75" ]
         then
             busybox echo "1" > /sys/kernel/sound_control/speaker_hpf_cutoff
@@ -327,4 +327,16 @@ then
 elif [ "$1" = "unlock_iirs_locked" ]
 then
     busybox echo "0" > /sys/kernel/sound_control/iirs_locked
+elif [ "$1" = "secjack_state" ]
+then
+    if [ "$(busybox cat /sys/kernel/sound_control/secjack_state)" = "0" ]
+    then
+        busybox echo "UNPLUGGED"
+    elif [ "$(busybox cat /sys/kernel/sound_control/secjack_state)" = "1" ]
+    then
+        busybox echo "HEADPHONES"
+    elif [ "$(busybox cat /sys/kernel/sound_control/secjack_state)" = "2" ]
+    then
+        busybox echo "HEADPHONES WITH MIC"
+    fi
 fi
