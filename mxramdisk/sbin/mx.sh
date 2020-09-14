@@ -75,6 +75,10 @@ then
 fi
 
 ln -s /sbin/magisk /sbin/resetprop
+ln -s /sbin/magiskinit /sbin/magiskpolicy
+ln -s /sbin/magisk /sbin/su
+ln -s /sbin/magiskinit /sbin/supolicy
+
 # Init.d
 chmod -R 755 /system/etc/init.d;
 chown -R 0:2000 /system/etc/init.d;
