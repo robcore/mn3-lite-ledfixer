@@ -596,7 +596,6 @@ static u32 sc_rms_meter_resamp_fact = 255;
 static u8 hph_pa_bias = 0x7A;
 static unsigned int harmonic_distortion_coeffs = 0;
 static unsigned int iirs_locked = 0;
-static bool headphones_plugged_in;
 
 /*
 #define TAIKO_A_RX_HPH_BIAS_CNP (0x1A8)
@@ -675,6 +674,30 @@ static void spk_wake_unlock(void)
         return;
 
     wake_unlock(&spk_playback_wake_lock);
+}
+
+static bool any_compander_active(void)
+{
+    u8 comp0;
+    u8 comp1;
+    u8 comp2;
+
+    comp0 = regread(TAIKO_A_CDC_COMP0_SHUT_DOWN_STATUS);
+    comp1 = regread(TAIKO_A_CDC_COMP1_SHUT_DOWN_STATUS);
+    comp2 = regread(TAIKO_A_CDC_COMP2_SHUT_DOWN_STATUS);
+
+    if (comp0 && comp1 && comp2)
+        return false;
+
+    return true;
+}
+
+static bool sec_jacked(void)
+{
+    if (secjack_state)
+        return true;
+
+    return false;
 }
 
 static bool hpwidget(void)
@@ -9136,7 +9159,8 @@ static ssize_t hph_pa_bias_store(struct kobject *kobj,
 
 	hph_pa_bias = uval;
 
-    if (!hpwidget_any() && !spkwidget_active())
+    if (!hpwidget_any() && !spkwidget_active() &&
+        !any_compander_active() && !sec_jacked())
     	update_bias();
 
 	return count;
@@ -9162,7 +9186,8 @@ static ssize_t compander_bias_store(struct kobject *kobj,
 
 	compander_bias = uval;
 
-    if (!hpwidget_any() && !spkwidget_active())
+    if (!hpwidget_any() && !spkwidget_active() &&
+        !any_compander_active() && !sec_jacked())
     	update_bias();
 
 	return count;
