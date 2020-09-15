@@ -332,14 +332,5 @@ then
     busybox cat /sys/kernel/sound_control/headphone_dac_enabled
 elif [ "$1" = "secjack_state" ]
 then
-    if [ "$(busybox cat /sys/kernel/sound_control/secjack_state)" = "0" ]
-    then
-        busybox echo "UNPLUGGED"
-    elif [ "$(busybox cat /sys/kernel/sound_control/secjack_state)" = "1" ]
-    then
-        busybox echo "HEADPHONES WITH MIC"
-    elif [ "$(busybox cat /sys/kernel/sound_control/secjack_state)" = "2" ]
-    then
-        busybox echo "HEADPHONES"
-    fi
+    busybox cat /sys/kernel/sound_control/secjack_state
 fi

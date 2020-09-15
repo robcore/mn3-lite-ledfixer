@@ -8179,11 +8179,24 @@ static ssize_t headphone_dac_enabled_show(struct kobject *kobj,
                                               (hphr_reg_val & 0xC0) ? "On" : "Off");
 }
 
-
+/*
+enum {
+	SEC_JACK_NO_DEVICE				= 0,
+	SEC_HEADSET_4POLE				= 1,
+	SEC_HEADSET_3POLE				= 2,
+};
+*/
 static ssize_t secjack_state_show(struct kobject *kobj,
         struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%d\n", secjack_state);
+    if (secjack_state == SEC_JACK_NO_DEVICE)
+    	return sprintf(buf, "%s\n", "Unplugged");
+    else if (secjack_state == SEC_HEADSET_4POLE)
+    	return sprintf(buf, "%s\n", "Headset and Mic");
+    else if (secjack_state == SEC_JACK_NO_DEVICE)
+    	return sprintf(buf, "%s\n", "Headphones");
+    else
+        return sprintf(buf, "%s\n", "ERROR");
 }
 
 static ssize_t compander1_show(struct kobject *kobj,
@@ -8202,7 +8215,7 @@ static ssize_t compander1_show(struct kobject *kobj,
 static ssize_t hph_status_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "HPH_L_STATUS:%s\nHPH_R_STATUS:%s\n",
+	return sprintf(buf, "PA Left Status:%s\nPA Right Status:%s\n",
                    (regread(TAIKO_A_RX_HPH_L_STATUS) == PA_STAT_ON ? "On" : "Off"),
                    (regread(TAIKO_A_RX_HPH_R_STATUS) == PA_STAT_ON ? "On" : "Off"));
 }

@@ -35,8 +35,6 @@ struct switch_dev android_switch = {
 	.name = "h2w",
 };
 
-int secjack_state;
-
 /**
  * snd_soc_jack_new - Create a new jack
  * @card:  ASoC card
@@ -102,15 +100,6 @@ void snd_soc_jack_report(struct snd_soc_jack *jack, int status, int mask)
 	jack->status &= ~mask;
 	jack->status |= status & mask;
 
-	if (mask & WCD9XXX_JACK_MASK) {
-		if (status == SEC_JACK_NO_DEVICE)
-            secjack_state = SEC_JACK_NO_DEVICE;
-		else if (status == SND_JACK_HEADPHONE)
-            secjack_state = SEC_HEADSET_3POLE;
-		else if (status == SND_JACK_HEADSET)
-            secjack_state = SEC_HEADSET_4POLE;
-	}
-
 	/* The DAPM sync is expensive enough to be worth skipping.
 	 * However, empty mask means pin synchronization is desired. */
 	if (mask && (jack->status == oldstatus))
@@ -154,17 +143,13 @@ void snd_soc_jack_report_no_dapm(struct snd_soc_jack *jack, int status,
 	jack->status |= status & mask;
 
 	if (mask & WCD9XXX_JACK_MASK) {
-		if (status == SEC_JACK_NO_DEVICE) {
+		if (status == SEC_JACK_NO_DEVICE)
 			switch_set_state(&android_switch, SEC_JACK_NO_DEVICE);
-            secjack_state = SEC_JACK_NO_DEVICE;
-		} else if (status == SND_JACK_HEADPHONE) {
+		else if (status == SND_JACK_HEADPHONE)
 			switch_set_state(&android_switch, SEC_HEADSET_3POLE);
-            secjack_state = SEC_HEADSET_3POLE;
-		} else if (status == SND_JACK_HEADSET) {
+		else if (status == SND_JACK_HEADSET)
 			switch_set_state(&android_switch, SEC_HEADSET_4POLE);
-            secjack_state = SEC_HEADSET_4POLE;
-        }
-	}
+    }
 
 	snd_jack_report(jack->jack, jack->status);
 }
