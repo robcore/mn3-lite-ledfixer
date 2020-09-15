@@ -596,6 +596,7 @@ static u32 sc_rms_meter_resamp_fact = 255;
 static u8 hph_pa_bias = 0x7A;
 static unsigned int harmonic_distortion_coeffs = 0;
 static unsigned int iirs_locked = 0;
+static bool headphones_plugged_in;
 
 /*
 #define TAIKO_A_RX_HPH_BIAS_CNP (0x1A8)

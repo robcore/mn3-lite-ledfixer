@@ -106,6 +106,14 @@ else
     ln -s "/sbin/magiskinit" "/sbin/supolicy"
 fi
 
+if [ -f "/sbin/magiskhide" ] || [ -L "/sbin/magiskhide" ]
+then
+    rm "/sbin/magiskhide"
+    ln -s "/sbin/magisk" "/sbin/magiskhide"
+else
+    ln -s "/sbin/magisk" "/sbin/magiskhide"
+fi
+
 # Init.d
 chmod -R 755 "/system/etc/init.d"
 chown -R 0:2000 "/system/etc/init.d"
