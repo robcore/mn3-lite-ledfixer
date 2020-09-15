@@ -1652,8 +1652,10 @@ static int do_loopback(struct path *path, char *old_name,
 	else
 		mnt = clone_mnt(old, old_path.dentry, 0);
 
-	if (!mnt)
-		goto out2;
+	if (IS_ERR(mnt)) {
+		err = PTR_ERR(mnt);
+		goto out;
+	}
 
 	err = graft_tree(mnt, path);
 	if (err) {
@@ -2294,10 +2296,10 @@ static struct mnt_namespace *dup_mnt_ns(struct mnt_namespace *mnt_ns,
 	down_write(&namespace_sem);
 	/* First pass: copy the tree topology */
 	new = copy_tree(old, old->mnt.mnt_root, CL_COPY_ALL | CL_EXPIRE);
-	if (!new) {
+	if (IS_ERR(new)) {
 		up_write(&namespace_sem);
 		kfree(new_ns);
-		return ERR_PTR(-ENOMEM);
+		return ERR_CAST(new);
 	}
 	new_ns->root = new;
 	br_write_lock(vfsmount_lock);
