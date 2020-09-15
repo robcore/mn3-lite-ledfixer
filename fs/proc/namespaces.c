@@ -45,28 +45,27 @@ static struct dentry *proc_ns_instantiate(struct inode *dir,
 
 	inode = proc_pid_make_inode(dir->i_sb, task);
 	if (!inode)
-		goto out;
+		return error;
 
 	ns = ns_ops->get(task);
-	if (!ns)
-		goto out_iput;
+	if (!ns) {
+		iput(inode);
+		return error;
+	}
 
 	ei = PROC_I(inode);
 	inode->i_mode = S_IFREG|S_IRUSR;
-	inode->i_fop  = &ns_file_operations;
-	ei->ns_ops    = ns_ops;
-	ei->ns	      = ns;
+	inode->i_fop = &ns_file_operations;
+	ei->ns_ops = ns_ops;
+	ei->ns = ns;
 
 	d_set_d_op(dentry, &pid_dentry_operations);
 	d_add(dentry, inode);
 	/* Close the race of the process dying before we return the dentry */
 	if (pid_revalidate(dentry, NULL))
 		error = NULL;
-out:
+
 	return error;
-out_iput:
-	iput(inode);
-	goto out;
 }
 
 static int proc_ns_fill_cache(struct file *filp, void *dirent,
@@ -92,10 +91,6 @@ static int proc_ns_dir_readdir(struct file *filp, void *dirent,
 	ret = -ENOENT;
 	if (!task)
 		goto out_no_task;
-
-	ret = -EPERM;
-	if (!ptrace_may_access(task, PTRACE_MODE_READ))
-		goto out;
 
 	ret = 0;
 	i = filp->f_pos;
@@ -155,10 +150,6 @@ static struct dentry *proc_ns_dir_lookup(struct inode *dir,
 
 	if (!task)
 		goto out_no_task;
-
-	error = ERR_PTR(-EPERM);
-	if (!ptrace_may_access(task, PTRACE_MODE_READ))
-		goto out;
 
 	last = &ns_entries[ARRAY_SIZE(ns_entries)];
 	for (entry = ns_entries; entry < last; entry++) {

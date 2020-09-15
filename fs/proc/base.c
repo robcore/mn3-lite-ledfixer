@@ -719,8 +719,7 @@ static ssize_t mem_rw(struct file *file, char __user *buf,
 	ssize_t copied;
 	char *page;
 
-	/* Ensure the process spawned far enough to have an environment. */
-	if (!mm || !mm->env_end)
+	if (!mm)
 		return 0;
 
 	page = (char *)__get_free_page(GFP_TEMPORARY);
@@ -828,8 +827,7 @@ static ssize_t environ_read(struct file *file, char __user *buf,
 
 	mm = mm_for_maps(task);
 	ret = PTR_ERR(mm);
-	/* Ensure the process spawned far enough to have an environment. */
-	if (!mm || IS_ERR(mm) || !mm->env_end)
+	if (!mm || IS_ERR(mm))
 		goto out_free;
 
 	ret = 0;
@@ -2444,19 +2442,11 @@ static const struct file_operations proc_map_files_operations = {
  */
 static int proc_fd_permission(struct inode *inode, int mask)
 {
-	struct task_struct *p;
-	int rv;
-
-	rv = generic_permission(inode, mask);
+	int rv = generic_permission(inode, mask);
 	if (rv == 0)
-		return rv;
-
-	rcu_read_lock();
-	p = pid_task(proc_pid(inode), PIDTYPE_PID);
-	if (p && same_thread_group(p, current))
+		return 0;
+	if (task_pid(current) == proc_pid(inode))
 		rv = 0;
-	rcu_read_unlock();
-
 	return rv;
 }
 
