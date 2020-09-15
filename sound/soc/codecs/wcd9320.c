@@ -9159,8 +9159,8 @@ static ssize_t hph_pa_bias_store(struct kobject *kobj,
 
 	hph_pa_bias = uval;
 
-    if (!hpwidget_any() && !spkwidget_active() &&
-        !any_compander_active() && !sec_jacked())
+    if (!sec_jacked() && !hpwidget_any() &&
+        !spkwidget_active() && !any_compander_active())
     	update_bias();
 
 	return count;
@@ -9186,8 +9186,8 @@ static ssize_t compander_bias_store(struct kobject *kobj,
 
 	compander_bias = uval;
 
-    if (!hpwidget_any() && !spkwidget_active() &&
-        !any_compander_active() && !sec_jacked())
+    if (!sec_jacked() && !hpwidget_any() &&
+        !spkwidget_active() && !any_compander_active())
     	update_bias();
 
 	return count;
