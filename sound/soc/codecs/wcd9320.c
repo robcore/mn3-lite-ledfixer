@@ -1074,7 +1074,7 @@ static void update_interpolator(void)
 
 static void write_hdc_left(bool enable)
 {
-	if (enable) {
+	if (enable && harmonic_distortion_coeffs && hpwidget_left) {
 		mx_update_bits(TAIKO_A_CDC_RX1_B3_CTL, 0xBC, 0x94);
 		mx_update_bits(TAIKO_A_CDC_RX1_B4_CTL, 0x30, 0x10);
     } else {
@@ -1085,7 +1085,7 @@ static void write_hdc_left(bool enable)
 
 static void write_hdc_right(bool enable)
 {
-	if (enable) {
+	if (enable && harmonic_distortion_coeffs && hpwidget_right) {
 		mx_update_bits(TAIKO_A_CDC_RX2_B3_CTL, 0xBC, 0x94);
 		mx_update_bits(TAIKO_A_CDC_RX2_B4_CTL, 0x30, 0x10);
     } else {
@@ -1096,6 +1096,7 @@ static void write_hdc_right(bool enable)
 
 static void write_hdc_dual(bool enable)
 {
+    
     write_hdc_left(!!enable);
     write_hdc_right(!!enable);
 }
@@ -3919,9 +3920,7 @@ static int taiko_hphl_dac_event(struct snd_soc_dapm_widget *w,
 		write_hpf_cutoff(TAIKO_A_CDC_RX1_B4_CTL);
 		write_hpf_bypass(TAIKO_A_CDC_RX1_B5_CTL);
 		write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN);
-        if (harmonic_distortion_coeffs) {
-            write_hdc_left(1);
-        }
+        write_hdc_left(1);
 		break;
 	case SND_SOC_DAPM_PRE_PMD:
         write_hdc_left(0);
@@ -4163,10 +4162,14 @@ static int taiko_hph_pa_event(struct snd_soc_dapm_widget *w,
 			else if (w->shift == 4)
 				write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_R_GAIN);
 		}
-		if (w->shift == 5)
+
+		if (w->shift == 5) {
 			pr_info("%s: hpwidget_left enabled\n", __func__);
-		else if (w->shift == 4)
+            write_hdc_left(1);
+		} else if (w->shift == 4) {
 			pr_info("%s: hpwidget_right enabled\n", __func__);
+            write_hdc_right(1);
+        }
         update_control_regs();
 		break;
 	case SND_SOC_DAPM_PRE_PMD:
@@ -4185,11 +4188,13 @@ static int taiko_hph_pa_event(struct snd_soc_dapm_widget *w,
 
 		usleep_range(13000, 13000);
 //		pr_debug("%s: sleep 13000us after %s PA disable\n", __func__, w->name);
-		if (w->shift == 5)
+		if (w->shift == 5) {
 			pr_info("%s: hpwidget_left disabled\n", __func__);
-		else if (w->shift == 4)
+            write_hdc_left(0);
+		} else if (w->shift == 4) {
 			pr_info("%s: hpwidget_right disabled\n", __func__);
-
+            write_hdc_right(0);
+        }
 		/* Let MBHC module know PA turned off */
 		wcd9xxx_resmgr_notifier_call(&taiko->resmgr, e_post_off);
 
@@ -8852,11 +8857,7 @@ static ssize_t harmonic_distortion_coeffs_store(struct kobject *kobj,
 		uval = 1;
 
 	harmonic_distortion_coeffs = uval;
-
-    if (harmonic_distortion_coeffs && hpwidget())
-        write_hdc_dual(harmonic_distortion_coeffs);
-    else if (!harmonic_distortion_coeffs)
-        write_hdc_dual(harmonic_distortion_coeffs);
+    write_hdc_dual(harmonic_distortion_coeffs);
 
 	return count;
 }
