@@ -40,6 +40,7 @@
 #include <mach/cpuidle.h>
 #include <linux/wakelock.h>
 #include <linux/switch.h>
+#include <linux/sec_jack.h>
 #include "wcd9320.h"
 #include "wcd9xxx-resmgr.h"
 #include "wcd9xxx-common.h"
