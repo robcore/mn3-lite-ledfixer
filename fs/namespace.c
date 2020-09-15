@@ -2372,7 +2372,7 @@ static struct mnt_namespace *create_mnt_ns(struct vfsmount *m)
 		mnt->mnt_ns = new_ns;
 		__mnt_make_longterm(mnt);
 		new_ns->root = mnt;
-		list_add(&new_ns->list, &mnt->mnt_list);
+		list_add(&mnt->mnt_list, &new_ns->list);
 	} else {
 		mntput(m);
 	}
