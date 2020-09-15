@@ -357,7 +357,6 @@ static void sec_jack_set_type(struct sec_jack_info *hi, int jack_type)
 	/* this can happen during slow inserts where we think we identified
 	 * the type but then we get another interrupt and do it again
 	 */
-    secjack_state = jack_type;
 
 	if (jack_type == hi->cur_jack_type) {
 		if (jack_type != SEC_HEADSET_4POLE)
@@ -390,31 +389,8 @@ static void sec_jack_set_type(struct sec_jack_info *hi, int jack_type)
 	}
 
 	hi->cur_jack_type = jack_type;
-	pr_debug("%s : jack_type = %d\n", __func__, jack_type);
-
-#if defined(CONFIG_MACH_KLTE_JPN)
-	if (jack_type == SEC_EXTERNAL_ANTENNA) {
-		if(++detect_count > MAX_DETECT_LIMIT) {
-			detect_count = 0;
-			return;
-		}
-		else {
-			int time_left_ms = 100;
-		
-			while (time_left_ms > 0) {
-				usleep_range(10000, 10000);
-				time_left_ms -= 10;
-			}
-
-			hi->cur_jack_type = SEC_JACK_NO_DEVICE;
-			determine_jack_type(hi);
-			
-			return;
-		}
-	}
-	else
-		detect_count = 0;
-#endif
+    secjack_state = hi->cur_jack_type;
+	pr_info("%s : jack_type = %d\n", __func__, jack_type);
 	switch_set_state(&switch_jack_detection, jack_type);
 }
 

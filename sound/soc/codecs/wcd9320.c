@@ -8190,12 +8190,10 @@ enum {
 static ssize_t secjack_state_show(struct kobject *kobj,
         struct kobj_attribute *attr, char *buf)
 {
-    if (secjack_state == SEC_JACK_NO_DEVICE)
+    if (secjack_state == 0)
     	return sprintf(buf, "%s\n", "Unplugged");
-    else if (secjack_state == SEC_HEADSET_4POLE)
-    	return sprintf(buf, "%s\n", "Headset and Mic");
-    else if (secjack_state == SEC_JACK_NO_DEVICE)
-    	return sprintf(buf, "%s\n", "Headphones");
+    else if (secjack_state > 0)
+    	return sprintf(buf, "%s\n", "Headphones Inserted");
     else
         return sprintf(buf, "%s\n", "ERROR");
 }
