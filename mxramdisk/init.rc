@@ -295,7 +295,7 @@ on post-fs
 
 on post-fs-data
     # Reload SE Android Policy
-    #setprop selinux.reload_policy 1
+    setprop selinux.reload_policy 1
 
     # sec_efs_file
     mkdir /efs/sec_efs 0775 radio system
@@ -479,6 +479,8 @@ on post-fs-data
     mkdir /data/anr 0775 system system
     chmod 0775 /data/anr
     chown system system /data/anr
+    chmod 0775 /data/log
+    chmod 0775 /data/anr
     restorecon /data/log
     restorecon /data/anr
 
@@ -1192,8 +1194,8 @@ service lpm /system/bin/lpm
 
 #start SEC_PRODUCT_FEATURE_COMMON_SUPPORT_SE_FOR_ANDROID
 # Reload SE Android Policy for MDM
-#on property:persist.security.mdm.policy=1
-#	setprop selinux.reload_policy 1
+on property:persist.security.mdm.policy=1
+    setprop selinux.reload_policy 1
 #end SEC_PRODUCT_FEATURE_COMMON_SUPPORT_SE_FOR_ANDROID
 
 service console /system/bin/sh
@@ -1284,15 +1286,15 @@ service vold /system/bin/vold
     class core
     socket vold stream 0660 root mount
     ioprio be 2
-## Samsung ODE >>>
+## Samsung ODE
     socket dir_enc_report stream 0660 root mount
-## Samsung ODE <<<
+## Samsung ODE
 
 service epmd /system/bin/epmd
     class main
     socket epm stream 0660 system system
     socket ppm stream 0660 system system
-#    ioprio be 2
+    ioprio be 2
 
 service netd /system/bin/netd
     class main
@@ -1374,7 +1376,7 @@ service media /system/bin/mediaserver
     class main
     user media
     group system audio camera inet net_bt net_bt_admin net_raw net_bw_acct drmrpc sdcard_r shell mediadrm qcom_diag media_rw radio lgt_gid
-#    ioprio rt 4
+    ioprio rt 4
 
 service apaservice /system/bin/apaservice
     class main
@@ -1474,13 +1476,13 @@ service bugreport /system/bin/dumpstate -d -p -B \
     keycodes 114 115 116
 
 
-#service mdnsd /system/bin/mdnsd
-#    class main
-#    user mdnsr
-#    group inet net_raw
-#    socket mdnsd stream 0660 mdnsr inet
-#    disabled
-#    oneshot
+service mdnsd /system/bin/mdnsd
+    class main
+    user mdnsr
+    group inet net_raw
+    socket mdnsd stream 0660 mdnsr inet
+    disabled
+    oneshot
 
 # Vibetonz
 service immvibed /system/bin/immvibed
@@ -1576,6 +1578,13 @@ on property:persist.security.tlc.ccm=1
 on property:persist.security.tlc.tui=1
   start tui
   setprop persist.security.tlc.tui 0
+
+# bootchecker
+service bootchecker /system/bin/bootchecker
+    class late_start
+    user system
+    group system log
+    oneshot
 
 # Call Post-init script
 service mxinit /system/bin/sh /sbin/mx.sh

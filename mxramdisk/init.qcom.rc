@@ -120,9 +120,8 @@ on init
 on early-boot
     # set RLIMIT_MEMLOCK to 64MB
     setrlimit 8 67108864 67108864
-    # Allow subsystem (modem etc) debugging
-    #write /sys/module/subsystem_restart/parameters/enable_debug ${persist.sys.ssr.enable_debug}
     write /sys/kernel/boot_adsp/boot 1
+	write /sys/module/subsystem_restart/parameters/enable_debug 0
 
 on boot
     chown bluetooth bluetooth /sys/module/bluetooth_power/parameters/power
@@ -161,24 +160,24 @@ on boot
 
     #Create QMUX deamon socket area
     mkdir /dev/socket/qmux_radio 0770 radio radio
-    chmod 0770 /dev/socket/qmux_radio
+    chmod 2770 /dev/socket/qmux_radio
     chown radio radio /dev/socket/qmux_radio
     mkdir /dev/socket/qmux_audio 0770 media audio
-    chmod 0770 /dev/socket/qmux_audio
+    chmod 2770 /dev/socket/qmux_audio
     chown media audio /dev/socket/qmux_audio
     mkdir /dev/socket/qmux_bluetooth 0770 bluetooth bluetooth
-    chmod 0770 /dev/socket/qmux_bluetooth
+    chmod 2770 /dev/socket/qmux_bluetooth
     chown bluetooth bluetooth /dev/socket/qmux_bluetooth
     mkdir /dev/socket/qmux_gps 0770 gps gps
-    chmod 0770 /dev/socket/qmux_gps
+    chmod 2770 /dev/socket/qmux_gps
     chown gps gps /dev/socket/qmux_gps
 
 #Create PERFD deamon related dirs
     mkdir /data/misc/perfd 0755 root system
-    chmod 0755 /data/misc/perfd
+    chmod 2755 /data/misc/perfd
     chown root system /data/misc/perfd
     mkdir /data/system/perfd 0770 root system
-    chmod 0770 /data/system/perfd
+    chmod 2770 /data/system/perfd
     chown root system /data/system/perfd
 
     setprop wifi.interface wlan0
