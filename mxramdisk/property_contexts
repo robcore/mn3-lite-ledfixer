@@ -61,6 +61,10 @@ selinux.                u:object_r:security_prop:s0
 vold.                   u:object_r:vold_prop:s0
 crypto.                 u:object_r:vold_prop:s0
 
+# ro.build.fingerprint is either set in /system/build.prop, or is
+# set at runtime by system_server.
+build.fingerprint       u:object_r:fingerprint_prop:s0
+
 # ctl properties
 ctl.bootanim            u:object_r:ctl_bootanim_prop:s0
 ctl.dumpstate           u:object_r:ctl_dumpstate_prop:s0
@@ -147,6 +151,6 @@ qc.sdk.us.digitalpen       u:object_r:digitalpen_prop:s0
 # avc:  denied  { set } for property=persist.translation.assistant scontext=u:r:system_app:s0 tcontext=u:object_r:default_prop:s0 tclass=property_service
 # avc:  denied  { set } for property=min_freq_0 scontext=u:r:init_shell:s0 tcontext=u:object_r:default_prop:s0 tclass=property_service
 #line 1 "vendor/samsung/common/sepolicy/carrier/carrier_spr/property_contexts"
-#cdma.home.	u:object_r:radio_prop:s0
-#line 1 "vendor/samsung/common/sepolicy/carrier/carrier_tfntmo/property_contexts"
 cdma.home.	u:object_r:radio_prop:s0
+#line 1 "vendor/samsung/common/sepolicy/carrier/carrier_tfntmo/property_contexts"
+#cdma.home.	u:object_r:radio_prop:s0
