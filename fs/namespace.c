@@ -1167,6 +1167,8 @@ static int do_umount(struct mount *mnt, int flags)
 		 * Special case for "unmounting" root ...
 		 * we just try to remount it readonly.
 		 */
+		if (!capable(CAP_SYS_ADMIN))
+			return -EPERM;
 		down_write(&sb->s_umount);
 		if (!(sb->s_flags & MS_RDONLY))
 			retval = do_remount_sb(sb, MS_RDONLY, NULL, 0);
@@ -1225,7 +1227,7 @@ SYSCALL_DEFINE2(umount, char __user *, name, int, flags)
 		goto dput_and_out;
 
 	retval = -EPERM;
-	if (!capable(CAP_SYS_ADMIN))
+	if (flags & MNT_FORCE && !capable(CAP_SYS_ADMIN))
 		goto dput_and_out;
 
 	retval = do_umount(mnt, flags);
@@ -1249,56 +1251,51 @@ SYSCALL_DEFINE1(oldumount, char __user *, name)
 
 #endif
 
-static int mount_is_safe(struct path *path)
+static bool is_mnt_ns_file(struct dentry *dentry)
 {
-	if (capable(CAP_SYS_ADMIN))
-		return 0;
-	return -EPERM;
-#ifdef notyet
-	if (S_ISLNK(path->dentry->d_inode->i_mode))
-		return -EPERM;
-	if (path->dentry->d_inode->i_mode & S_ISVTX) {
-		if (current_uid() != path->dentry->d_inode->i_uid)
-			return -EPERM;
-	}
-	if (inode_permission(path->dentry->d_inode, MAY_WRITE))
-		return -EPERM;
-	return 0;
-#endif
-}
-
-static bool mnt_ns_loop(struct path *path)
-{
-	/* Could bind mounting the mount namespace inode cause a
-	 * mount namespace loop?
-	 */
-	struct inode *inode = path->dentry->d_inode;
-	struct proc_inode *ei;
-	struct mnt_namespace *mnt_ns;
+	/* Is this a proxy for a mount namespace? */
+	struct inode *inode = dentry->d_inode;
+	struct proc_ns *ei;
 
 	if (!proc_ns_inode(inode))
 		return false;
 
-	ei = PROC_I(inode);
+	ei = get_proc_ns(inode);
 	if (ei->ns_ops != &mntns_operations)
 		return false;
 
-	mnt_ns = ei->ns;
+	return true;
+}
+
+static bool mnt_ns_loop(struct dentry *dentry)
+{
+	/* Could bind mounting the mount namespace inode cause a
+	 * mount namespace loop?
+	 */
+	struct mnt_namespace *mnt_ns;
+	if (!is_mnt_ns_file(dentry))
+		return false;
+
+	mnt_ns = get_proc_ns(dentry->d_inode)->ns;
 	return current->nsproxy->mnt_ns->seq >= mnt_ns->seq;
 }
 
 struct mount *copy_tree(struct mount *mnt, struct dentry *dentry,
 					int flag)
 {
-	struct mount *res, *p, *q, *r;
+	struct mount *res, *p, *q, *r, *parent;
 	struct path path;
 
-	if (!(flag & CL_COPY_ALL) && IS_MNT_UNBINDABLE(mnt))
-		return NULL;
+	if (!(flag & CL_COPY_UNBINDABLE) && IS_MNT_UNBINDABLE(mnt))
+		return ERR_PTR(-EINVAL);
+
+	if (!(flag & CL_COPY_MNT_NS_FILE) && is_mnt_ns_file(dentry))
+		return ERR_PTR(-EINVAL);
 
 	res = q = clone_mnt(mnt, dentry, flag);
-	if (!q)
-		goto Enomem;
+	if (IS_ERR(q))
+		return q;
+
 	q->mnt_mountpoint = mnt->mnt_mountpoint;
 
 	p = mnt;
@@ -1308,7 +1305,20 @@ struct mount *copy_tree(struct mount *mnt, struct dentry *dentry,
 			continue;
 
 		for (s = r; s; s = next_mnt(s, r)) {
-			if (!(flag & CL_COPY_ALL) && IS_MNT_UNBINDABLE(s)) {
+			struct mount *t = NULL;
+			if (!(flag & CL_COPY_UNBINDABLE) &&
+			    IS_MNT_UNBINDABLE(s)) {
+				if (s->mnt.mnt_flags & MNT_LOCKED) {
+					/* Both unbindable and locked. */
+					q = ERR_PTR(-EPERM);
+					goto out;
+				} else {
+					s = skip_mnt_tree(s);
+					continue;
+				}
+			}
+			if (!(flag & CL_COPY_MNT_NS_FILE) &&
+			    is_mnt_ns_file(s->mnt.mnt_root)) {
 				s = skip_mnt_tree(s);
 				continue;
 			}
@@ -1317,11 +1327,12 @@ struct mount *copy_tree(struct mount *mnt, struct dentry *dentry,
 				q = q->mnt_parent;
 			}
 			p = s;
+			parent = q;
 			path.mnt = &q->mnt;
 			path.dentry = p->mnt_mountpoint;
 			q = clone_mnt(p, p->mnt.mnt_root, flag);
-			if (!q)
-				goto Enomem;
+			if (IS_ERR(q))
+				goto out;
 			br_write_lock(vfsmount_lock);
 			list_add_tail(&q->mnt_list, &res->mnt_list);
 			attach_mnt(q, &path);
@@ -1329,7 +1340,7 @@ struct mount *copy_tree(struct mount *mnt, struct dentry *dentry,
 		}
 	}
 	return res;
-Enomem:
+out:
 	if (res) {
 		LIST_HEAD(umount_list);
 		br_write_lock(vfsmount_lock);
@@ -1344,10 +1355,15 @@ struct vfsmount *collect_mounts(struct path *path)
 {
 	struct mount *tree;
 	down_write(&namespace_sem);
-	tree = copy_tree(real_mount(path->mnt), path->dentry,
-			 CL_COPY_ALL | CL_PRIVATE);
+	if (!check_mnt(real_mount(path->mnt)))
+		tree = ERR_PTR(-EINVAL);
+	else
+		tree = copy_tree(real_mount(path->mnt), path->dentry,
+				 CL_COPY_ALL | CL_PRIVATE);
 	up_write(&namespace_sem);
-	return tree ? &tree->mnt : NULL;
+	if (IS_ERR(tree))
+		return ERR_CAST(tree);
+	return &tree->mnt;
 }
 
 void drop_collected_mounts(struct vfsmount *mnt)
@@ -1584,9 +1600,6 @@ static int do_change_type(struct path *path, int flag)
 	int type;
 	int err = 0;
 
-	if (!capable(CAP_SYS_ADMIN))
-		return -EPERM;
-
 	if (path->dentry != path->mnt->mnt_root)
 		return -EINVAL;
 
@@ -1620,9 +1633,8 @@ static int do_loopback(struct path *path, char *old_name,
 	LIST_HEAD(umount_list);
 	struct path old_path;
 	struct mount *mnt = NULL, *old;
-	int err = mount_is_safe(path);
-	if (err)
-		return err;
+	int err;
+
 	if (!old_name || !*old_name)
 		return -EINVAL;
 	err = kern_path(old_name, LOOKUP_FOLLOW|LOOKUP_AUTOMOUNT, &old_path);
@@ -1630,7 +1642,7 @@ static int do_loopback(struct path *path, char *old_name,
 		return err;
 
 	err = -EINVAL;
-	if (mnt_ns_loop(&old_path))
+	if (mnt_ns_loop(old_path.dentry))
 		goto out; 
 
 	err = lock_mount(path);
@@ -1648,7 +1660,7 @@ static int do_loopback(struct path *path, char *old_name,
 
 	err = -ENOMEM;
 	if (recurse)
-		mnt = copy_tree(old, old_path.dentry, 0);
+		mnt = copy_tree(old, old_path.dentry, CL_COPY_MNT_NS_FILE);
 	else
 		mnt = clone_mnt(old, old_path.dentry, 0);
 
@@ -1700,9 +1712,6 @@ static int do_remount(struct path *path, int flags, int mnt_flags,
 	struct super_block *sb = path->mnt->mnt_sb;
 	struct mount *mnt = real_mount(path->mnt);
 
-	if (!capable(CAP_SYS_ADMIN))
-		return -EPERM;
-
 	if (!check_mnt(mnt))
 		return -EINVAL;
 
@@ -1716,20 +1725,18 @@ static int do_remount(struct path *path, int flags, int mnt_flags,
 	down_write(&sb->s_umount);
 	if (flags & MS_BIND)
 		err = change_mount_flags(path->mnt, flags);
+	else if (!capable(CAP_SYS_ADMIN))
+		err = -EPERM;
 	else
 		err = do_remount_sb(sb, flags, data, 0);
 	if (!err) {
 		br_write_lock(vfsmount_lock);
 		mnt_flags |= mnt->mnt.mnt_flags & ~MNT_USER_SETTABLE_MASK;
 		mnt->mnt.mnt_flags = mnt_flags;
-		br_write_unlock(vfsmount_lock);
-	}
-	up_write(&sb->s_umount);
-	if (!err) {
-		br_write_lock(vfsmount_lock);
 		touch_mnt_namespace(mnt->mnt_ns);
 		br_write_unlock(vfsmount_lock);
 	}
+	up_write(&sb->s_umount);
 	return err;
 }
 
@@ -1748,9 +1755,8 @@ static int do_move_mount(struct path *path, char *old_name)
 	struct path old_path, parent_path;
 	struct mount *p;
 	struct mount *old;
-	int err = 0;
-	if (!capable(CAP_SYS_ADMIN))
-		return -EPERM;
+	int err;
+
 	if (!old_name || !*old_name)
 		return -EINVAL;
 	err = kern_path(old_name, LOOKUP_FOLLOW, &old_path);
@@ -1898,10 +1904,6 @@ static int do_new_mount(struct path *path, char *type, int flags,
 
 	if (!type)
 		return -EINVAL;
-
-	/* we need capabilities... */
-	if (!capable(CAP_SYS_ADMIN))
-		return -EPERM;
 
 	mnt = do_kern_mount(type, flags, name, data);
 	if (IS_ERR(mnt))
@@ -2213,6 +2215,14 @@ long do_mount(char *dev_name, char *dir_name, char *type_page,
 	if (flags & MS_RDONLY)
 		mnt_flags |= MNT_READONLY;
 
+	/* The default atime for remount is preservation */
+	if ((flags & MS_REMOUNT) &&
+	    ((flags & (MS_NOATIME | MS_NODIRATIME | MS_RELATIME |
+		       MS_STRICTATIME)) == 0)) {
+		mnt_flags &= ~MNT_ATIME_MASK;
+		mnt_flags |= path.mnt->mnt_flags & MNT_ATIME_MASK;
+	}
+
 	flags &= ~(MS_NOSUID | MS_NOEXEC | MS_NODEV | MS_ACTIVE | MS_BORN |
 		   MS_NOATIME | MS_NODIRATIME | MS_RELATIME| MS_KERNMOUNT |
 		   MS_STRICTATIME);
@@ -2234,6 +2244,12 @@ dput_out:
 	return retval;
 }
 
+static void free_mnt_ns(struct mnt_namespace *ns)
+{
+	proc_free_inum(ns->proc_inum);
+	kfree(ns);
+}
+
 /*
  * Assign a sequence number so we can detect when we attempt to bind
  * mount a reference to an older mount namespace into the current
@@ -2250,6 +2266,11 @@ static struct mnt_namespace *alloc_mnt_ns(void)
 	new_ns = kmalloc(sizeof(struct mnt_namespace), GFP_KERNEL);
 	if (!new_ns)
 		return ERR_PTR(-ENOMEM);
+	ret = proc_alloc_inum(&new_ns->proc_inum);
+	if (ret) {
+		kfree(new_ns);
+		return ERR_PTR(ret);
+	}
 	new_ns->seq = atomic64_add_return(1, &mnt_ns_seq);
 	atomic_set(&new_ns->count, 1);
 	new_ns->root = NULL;
@@ -2298,7 +2319,7 @@ static struct mnt_namespace *dup_mnt_ns(struct mnt_namespace *mnt_ns,
 	new = copy_tree(old, old->mnt.mnt_root, CL_COPY_ALL | CL_EXPIRE);
 	if (IS_ERR(new)) {
 		up_write(&namespace_sem);
-		kfree(new_ns);
+		free_mnt_ns(new_ns);
 		return ERR_CAST(new);
 	}
 	new_ns->root = new;
@@ -2656,7 +2677,7 @@ void put_mnt_ns(struct mnt_namespace *ns)
 	br_write_unlock(vfsmount_lock);
 	up_write(&namespace_sem);
 	release_mounts(&umount_list);
-	kfree(ns);
+	free_mnt_ns(ns);
 }
 
 struct vfsmount *kern_mount_data(struct file_system_type *type, void *data)
@@ -2694,13 +2715,13 @@ static void *mntns_get(struct task_struct *task)
 	struct mnt_namespace *ns = NULL;
 	struct nsproxy *nsproxy;
 
-	rcu_read_lock();
+	task_lock(task);
 	nsproxy = task_nsproxy(task);
 	if (nsproxy) {
 		ns = nsproxy->mnt_ns;
 		get_mnt_ns(ns);
 	}
-	rcu_read_unlock();
+	task_unlock(task);
 
 	return ns;
 }
@@ -2741,10 +2762,17 @@ static int mntns_install(struct nsproxy *nsproxy, void *ns)
 	return 0;
 }
 
+static unsigned int mntns_inum(void *ns)
+{
+	struct mnt_namespace *mnt_ns = ns;
+	return mnt_ns->proc_inum;
+}
+
 const struct proc_ns_operations mntns_operations = {
 	.name		= "mnt",
 	.type		= CLONE_NEWNS,
 	.get		= mntns_get,
 	.put		= mntns_put,
 	.install	= mntns_install,
+	.inum		= mntns_inum,
 };
