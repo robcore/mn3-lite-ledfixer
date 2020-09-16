@@ -290,7 +290,7 @@ static inline struct proc_inode *PROC_I(const struct inode *inode)
 
 static struct proc_ns *get_proc_ns(struct inode *inode)
 {
-	return &PROC_I(inode)->ns;
+	return PROC_I(inode)->ns;
 }
 
 static inline struct proc_dir_entry *PDE(const struct inode *inode)
