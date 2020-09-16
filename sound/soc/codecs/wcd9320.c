@@ -336,19 +336,19 @@ enum {
 
 enum {
 	COMPANDER_0 = 0,
-	COMPANDER_1,
-	COMPANDER_2,
-	COMPANDER_MAX,
+	COMPANDER_1 = 1,
+	COMPANDER_2 = 2,
+	COMPANDER_MAX = 3,
 };
 
 enum {
 	COMPANDER_FS_8KHZ = 0,
-	COMPANDER_FS_16KHZ,
-	COMPANDER_FS_32KHZ,
-	COMPANDER_FS_48KHZ,
-	COMPANDER_FS_96KHZ,
-	COMPANDER_FS_192KHZ,
-	COMPANDER_FS_MAX,
+	COMPANDER_FS_16KHZ = 1,
+	COMPANDER_FS_32KHZ = 2,
+	COMPANDER_FS_48KHZ = 3,
+	COMPANDER_FS_96KHZ = 4,
+	COMPANDER_FS_192KHZ = 5,
+	COMPANDER_FS_MAX = 6,
 };
 
 struct comp_sample_dependent_params {
@@ -9528,10 +9528,12 @@ static int taiko_codec_probe(struct snd_soc_codec *codec)
 #endif
 
 	taiko->codec = codec;
-	for (i = 0; i < COMPANDER_MAX; i++) {
-		taiko->comp_enabled[i] = 0;
-		taiko->comp_fs[i] = COMPANDER_FS_48KHZ;
-	}
+	taiko->comp_enabled[0] = 0;
+	taiko->comp_fs[0] = COMPANDER_FS_48KHZ;
+	taiko->comp_enabled[1] = 0;
+	taiko->comp_fs[1] = COMPANDER_FS_48KHZ;
+	taiko->comp_enabled[2] = 0;
+	taiko->comp_fs[2] = COMPANDER_FS_48KHZ;
 	taiko->intf_type = wcd9xxx_get_intf_type();
 	taiko->aux_pga_cnt = 0;
 	taiko->aux_l_gain = 0x1F;
