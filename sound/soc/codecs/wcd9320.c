@@ -1072,9 +1072,14 @@ static void update_interpolator(void)
     }
 }
 
+#define HDCLEFT 0
+#define HDCRIGHT 1
 static void write_hdc_left(bool enable)
 {
-	if (enable && harmonic_distortion_coeffs && hpwidget_left) {
+    unsigned int engage;
+    engage = !!enable;
+
+	if (engage && harmonic_distortion_coeffs && hpwidget_left) {
 		mx_update_bits(TAIKO_A_CDC_RX1_B3_CTL, 0xBC, 0x94);
 		mx_update_bits(TAIKO_A_CDC_RX1_B4_CTL, 0x30, 0x10);
     } else {
@@ -1085,7 +1090,10 @@ static void write_hdc_left(bool enable)
 
 static void write_hdc_right(bool enable)
 {
-	if (enable && harmonic_distortion_coeffs && hpwidget_right) {
+    unsigned int engage;
+    engage = !!enable;
+
+	if (engage && harmonic_distortion_coeffs && hpwidget_right) {
 		mx_update_bits(TAIKO_A_CDC_RX2_B3_CTL, 0xBC, 0x94);
 		mx_update_bits(TAIKO_A_CDC_RX2_B4_CTL, 0x30, 0x10);
     } else {
@@ -9062,8 +9070,8 @@ static ssize_t peak_det_timeout_store(struct kobject *kobj,
 
 	sscanf(buf, "%d", &uval);
 
-	if (uval < 1)
-		uval = 1;
+	if (uval < 0)
+		uval = 0;
 	if (uval > 15)
 		uval = 15;
 
@@ -9086,8 +9094,8 @@ static ssize_t rms_meter_div_fact_store(struct kobject *kobj,
 
 	sscanf(buf, "%d", &uval);
 
-	if (uval < 1)
-		uval = 1;
+	if (uval < 0)
+		uval = 0;
 	if (uval > 15)
 		uval = 15;
 
@@ -9110,13 +9118,14 @@ static ssize_t rms_meter_resamp_fact_store(struct kobject *kobj,
 
 	sscanf(buf, "%d", &uval);
 
-	if (uval < 1)
-		uval = 1;
+	if (uval < 0)
+		uval = 0;
 	if (uval > 255)
 		uval = 255;
 
    	sc_rms_meter_resamp_fact = uval;
     update_interpolator();
+
 	return count;
 }
 
