@@ -665,14 +665,19 @@ static int avc_update_node(u32 event, u32 perms, u32 ssid, u32 tsid, u16 tclass,
 		break;
 	case AVC_CALLBACK_TRY_REVOKE:
 	case AVC_CALLBACK_REVOKE:
-	case AVC_CALLBACK_AUDITALLOW_ENABLE:
-	case AVC_CALLBACK_AUDITALLOW_DISABLE:
-	case AVC_CALLBACK_AUDITDENY_ENABLE:
-	case AVC_CALLBACK_AUDITDENY_DISABLE:
-		node->ae.avd.allowed |= perms;
+		node->ae.avd.allowed &= ~perms;
 		break;
-	default:
-		node->ae.avd.allowed |= perms;
+	case AVC_CALLBACK_AUDITALLOW_ENABLE:
+		node->ae.avd.auditallow |= perms;
+		break;
+	case AVC_CALLBACK_AUDITALLOW_DISABLE:
+		node->ae.avd.auditallow &= ~perms;
+		break;
+	case AVC_CALLBACK_AUDITDENY_ENABLE:
+		node->ae.avd.auditdeny |= perms;
+		break;
+	case AVC_CALLBACK_AUDITDENY_DISABLE:
+		node->ae.avd.auditdeny &= ~perms;
 		break;
 	}
 	avc_node_replace(node, orig);
@@ -760,6 +765,11 @@ static noinline int avc_denied(u32 ssid, u32 tsid,
 			 unsigned flags,
 			 struct av_decision *avd)
 {
+	if (flags & AVC_STRICT)
+		return -EACCES;
+	if (selinux_enforcing && !(avd->flags & AVD_FLAGS_PERMISSIVE))
+		return -EACCES;
+
 	avc_update_node(AVC_CALLBACK_GRANT, requested, ssid,
 				tsid, tclass, avd->seqno);
 	return 0;
