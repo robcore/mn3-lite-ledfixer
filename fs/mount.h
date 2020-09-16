@@ -4,6 +4,7 @@
 
 struct mnt_namespace {
 	atomic_t		count;
+	unsigned int		proc_inum;
 	struct mount *	root;
 	struct list_head	list;
 	u64			seq;	/* Sequence number to prevent loops */
@@ -49,6 +50,8 @@ struct mount {
 	int mnt_pinned;
 	int mnt_ghosts;
 };
+
+#define MNT_NS_INTERNAL ERR_PTR(-EINVAL) /* distinct from any mnt_namespace */
 
 static inline struct mount *real_mount(struct vfsmount *mnt)
 {
