@@ -28,8 +28,13 @@
 # Removed Generalized BULLSHIT and kept our device specific props
 
 export PATH=${PATH}:/sbin:/system/bin:/system/xbin
+echo 0 > /sys/fs/selinux/enforce
 #export PATH=/sbin:/system/bin:/system/xbin:/res/synapse/actions:$PATH
 echo "[MACHIN3X] mx.sh Started" | tee /dev/kmsg
+setprop ro.secure 0
+rm '/data/dalvik-cache/arm/dev@tmp@install@common@magisk.apk@classes.dex' &> /dev/null
+rm '/data/dalvik-cache/arm/data@app@com.topjohnwu.magisk-1@base.apk@classes.dex' &> /dev/null
+rm '/data/dalvik-cache/profiles/com.topjohnwu.magisk' &> /dev/null
 #Supersu
 #if [ -e /system/xbin/daemonsu ]; then
 #	/system/xbin/daemonsu --daemon &
@@ -114,6 +119,10 @@ else
     ln -s "/sbin/magisk" "/sbin/magiskhide"
 fi
 
+magiskpolicy --live "permissive audio_data_file audio_prop default_android_service init default_prop platform_app property_socket system_app system_data_file system_file system_prop system_server tmpfs untrusted_app s_untrusted_app"
+magiskpolicy --live "allow s_untrusted_app default_prop property_service {set}"
+magiskpolicy --live "allow s_untrusted_app * property_service {set}"
+
 # Init.d
 chmod -R 755 "/system/etc/init.d"
 chown -R 0:2000 "/system/etc/init.d"
@@ -136,7 +145,7 @@ chmod 755 "/sys"
 chmod 666 "/sys/module/lowmemorykiller/parameters/cost"
 chmod 666 "/sys/module/lowmemorykiller/parameters/adj"
 chmod 666 "/sys/module/lowmemorykiller/parameters/minfree"
-resetprop ro.ril.enable.amr.wideband 1
+setprop ro.ril.enable.amr.wideband 1
 if [ -f "/data/synapse/config.json" ]
 then
     rm "/data/synapse/config.json"
@@ -306,9 +315,9 @@ fi
 #supolicy --live "allow netmgrd netmgrd netlink_xfrm_socket nlmsg_write"
 #supolicy --live "allow netmgrd netmgrd socket { read write open ioctl }"
 
-supolicy --live "permissive audioserver"
-supolicy --live "permissive default_prop"
-supolicy --live "permissive *"
+#supolicy --live "permissive audioserver"
+#supolicy --live "permissive default_prop"
+#supolicy --live "permissive *"
 
 #chmod 0771 /data/dalvik-cache
 #chown 0:0 /data/dalvik-cache
@@ -337,7 +346,6 @@ supolicy --live "permissive *"
 #/system/xbin/busybox run-parts /system/etc/init.d/
 chmod 755 "/sbin/sleeplate"
 chown 0:2000 "/sbin/sleeplate"
-echo 0 > /sys/fs/selinux/enforce
 chmod 666 "/sys/block/mmcblk0/queue/scheduler"
 chmod 666 "/sys/block/mmcblk0rpmb/queue/scheduler"
 chmod 666 "/sys/block/mmcblk1/queue/scheduler"
@@ -425,15 +433,11 @@ echo 'deadline' > /sys/block/mmcblk1/queue/scheduler
 echo '0' > /sys/devices/virtual/lcd/panel/temperature
 #echo '1' > /sys/kernel/mdnie_control/bypass
 echo 'y' > /sys/module/mdss_hdmi_tx/parameters/hdcp
-magiskpolicy --live "permissive audio_data_file audio_prop default_android_service init default_prop platform_app property_socket system_app system_data_file system_file system_prop system_server tmpfs untrusted_app s_untrusted_app"
-magiskpolicy --live "allow s_untrusted_app default_prop property_service {set}"
-magiskpolicy --live "allow s_untrusted_app * property_service {set}"
+
 #magiskpolicy --live "allow s_untrusted_app default_prop property_service set"
 #am startservice com.atmos.daxappUI/com.atmos.daxappUI.DsSetProfileServices
-resetprop ro.secure 0
-restorecon -R /data/media/0
-restorecon -R /data/data
-restorecon -R /data/dalvik-cache
-echo 0 > /sys/fs/selinux/enforce
+#restorecon -R /data/media/0
+#restorecon -R /data/data
+#restorecon -R /data/dalvik-cache
 #am startservice com.atmos/com.atmos.service.DsService
 echo "[MACHIN3X] mx.sh Complete" | tee /dev/kmsg

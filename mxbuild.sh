@@ -559,6 +559,10 @@ create_zip() {
                 adb push "$RDIR/Magisk-v20.4.zip" "$ADBPUSHLOCATION"
 				echo "Installing $ADBPUSHLOCATION/Magisk-v20.4.zip via open recovery script"
 				adb shell twrp install "$ADBPUSHLOCATION/Magisk-v20.4.zip"
+                echo "Removing leftovers"
+                adb shell rm "/data/dalvik-cache/arm/dev@tmp@install@common@magisk.apk@classes.dex"
+                adb shell rm "/data/dalvik-cache/arm/data@app@com.topjohnwu.magisk-1@base.apk@classes.dex"
+                adb shell rm "/data/dalvik-cache/profiles/com.topjohnwu.magisk"
 				echo "Rebooting Device"
 				adb reboot
 			else
