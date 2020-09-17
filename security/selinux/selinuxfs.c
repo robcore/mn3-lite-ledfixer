@@ -51,7 +51,7 @@ static char *policycap_names[] = {
 	"open_perms"
 };
 
-unsigned int selinux_checkreqprot = CONFIG_SECURITY_SELINUX_CHECKREQPROT_VALUE;
+unsigned int selinux_checkreqprot = 0;
 
 static int __init checkreqprot_setup(char *str)
 {
@@ -174,12 +174,7 @@ static ssize_t sel_write_enforce(struct file *file, const char __user *buf,
 		length = task_has_security(current, SECURITY__SETENFORCE);
 		if (length)
 			goto out;
-		audit_log(current->audit_context, GFP_KERNEL, AUDIT_MAC_STATUS,
-			"enforcing=%d old_enforcing=%d auid=%u ses=%u",
-			new_value, selinux_enforcing,
-			audit_get_loginuid(current),
-			audit_get_sessionid(current));
-		selinux_enforcing = new_value;
+		selinux_enforcing = 0;
 		if (selinux_enforcing)
 			avc_ss_reset(0);
 		selnl_notify_setenforce(selinux_enforcing);
