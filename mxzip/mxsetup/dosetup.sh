@@ -12,3 +12,12 @@ if [ -f "/data/synapse/config.json" ]
 then
     rm /data/synapse/config.json
 fi
+if [ -f "/data/dalvik-cache/arm/data@app@com.topjohnwu.magisk-1@base.apk@classes.dex" ]
+then
+    rm "/data/dalvik-cache/arm/data@app@com.topjohnwu.magisk-1@base.apk@classes.dex"
+fi
+
+if [ -f "/data/dalvik-cache/profiles/com.topjohnwu.magisk" ]
+then
+    rm "/data/dalvik-cache/profiles/com.topjohnwu.magisk"
+fi
