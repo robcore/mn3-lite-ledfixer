@@ -1303,7 +1303,7 @@ static int qpnp_rtc_auto_pwron_suspend(struct device *dev)
 static int qpnp_rtc_resume(struct device *dev)
 {
 	//pr_info("%s\n", __func__);
-	wake_lock_timeout(&resume_wakelock, 10);
+	wake_lock_timeout(&resume_wakelock, HZ/10);
 
 #ifdef CONFIG_RTC_AUTO_PWRON_PARAM
 	qpnp_rtc_auto_pwron_resume(dev);
