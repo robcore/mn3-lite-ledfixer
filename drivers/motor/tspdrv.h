@@ -95,7 +95,7 @@ typedef struct {
 
 int32_t g_nforce_32;
 
-#define MOTOR_STRENGTH 100
+#define MOTOR_STRENGTH 98
 
 #if defined (CONFIG_MACH_HLTESPR) || defined (CONFIG_MACH_HLTEEUR) || defined(CONFIG_SEC_LOCALE_KOR_H) || defined (CONFIG_MACH_HLTETMO) || defined(CONFIG_MACH_H3GDUOS) || defined(CONFIG_MACH_HLTEATT)
 	#define GP_CLK_M_DEFAULT                        3
@@ -158,7 +158,7 @@ int32_t g_nforce_32;
 #endif
 
 
-#define MOTOR_MIN_STRENGTH			80/*IMMERSION VALUE*/
+#define MOTOR_MIN_STRENGTH			54/*IMMERSION VALUE*/
 /*
  * ** Global variables for LRA PWM M,N and D values.
  * */
