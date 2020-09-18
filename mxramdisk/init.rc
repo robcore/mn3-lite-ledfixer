@@ -1196,8 +1196,9 @@ service lpm /system/bin/lpm
 
 #start SEC_PRODUCT_FEATURE_COMMON_SUPPORT_SE_FOR_ANDROID
 # Reload SE Android Policy for MDM
-on property:persist.security.mdm.policy=1
-    setprop selinux.reload_policy 1
+#on property:persist.security.mdm.policy=1
+    #setprop selinux.reload_policy 1
+setprop persist.security.mdm.policy 0
 #end SEC_PRODUCT_FEATURE_COMMON_SUPPORT_SE_FOR_ANDROID
 
 service console /system/bin/sh
@@ -1217,18 +1218,18 @@ service prepare_param /system/bin/prepare_param.sh /dev/block/platform/msm_sdcc.
 
 ## WTL_EDM_START
 ## EDM AuditLog
-#service edmaudit /system/bin/edmaudit
-#    class main
-#    user root
+service edmaudit /system/bin/edmaudit
+    class main
+    user root
 
 ## WTL_EDM_END
 
 # SEC_SELINUX
-#service auditd /system/bin/auditd -k
-#    class main
-#    seclabel u:r:auditd:s0
-#    disabled
-#    oneshot
+service auditd /system/bin/auditd -k
+    class main
+    seclabel u:r:auditd:s0
+    disabled
+    oneshot
 
 # SEC_LINUX DRS Service
 service drsd /system/bin/drsd
@@ -1245,8 +1246,8 @@ on property:selinux.reload_policy=1
     chown system system /sys/fs/selinux/commit_pending_bools
 
 # SEC_SELINUX
-#on property:init.svc.bootanim=stopped
-#    start auditd
+on property:init.svc.bootanim=stopped
+    start auditd
 
 # adbd is controlled via property triggers in init.<platform>.usb.rc
 service adbd /sbin/adbd --root_seclabel=u:r:su:s0
@@ -1292,11 +1293,11 @@ service vold /system/bin/vold
     socket dir_enc_report stream 0660 root mount
 ## Samsung ODE
 
-#service epmd /system/bin/epmd
-#    class main
-#    socket epm stream 0660 system system
-#    socket ppm stream 0660 system system
-#    ioprio be 2
+service epmd /system/bin/epmd
+    class main
+    socket epm stream 0660 system system
+    socket ppm stream 0660 system system
+    ioprio be 2
 
 service netd /system/bin/netd
     class main
