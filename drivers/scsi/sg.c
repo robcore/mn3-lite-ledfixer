@@ -537,6 +537,7 @@ sg_write(struct file *filp, const char __user *buf, size_t count, loff_t * ppos)
 {
 	int mxsize, cmd_size, k;
 	int input_size, blocking;
+	int result;
 	unsigned char opcode;
 	Sg_device *sdp;
 	Sg_fd *sfp;
@@ -562,9 +563,12 @@ sg_write(struct file *filp, const char __user *buf, size_t count, loff_t * ppos)
 	if (__copy_from_user(&old_hdr, buf, SZ_SG_HEADER))
 		return -EFAULT;
 	blocking = !(filp->f_flags & O_NONBLOCK);
-	if (old_hdr.reply_len < 0)
-		return sg_new_write(sfp, filp, buf, count,
+	if (old_hdr.reply_len < 0) {
+		mutex_lock(&sfp->parentdp->open_rel_lock);
+		result = sg_new_write(sfp, filp, buf, count,
 				    blocking, 0, 0, NULL);
+		mutex_unlock(&sfp->parentdp->open_rel_lock);
+	}
 	if (count < (SZ_SG_HEADER + 6))
 		return -EIO;	/* The minimum scsi command length is 6 bytes. */
 
@@ -1745,11 +1749,13 @@ static int sg_finish_rem_req(Sg_request * srp)
 		blk_put_request(srp->rq);
 	}
 
-	if (srp->res_used)
+	if (srp->res_used) {
 		sg_unlink_reserve(sfp, srp);
-	else
+	} else {
+		mutex_lock(&sfp->parentdp->open_rel_lock);
 		sg_remove_scat(req_schp);
-
+		mutex_unlock(&sfp->parentdp->open_rel_lock);
+	}
 	sg_remove_request(sfp, srp);
 
 	return ret;
@@ -1911,10 +1917,13 @@ sg_build_reserve(Sg_fd * sfp, int req_size)
 	do {
 		if (req_size < PAGE_SIZE)
 			req_size = PAGE_SIZE;
-		if (0 == sg_build_indirect(schp, sfp, req_size))
+		if (0 == sg_build_indirect(schp, sfp, req_size)) {
 			return;
-		else
+		} else {
+			mutex_lock(&sfp->parentdp->open_rel_lock);
 			sg_remove_scat(schp);
+			mutex_unlock(&sfp->parentdp->open_rel_lock);
+		}
 		req_size >>= 1;	/* divide by 2 */
 	} while (req_size > (PAGE_SIZE / 2));
 }
@@ -2090,7 +2099,9 @@ sg_add_sfp(Sg_device * sdp, int dev)
 
 	bufflen = min_t(int, sg_big_buff,
 			queue_max_sectors(sdp->device->request_queue) * 512);
+	mutex_lock(&sfp->parentdp->open_rel_lock);
 	sg_build_reserve(sfp, bufflen);
+	mutex_unlock(&sfp->parentdp->open_rel_lock);
 	SCSI_LOG_TIMEOUT(3, printk("sg_add_sfp:   bufflen=%d, k_use_sg=%d\n",
 			   sfp->reserve.bufflen, sfp->reserve.k_use_sg));
 
@@ -2113,7 +2124,9 @@ static void sg_remove_sfp_usercontext(struct work_struct *work)
 			printk("sg_remove_sfp:    bufflen=%d, k_use_sg=%d\n",
 				(int) sfp->reserve.bufflen,
 				(int) sfp->reserve.k_use_sg));
+		mutex_lock(&sfp->parentdp->open_rel_lock);
 		sg_remove_scat(&sfp->reserve);
+		mutex_unlock(&sfp->parentdp->open_rel_lock);
 	}
 
 	SCSI_LOG_TIMEOUT(6,
