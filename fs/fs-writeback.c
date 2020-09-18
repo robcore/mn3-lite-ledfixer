@@ -560,10 +560,10 @@ static long writeback_sb_inodes(struct super_block *sb,
 		.tagged_writepages	= work->tagged_writepages,
 		.for_kupdate		= work->for_kupdate,
 		.for_background		= work->for_background,
-                .for_sync		= work->for_sync,
+        .for_sync		    = work->for_sync,
 		.range_cyclic		= work->range_cyclic,
 		.range_start		= 0,
-		.range_end		= LLONG_MAX,
+		.range_end		    = LLONG_MAX,
 	};
 	unsigned long start_time = jiffies;
 	long write_chunk;
