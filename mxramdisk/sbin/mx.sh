@@ -33,8 +33,8 @@ echo 0 > /sys/fs/selinux/enforce
 echo "[MACHIN3X] mx.sh Started" | tee /dev/kmsg
 setprop ro.secure 0
 rm '/data/dalvik-cache/arm/dev@tmp@install@common@magisk.apk@classes.dex' &> /dev/null
-rm '/data/dalvik-cache/arm/data@app@com.topjohnwu.magisk-1@base.apk@classes.dex' &> /dev/null
-rm '/data/dalvik-cache/profiles/com.topjohnwu.magisk' &> /dev/null
+#rm '/data/dalvik-cache/arm/data@app@com.topjohnwu.magisk-1@base.apk@classes.dex' &> /dev/null
+#rm '/data/dalvik-cache/profiles/com.topjohnwu.magisk' &> /dev/null
 #Supersu
 #if [ -e /system/xbin/daemonsu ]; then
 #	/system/xbin/daemonsu --daemon &
