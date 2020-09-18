@@ -593,7 +593,7 @@ static unsigned int compander_gain_boost;
 static u32 sc_peak_det_timeout = 15;
 static u32 sc_rms_meter_div_fact = 15;
 static u32 sc_rms_meter_resamp_fact = 255;
-static u8 hph_pa_bias = 0x7A;
+static u8 hph_pa_bias = 0x6D;
 static unsigned int harmonic_distortion_coeffs = 0;
 static unsigned int iirs_locked = 0;
 
@@ -7506,7 +7506,6 @@ static const struct wcd9xxx_reg_mask_val taiko_2_0_reg_defaults[] = {
 	TAIKO_REG_VAL(TAIKO_A_BUCK_CTRL_CCL_4, 0x51),
 	TAIKO_REG_VAL(TAIKO_A_NCP_DTEST, 0x10),
 	TAIKO_REG_VAL(TAIKO_A_RX_HPH_CHOP_CTL, 0xA4),
-	TAIKO_REG_VAL(TAIKO_A_RX_HPH_BIAS_PA, 0x55), /*0x7A*/
 	TAIKO_REG_VAL(TAIKO_A_RX_HPH_OCP_CTL, 0x6B),
 	TAIKO_REG_VAL(TAIKO_A_RX_HPH_CNP_WG_CTL, 0xDA),
 	TAIKO_REG_VAL(TAIKO_A_RX_HPH_CNP_WG_TIME, 0x15),
@@ -7562,8 +7561,6 @@ static void taiko_update_reg_defaults(struct snd_soc_codec *codec)
 			      taiko_reg_defaults[i].val);
 
 	for (i = 0; i < ARRAY_SIZE(taiko_2_0_reg_defaults); i++) {
-        if (taiko_2_0_reg_defaults[i].reg == TAIKO_A_RX_HPH_BIAS_PA)
-            continue;
 		snd_soc_write(codec, taiko_2_0_reg_defaults[i].reg,
 			      taiko_2_0_reg_defaults[i].val);
     }
