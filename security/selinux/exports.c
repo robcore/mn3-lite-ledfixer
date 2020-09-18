@@ -18,6 +18,6 @@
 
 bool selinux_is_enabled(void)
 {
-	return 0;
+	return selinux_enabled;
 }
 EXPORT_SYMBOL_GPL(selinux_is_enabled);
