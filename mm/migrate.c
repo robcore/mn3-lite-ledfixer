@@ -367,9 +367,6 @@ static int migrate_page_move_mapping(struct address_space *mapping,
 	 */
 	page_unfreeze_refs(page, expected_count - 1);
 
-	spin_unlock(&mapping->tree_lock);
-	/* Leave irq disabled to prevent preemption while updating stats */
-
 	/*
 	 * If moved to a different zone then also account
 	 * the page for that zone. Other VM counters will be
@@ -392,7 +389,7 @@ static int migrate_page_move_mapping(struct address_space *mapping,
 			__inc_zone_state(newzone, NR_FILE_DIRTY);
 		}
 	}
-	local_irq_enable();
+	spin_unlock_irq(&mapping->tree_lock);
 
 	return 0;
 }
