@@ -57,12 +57,12 @@
 #define REMOTE_ROUTE_ENABLE_CB  es705_remote_route_enable
 #define SLIM_GET_CHANNEL_MAP_CB es705_slim_get_channel_map
 #define SLIM_SET_CHANNEL_MAP_CB es705_slim_set_channel_map
-#define SLIM_HW_PARAMS_CB       es705_slim_hw_params
-#define REMOTE_CFG_SLIM_RX_CB	es705_remote_cfg_slim_rx
+#define SLIM_HW_PARAMS_CB es705_slim_hw_params
+#define REMOTE_CFG_SLIM_RX_CB es705_remote_cfg_slim_rx
 #define REMOTE_CLOSE_SLIM_RX_CB	es705_remote_close_slim_rx
-#define REMOTE_CFG_SLIM_TX_CB	es705_remote_cfg_slim_tx
+#define REMOTE_CFG_SLIM_TX_CB es705_remote_cfg_slim_tx
 #define REMOTE_CLOSE_SLIM_TX_CB	es705_remote_close_slim_tx
-#define REMOTE_ADD_CODEC_CONTROLS_CB	es705_remote_add_codec_controls
+#define REMOTE_ADD_CODEC_CONTROLS_CB es705_remote_add_codec_controls
 #endif
 
 #define TAIKO_MAD_SLIMBUS_TX_PORT 12
