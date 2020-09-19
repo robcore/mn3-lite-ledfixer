@@ -31,6 +31,13 @@ TOOLCHAIN="/opt/toolchains/gcc-linaro-7.5.0-2019.12-x86_64_arm-linux-gnueabihf/b
 #export ARCH="arm"
 export CROSS_COMPILE="$TOOLCHAIN"
 
+if [ "$2" = "noreboot" ]
+then
+    NOREBOOT="true"
+else
+    NOREBOOT="false"
+fi
+
 timerprint() {
 
 	local DIFFMINS
@@ -563,8 +570,13 @@ create_zip() {
                 adb shell rm "/data/dalvik-cache/arm/dev@tmp@install@common@magisk.apk@classes.dex" &> /dev/null
                 adb shell rm "/data/dalvik-cache/arm/data@app@com.topjohnwu.magisk-1@base.apk@classes.dex" &> /dev/null
                 adb shell rm "/data/dalvik-cache/profiles/com.topjohnwu.magisk" &> /dev/null
-				echo "Rebooting Device"
-				adb reboot
+                if [ "$NOREBOOT" = "false" ]
+                then
+    				echo "Rebooting Device"
+        			adb reboot
+                else
+                    echo "Skipping Reboot due to command line option!"
+                fi
 			else
 				echo "FAILED to push $RDIR/$MX_KERNEL_VERSION.zip to $ADBPUSHLOCATION/$MX_KERNEL_VERSION.zip over ADB!"
 			fi
