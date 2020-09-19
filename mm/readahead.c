@@ -420,7 +420,7 @@ static int try_context_readahead(struct address_space *mapping,
 	 * not enough history pages:
 	 * it could be a random read
 	 */
-	if (size <= req_size)
+	if (size <= req_size || size == 0)
 		return 0;
 
 	/*
@@ -432,7 +432,7 @@ static int try_context_readahead(struct address_space *mapping,
 
 	ra->start = offset;
 	ra->size = min(size + req_size, max);
-	ra->async_size = 1;
+	ra->async_size = ra->size;
 
 	return 1;
 }
