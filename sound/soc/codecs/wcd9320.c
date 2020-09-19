@@ -438,7 +438,7 @@ struct taiko_priv {
 
 	/*compander*/
 	int comp_enabled[COMPANDER_MAX];
-	u32 comp_fs[COMPANDER_FS_MAX];
+	u32 comp_fs[COMPANDER_MAX];
 
 	/* Maintain the status of AUX PGA */
 	int aux_pga_cnt;
