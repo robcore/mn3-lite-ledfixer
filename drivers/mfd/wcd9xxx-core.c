@@ -31,7 +31,7 @@
 #include <sound/soc.h>
 
 #define WCD9XXX_REGISTER_START_OFFSET 0x800
-#define WCD9XXX_SLIM_RW_MAX_TRIES 3
+#define WCD9XXX_SLIM_RW_MAX_TRIES 10
 #define SLIMBUS_PRESENT_TIMEOUT 100
 
 #define MAX_WCD9XXX_DEVICE	4
@@ -109,9 +109,9 @@ static int __wcd9xxx_reg_read(
 		return val;
 }
 
-int wcd9xxx_reg_read(
-	struct wcd9xxx_core_resource *core_res,
-	unsigned short reg) {
+int wcd9xxx_reg_read(struct wcd9xxx_core_resource *core_res,
+					 unsigned short reg)
+{
 	struct wcd9xxx *wcd9xxx = (struct wcd9xxx *) core_res->parent;
 	return __wcd9xxx_reg_read(wcd9xxx, reg);
 
@@ -133,7 +133,8 @@ extern u8 crossright_cached_gain; /* RX3 routed from left to right side Port: RX
 
 static unsigned int sound_control_override = 0;
 void lock_sound_control(struct wcd9xxx_core_resource *core_res,
-						unsigned int lockval) {
+						unsigned int lockval)
+{
 	struct wcd9xxx *wcd9xxx = (struct wcd9xxx *) core_res->parent;
 /*	if (unlikely(lockval < 0))
 		lockval = 0;
@@ -363,7 +364,7 @@ static int wcd9xxx_slim_read_device(struct wcd9xxx *wcd9xxx, unsigned short reg,
 		mutex_unlock(&wcd9xxx->xfer_lock);
 		if (likely(ret == 0) || (--slim_read_tries == 0))
 			break;
-		usleep_range(5000, 5000);
+		usleep_range(10000, 10100);
 	}
 
 	if (ret)
@@ -392,7 +393,7 @@ static int wcd9xxx_slim_write_device(struct wcd9xxx *wcd9xxx,
 		mutex_unlock(&wcd9xxx->xfer_lock);
 		if (likely(ret == 0) || (--slim_write_tries == 0))
 			break;
-		usleep_range(5000, 5000);
+		usleep_range(10000, 10100);
 	}
 
 	if (ret)
@@ -785,7 +786,7 @@ static int get_parameters(char *buf, long int *param1, int num_of_par)
 			else
 				base = 10;
 
-			if (strict_strtoul(token, base, &param1[cnt]) != 0)
+			if (kstrtoul(token, base, &param1[cnt]) != 0)
 				return -EINVAL;
 
 			token = strsep(&buf, " ");
@@ -1213,7 +1214,7 @@ static int __devinit wcd9xxx_i2c_probe(struct i2c_client *client,
 			       __func__);
 			goto err_codec;
 		}
-		usleep_range(5, 5);
+		usleep_range(5, 10);
 
 		ret = wcd9xxx_reset(wcd9xxx);
 		if (ret) {
@@ -1618,7 +1619,7 @@ static int wcd9xxx_slim_get_laddr(struct slim_device *sb,
 		if (!ret)
 			break;
 		/* Give SLIMBUS time to report present and be ready. */
-		usleep_range(1000, 1000);
+		usleep_range(1000, 1100);
 		pr_debug_ratelimited("%s: retyring get logical addr\n",
 				     __func__);
 	} while time_before(jiffies, timeout);
@@ -1693,7 +1694,7 @@ static int wcd9xxx_slim_probe(struct slim_device *slim)
 		       __func__);
 		goto err_codec;
 	}
-	usleep_range(5, 5);
+	usleep_range(5, 10);
 
 	ret = wcd9xxx_reset(wcd9xxx);
 	if (ret) {
@@ -1796,7 +1797,6 @@ static int wcd9xxx_device_up(struct wcd9xxx *wcd9xxx)
 		wcd9xxx->slim_device_bootup = false;
 		return 0;
 	}
-
 	dev_info(wcd9xxx->dev, "%s: codec bring up\n", __func__);
 	wcd9xxx_bring_up(wcd9xxx);
 	ret = wcd9xxx_irq_init(wcd9xxx_res);
@@ -1843,6 +1843,7 @@ static int wcd9xxx_slim_device_down(struct slim_device *sldev)
 {
 	struct wcd9xxx *wcd9xxx = slim_get_devicedata(sldev);
 
+	dev_info(wcd9xxx->dev, "%s: device down\n", __func__);
 	if (!wcd9xxx) {
 		pr_err("%s: wcd9xxx is NULL\n", __func__);
 		return -EINVAL;
