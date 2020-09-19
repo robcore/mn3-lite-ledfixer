@@ -34,6 +34,7 @@ export CROSS_COMPILE="$TOOLCHAIN"
 if [ "$2" = "noreboot" ]
 then
     NOREBOOT="true"
+    echo "Script will not reboot after recovery install!"
 else
     NOREBOOT="false"
 fi
