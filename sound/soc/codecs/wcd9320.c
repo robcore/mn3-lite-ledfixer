@@ -998,15 +998,26 @@ TAIKO_A_RX_HPH_CHOP_CTL 0x1A5
 
 static void write_chopper(void)
 {
-	if (chopper_bypass || !hpwidget()) {
+    if (!hpwidget() || !hpwidget_any()) {
         mx_update_bits(TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20);
         mx_update_bits(TAIKO_A_RX_HPH_CHOP_CTL, 0x80, 0x00);
-    } else if (hpwidget() && !hph_pa_enabled) {
+        return;
+    }
+	if (chopper_bypass) {
+        mx_update_bits(TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20);
+        mx_update_bits(TAIKO_A_RX_HPH_CHOP_CTL, 0x80, 0x00);
+        return;
+    }
+
+    if (uhqa_mode) {
         mx_update_bits(TAIKO_A_RX_HPH_CHOP_CTL, 0x80, 0x80);
-        if (uhqa_mode)
-            mx_update_bits(TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x00);
-        else
-            mx_update_bits(TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20);
+        mx_update_bits(TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x00);
+        return;
+    }
+
+    if (!hph_pa_enabled) {
+        mx_update_bits(TAIKO_A_RX_HPH_CHOP_CTL, 0x80, 0x80);
+        mx_update_bits(TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20);
     }
 }
 
@@ -5409,7 +5420,7 @@ static int taiko_get_channel_map(struct snd_soc_dai *dai,
 }
 
 static int taiko_set_interpolator_rate(struct snd_soc_dai *dai,
-	u8 rx_fs_rate_reg_val, u32 compander_fs, u32 sample_rate)
+	u8 rx_fs_rate_reg_val, u32 compander_fs)
 {
 	u32 j;
 	u8 rx_mix1_inp;
@@ -5451,8 +5462,8 @@ static int taiko_set_interpolator_rate(struct snd_soc_dai *dai,
 				pr_info("%s: AIF_PB DAI(%d) connected to RX%u\n",
 					__func__, dai->id, j + 1);
 
-				pr_info("%s: set RX%u sample rate to %u\n",
-					__func__, j + 1, sample_rate);
+				pr_info("%s: set RX%u sample rate",
+					__func__, j + 1);
 
 				snd_soc_update_bits(codec, rx_fs_reg,
 						0xE0, rx_fs_rate_reg_val);
@@ -5703,13 +5714,16 @@ static int taiko_hw_params(struct snd_pcm_substream *substream,
 
 	case SNDRV_PCM_STREAM_PLAYBACK:
 		ret = taiko_set_interpolator_rate(dai, rx_fs_rate,
-						  compander_fs,
-						  params_rate(params));
+						  compander_fs);
 		if (ret < 0) {
 			pr_debug("%s: set decimator rate failed %d\n", __func__,
 				ret);
 			return ret;
 		}
+
+        pr_info("%s: setting interpolator rate to %d\n", __func__,
+				params_rate(params));
+        
 		if (taiko->intf_type == WCD9XXX_INTERFACE_TYPE_I2C) {
 			switch (params_format(params)) {
 			case SNDRV_PCM_FORMAT_S16_LE:
