@@ -4,8 +4,8 @@
 	<!-- H TMO ================================================ -->
 	<!-- These are the initial mixer settings -->
 	<!-- reset RX part -->
-	<ctl name="VEQ Enable" value="OFF" />
-	<ctl name="BWE Enable" value="OFF" />
+	<ctl name="VEQ Enable" value="Off" />
+	<ctl name="BWE Enable" value="Off" />
 	<ctl name="SLIMBUS_0_RX Audio Mixer MultiMedia1" value="0" />
 	<ctl name="SLIMBUS_0_RX Audio Mixer MultiMedia2" value="0" />
 	<ctl name="SLIMBUS_0_RX Audio Mixer MultiMedia3" value="0" />
