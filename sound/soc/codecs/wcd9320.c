@@ -1015,59 +1015,30 @@ static void update_bias(void)
     if (hpwidget_any())
         return;
 
-    if (hph_pa_bias != regread(TAIKO_A_RX_HPH_BIAS_PA))
-    	mx_update_bits_locked(TAIKO_A_RX_HPH_BIAS_PA, 0xff, hph_pa_bias);
-    if (compander_bias != regread(TAIKO_A_RX_HPH_BIAS_CNP))
-        mx_update_bits_locked(TAIKO_A_RX_HPH_BIAS_CNP, 0xff, compander_bias);
+   	mx_update_bits_locked(TAIKO_A_RX_HPH_BIAS_PA, 0xff, hph_pa_bias);
+    mx_update_bits_locked(TAIKO_A_RX_HPH_BIAS_CNP, 0xff, compander_bias);
 }
 
 static void update_interpolator(void)
 {
-    if (interpolator_boost) {
-        if (interpolator_enabled) {
-           	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res,
-        			TAIKO_A_CDC_COMP1_B3_CTL,
-        			0x01);
-        	mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL,
-        		    0xF0, 0x05 << 4);
-            usleep_range(3000, 3100);
-            wcd9xxx_reg_write(&sound_control_codec_ptr->core_res,
-            		TAIKO_A_CDC_COMP1_B3_CTL,
-            		sc_rms_meter_resamp_fact);
+    regwrite(TAIKO_A_CDC_COMP1_B3_CTL, 0x01);
+    mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL, 0xF0, 0x05 << 4);
+    mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL, 0x0F, 0x05);
+    usleep_range(3000, 3100);
+
+    if (interpolator_enabled) {
+        if (interpolator_boost) {
+            regwrite(TAIKO_A_CDC_COMP1_B3_CTL, sc_rms_meter_resamp_fact);
             mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL,
             	    0xF0, sc_rms_meter_div_fact << 4);
             mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL,
             		0x0F, sc_peak_det_timeout);
         } else {
-           	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res,
-        			TAIKO_A_CDC_COMP1_B3_CTL,
-        			0x01);
-        	mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL,
-        		    0xF0, 0x05 << 4);
-            usleep_range(3000, 3100);
-        }
-    } else {
-        if (interpolator_enabled) {
-           	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res,
-        			TAIKO_A_CDC_COMP1_B3_CTL,
-        			0x01);
-        	mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL,
-        		    0xF0, 0x05 << 4);
-            usleep_range(3000, 3100);
-            wcd9xxx_reg_write(&sound_control_codec_ptr->core_res,
-                    TAIKO_A_CDC_COMP1_B3_CTL,
-                    0x28);
+            regwrite(TAIKO_A_CDC_COMP1_B3_CTL, 0x28);
             mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL,
-                    0xF0, 0x0B << 0x4);
+                    0xF0, 0x0B << 4);
             mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL,
                     0x0F, 0x09);
-        } else {
-           	wcd9xxx_reg_write(&sound_control_codec_ptr->core_res,
-        			TAIKO_A_CDC_COMP1_B3_CTL,
-        			0x01);
-        	mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL,
-        		    0xF0, 0x05 << 4);
-            usleep_range(3000, 3100);
         }
     }
 }
