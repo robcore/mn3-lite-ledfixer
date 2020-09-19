@@ -46,7 +46,6 @@
 
 #include <linux/ratelimit.h>
 
-//#define ENHANCED_LMK_ROUTINE
 #define LMK_COUNT_READ
 
 #ifdef ENHANCED_LMK_ROUTINE
@@ -71,7 +70,7 @@ static uint32_t oom_count = 0;
 #endif
 
 static uint32_t lowmem_debug_level = 1;
-static short lowmem_adj[6] = {
+static int lowmem_adj[6] = {
 	0,
 	1,
 	6,
@@ -162,10 +161,10 @@ static int lowmem_shrink(struct shrinker *s, struct shrink_control *sc)
 	int rem = 0;
 	int tasksize;
 	int i;
-	short min_score_adj = OOM_SCORE_ADJ_MAX + 1;
+	int min_score_adj = OOM_SCORE_ADJ_MAX + 1;
 	int minfree = 0;
 	int selected_tasksize = 0;
-	short selected_oom_score_adj;
+	int selected_oom_score_adj;
 #ifdef CONFIG_SAMP_HOTNESS
 	int selected_hotness_adj = 0;
 #endif
@@ -253,7 +252,7 @@ static int lowmem_shrink(struct shrinker *s, struct shrink_control *sc)
 	rcu_read_lock();
 	for_each_process(tsk) {
 		struct task_struct *p;
-		short oom_score_adj;
+		int oom_score_adj;
 #ifdef CONFIG_SAMP_HOTNESS
 		int hotness_adj = 0;
 #endif
@@ -576,7 +575,7 @@ static void __exit lowmem_exit(void)
 }
 
 #ifdef CONFIG_ANDROID_LOW_MEMORY_KILLER_AUTODETECT_OOM_ADJ_VALUES
-static short lowmem_oom_adj_to_oom_score_adj(short oom_adj)
+static int lowmem_oom_adj_to_oom_score_adj(int oom_adj)
 {
 	if (oom_adj == OOM_ADJUST_MAX)
 		return OOM_SCORE_ADJ_MAX;
@@ -587,8 +586,8 @@ static short lowmem_oom_adj_to_oom_score_adj(short oom_adj)
 static void lowmem_autodetect_oom_adj_values(void)
 {
 	int i;
-	short oom_adj;
-	short oom_score_adj;
+	int oom_adj;
+	int oom_score_adj;
 	int array_size = ARRAY_SIZE(lowmem_adj);
 
 	if (lowmem_adj_size < array_size)
@@ -646,7 +645,7 @@ static struct kernel_param_ops lowmem_adj_array_ops = {
 static const struct kparam_array __param_arr_adj = {
 	.max = ARRAY_SIZE(lowmem_adj),
 	.num = &lowmem_adj_size,
-	.ops = &param_ops_short,
+	.ops = &param_ops_int,
 	.elemsize = sizeof(lowmem_adj[0]),
 	.elem = lowmem_adj,
 };
@@ -658,9 +657,9 @@ __module_param_call(MODULE_PARAM_PREFIX, adj,
 		    &lowmem_adj_array_ops,
 		    .arr = &__param_arr_adj,
 		    S_IRUGO | S_IWUSR, -1);
-__MODULE_PARM_TYPE(adj, "array of short");
+__MODULE_PARM_TYPE(adj, "array of int");
 #else
-module_param_array_named(adj, lowmem_adj, short, &lowmem_adj_size,
+module_param_array_named(adj, lowmem_adj, int, &lowmem_adj_size,
 			 S_IRUGO | S_IWUSR);
 #endif
 module_param_array_named(minfree, lowmem_minfree, uint, &lowmem_minfree_size,
@@ -672,7 +671,6 @@ module_param_named(lmkcount, lmk_count, uint, S_IRUGO);
 #ifdef OOM_COUNT_READ
 module_param_named(oomcount, oom_count, uint, S_IRUGO);
 #endif
-
 module_init(lowmem_init);
 module_exit(lowmem_exit);
 
