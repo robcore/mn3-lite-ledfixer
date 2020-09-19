@@ -588,10 +588,10 @@ static unsigned int high_perf_mode;
 static bool hpwidget_left = false;
 static bool hpwidget_right = false;
 static bool spkwidget = false;
-static unsigned int compander_gain_lock;
-static unsigned int compander_gain_boost;
-static u32 sc_peak_det_timeout = 15;
-static u32 sc_rms_meter_div_fact = 15;
+static unsigned int compander_gain_lock = 1;
+static unsigned int compander_gain_boost = 1;
+static u32 sc_peak_det_timeout = 13;
+static u32 sc_rms_meter_div_fact = 13;
 static u32 sc_rms_meter_resamp_fact = 255;
 static u8 hph_pa_bias = 0x6D;
 static unsigned int harmonic_distortion_coeffs = 0;
@@ -9043,6 +9043,9 @@ static ssize_t peak_det_timeout_store(struct kobject *kobj,
 	if (uval > 15)
 		uval = 15;
 
+    if (hpwidget_any())
+        return count;
+
 	sc_peak_det_timeout = uval;
     update_interpolator();
 
@@ -9067,6 +9070,9 @@ static ssize_t rms_meter_div_fact_store(struct kobject *kobj,
 	if (uval > 15)
 		uval = 15;
 
+    if (hpwidget_any())
+        return count;
+
 	sc_rms_meter_div_fact = uval;
     update_interpolator();
 
@@ -9090,6 +9096,9 @@ static ssize_t rms_meter_resamp_fact_store(struct kobject *kobj,
 		uval = 0;
 	if (uval > 255)
 		uval = 255;
+
+    if (hpwidget_any())
+        return count;
 
    	sc_rms_meter_resamp_fact = uval;
     update_interpolator();
