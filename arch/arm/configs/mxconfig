@@ -1732,7 +1732,6 @@ CONFIG_DM_SNAPSHOT=y
 # CONFIG_DM_THIN_PROVISIONING is not set
 # CONFIG_DM_MIRROR is not set
 # CONFIG_DM_RAID is not set
-# CONFIG_DM_LOG_USERSPACE is not set
 # CONFIG_DM_ZERO is not set
 # CONFIG_DM_MULTIPATH is not set
 # CONFIG_DM_DELAY is not set
