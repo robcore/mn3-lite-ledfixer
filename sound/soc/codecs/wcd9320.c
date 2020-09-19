@@ -1019,7 +1019,7 @@ static void update_bias(void)
     mx_update_bits_locked(TAIKO_A_RX_HPH_BIAS_CNP, 0xff, compander_bias);
 }
 
-static void update_interpolator(void)
+static inline void update_interpolator(void)
 {
     regwrite(TAIKO_A_CDC_COMP1_B3_CTL, 0x01);
     mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL, 0xF0, 0x05 << 4);
