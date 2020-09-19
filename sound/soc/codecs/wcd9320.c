@@ -1812,7 +1812,7 @@ static const struct snd_kcontrol_new class_h_dsm_mux =
 	SOC_DAPM_ENUM("CLASS_H_DSM MUX Mux", class_h_dsm_enum);
 
 static const char *rx1_interpolator_text[] = {
-	"ZERO", "RX1 MIX2"
+	"ZERO", "RX1 MIX1"
 };
 static const struct soc_enum rx1_interpolator_enum =
 	SOC_ENUM_SINGLE(TAIKO_A_CDC_CLK_RX_B1_CTL, 0, 2, rx1_interpolator_text);
@@ -1821,7 +1821,7 @@ static const struct snd_kcontrol_new rx1_interpolator =
 	SOC_DAPM_ENUM("RX1 INTERP Mux", rx1_interpolator_enum);
 
 static const char *rx2_interpolator_text[] = {
-	"ZERO", "RX2 MIX2"
+	"ZERO", "RX2 MIX1"
 };
 static const struct soc_enum rx2_interpolator_enum =
 	SOC_ENUM_SINGLE(TAIKO_A_CDC_CLK_RX_B1_CTL, 1, 2, rx2_interpolator_text);
@@ -4530,9 +4530,9 @@ static const struct snd_soc_dapm_route audio_map[] = {
 
 	{"CLASS_H_DSM MUX", "DSM_HPHL_RX1", "RX1 CHAIN"},
 
-	{"RX1 INTERP", NULL, "RX1 MIX2"},
+	{"RX1 INTERP", NULL, "RX1 MIX1"},
 	{"RX1 CHAIN", NULL, "RX1 INTERP"},
-	{"RX2 INTERP", NULL, "RX2 MIX2"},
+	{"RX2 INTERP", NULL, "RX2 MIX1"},
 	{"RX2 CHAIN", NULL, "RX2 INTERP"},
 
 	{"RX1 MIX2", NULL, "ANC1 MUX"},
