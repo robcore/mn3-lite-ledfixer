@@ -471,7 +471,7 @@
 	<!-- end of Device -->
 
 	<!-- ================================================================ -->
-	<!-- Play Scenario  -->
+	<!-- Play Scenario -->
 	<path name="handset">
 		<path name="rcv" />
 		<ctl name="EAR PA Gain" value="POS_6_DB" />
@@ -486,27 +486,26 @@
 		<ctl name="COMP0 Switch" value="1" />
 	</path>
 
-	<path name="headset">
-		<ctl name="DAC1 Switch" value="0" />
-		<ctl name="EAR PA Gain" value="POS_0_DB" />
-		<ctl name="SLIM RX1 MUX" value="AIF1_PB" />
-		<ctl name="SLIM RX2 MUX" value="AIF1_PB" />
-		<ctl name="SLIM_0_RX Channels" value="Two" />
         <!-- <ctl name="IIR1 INP1 MUX" value="RX1" /> -->
         <!-- <ctl name="IIR2 INP1 MUX" value="RX2" /> -->
 		<!-- <ctl name="RX1 MIX1 INP1" value="IIR1" /> -->
 		<!-- <ctl name="RX2 MIX1 INP1" value="IIR2" /> -->
 		<!-- <ctl name="RX1 MIX1 INP2" value="IIR1" /> -->
 		<!-- <ctl name="RX2 MIX1 INP2" value="IIR2" /> -->
-		<ctl name="RX1 MIX1 INP1" value="RX1" />
-		<ctl name="RX2 MIX1 INP1" value="RX2" />
-        <ctl name="RX1 INTERP" value="RX1 MIX1" />
-        <ctl name="RX2 INTERP" value="RX2 MIX1" />
+        <!-- <ctl name="RX1 INTERP" value="RX1 MIX1" /> -->
+     	<!-- <ctl name="RX2 INTERP" value="RX2 MIX1" /> -->
         <!-- Volume Boost! -->
 		<!-- <ctl name="RX1 MIX1 INP2" value="RX1" /> -->
 		<!-- <ctl name="RX2 MIX1 INP2" value="RX2" /> -->
-        <!-- Volume Boost End! -->
 
+	<path name="headset">
+		<ctl name="DAC1 Switch" value="0" />
+		<ctl name="EAR PA Gain" value="POS_0_DB" />
+		<ctl name="SLIM RX1 MUX" value="AIF1_PB" />
+		<ctl name="SLIM RX2 MUX" value="AIF1_PB" />
+		<ctl name="SLIM_0_RX Channels" value="Two" />
+		<ctl name="RX1 MIX1 INP1" value="RX1" />
+		<ctl name="RX2 MIX1 INP1" value="RX2" />
 		<ctl name="CLASS_H_DSM MUX" value="DSM_HPHL_RX1" />
 		<ctl name="COMP1 Switch" value="1" />
 		<ctl name="HPHL Volume" value="20" />
