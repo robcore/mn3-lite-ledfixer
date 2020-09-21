@@ -48,8 +48,8 @@
 
 #define LMK_COUNT_READ
 
-#ifdef ENHANCED_LMK_ROUTINE
-#define LOWMEM_DEATHPENDING_DEPTH 3
+#ifdef CONFIG_SEC_DEBUG_LMK_COUNT_INFO
+#define OOM_COUNT_READ
 #endif
 
 #ifdef LMK_COUNT_READ
@@ -58,7 +58,6 @@ static uint32_t lmk_count = 0;
 
 #ifdef CONFIG_SEC_OOM_KILLER
 #define MULTIPLE_OOM_KILLER
-#define OOM_COUNT_READ
 #endif
 
 #ifdef OOM_COUNT_READ
@@ -211,7 +210,7 @@ static int lowmem_shrink(struct shrinker *s, struct shrink_control *sc)
 #if defined(CONFIG_CMA_PAGE_COUNTING) && defined(CONFIG_EXCLUDE_LRU_LIVING_IN_CMA)
 	if (get_nr_swap_pages() < SSWAP_LMK_THRESHOLD && cma_page_ratio >= CMA_PAGE_RATIO
 			&& !is_active_high) {
-		other_file = other_file - (nr_cma_inactive_file + nr_cma_active_file);
+		other_file -= nr_cma_inactive_file + nr_cma_active_file;
 		flag = 1;
 	}
 #endif
@@ -225,7 +224,8 @@ static int lowmem_shrink(struct shrinker *s, struct shrink_control *sc)
 	if (lowmem_minfree_size < array_size)
 		array_size = lowmem_minfree_size;
 	for (i = 0; i < array_size; i++) {
-		if (other_free + other_file < lowmem_minfree[i]) {
+		minfree = lowmem_minfree[i];
+		if (other_free < minfree && other_file < minfree) {
 			min_score_adj = lowmem_adj[i];
 			break;
 		}
@@ -335,6 +335,8 @@ static int lowmem_shrink(struct shrinker *s, struct shrink_control *sc)
 #ifdef LMK_COUNT_READ
 		lmk_count++;
 #endif /*LMK_COUNT_READ*/
+		/* give the system time to free up the memory */
+		msleep_interruptible(20);
 		if (reclaim_state)
 			reclaim_state->reclaimed_slab = selected_tasksize;
 	} else
