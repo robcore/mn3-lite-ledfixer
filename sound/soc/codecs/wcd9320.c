@@ -568,9 +568,9 @@ u8 crossleft_cached_gain = 241; /* 241 = -15 */
 /* RX3 routed from left to right side */
 u8 crossright_cached_gain = 241; /* 241 = -15 */
 #endif
-static u8 hphl_hpf_cutoff;
-static u8 hphr_hpf_cutoff;
-static u8 speaker_hpf_cutoff;
+static u8 hphl_hpf_cutoff = 0;
+static u8 hphr_hpf_cutoff = 0;
+static u8 speaker_hpf_cutoff = 0;
 static u8 hphl_hpf_bypass = 1;
 static u8 hphr_hpf_bypass = 1;
 static u8 speaker_hpf_bypass;
@@ -584,15 +584,15 @@ static u8 hphl_pa_cached_gain = 20;
 static u8 hphr_pa_cached_gain = 20;
 static unsigned int hph_poweramp_mask = 31; /* (1 << fls(max)) - 1 */
 static unsigned int uhqa_mode = 0;
-static unsigned int high_perf_mode;
+static unsigned int high_perf_mode = 0;
 static bool hpwidget_left = false;
 static bool hpwidget_right = false;
 static bool spkwidget = false;
-static unsigned int compander_gain_lock = 1;
-static unsigned int compander_gain_boost = 1;
-static u32 sc_peak_det_timeout = 13;
-static u32 sc_rms_meter_div_fact = 13;
-static u32 sc_rms_meter_resamp_fact = 255;
+static unsigned int compander_gain_lock = 0;
+static unsigned int compander_gain_boost = 0;
+static u8 sc_peak_det_timeout = 9;
+static u8 sc_rms_meter_div_fact = 10;
+static u8 sc_rms_meter_resamp_fact = 40;
 static u8 hph_pa_bias = 0x6D;
 static unsigned int harmonic_distortion_coeffs = 0;
 static unsigned int iirs_locked = 0;
@@ -602,12 +602,12 @@ static unsigned int iirs_locked = 0;
 #define TAIKO_A_RX_HPH_BIAS_CNP__POR (0x8A)
 */
 
-static u8 compander_bias = 0x55;
-unsigned int anc_delay = 0;
-static u32 hph_autochopper;
-static unsigned int chopper_bypass;
-static unsigned int bypass_static_pa;
-static unsigned int wavegen_override;
+static u8 compander_bias = 0x7A;
+unsigned int anc_delay = 1;
+static unsigned int hph_autochopper = 0;
+static unsigned int chopper_bypass = 0;
+static unsigned int bypass_static_pa = 0;
+static unsigned int wavegen_override = 0;
 /*RMS (Root Mean Squared) Power Detector*/
 static unsigned int interpolator_boost = 1;
 static bool interpolator_enabled;
@@ -8777,6 +8777,9 @@ static ssize_t interpolator_boost_store(struct kobject *kobj,
 	if (uval > 1)
 		uval = 1;
 
+    if (hpwidget_any())
+        return count;
+
 	interpolator_boost = uval;
 	return count;
 }
@@ -8799,6 +8802,9 @@ static ssize_t compander_gain_lock_store(struct kobject *kobj,
 	if (uval > 1)
 		uval = 1;
 
+    if (hpwidget_any())
+        return count;
+
 	compander_gain_lock = uval;
 	return count;
 }
@@ -8820,6 +8826,9 @@ static ssize_t compander_gain_boost_store(struct kobject *kobj,
 		uval = 0;
 	if (uval > 1)
 		uval = 1;
+
+    if (hpwidget_any())
+        return count;
 
 	compander_gain_boost = uval;
 	return count;
@@ -8932,7 +8941,7 @@ static ssize_t speaker_hpf_cutoff_store(struct kobject *kobj,
 	if (uval > 2)
 		uval = 2;
 
-	speaker_hpf_cutoff = uval;
+	speaker_hpf_cutoff = (u8)uval;
 
 	write_hpf_cutoff(TAIKO_A_CDC_RX7_B4_CTL);
 
@@ -9029,7 +9038,7 @@ static ssize_t speaker_hpf_bypass_store(struct kobject *kobj,
 	if (uval > 1)
 		uval = 1;
 
-	speaker_hpf_bypass = uval;
+	speaker_hpf_bypass = (u8)uval;
 
 	write_hpf_bypass(TAIKO_A_CDC_RX7_B5_CTL);
 
@@ -9057,7 +9066,7 @@ static ssize_t peak_det_timeout_store(struct kobject *kobj,
     if (hpwidget_any())
         return count;
 
-	sc_peak_det_timeout = uval;
+	sc_peak_det_timeout = (u8)uval;
     update_interpolator();
 
 	return count;
@@ -9084,7 +9093,7 @@ static ssize_t rms_meter_div_fact_store(struct kobject *kobj,
     if (hpwidget_any())
         return count;
 
-	sc_rms_meter_div_fact = uval;
+	sc_rms_meter_div_fact = (u8)uval;
     update_interpolator();
 
 	return count;
@@ -9111,7 +9120,7 @@ static ssize_t rms_meter_resamp_fact_store(struct kobject *kobj,
     if (hpwidget_any())
         return count;
 
-   	sc_rms_meter_resamp_fact = uval;
+   	sc_rms_meter_resamp_fact = (u8)uval;
     update_interpolator();
 
 	return count;
@@ -9135,11 +9144,11 @@ static ssize_t hph_pa_bias_store(struct kobject *kobj,
 	if (uval > 170)
 		uval = 170;
 
-	hph_pa_bias = uval;
-
     if (sec_jacked() || hpwidget_any() ||
         spkwidget_active())
         return count;
+
+	hph_pa_bias = (u8)uval;
 
     update_bias();
 
@@ -9164,11 +9173,11 @@ static ssize_t compander_bias_store(struct kobject *kobj,
 	if (uval > 170)
 		uval = 170;
 
-	compander_bias = uval;
-
     if (sec_jacked() || hpwidget_any() ||
         spkwidget_active())
         return count;
+
+	compander_bias = (u8)uval;
 
     update_bias();
 
