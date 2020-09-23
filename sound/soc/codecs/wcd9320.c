@@ -1100,7 +1100,6 @@ static void write_hdc_dual(bool enable)
 
 static void update_control_regs(void)
 {
-	update_bias();
 	write_hpf_cutoff(TAIKO_A_CDC_RX1_B4_CTL);
 	write_hpf_cutoff(TAIKO_A_CDC_RX2_B4_CTL);
 	write_hpf_cutoff(TAIKO_A_CDC_RX7_B4_CTL);
@@ -7780,6 +7779,7 @@ static int wcd9xxx_prepare_static_pa(struct wcd9xxx_mbhc *mbhc,
 	}
 	pr_info("%s: PAs are prepared\n", __func__);
 bypass:
+    update_bias();
 	update_control_regs();
     write_hph_poweramp_regs();	
 	return 0;
@@ -8034,6 +8034,7 @@ static int taiko_post_reset_cb(struct wcd9xxx *wcd9xxx)
 		taiko->dai[count].bus_down_in_recovery = true;
 
 	mutex_unlock(&codec->mutex);
+    update_bias();
 	update_control_regs();
 	return ret;
 }
@@ -9649,6 +9650,7 @@ static int taiko_codec_probe(struct snd_soc_codec *codec)
 		pr_warn("%s kobject create failed!\n", __func__);
 	}
 
+    update_bias();
 	update_control_regs();
     wake_lock_init(&spk_playback_wake_lock, WAKE_LOCK_SUSPEND, "mx_spk_playback");
     wake_lock_init(&hph_playback_wake_lock, WAKE_LOCK_SUSPEND, "mx_hph_playback");

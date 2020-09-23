@@ -2,25 +2,49 @@
 
 if [ "$1" = "headphoneleft" ]
 then
+    LEFTVAL=$(busybox cat /sys/kernel/sound_control/headphone_gain | cut -d ' ' -f 1)
     if [ -n "$2" ]
     then
-        busybox echo $2 $(busybox cat /sys/kernel/sound_control/headphone_gain | cut -d ' ' -f 2) > /sys/kernel/sound_control/headphone_gain
+        if [ "$2" = "$LEFTVAL" ]
+        then
+            busybox cat /sys/kernel/sound_control/headphone_gain | cut -d ' ' -f 1
+        else
+            busybox echo $2 $(busybox cat /sys/kernel/sound_control/headphone_gain | cut -d ' ' -f 2) > /sys/kernel/sound_control/headphone_gain
+            busybox cat /sys/kernel/sound_control/headphone_gain | cut -d ' ' -f 1
+        fi
+    else
+        busybox cat /sys/kernel/sound_control/headphone_gain | cut -d ' ' -f 1
     fi
-    busybox cat /sys/kernel/sound_control/headphone_gain | cut -d ' ' -f 1
 elif [ "$1" = "headphoneright" ]
 then
+    RIGHTVAL=$(busybox cat /sys/kernel/sound_control/headphone_gain | cut -d ' ' -f 2)
     if [ -n "$2" ]
     then
-        busybox echo $(busybox cat /sys/kernel/sound_control/headphone_gain | cut -d ' ' -f 1) $2 > /sys/kernel/sound_control/headphone_gain
+        if [ "$2" = "$RIGHTVAL" ]
+        then
+            busybox cat /sys/kernel/sound_control/headphone_gain | cut -d ' ' -f 2
+        else
+            busybox echo $(busybox cat /sys/kernel/sound_control/headphone_gain | cut -d ' ' -f 1) $2 > /sys/kernel/sound_control/headphone_gain
+            busybox cat /sys/kernel/sound_control/headphone_gain | cut -d ' ' -f 2
+        fi
+    else
+        busybox cat /sys/kernel/sound_control/headphone_gain | cut -d ' ' -f 2
     fi
-    busybox cat /sys/kernel/sound_control/headphone_gain | cut -d ' ' -f 2
 elif [ "$1" = "speaker_gain" ]
 then
+    SPKVAL=$(busybox cat /sys/kernel/sound_control/speaker_gain)
     if [ -n "$2" ]
     then
-        busybox echo "$2" > /sys/kernel/sound_control/speaker_gain
+        if [ "$2" = "$SPKVAL" ]
+        then
+            busybox cat /sys/kernel/sound_control/speaker_gain
+        else
+            busybox echo "$2" > /sys/kernel/sound_control/speaker_gain
+            busybox cat /sys/kernel/sound_control/speaker_gain
+        fi
+    else
+        busybox cat /sys/kernel/sound_control/speaker_gain
     fi
-    busybox cat /sys/kernel/sound_control/speaker_gain
 elif [ "$1" = "iir1_gain" ]
 then
     if [ -n "$2" ]
@@ -323,10 +347,10 @@ then
     busybox cat /sys/kernel/sound_control/iirs_locked
 elif [ "$1" = "lock_iirs_locked" ]
 then
-    busybox echo "1" > /sys/kernel/sound_control/iirs_locked
+    busybox echo 1 > /sys/kernel/sound_control/iirs_locked
 elif [ "$1" = "unlock_iirs_locked" ]
 then
-    busybox echo "0" > /sys/kernel/sound_control/iirs_locked
+    busybox echo 0 > /sys/kernel/sound_control/iirs_locked
 elif [ "$1" = "headphone_dac_enabled" ]
 then
     busybox cat /sys/kernel/sound_control/headphone_dac_enabled

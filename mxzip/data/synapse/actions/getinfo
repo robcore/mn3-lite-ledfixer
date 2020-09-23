@@ -7,10 +7,13 @@ elif [ "$1" = "sleeptimer" ]
 then
     if [ -f "/data/synapse/sleeplate.lock" ]
     then
-        echo "Sleeptimer already Running"
+        busybox echo "Sleeptimer already Running"
     else
-        echo 'RUN' > /data/synapse/sleeplate.lock
+        busybox echo 'RUN' > /data/synapse/sleeplate.lock
         /sbin/sleeplate &
-        echo "Sleeptimer Running"
+        busybox echo "Sleeptimer Running"
     fi
+elif [ "$1" = "current_now" ]
+then
+    busybox cat /sys/class/power_supply/battery/current_now
 fi
