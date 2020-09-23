@@ -1004,7 +1004,8 @@ TAIKO_A_RX_HPH_CHOP_CTL 0x1A5
 
 static void write_chopper(void)
 {
-    if (!hpwidget() || !hpwidget_any()) {
+
+    if (!hpwidget()) {
         mx_update_bits(TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20);
         mx_update_bits(TAIKO_A_RX_HPH_CHOP_CTL, 0x80, 0x00);
         return;
@@ -1438,9 +1439,11 @@ static int taiko_set_compander(struct snd_kcontrol *kcontrol,
         }
 
 		/* Disable CHOPPER block */
+        snd_soc_update_bits(codec,
+            TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20);
 		snd_soc_update_bits(codec,
 			TAIKO_A_RX_HPH_CHOP_CTL, 0x80, 0x00);
-
+        write_chopper();
 		snd_soc_write(codec, TAIKO_A_NCP_DTEST, 0x10);
 		write_hph_poweramp_regs();
 
@@ -1467,6 +1470,7 @@ static int taiko_set_compander(struct snd_kcontrol *kcontrol,
 			snd_soc_update_bits(codec,
 				TAIKO_A_RX_HPH_CHOP_CTL, 0x80, 0x80);
 
+        write_chopper();
 		snd_soc_write(codec, TAIKO_A_NCP_DTEST, 0x20);
 
 		pr_debug("%s: Enabled Chopper and set wavegen to 5 msec\n",
@@ -1481,9 +1485,12 @@ static int taiko_set_compander(struct snd_kcontrol *kcontrol,
 		snd_soc_write(codec, TAIKO_A_RX_HPH_BIAS_WG_OCP, 0x1A);
 
 		/* Disable CHOPPER block */
+        snd_soc_update_bits(codec,
+            TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20);
 		snd_soc_update_bits(codec,
 			TAIKO_A_RX_HPH_CHOP_CTL, 0x80, 0x00);
 
+        write_chopper();
 		snd_soc_write(codec, TAIKO_A_NCP_DTEST, 0x10);
 		pr_debug("%s: Disabled Chopper and set wavegen to 20 msec\n",
 				__func__);
