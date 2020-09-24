@@ -590,10 +590,10 @@ static bool hpwidget_right = false;
 static bool spkwidget = false;
 static unsigned int compander_gain_lock = 0;
 static unsigned int compander_gain_boost = 0;
-static u8 sc_peak_det_timeout = 9;
-static u8 sc_rms_meter_div_fact = 10;
-static u8 sc_rms_meter_resamp_fact = 40;
-static u8 hph_pa_bias = 0x6D;
+static u32 sc_peak_det_timeout = 0x09;
+static u32 sc_rms_meter_div_fact = 0x0B;
+static u32 sc_rms_meter_resamp_fact = 0x28;
+static u8 hph_pa_bias = 0x7A;
 static unsigned int harmonic_distortion_coeffs = 0;
 static unsigned int iirs_locked = 0;
 
@@ -602,7 +602,7 @@ static unsigned int iirs_locked = 0;
 #define TAIKO_A_RX_HPH_BIAS_CNP__POR (0x8A)
 */
 
-static u8 compander_bias = 0x7A;
+static u8 compander_bias = 0x55;
 unsigned int anc_delay = 1;
 static unsigned int hph_autochopper = 0;
 static unsigned int chopper_bypass = 0;
