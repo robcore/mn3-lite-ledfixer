@@ -1039,24 +1039,24 @@ static void update_bias(void)
 
 static inline void update_interpolator(void)
 {
-    regwrite(TAIKO_A_CDC_COMP1_B3_CTL, 0x01);
-    mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL, 0xF0, 0x05 << 4);
-    mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL, 0x0F, 0x05);
+    regwrite(TAIKO_A_CDC_COMP1_B3_CTL,  (u8)0x01);
+    mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL, 0xF0,  (u8)(0x05 << 4));
+    mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL, 0x0F,  (u8)0x05);
     usleep_range(3000, 3100);
 
     if (interpolator_enabled) {
         if (interpolator_boost) {
-            regwrite(TAIKO_A_CDC_COMP1_B3_CTL, sc_rms_meter_resamp_fact);
+            regwrite(TAIKO_A_CDC_COMP1_B3_CTL, (u8)sc_rms_meter_resamp_fact);
             mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL,
-            	    0xF0, sc_rms_meter_div_fact << 4);
+            	    0xF0, (u8)(sc_rms_meter_div_fact << 4));
             mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL,
-            		0x0F, sc_peak_det_timeout);
+            		0x0F, (u8)sc_peak_det_timeout);
         } else {
-            regwrite(TAIKO_A_CDC_COMP1_B3_CTL, 0x28);
+            regwrite(TAIKO_A_CDC_COMP1_B3_CTL, (u8)0x28);
             mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL,
-                    0xF0, 0x0B << 4);
+                    0xF0, (u8)(0x0B << 4));
             mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL,
-                    0x0F, 0x09);
+                    0x0F, (u8)(0x09));
         }
     }
 }
@@ -1673,25 +1673,45 @@ static int taiko_config_compander(struct snd_soc_dapm_widget *w,
 */
         if (comp == COMPANDER_1) {
             interpolator_enabled = true;
-            update_interpolator();
+            if (interpolator_boost) {
+                update_interpolator();
+            } else {
+        		taiko_discharge_comp(codec, comp);
+                /* Worst case timeout for compander CnP sleep timeout */
+            	usleep_range(3000, 3100);
+    			snd_soc_write(codec, TAIKO_A_CDC_COMP0_B3_CTL + (comp * 8),
+                              (u8)comp_params->rms_meter_resamp_fact);
+    			snd_soc_update_bits(codec,
+                                    TAIKO_A_CDC_COMP0_B2_CTL + (comp * 8),
+                                    0xF0, (u8)(comp_params->rms_meter_div_fact << 4));
+    			snd_soc_update_bits(codec,
+                                    TAIKO_A_CDC_COMP0_B2_CTL + (comp * 8),
+                                    0x0F, (u8)comp_params->peak_det_timeout);
+            }
 		} else {
     		taiko_discharge_comp(codec, comp);
             /* Worst case timeout for compander CnP sleep timeout */
         	usleep_range(3000, 3100);
 			snd_soc_write(codec, TAIKO_A_CDC_COMP0_B3_CTL + (comp * 8),
-                          comp_params->rms_meter_resamp_fact);
+                          (u8)comp_params->rms_meter_resamp_fact);
 			snd_soc_update_bits(codec,
                                 TAIKO_A_CDC_COMP0_B2_CTL + (comp * 8),
-                                0xF0, comp_params->rms_meter_div_fact << 4);
+                                0xF0, (u8)(comp_params->rms_meter_div_fact << 4));
 			snd_soc_update_bits(codec,
                                 TAIKO_A_CDC_COMP0_B2_CTL + (comp * 8),
-                                0x0F, comp_params->peak_det_timeout);
+                                0x0F, (u8)comp_params->peak_det_timeout);
 		}
 		break;
 	case SND_SOC_DAPM_PRE_PMD:
         if (comp == COMPANDER_1) {
             interpolator_enabled = false;
-			update_interpolator();
+            if (interpolator_boost) {
+                update_interpolator();
+            } else {
+        		taiko_discharge_comp(codec, comp);
+                /* Worst case timeout for compander CnP sleep timeout */
+            	usleep_range(3000, 3100);
+            }
         } else {
             taiko_discharge_comp(codec, comp);
             /* Worst case timeout for compander CnP sleep timeout */
@@ -9067,7 +9087,7 @@ static ssize_t peak_det_timeout_store(struct kobject *kobj,
     if (hpwidget_any())
         return count;
 
-	sc_peak_det_timeout = (u8)uval;
+	sc_peak_det_timeout = (u32)uval;
     update_interpolator();
 
 	return count;
@@ -9094,7 +9114,7 @@ static ssize_t rms_meter_div_fact_store(struct kobject *kobj,
     if (hpwidget_any())
         return count;
 
-	sc_rms_meter_div_fact = (u8)uval;
+	sc_rms_meter_div_fact = (u32)uval;
     update_interpolator();
 
 	return count;
@@ -9121,7 +9141,7 @@ static ssize_t rms_meter_resamp_fact_store(struct kobject *kobj,
     if (hpwidget_any())
         return count;
 
-   	sc_rms_meter_resamp_fact = (u8)uval;
+   	sc_rms_meter_resamp_fact = (u32)uval;
     update_interpolator();
 
 	return count;
