@@ -47,32 +47,64 @@ then
     fi
 elif [ "$1" = "iir1_gain" ]
 then
+    IIRGAIN=$(busybox cat /sys/kernel/sound_control/iir1_gain)
     if [ -n "$2" ]
     then
-        busybox echo "$2" > /sys/kernel/sound_control/iir1_gain
+        if [ "$2" = "$IIRGAIN" ]
+        then
+            busybox cat /sys/kernel/sound_control/iir1_gain
+        else
+            busybox echo "$2" > /sys/kernel/sound_control/iir1_gain
+            busybox cat /sys/kernel/sound_control/iir1_gain
+        fi
+    else
+        busybox cat /sys/kernel/sound_control/iir1_gain
     fi
-    busybox cat /sys/kernel/sound_control/iir1_gain
 elif [ "$1" = "iir2_gain" ]
 then
+    IIRGAIN=$(busybox cat /sys/kernel/sound_control/iir2_gain)
     if [ -n "$2" ]
     then
-        busybox echo "$2" > /sys/kernel/sound_control/iir2_gain
+        if [ "$2" = "$IIRGAIN" ]
+        then
+            busybox cat /sys/kernel/sound_control/iir2_gain
+        else
+            busybox echo "$2" > /sys/kernel/sound_control/iir2_gain
+            busybox cat /sys/kernel/sound_control/iir2_gain
+        fi
+    else
+        busybox cat /sys/kernel/sound_control/iir2_gain
     fi
-    busybox cat /sys/kernel/sound_control/iir2_gain
 elif [ "$1" = "iir1_inp2_gain" ]
 then
+    IIRGAIN=$(busybox cat /sys/kernel/sound_control/iir1_inp2_gain)
     if [ -n "$2" ]
     then
-        busybox echo "$2" > /sys/kernel/sound_control/iir1_inp2_gain
+        if [ "$2" = "$IIRGAIN" ]
+        then
+            busybox cat /sys/kernel/sound_control/iir1_inp2_gain
+        else
+            busybox echo "$2" > /sys/kernel/sound_control/iir1_inp2_gain
+            busybox cat /sys/kernel/sound_control/iir1_inp2_gain
+        fi
+    else
+        busybox cat /sys/kernel/sound_control/iir1_inp2_gain
     fi
-    busybox cat /sys/kernel/sound_control/iir1_inp2_gain
 elif [ "$1" = "iir2_inp2_gain" ]
 then
+    IIRGAIN=$(busybox cat /sys/kernel/sound_control/iir2_inp2_gain)
     if [ -n "$2" ]
     then
-        busybox echo "$2" > /sys/kernel/sound_control/iir2_inp2_gain
+        if [ "$2" = "$IIRGAIN" ]
+        then
+            busybox cat /sys/kernel/sound_control/iir2_inp2_gain
+        else
+            busybox echo "$2" > /sys/kernel/sound_control/iir2_inp2_gain
+            busybox cat /sys/kernel/sound_control/iir2_inp2_gain
+        fi
+    else
+        busybox cat /sys/kernel/sound_control/iir2_inp2_gain
     fi
-    busybox cat /sys/kernel/sound_control/iir2_inp2_gain
 elif [ "$1" = "usepagain" ]
 then
     if [ -n "$2" ]
@@ -348,9 +380,11 @@ then
 elif [ "$1" = "lock_iirs_locked" ]
 then
     busybox echo 1 > /sys/kernel/sound_control/iirs_locked
+    busybox echo "IIR Gains Locked"
 elif [ "$1" = "unlock_iirs_locked" ]
 then
     busybox echo 0 > /sys/kernel/sound_control/iirs_locked
+    busybox echo "IIR Gains Unlocked"
 elif [ "$1" = "headphone_dac_enabled" ]
 then
     busybox cat /sys/kernel/sound_control/headphone_dac_enabled
