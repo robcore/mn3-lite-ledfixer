@@ -387,9 +387,8 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   #-fno-strict-aliasing -fno-common \
            #-fomit-frame-pointer -fno-omit-frame-pointer \
 		   #-fno-align-functions -fno-align-loops \
-KBUILD_AFLAGS_KERNEL := -Wno-unused-function
-
-KBUILD_CFLAGS_KERNEL :=
+KBUILD_AFLAGS_KERNEL :=
+KBUILD_CFLAGS_KERNEL := -Wno-unused-function
 KBUILD_AFLAGS   := -D__ASSEMBLY__
 KBUILD_AFLAGS_MODULE  := -DMODULE
 KBUILD_CFLAGS_MODULE  := -DMODULE
