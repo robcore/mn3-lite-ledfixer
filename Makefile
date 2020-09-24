@@ -377,9 +377,10 @@ KBUILD_CPPFLAGS := -D__KERNEL__
 KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -Wno-unused-variable -Wno-maybe-uninitialized \
 		   -Werror-implicit-function-declaration \
-		   -fno-strict-aliasing -fno-common \
-		   -std=gnu89 -fomit-frame-pointer -fno-omit-frame-pointer \
-		   -fno-align-functions -fno-align-loops \
+		   #-fno-strict-aliasing -fno-common \
+		   -std=gnu89 \
+           #-fomit-frame-pointer -fno-omit-frame-pointer \
+		   #-fno-align-functions -fno-align-loops \
 		   -Wno-unused-function -Wno-unused-label -Wno-array-bounds \
 		   -Wno-format-security -Wno-format-truncation \
 		   -Wno-misleading-indentation -Wno-int-in-bool-context \
