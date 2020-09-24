@@ -377,17 +377,18 @@ KBUILD_CPPFLAGS := -D__KERNEL__
 KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -Wno-unused-variable -Wno-maybe-uninitialized \
 		   -Werror-implicit-function-declaration \
-		   #-fno-strict-aliasing -fno-common \
 		   -std=gnu89 \
-           #-fomit-frame-pointer -fno-omit-frame-pointer \
-		   #-fno-align-functions -fno-align-loops \
 		   -Wno-unused-function -Wno-unused-label -Wno-array-bounds \
 		   -Wno-format-security -Wno-format-truncation \
 		   -Wno-misleading-indentation -Wno-int-in-bool-context \
 		   -Wno-bool-compare -Wno-tautological-compare \
 		   -fno-delete-null-pointer-checks -Wno-pointer-compare \
 		   -Wno-switch-unreachable -Wno-stringop-overflow
-KBUILD_AFLAGS_KERNEL :=
+		   #-fno-strict-aliasing -fno-common \
+           #-fomit-frame-pointer -fno-omit-frame-pointer \
+		   #-fno-align-functions -fno-align-loops \
+KBUILD_AFLAGS_KERNEL := -Wno-unused-function
+
 KBUILD_CFLAGS_KERNEL :=
 KBUILD_AFLAGS   := -D__ASSEMBLY__
 KBUILD_AFLAGS_MODULE  := -DMODULE
