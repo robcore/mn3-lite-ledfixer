@@ -1,0 +1,10 @@
+busybox cat << CTAG
+{
+  sections:[
+    $(. /data/synapse/config.json.generate.basics),
+    $(. /data/synapse/config.json.generate.sound),
+    $(. /data/synapse/config.json.generate.iirs),
+    $(. /data/synapse/config.json.generate.mdnie)
+  ]
+}
+CTAG
