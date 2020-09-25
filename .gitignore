@@ -68,6 +68,8 @@ include/generated
 arch/*/include/generated
 build/
 !mxzip/data/synapse
+!mxzip/data
+!mxzip/data/synapse/*
 
 # stgit generated dirs
 patches-*
