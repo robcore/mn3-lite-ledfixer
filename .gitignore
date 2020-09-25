@@ -67,7 +67,7 @@ include/linux/version.h
 include/generated
 arch/*/include/generated
 build/
-mx.zip/
+!mxzip/data/synapse
 
 # stgit generated dirs
 patches-*
