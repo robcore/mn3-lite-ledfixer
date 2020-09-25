@@ -553,7 +553,6 @@ static unsigned short tx_digital_gain_reg[] = {
 };
 
 /* Shared values for core resource locking */
-/*TODO: set all of these to 172 by default */
 u8 hphl_cached_gain;
 u8 hphr_cached_gain;
 u8 speaker_cached_gain;
@@ -571,9 +570,9 @@ u8 crossright_cached_gain = 241; /* 241 = -15 */
 static u8 hphl_hpf_cutoff = 0;
 static u8 hphr_hpf_cutoff = 0;
 static u8 speaker_hpf_cutoff = 0;
-static u8 hphl_hpf_bypass = 1;
-static u8 hphr_hpf_bypass = 1;
-static u8 speaker_hpf_bypass;
+static u8 hphl_hpf_bypass = 0;
+static u8 hphr_hpf_bypass = 0;
+static u8 speaker_hpf_bypass = 0;
 
 #define HPH_RX_GAIN_MAX 20
 #define HPH_PA_SHIFT 0
@@ -609,7 +608,7 @@ static unsigned int chopper_bypass = 0;
 static unsigned int bypass_static_pa = 0;
 static unsigned int wavegen_override = 0;
 /*RMS (Root Mean Squared) Power Detector*/
-static unsigned int interpolator_boost = 1;
+static unsigned int interpolator_boost = 0;
 static bool interpolator_enabled;
 
 #define PA_STAT_ON 8
@@ -622,8 +621,7 @@ static int regread(unsigned short reg)
 
 static void regwrite(unsigned short reg, u8 value)
 {
-    if (value != regread(reg))
-        wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, reg, value);
+    wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, reg, value);
 }
 
 static void mx_update_bits(unsigned short reg,
@@ -787,7 +785,6 @@ static void write_hph_poweramp_gain(unsigned short reg)
 		reg != WCD9XXX_A_RX_HPH_R_GAIN)
 		return;
 
-
 	if (!hpwidget())
     	local_cached_gain = 0;
 	else if (reg == WCD9XXX_A_RX_HPH_L_GAIN)
@@ -813,14 +810,6 @@ static void write_hph_poweramp_regs(void)
 {
 	write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN);
 	write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_R_GAIN);
-}
-
-static void write_hph_raw(unsigned int value)
-{
-	mutex_lock(&direct_codec->mutex);
-	regwrite(WCD9XXX_A_RX_HPH_L_GAIN, value);
-	regwrite(WCD9XXX_A_RX_HPH_R_GAIN, value);
-	mutex_unlock(&direct_codec->mutex);
 }
 
 static void update_speaker_gain(void)
@@ -1198,12 +1187,11 @@ static int taiko_put_anc_func(struct snd_kcontrol *kcontrol,
 	struct taiko_priv *taiko = snd_soc_codec_get_drvdata(codec);
 	struct snd_soc_dapm_context *dapm = &codec->dapm;
 
-	mutex_lock(&dapm->codec->mutex);
 	taiko->anc_func = (!ucontrol->value.integer.value[0] ? false : true);
-
 	dev_dbg(codec->dev, "%s: anc_func %x", __func__, taiko->anc_func);
 
-	if (taiko->anc_func == true) {
+	mutex_lock(&dapm->codec->mutex);
+	if (taiko->anc_func) {
 		snd_soc_dapm_enable_pin(dapm, "ANC HPHR");
 		snd_soc_dapm_enable_pin(dapm, "ANC HPHL");
 		snd_soc_dapm_enable_pin(dapm, "ANC HEADPHONE");
@@ -1227,6 +1215,7 @@ static int taiko_put_anc_func(struct snd_kcontrol *kcontrol,
 		snd_soc_dapm_enable_pin(dapm, "EAR");
 	}
 	mutex_unlock(&dapm->codec->mutex);
+
 	snd_soc_dapm_sync(dapm);
 	return 0;
 }
@@ -4037,7 +4026,7 @@ static int taiko_codec_enable_anc(struct snd_soc_dapm_widget *w,
 	u8 mask, val, old_val;
 
 
-	if (taiko->anc_func == 0)
+	if (!taiko->anc_func)
 		return 0;
 
 	switch (event) {
@@ -8668,33 +8657,6 @@ static ssize_t hph_poweramp_gain_store(struct kobject *kobj,
 	return count;
 }
 
-static ssize_t hph_poweramp_gain_raw_show(struct kobject *kobj,
-		struct kobj_attribute *attr, char *buf)
-{
-	int leftval, rightval;
-
-	leftval = regread(WCD9XXX_A_RX_HPH_L_GAIN);
-	rightval = regread(WCD9XXX_A_RX_HPH_R_GAIN);
-
-	return sprintf(buf, "%d %d\n", leftval, rightval);
-}
-
-static ssize_t hph_poweramp_gain_raw_store(struct kobject *kobj,
-		struct kobj_attribute *attr, const char *buf, size_t count)
-{
-	int val;
-
-	sscanf(buf, "%d", &val);
-	if (val < 0)
-		val = 0;
-	if (val > 255)
-		val = 255;
-
-    write_hph_raw(val);
-
-	return count;
-}
-
 static ssize_t speaker_gain_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf)
 {
@@ -9303,11 +9265,6 @@ static struct kobj_attribute hph_poweramp_gain_attribute =
 		hph_poweramp_gain_show,
 		hph_poweramp_gain_store);
 
-static struct kobj_attribute hph_poweramp_gain_raw_attribute =
-	__ATTR(hph_poweramp_gain_raw, 0644,
-		hph_poweramp_gain_raw_show,
-		hph_poweramp_gain_raw_store);
-
 static struct kobj_attribute speaker_gain_attribute =
 	__ATTR(speaker_gain, 0644,
 		speaker_gain_show,
@@ -9446,7 +9403,6 @@ static struct attribute *sound_control_attrs[] = {
 		&crossfeed_gain_attribute.attr,
 #endif
 		&hph_poweramp_gain_attribute.attr,
-		&hph_poweramp_gain_raw_attribute.attr,
 		&speaker_gain_attribute.attr,
 		&iir1_gain_attribute.attr,
 		&iir1_inp2_gain_attribute.attr,
@@ -9670,10 +9626,10 @@ static int taiko_codec_probe(struct snd_soc_codec *codec)
 		pr_warn("%s kobject create failed!\n", __func__);
 	}
 
-    update_bias();
-	update_control_regs();
     wake_lock_init(&spk_playback_wake_lock, WAKE_LOCK_SUSPEND, "mx_spk_playback");
     wake_lock_init(&hph_playback_wake_lock, WAKE_LOCK_SUSPEND, "mx_hph_playback");
+    update_bias();
+	update_control_regs();
 	return ret;
 
 err_irq:
