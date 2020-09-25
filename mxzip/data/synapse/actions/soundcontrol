@@ -107,143 +107,266 @@ then
     fi
 elif [ "$1" = "usepagain" ]
 then
+    HPHENABLED=$(busybox cat /sys/kernel/sound_control/hph_pa_enabled)
     if [ -n "$2" ]
     then
-        busybox echo "$2" > /sys/kernel/sound_control/hph_pa_enabled
+        if [ "$2" = "HPHENABLED" ]
+        then
+            busybox cat /sys/kernel/sound_control/hph_pa_enabled
+        else
+            busybox echo "$2" > /sys/kernel/sound_control/hph_pa_enabled
+            busybox cat /sys/kernel/sound_control/hph_pa_enabled
+        fi
+    else
+        busybox cat /sys/kernel/sound_control/hph_pa_enabled
     fi
-    busybox cat /sys/kernel/sound_control/hph_pa_enabled
 elif [ "$1" = "force_hph_pa" ]
 then
+    CURVAL=$(busybox cat /sys/kernel/sound_control/force_hph_pa)
     if [ -n "$2" ]
     then
-        busybox echo "$2" > /sys/kernel/sound_control/force_hph_pa
+        if [ "$2" = "$CURVAL" ]
+        then
+            busybox cat /sys/kernel/sound_control/force_hph_pa
+        else
+            busybox echo "$2" > /sys/kernel/sound_control/force_hph_pa
+            busybox cat /sys/kernel/sound_control/force_hph_pa
+        fi
+    else
+        busybox cat /sys/kernel/sound_control/force_hph_pa
     fi
-    busybox cat /sys/kernel/sound_control/force_hph_pa
 elif [ "$1" = "pagainleft" ]
 then
+    LEFTVAL=$(busybox cat /sys/kernel/sound_control/hph_poweramp_gain | cut -d ' ' -f 1)
     if [ -n "$2" ]
     then
-        busybox echo $2 $(busybox cat /sys/kernel/sound_control/hph_poweramp_gain | cut -d ' ' -f 2) > /sys/kernel/sound_control/hph_poweramp_gain
+        if [ "$2" = "$LEFTVAL" ]
+        then
+            busybox cat /sys/kernel/sound_control/hph_poweramp_gain | cut -d ' ' -f 1
+        else
+            busybox echo $2 $(busybox cat /sys/kernel/sound_control/hph_poweramp_gain | cut -d ' ' -f 2) > /sys/kernel/sound_control/hph_poweramp_gain
+            busybox cat /sys/kernel/sound_control/hph_poweramp_gain | cut -d ' ' -f 1
+        fi
+    else
+        busybox cat /sys/kernel/sound_control/hph_poweramp_gain | cut -d ' ' -f 1
     fi
-    busybox cat /sys/kernel/sound_control/hph_poweramp_gain | cut -d ' ' -f 1
 elif [ "$1" = "pagainright" ]
 then
+    RIGHTVAL=$(busybox cat /sys/kernel/sound_control/hph_poweramp_gain | cut -d ' ' -f 2)
     if [ -n "$2" ]
     then
-        busybox echo $(busybox cat /sys/kernel/sound_control/hph_poweramp_gain | cut -d ' ' -f 1) $2 > /sys/kernel/sound_control/hph_poweramp_gain
+        if [ "$2" = "$RIGHTVAL" ]
+        then
+            busybox cat /sys/kernel/sound_control/hph_poweramp_gain | cut -d ' ' -f 2
+        else
+            busybox echo $(busybox cat /sys/kernel/sound_control/hph_poweramp_gain | cut -d ' ' -f 1) $2 > /sys/kernel/sound_control/hph_poweramp_gain
+            busybox cat /sys/kernel/sound_control/hph_poweramp_gain | cut -d ' ' -f 2
+        fi
+    else
+        busybox cat /sys/kernel/sound_control/hph_poweramp_gain | cut -d ' ' -f 2
     fi
-    busybox cat /sys/kernel/sound_control/hph_poweramp_gain | cut -d ' ' -f 2
 elif [ "$1" = "highperfmode" ]
 then
+    CURVAL=$(busybox cat /sys/kernel/sound_control/high_perf_mode)
     if [ -n "$2" ]
     then
-        busybox echo "$2" > /sys/kernel/sound_control/high_perf_mode
+        if [ "$2" = "$CURVAL" ]
+        then
+            busybox cat /sys/kernel/sound_control/high_perf_mode
+        else
+            busybox echo "$2" > /sys/kernel/sound_control/high_perf_mode
+            busybox cat /sys/kernel/sound_control/high_perf_mode
+        fi
+    else
+        busybox cat /sys/kernel/sound_control/high_perf_mode
     fi
-    busybox cat /sys/kernel/sound_control/high_perf_mode
 elif [ "$1" = "uhqamode" ]
 then
+    CURVAL=$(busybox cat /sys/kernel/sound_control/uhqa_mode)
     if [ -n "$2" ]
     then
-        busybox echo "$2" > /sys/kernel/sound_control/uhqa_mode
+        if [ "$2" = "$CURVAL" ]
+        then
+            busybox cat /sys/kernel/sound_control/uhqa_mode
+        else
+            busybox echo "$2" > /sys/kernel/sound_control/uhqa_mode
+            busybox cat /sys/kernel/sound_control/uhqa_mode
+        fi
+    else
+        busybox cat /sys/kernel/sound_control/uhqa_mode
     fi
-    busybox cat /sys/kernel/sound_control/uhqa_mode
 elif [ "$1" = "autochopper" ]
 then
+    CURVAL=$(busybox cat /sys/kernel/sound_control/autochopper)
     if [ -n "$2" ]
     then
-        busybox echo "$2" > /sys/kernel/sound_control/autochopper
+        if [ "$2" = "$CURVAL" ]
+        then
+            busybox cat /sys/kernel/sound_control/autochopper
+        else
+            busybox echo "$2" > /sys/kernel/sound_control/autochopper
+            busybox cat /sys/kernel/sound_control/autochopper
+        fi
+    else
+        busybox cat /sys/kernel/sound_control/autochopper
     fi
-    busybox cat /sys/kernel/sound_control/autochopper
 elif [ "$1" = "chopbypass" ]
 then
+    CURVAL=$(busybox cat /sys/kernel/sound_control/chopper_bypass)
     if [ -n "$2" ]
     then
-        busybox echo "$2" > /sys/kernel/sound_control/chopper_bypass
+        if [ "$2" = "$CURVAL" ]
+        then
+            busybox cat /sys/kernel/sound_control/chopper_bypass
+        else
+            busybox echo "$2" > /sys/kernel/sound_control/chopper_bypass
+            busybox cat /sys/kernel/sound_control/chopper_bypass
+        fi
+    else
+        busybox cat /sys/kernel/sound_control/chopper_bypass
     fi
-    busybox cat /sys/kernel/sound_control/chopper_bypass
-elif [ "$1" = "bypass_static_pa" ]
-then
-    if [ -n "$2" ]
-    then
-        busybox echo "$2" > /sys/kernel/sound_control/bypass_static_pa
-    fi
-    busybox cat /sys/kernel/sound_control/bypass_static_pa
 elif [ "$1" = "anc_delay" ]
 then
+    CURVAL=$(busybox cat /sys/kernel/sound_control/anc_delay)
     if [ -n "$2" ]
     then
-        busybox echo "$2" > /sys/kernel/sound_control/anc_delay
+        if [ "$2" = "$CURVAL" ]
+        then
+            busybox cat /sys/kernel/sound_control/anc_delay
+        else
+            busybox echo "$2" > /sys/kernel/sound_control/anc_delay
+            busybox cat /sys/kernel/sound_control/anc_delay
+        fi
+    else
+        busybox cat /sys/kernel/sound_control/anc_delay
     fi
-    busybox cat /sys/kernel/sound_control/anc_delay
 elif [ "$1" = "headphone_left_hpf_bypass" ]
 then
+    CURVAL=$(busybox cat /sys/kernel/sound_control/headphone_left_hpf_bypass)
     if [ -n "$2" ]
     then
-        busybox echo "$2" > /sys/kernel/sound_control/headphone_left_hpf_bypass
+        if [ "$2" = "$CURVAL" ]
+        then
+            busybox cat /sys/kernel/sound_control/headphone_left_hpf_bypass
+        else
+            busybox echo "$2" > /sys/kernel/sound_control/headphone_left_hpf_bypass
+            busybox cat /sys/kernel/sound_control/headphone_left_hpf_bypass
+        fi
+    else
+        busybox cat /sys/kernel/sound_control/headphone_left_hpf_bypass
     fi
-    busybox cat /sys/kernel/sound_control/headphone_left_hpf_bypass
 elif [ "$1" = "headphone_right_hpf_bypass" ]
 then
+    CURVAL=$(busybox cat /sys/kernel/sound_control/headphone_right_hpf_bypass)
     if [ -n "$2" ]
     then
-        busybox echo "$2" > /sys/kernel/sound_control/headphone_right_hpf_bypass
+        if [ "$2" = "$CURVAL" ]
+        then
+            busybox cat /sys/kernel/sound_control/headphone_right_hpf_bypass
+        else
+            busybox echo "$2" > /sys/kernel/sound_control/headphone_right_hpf_bypass
+            busybox cat /sys/kernel/sound_control/headphone_right_hpf_bypass
+        fi
+    else
+        busybox cat /sys/kernel/sound_control/headphone_right_hpf_bypass
     fi
-    busybox cat /sys/kernel/sound_control/headphone_right_hpf_bypass
 elif [ "$1" = "speaker_hpf_bypass" ]
 then
+    CURVAL=$(busybox cat /sys/kernel/sound_control/speaker_hpf_bypass)
     if [ -n "$2" ]
     then
-        busybox echo "$2" > /sys/kernel/sound_control/speaker_hpf_bypass
+        if [ "$2" = "$CURVAL" ]
+        then
+            busybox cat /sys/kernel/sound_control/speaker_hpf_bypass
+        else
+            busybox echo "$2" > /sys/kernel/sound_control/speaker_hpf_bypass
+            busybox cat /sys/kernel/sound_control/speaker_hpf_bypass
+        fi
+    else
+        busybox cat /sys/kernel/sound_control/speaker_hpf_bypass
     fi
-    busybox cat /sys/kernel/sound_control/speaker_hpf_bypass
 elif [ "$1" = "interpolator_boost" ]
 then
+    CURVAL=$(busybox cat /sys/kernel/sound_control/interpolator_boost)
     if [ -n "$2" ]
     then
-        busybox echo "$2" > /sys/kernel/sound_control/interpolator_boost
+        if [ "$2" = "$CURVAL" ]
+        then
+            busybox cat /sys/kernel/sound_control/interpolator_boost
+        else
+            busybox echo "$2" > /sys/kernel/sound_control/interpolator_boost
+            busybox cat /sys/kernel/sound_control/interpolator_boost
+        fi
+    else
+        busybox cat /sys/kernel/sound_control/interpolator_boost
     fi
-    busybox cat /sys/kernel/sound_control/interpolator_boost
 elif [ "$1" = "compander_gain_lock" ]
 then
+    CURVAL=$(busybox cat /sys/kernel/sound_control/compander_gain_lock)
     if [ -n "$2" ]
     then
-        busybox echo "$2" > /sys/kernel/sound_control/compander_gain_lock
+        if [ "$2" = "$CURVAL" ]
+        then
+            busybox cat /sys/kernel/sound_control/compander_gain_lock
+        else
+            busybox echo "$2" > /sys/kernel/sound_control/compander_gain_lock
+            busybox cat /sys/kernel/sound_control/compander_gain_lock
+        fi
+    else
+        busybox cat /sys/kernel/sound_control/compander_gain_lock
     fi
-    busybox cat /sys/kernel/sound_control/compander_gain_lock
 elif [ "$1" = "compander_gain_boost" ]
 then
+    CURVAL=$(busybox cat /sys/kernel/sound_control/compander_gain_boost)
     if [ -n "$2" ]
     then
-        busybox echo "$2" > /sys/kernel/sound_control/compander_gain_boost
+        if [ "$2" = "$CURVAL" ]
+        then
+            busybox cat /sys/kernel/sound_control/compander_gain_boost
+        else
+            busybox echo "$2" > /sys/kernel/sound_control/compander_gain_boost
+            busybox cat /sys/kernel/sound_control/compander_gain_boost
+        fi
+    else
+        busybox cat /sys/kernel/sound_control/compander_gain_boost
     fi
-    busybox cat /sys/kernel/sound_control/compander_gain_boost
-elif [ "$1" = "wavegen_override" ]
-then
-    if [ -n "$2" ]
-    then
-        busybox echo "$2" > /sys/kernel/sound_control/wavegen_override
-    fi
-    busybox cat /sys/kernel/sound_control/wavegen_override
 elif [ "$1" = "harmonic_distortion_coeffs" ]
 then
+    CURVAL=$(busybox cat /sys/kernel/sound_control/harmonic_distortion_coeffs)
     if [ -n "$2" ]
     then
-        busybox echo "$2" > /sys/kernel/sound_control/harmonic_distortion_coeffs
+        if [ "$2" = "$CURVAL" ]
+        then
+            busybox cat /sys/kernel/sound_control/harmonic_distortion_coeffs
+        else
+            busybox echo "$2" > /sys/kernel/sound_control/harmonic_distortion_coeffs
+            busybox cat /sys/kernel/sound_control/harmonic_distortion_coeffs
+        fi
+    else
+        busybox cat /sys/kernel/sound_control/harmonic_distortion_coeffs
     fi
-    busybox cat /sys/kernel/sound_control/harmonic_distortion_coeffs
 elif [ "$1" = "headphone_left_hpf_cutoff" ]
 then
     if [ -n "$2" ]
     then
         if [ "$2" = "4" ]
         then
-            busybox echo "0" > /sys/kernel/sound_control/headphone_left_hpf_cutoff
+            if [ "$(busybox cat /sys/kernel/sound_control/headphone_left_hpf_cutoff)" != "0" ]
+            then
+                busybox echo "0" > /sys/kernel/sound_control/headphone_left_hpf_cutoff
+            fi
         elif [ "$2" = "75" ]
         then
-            busybox echo "1" > /sys/kernel/sound_control/headphone_left_hpf_cutoff
+            if [ "$(busybox cat /sys/kernel/sound_control/headphone_left_hpf_cutoff)" != "1" ]
+            then
+                busybox echo "1" > /sys/kernel/sound_control/headphone_left_hpf_cutoff
+            fi
         elif [ "$2" = "150" ]
         then
-            busybox echo "2" > /sys/kernel/sound_control/headphone_left_hpf_cutoff
+            if [ "$(busybox cat /sys/kernel/sound_control/headphone_left_hpf_cutoff)" != "2" ]
+            then
+                busybox echo "2" > /sys/kernel/sound_control/headphone_left_hpf_cutoff
+            fi
         fi
     fi
 
@@ -263,13 +386,22 @@ then
     then
         if [ "$2" = "4" ]
         then
-            busybox echo "0" > /sys/kernel/sound_control/headphone_right_hpf_cutoff
+            if [ "$(busybox cat /sys/kernel/sound_control/headphone_right_hpf_cutoff)" != "0" ]
+            then
+                busybox echo "0" > /sys/kernel/sound_control/headphone_right_hpf_cutoff
+            fi
         elif [ "$2" = "75" ]
         then
-            busybox echo "1" > /sys/kernel/sound_control/headphone_right_hpf_cutoff
+            if [ "$(busybox cat /sys/kernel/sound_control/headphone_right_hpf_cutoff)" != "1" ]
+            then
+                busybox echo "1" > /sys/kernel/sound_control/headphone_right_hpf_cutoff
+            fi
         elif [ "$2" = "150" ]
         then
-            busybox echo "2" > /sys/kernel/sound_control/headphone_right_hpf_cutoff
+            if [ "$(busybox cat /sys/kernel/sound_control/headphone_right_hpf_cutoff)" != "2" ]
+            then
+                busybox echo "2" > /sys/kernel/sound_control/headphone_right_hpf_cutoff
+            fi
         fi
     fi
 
@@ -289,13 +421,22 @@ then
     then
         if [ "$2" = "4" ]
         then
-            busybox echo "0" > /sys/kernel/sound_controlsecjack_state/speaker_hpf_cutoff
+            if [ "$(busybox cat /sys/kernel/sound_control/speaker_hpf_cutoff)" != "0" ]
+            then
+                busybox echo "0" > /sys/kernel/sound_control/speaker_hpf_cutoff
+            fi
         elif [ "$2" = "75" ]
         then
-            busybox echo "1" > /sys/kernel/sound_control/speaker_hpf_cutoff
+            if [ "$(busybox cat /sys/kernel/sound_control/speaker_hpf_cutoff)" != "1" ]
+            then
+                busybox echo "1" > /sys/kernel/sound_control/speaker_hpf_cutoff
+            fi
         elif [ "$2" = "150" ]
         then
-            busybox echo "2" > /sys/kernel/sound_control/speaker_hpf_cutoff
+            if [ "$(busybox cat /sys/kernel/sound_control/speaker_hpf_cutoff)" != "2" ]
+            then
+                busybox echo "2" > /sys/kernel/sound_control/speaker_hpf_cutoff
+            fi
         fi
     fi
 
@@ -311,39 +452,79 @@ then
     fi
 elif [ "$1" = "peak_det_timeout" ]
 then
+    CURVAL=$(busybox cat /sys/kernel/sound_control/peak_det_timeout)
     if [ -n "$2" ]
     then
-        busybox echo "$2" > /sys/kernel/sound_control/peak_det_timeout
+        if [ "$2" = "$CURVAL" ]
+        then
+            busybox cat /sys/kernel/sound_control/peak_det_timeout
+        else
+            busybox echo "$2" > /sys/kernel/sound_control/peak_det_timeout
+            busybox cat /sys/kernel/sound_control/peak_det_timeout
+        fi
+    else
+        busybox cat /sys/kernel/sound_control/peak_det_timeout
     fi
-    busybox cat /sys/kernel/sound_control/peak_det_timeout
 elif [ "$1" = "rms_meter_div_fact" ]
 then
+    CURVAL=$(busybox cat /sys/kernel/sound_control/rms_meter_div_fact)
     if [ -n "$2" ]
     then
-        busybox echo "$2" > /sys/kernel/sound_control/rms_meter_div_fact
+        if [ "$2" = "$CURVAL" ]
+        then
+            busybox cat /sys/kernel/sound_control/rms_meter_div_fact
+        else
+            busybox echo "$2" > /sys/kernel/sound_control/rms_meter_div_fact
+            busybox cat /sys/kernel/sound_control/rms_meter_div_fact
+        fi
+    else
+        busybox cat /sys/kernel/sound_control/rms_meter_div_fact
     fi
-    busybox cat /sys/kernel/sound_control/rms_meter_div_fact
 elif [ "$1" = "rms_meter_resamp_fact" ]
 then
+    CURVAL=$(busybox cat /sys/kernel/sound_control/rms_meter_resamp_fact)
     if [ -n "$2" ]
     then
-        busybox echo "$2" > /sys/kernel/sound_control/rms_meter_resamp_fact
+        if [ "$2" = "$CURVAL" ]
+        then
+            busybox cat /sys/kernel/sound_control/rms_meter_resamp_fact
+        else
+            busybox echo "$2" > /sys/kernel/sound_control/rms_meter_resamp_fact
+            busybox cat /sys/kernel/sound_control/rms_meter_resamp_fact
+        fi
+    else
+        busybox cat /sys/kernel/sound_control/rms_meter_resamp_fact
     fi
-    busybox cat /sys/kernel/sound_control/rms_meter_resamp_fact
 elif [ "$1" = "hph_pa_bias" ]
 then
+    CURVAL=$(busybox cat /sys/kernel/sound_control/hph_pa_bias)
     if [ -n "$2" ]
     then
-        busybox echo "$2" > /sys/kernel/sound_control/hph_pa_bias
+        if [ "$2" = "$CURVAL" ]
+        then
+            busybox cat /sys/kernel/sound_control/hph_pa_bias
+        else
+            busybox echo "$2" > /sys/kernel/sound_control/hph_pa_bias
+            busybox cat /sys/kernel/sound_control/hph_pa_bias
+        fi
+    else
+        busybox cat /sys/kernel/sound_control/hph_pa_bias
     fi
-    busybox cat /sys/kernel/sound_control/hph_pa_bias
 elif [ "$1" = "compander_bias" ]
 then
+    CURVAL=$(busybox cat /sys/kernel/sound_control/compander_bias)
     if [ -n "$2" ]
     then
-        busybox echo "$2" > /sys/kernel/sound_control/compander_bias
+        if [ "$2" = "$CURVAL" ]
+        then
+            busybox cat /sys/kernel/sound_control/compander_bias
+        else
+            busybox echo "$2" > /sys/kernel/sound_control/compander_bias
+            busybox cat /sys/kernel/sound_control/compander_bias
+        fi
+    else
+        busybox cat /sys/kernel/sound_control/compander_bias
     fi
-    busybox cat /sys/kernel/sound_control/compander_bias
 elif [ "$1" = "compander1" ]
 then
     while read -r LINE; 
@@ -379,12 +560,24 @@ then
     busybox cat /sys/kernel/sound_control/iirs_locked
 elif [ "$1" = "lock_iirs_locked" ]
 then
-    busybox echo 1 > /sys/kernel/sound_control/iirs_locked
-    busybox echo "IIR Gains Locked"
+    CURVAL=$(busybox cat /sys/kernel/sound_control/secjack_state)
+    if [ "$CURVAL" = "0" ]
+    then
+        busybox echo 1 > /sys/kernel/sound_control/iirs_locked
+        busybox echo "IIR Gains Locked"
+    else
+        busybox echo "Already Locked"
+    fi
 elif [ "$1" = "unlock_iirs_locked" ]
 then
-    busybox echo 0 > /sys/kernel/sound_control/iirs_locked
-    busybox echo "IIR Gains Unlocked"
+    CURVAL=$(busybox cat /sys/kernel/sound_control/secjack_state)
+    if [ "$CURVAL" = "1" ]
+    then
+        busybox echo 0 > /sys/kernel/sound_control/iirs_locked
+        busybox echo "IIR Gains Unlocked"
+    else
+        busybox echo "Already Unlocked"
+    fi
 elif [ "$1" = "headphone_dac_enabled" ]
 then
     busybox cat /sys/kernel/sound_control/headphone_dac_enabled
