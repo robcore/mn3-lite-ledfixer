@@ -560,7 +560,7 @@ then
     busybox cat /sys/kernel/sound_control/iirs_locked
 elif [ "$1" = "lock_iirs_locked" ]
 then
-    CURVAL=$(busybox cat /sys/kernel/sound_control/secjack_state)
+    CURVAL=$(busybox cat /sys/kernel/sound_control/iirs_locked)
     if [ "$CURVAL" = "0" ]
     then
         busybox echo 1 > /sys/kernel/sound_control/iirs_locked
@@ -570,7 +570,7 @@ then
     fi
 elif [ "$1" = "unlock_iirs_locked" ]
 then
-    CURVAL=$(busybox cat /sys/kernel/sound_control/secjack_state)
+    CURVAL=$(busybox cat /sys/kernel/sound_control/iirs_locked)
     if [ "$CURVAL" = "1" ]
     then
         busybox echo 0 > /sys/kernel/sound_control/iirs_locked
