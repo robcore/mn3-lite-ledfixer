@@ -47,7 +47,6 @@
 #define TRUE        0x01
 #define FALSE       0x00
 
-#define FRAME_NUM   (8)
 /* TODO, combine them together */
 static DEFINE_MUTEX(session_lock);
 struct asm_mmap {
@@ -962,9 +961,6 @@ int q6asm_audio_client_buf_alloc(unsigned int dir,
 			pr_debug("%s: buffer already allocated\n", __func__);
 			return 0;
 		}
-
-		if (bufcnt != FRAME_NUM)
-			goto fail;		
 		mutex_lock(&ac->cmd_lock);
 		buf = kzalloc(((sizeof(struct audio_buffer))*bufcnt),
 				GFP_KERNEL);
@@ -3722,7 +3718,7 @@ int q6asm_set_sa(struct audio_client *ac, int *param)
 	}
 
 	sz = sizeof(struct asm_stream_cmd_set_pp_params_sa);
-	q6asm_add_hdr_async(ac, &cmd.hdr, sz, TRUE);
+	q6asm_add_hdr_async(ac, &cmd.hdr, sz, false);
 
 	cmd.hdr.opcode = ASM_STREAM_CMD_SET_PP_PARAMS_V2;
 	cmd.param.data_payload_addr_lsw = 0;
@@ -3778,7 +3774,7 @@ int q6asm_set_vsp(struct audio_client *ac, int *param)
 	}
 
 	sz = sizeof(struct asm_stream_cmd_set_pp_params_vsp);
-	q6asm_add_hdr_async(ac, &cmd.hdr, sz, TRUE);
+	q6asm_add_hdr_async(ac, &cmd.hdr, sz, false);
 
 	cmd.hdr.opcode = ASM_STREAM_CMD_SET_PP_PARAMS_V2;
 	cmd.param.data_payload_addr_lsw = 0;
@@ -3818,7 +3814,7 @@ int q6asm_set_dha(struct audio_client *ac,int *param)
 	}
 
 	sz = sizeof(struct asm_stream_cmd_set_pp_params_dha);
-	q6asm_add_hdr_async(ac, &cmd.hdr, sz, TRUE);
+	q6asm_add_hdr_async(ac, &cmd.hdr, sz, false);
 
 	cmd.hdr.opcode = ASM_STREAM_CMD_SET_PP_PARAMS_V2;
 	cmd.param.data_payload_addr_lsw = 0;
@@ -3857,7 +3853,7 @@ int q6asm_set_lrsm(struct audio_client *ac,int *param)
 	}
 
 	sz = sizeof(struct asm_stream_cmd_set_pp_params_lrsm);
-	q6asm_add_hdr_async(ac, &cmd.hdr, sz, TRUE);
+	q6asm_add_hdr_async(ac, &cmd.hdr, sz, false);
 
 	cmd.hdr.opcode = ASM_STREAM_CMD_SET_PP_PARAMS_V2;
 	cmd.param.data_payload_addr_lsw = 0;
@@ -3895,7 +3891,7 @@ int q6asm_set_sa_ep(struct audio_client *ac,int *param)
 	}
 
 	sz = sizeof(struct asm_stream_cmd_set_pp_params_sa_ep);
-	q6asm_add_hdr_async(ac, &cmd.hdr, sz, TRUE);
+	q6asm_add_hdr_async(ac, &cmd.hdr, sz, false);
 
 	cmd.hdr.opcode = ASM_STREAM_CMD_SET_PP_PARAMS_V2;
 	cmd.param.data_payload_addr_lsw = 0;

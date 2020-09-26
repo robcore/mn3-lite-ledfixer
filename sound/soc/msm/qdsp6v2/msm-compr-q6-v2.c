@@ -1,4 +1,4 @@
-/* Copyright (c) 2012-2013, 2016 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2012-2013, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -145,7 +145,6 @@ static void compr_event_handler(uint32_t opcode,
 	struct audio_aio_write_param param;
 	struct audio_aio_read_param read_param;
 	struct audio_buffer *buf = NULL;
-	unsigned long temp;
 	struct output_meta_data_st output_meta_data;
 	uint32_t *ptrmem = (uint32_t *)payload;
 	int i = 0;
@@ -191,9 +190,10 @@ static void compr_event_handler(uint32_t opcode,
 		buf = prtd->audio_client->port[IN].buf;
 		pr_debug("%s:writing %d bytes of buffer[%d] to dsp 2\n",
 				__func__, prtd->pcm_count, prtd->out_head);
-		temp = buf[0].phys + (prtd->out_head * prtd->pcm_count);
-		pr_debug("%s:writing buffer[%d] from 0x%pa\n",
-			__func__, prtd->out_head, &temp);
+		pr_debug("%s:writing buffer[%d] from 0x%08x\n",
+				__func__, prtd->out_head,
+				((unsigned int)buf[0].phys
+				+ (prtd->out_head * prtd->pcm_count)));
 
 		if (runtime->tstamp_mode == SNDRV_PCM_TSTAMP_ENABLE)
 			time_stamp_flag = SET_TIMESTAMP;
@@ -214,12 +214,16 @@ static void compr_event_handler(uint32_t opcode,
 			pr_debug("Recieved a zero length buffer-break out");
 			break;
 		}
-		param.paddr = temp + output_meta_data.meta_data_length;
+		param.paddr = (unsigned long)buf[0].phys
+				+ (prtd->out_head * prtd->pcm_count)
+				+ output_meta_data.meta_data_length;
 		param.len = buffer_length;
 		param.msw_ts = output_meta_data.timestamp_msw;
 		param.lsw_ts = output_meta_data.timestamp_lsw;
 		param.flags = time_stamp_flag;
-		param.uid =  temp + output_meta_data.meta_data_length;
+		param.uid =  (unsigned long)buf[0].phys
+				+ (prtd->out_head * prtd->pcm_count
+				+ output_meta_data.meta_data_length);
 		for (i = 0; i < sizeof(struct audio_aio_write_param)/4;
 					i++, ++ptrmem)
 			pr_debug("cmd[%d]=0x%08x\n", i, *ptrmem);
@@ -869,7 +873,6 @@ static int msm_compr_close(struct snd_pcm_substream *substream)
 		ret = msm_compr_capture_close(substream);
 	return ret;
 }
-
 static int msm_compr_prepare(struct snd_pcm_substream *substream)
 {
 	int ret = 0;
@@ -933,6 +936,7 @@ static int msm_compr_hw_params(struct snd_pcm_substream *substream,
 		dir = IN;
 	else
 		dir = OUT;
+
 	/* Modifying kernel hardware params based on userspace config */
 	if (params_periods(params) > 0 &&
 		(params_periods(params) != runtime->hw.periods_max)) {
@@ -1046,7 +1050,6 @@ static int msm_compr_ioctl(struct snd_pcm_substream *substream,
 			struct snd_dec_ddp *ddp =
 				&compr->info.codec_param.codec.options.ddp;
 			uint32_t params_length = 0;
-			memset(params_value, 0, MAX_AC3_PARAM_SIZE);
 			/* check integer overflow */
 			if (ddp->params_length > UINT_MAX/sizeof(int)) {
 				pr_err("%s: Integer overflow ddp->params_length %d\n",
@@ -1091,14 +1094,12 @@ static int msm_compr_ioctl(struct snd_pcm_substream *substream,
 			struct snd_dec_ddp *ddp =
 				&compr->info.codec_param.codec.options.ddp;
 			uint32_t params_length = 0;
-			memset(params_value, 0, MAX_AC3_PARAM_SIZE);
 			/* check integer overflow */
 			if (ddp->params_length > UINT_MAX/sizeof(int)) {
 				pr_err("%s: Integer overflow ddp->params_length %d\n",
 				__func__, ddp->params_length);
 				return -EINVAL;
 			}
-                        params_length = ddp->params_length*sizeof(int);
 			if (params_length > MAX_AC3_PARAM_SIZE) {
 				/*MAX is 36*sizeof(int) this should not happen*/
 				pr_err("%s: params_length(%d) is greater than %d\n",
