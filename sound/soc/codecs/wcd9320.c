@@ -621,7 +621,8 @@ static int regread(unsigned short reg)
 
 static void regwrite(unsigned short reg, u8 value)
 {
-    wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, reg, value);
+    if (regread(reg) != value)
+        wcd9xxx_reg_write(&sound_control_codec_ptr->core_res, reg, value);
 }
 
 static void mx_update_bits(unsigned short reg,
