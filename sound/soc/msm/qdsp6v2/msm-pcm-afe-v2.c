@@ -33,13 +33,13 @@
 #include <linux/memory_alloc.h>
 #include "msm-pcm-afe-v2.h"
 
-#define MIN_PLAYBACK_PERIOD_SIZE (128 * 2)
-#define MAX_PLAYBACK_PERIOD_SIZE (128 * 2 * 2 * 6)
+#define MIN_PLAYBACK_PERIOD_SIZE (256)
+#define MAX_PLAYBACK_PERIOD_SIZE (3072)
 #define MIN_PLAYBACK_NUM_PERIODS (4)
 #define MAX_PLAYBACK_NUM_PERIODS (768)
 
-#define MIN_CAPTURE_PERIOD_SIZE (128 * 2 * 4)
-#define MAX_CAPTURE_PERIOD_SIZE (128 * 2 * 2 * 6 * 4)
+#define MIN_CAPTURE_PERIOD_SIZE (256)
+#define MAX_CAPTURE_PERIOD_SIZE (24576)
 #define MIN_CAPTURE_NUM_PERIODS (4)
 #define MAX_CAPTURE_NUM_PERIODS (384)
 
