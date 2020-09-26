@@ -9402,9 +9402,6 @@ static struct attribute *sound_control_attrs[] = {
 		&chopper_bypass_attribute.attr,
 		&bypass_static_pa_attribute.attr,
 		&headphone_gain_attribute.attr,
-#if 0
-		&crossfeed_gain_attribute.attr,
-#endif
 		&hph_poweramp_gain_attribute.attr,
 		&speaker_gain_attribute.attr,
 		&iir1_gain_attribute.attr,
