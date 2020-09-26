@@ -428,7 +428,7 @@ struct taiko_priv {
 	s32 micb_2_users;
 
 	u32 anc_slot;
-	bool anc_func;
+	int anc_func;
 
 	/*track taiko interface type*/
 	u8 intf_type;
@@ -1176,7 +1176,7 @@ static int taiko_get_anc_func(struct snd_kcontrol *kcontrol,
 	struct snd_soc_codec *codec = snd_kcontrol_chip(kcontrol);
 	struct taiko_priv *taiko = snd_soc_codec_get_drvdata(codec);
 
-	ucontrol->value.integer.value[0] = (taiko->anc_func == true ? 1 : 0);
+	ucontrol->value.integer.value[0] = taiko->anc_func;
 	return 0;
 }
 
@@ -1187,7 +1187,7 @@ static int taiko_put_anc_func(struct snd_kcontrol *kcontrol,
 	struct taiko_priv *taiko = snd_soc_codec_get_drvdata(codec);
 	struct snd_soc_dapm_context *dapm = &codec->dapm;
 
-	taiko->anc_func = (!ucontrol->value.integer.value[0] ? false : true);
+	taiko->anc_func = ucontrol->value.integer.value[0];
 	dev_dbg(codec->dev, "%s: anc_func %x", __func__, taiko->anc_func);
 
 	if (taiko->anc_func) {
