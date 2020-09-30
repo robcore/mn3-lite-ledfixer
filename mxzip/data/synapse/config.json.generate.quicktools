@@ -1,0 +1,57 @@
+cat << CTAG
+    {
+    name:QUICKTOOLS,
+        elements:[
+            { SLiveLabel:{
+                action:"getinfo label"
+            }},
+            { SSpacer:{
+                height: 1
+            }},
+            { STitleBar:{
+                title:"Battery Current"
+            }},
+            { SLiveLabel:{
+                refresh:1000,
+                action:"getinfo current_now"
+            }},
+            { SSpacer:{
+                height: 1
+            }},
+            { STitleBar:{
+                title:"SleepTimer"
+            }},
+            { SButton:{
+                label:"Sleeptimer",
+                action:"getinfo sleeptimer"
+            }},
+            { SSpacer:{
+                height: 1
+            }},
+            { STitleBar:{
+                title:"HBM Control"
+            }},
+            { SSpacer:{
+                height: 1
+            }},
+            { SCheckBox:{
+                label:"HBM",
+                description:"Boost panel brightness to 500cd",
+                default:$(busybox cat /sys/devices/virtual/lcd/panel/force_500cd),
+                action:"mdniecontrol force_500cd"
+            }},
+            { STitleBar:{
+                title:"PMIC Reset Setting"
+            }},
+            { SDescription:{
+                description:"Determines whether to reset PMIC and clear memory upon reboot."
+            }},
+            { SCheckBox:{
+                label:"PMIC Hard Reset",
+                description:"Enable or Disable Hard Reset",
+                default:$(busybox cat /sys/module/restart/parameters/hard_reset),
+                action:"getinfo hard_reset"
+            }},
+        ]
+    }
+CTAG
