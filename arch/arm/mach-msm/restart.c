@@ -310,7 +310,7 @@ static void msm_restart_prepare(const char *cmd)
 #endif
 #endif
 
-#if defined(CONFIG_SEC_DEBUG_LOW_LOG) && defined(CONFIG_MSM_DLOAD_MODE) \\
+#if defined(CONFIG_SEC_DEBUG_LOW_LOG) && defined(CONFIG_MSM_DLOAD_MODE) \
 && defined(CONFIG_SEC_DEBUG)
 	if (sec_debug_is_enabled()
 	&& ((restart_mode == RESTART_DLOAD) || in_panic))
