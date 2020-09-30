@@ -74,7 +74,7 @@ uint64_t msm_bus_div64(unsigned int w, uint64_t bw)
 
 	switch (w) {
 	case 0:
-		WARN(1, "AXI: Divide by 0 attempted\n");
+		return 0;
 	case 1: return bw;
 	case 2:	return (bw >> 1);
 	case 4:	return (bw >> 2);
@@ -462,7 +462,7 @@ static int update_path(int curr, int pnode, uint64_t req_clk, uint64_t req_bw,
 		bwsum_hz = BW_TO_CLK_FREQ_HZ(hop->node_info->buswidth,
 			bwsum);
 		/* Account for multiple channels if any */
-		if (hop->node_info->num_sports > 1)
+		if (hop->node_info->num_sports > 0)
 			bwsum_hz = msm_bus_div64(hop->node_info->num_sports,
 				bwsum_hz);
 		MSM_BUS_DBG("AXI: Hop: %d, ports: %d, bwsum_hz: %llu\n",
