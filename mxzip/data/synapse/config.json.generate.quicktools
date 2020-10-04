@@ -28,6 +28,13 @@ cat << CTAG
             { SSpacer:{
                 height: 1
             }},
+            { SButton:{
+                label:"Cancel Sleeptimer",
+                action:"getinfo cancelsleeptimer"
+            }},
+            { SSpacer:{
+                height: 1
+            }},
             { STitleBar:{
                 title:"HBM Control"
             }},

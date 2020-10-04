@@ -10,8 +10,17 @@ then
         busybox echo "Sleeptimer already Running"
     else
         busybox echo 'RUN' > /data/synapse/sleeplate.lock
-        /sbin/sleeplate &
+        /sbin/sleepcond &
         busybox echo "Sleeptimer Running"
+    fi
+elif [ "$1" = "cancelsleeptimer" ]
+then
+    if [ -f "/data/synapse/sleeplate.lock" ]
+    then
+        busybox rm "/data/synapse/sleeplate.lock"
+        busybox echo "Sleeptimer Cancelled"
+    else
+        busybox echo "Sleeptimer Not Running"
     fi
 elif [ "$1" = "current_now" ]
 then
