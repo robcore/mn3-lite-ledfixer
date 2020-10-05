@@ -429,7 +429,7 @@ build_kernel_config() {
 build_single_driver() {
 
 	echo "Building Single Driver..."
-	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -C "$RDIR" -S -s -0s -j16 O="$BUILDIR/" "$1"
+	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -C "$RDIR" -S -s -j16 O="$BUILDIR/" "$1"
 
 }
 
@@ -441,7 +441,7 @@ build_kernel() {
 	#env
 	echo -n "$(date +%s)" > "$RDIR/.starttime"
 	echo "Starting build..."
-	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -S -s -0s -j16 -C "$RDIR" O="$BUILDIR" || warnandfail "Kernel Build failed!"
+	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -S -s -j16 -C "$RDIR" O="$BUILDIR" || warnandfail "Kernel Build failed!"
 
 }
 
