@@ -1,4 +1,4 @@
-ui_print("MX STOCK ACDB");
+ui_print("MX MODDED ACDB V2 HLTETMO");
 ui_print("Adjusting jiggawattage in flux capacitor");
 ui_print(" ");
 ui_print("Mounting Filesystems");
@@ -14,4 +14,4 @@ set_perm(0, 0, 0644, "/system/etc/Headset_cal.acdb");
 set_perm(0, 0, 0644, "/system/etc/Speaker_cal.acdb");
 unmount("/system");
 ui_print(" ");
-ui_print("Completed Stock ACDB Install");
+ui_print("Completed MODDED ACDB Install");
