@@ -205,31 +205,33 @@ static int max77803_led_get_en_value(struct max77803_led_data *led_data, int on)
 
 int max77803_led_en(int onoff, int mode)
 {
-	if (!flash_torch_en)
-        return -EINVAL;
+	int ret = 0;
 
-    /* enable/disable */
-    if (onoff) {
-   		if (mode) {
-   			DEBUG_MAX77803("[LED] %s: max77803_flash_en set 1\n", __func__);
-            /* flash */
-   			gpio_direction_output(led_flash_en, 1);
-   		} else {
-   			DEBUG_MAX77803("[LED] %s: max77803_torch_en set 1\n", __func__);
-            /* torch */
-   			gpio_direction_output(led_torch_en, 1);
-   		}
-    } else {
-   		if (mode) {
-   			DEBUG_MAX77803("[LED] %s: max77803_flash_en set 0\n", __func__);
-   			gpio_direction_output(led_flash_en, 0);
-   		} else {
-   			DEBUG_MAX77803("[LED] %s: max77803_torch_en set 0\n", __func__);
-   			gpio_direction_output(led_torch_en, 0);
-   		}
-    }
+	if (flash_torch_en) {
+	    if (onoff) { 	/* enable */
+		if (mode) { 	/* flash */
+			DEBUG_MAX77803("[LED] %s: max77803_flash_en set 1\n", __func__);
+			gpio_direction_output(led_flash_en, 1);
+		} else { 	/* torch */
+			DEBUG_MAX77803("[LED] %s: max77803_torch_en set 1\n", __func__);
+			gpio_direction_output(led_torch_en, 1);
+		}
 
-	return 0;
+	    } else { 		/* disable */
+		if (mode) { 	/* flash */
+			DEBUG_MAX77803("[LED] %s: max77803_flash_en set 0\n", __func__);
+			gpio_direction_output(led_flash_en, 0);
+		} else { 	/* torch */
+			DEBUG_MAX77803("[LED] %s: max77803_torch_en set 0\n", __func__);
+			gpio_direction_output(led_torch_en, 0);
+		}
+	    }
+	} else {
+	    pr_err("%s : Error!!, find gpio", __func__);
+	    ret = -EINVAL;
+	}
+
+	return ret;
 }
 EXPORT_SYMBOL(max77803_led_en);
 

@@ -1147,7 +1147,6 @@ static int qpnp_mpp_set(struct qpnp_led_data *led)
 	return 0;
 }
 
-
 static int qpnp_flash_regulator_operate(struct qpnp_led_data *led, bool on)
 {
 	int rc, i;
