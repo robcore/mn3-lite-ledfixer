@@ -592,7 +592,7 @@ static unsigned int compander_gain_boost = 0;
 static u32 sc_peak_det_timeout = 0x09;
 static u32 sc_rms_meter_div_fact = 0x0B;
 static u32 sc_rms_meter_resamp_fact = 0x28;
-static u8 hph_pa_bias = 0x7A;
+static u8 hph_pa_bias = 0x55;
 static unsigned int harmonic_distortion_coeffs = 0;
 static unsigned int iirs_locked = 0;
 
@@ -1023,8 +1023,8 @@ static void update_bias(void)
     if (hpwidget_any())
         return;
 
-   	mx_update_bits_locked(TAIKO_A_RX_HPH_BIAS_PA, 0xff, hph_pa_bias);
-    mx_update_bits_locked(TAIKO_A_RX_HPH_BIAS_CNP, 0xff, compander_bias);
+   	mx_update_bits(TAIKO_A_RX_HPH_BIAS_PA, 0xff, hph_pa_bias);
+    mx_update_bits(TAIKO_A_RX_HPH_BIAS_CNP, 0xff, compander_bias);
 }
 
 static inline void update_interpolator(void)
