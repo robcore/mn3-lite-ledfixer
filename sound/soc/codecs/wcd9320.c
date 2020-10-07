@@ -285,30 +285,30 @@ static struct afe_param_id_clip_bank_sel clip_bank_sel = {
 
 enum {
 	AIF1_PB = 0,
-	AIF1_CAP,
-	AIF2_PB,
-	AIF2_CAP,
-	AIF3_PB,
-	AIF3_CAP,
-	AIF4_VIFEED,
-	AIF4_MAD_TX,
-	NUM_CODEC_DAIS,
+	AIF1_CAP = 1,
+	AIF2_PB = 2,
+	AIF2_CAP = 3,
+	AIF3_PB = 4,
+	AIF3_CAP = 5,
+	AIF4_VIFEED = 6,
+	AIF4_MAD_TX = 7,
+	NUM_CODEC_DAIS = 8,
 };
 
 enum {
 	RX_MIX1_INP_SEL_ZERO = 0,
-	RX_MIX1_INP_SEL_SRC1,
-	RX_MIX1_INP_SEL_SRC2,
-	RX_MIX1_INP_SEL_IIR1,
-	RX_MIX1_INP_SEL_IIR2,
-	RX_MIX1_INP_SEL_RX1,
-	RX_MIX1_INP_SEL_RX2,
-	RX_MIX1_INP_SEL_RX3,
-	RX_MIX1_INP_SEL_RX4,
-	RX_MIX1_INP_SEL_RX5,
-	RX_MIX1_INP_SEL_RX6,
-	RX_MIX1_INP_SEL_RX7,
-	RX_MIX1_INP_SEL_AUXRX,
+	RX_MIX1_INP_SEL_SRC1 = 1,
+	RX_MIX1_INP_SEL_SRC2 = 2,
+	RX_MIX1_INP_SEL_IIR1 = 3,
+	RX_MIX1_INP_SEL_IIR2 = 4,
+	RX_MIX1_INP_SEL_RX1 = 5,
+	RX_MIX1_INP_SEL_RX2 = 6,
+	RX_MIX1_INP_SEL_RX3 = 7,
+	RX_MIX1_INP_SEL_RX4 = 8,
+	RX_MIX1_INP_SEL_RX5 = 9,
+	RX_MIX1_INP_SEL_RX6 = 10,
+	RX_MIX1_INP_SEL_RX7 = 11,
+	RX_MIX1_INP_SEL_AUXRX = 12,
 };
 
 #define TAIKO_COMP_DIGITAL_GAIN_OFFSET 3
@@ -321,17 +321,17 @@ static struct snd_soc_dai_driver taiko_dai[];
 /* Codec supports 2 IIR filters */
 enum {
 	IIR1 = 0,
-	IIR2,
-	IIR_MAX,
+	IIR2 = 1,
+	IIR_MAX = 2,
 };
 /* Codec supports 5 bands */
 enum {
 	BAND1 = 0,
-	BAND2,
-	BAND3,
-	BAND4,
-	BAND5,
-	BAND_MAX,
+	BAND2 = 1,
+	BAND3 = 2,
+	BAND4 = 3,
+	BAND5 = 4,
+	BAND_MAX = 5,
 };
 
 enum {
