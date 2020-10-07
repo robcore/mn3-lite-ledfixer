@@ -1029,24 +1029,24 @@ static void update_bias(void)
 
 static inline void update_interpolator(void)
 {
-    regwrite(TAIKO_A_CDC_COMP1_B3_CTL,  (u8)0x01);
-    mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL, 0xF0,  (u8)(0x05 << 4));
-    mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL, 0x0F,  (u8)0x05);
+    regwrite(TAIKO_A_CDC_COMP1_B3_CTL, (u8)1);
+    mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL, 240, (u8)(80));
+    mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL, 15, (u8)(5));
     usleep_range(3000, 3100);
 
     if (interpolator_enabled) {
         if (interpolator_boost) {
             regwrite(TAIKO_A_CDC_COMP1_B3_CTL, (u8)sc_rms_meter_resamp_fact);
             mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL,
-            	    0xF0, (u8)(sc_rms_meter_div_fact << 4));
+            	    240, (u8)(sc_rms_meter_div_fact << 4));
             mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL,
-            		0x0F, (u8)sc_peak_det_timeout);
+            		15, (u8)sc_peak_det_timeout);
         } else {
             regwrite(TAIKO_A_CDC_COMP1_B3_CTL, (u8)0x28);
             mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL,
-                    0xF0, (u8)(0x0B << 4));
+                    240, (u8)(0x0B << 4));
             mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL,
-                    0x0F, (u8)(0x09));
+                    240, (u8)(0x09));
         }
     }
 }
@@ -1529,6 +1529,9 @@ static void taiko_discharge_comp(struct snd_soc_codec *codec, int comp)
 	/* Level meter DIV Factor to 5*/
 	snd_soc_update_bits(codec, TAIKO_A_CDC_COMP0_B2_CTL + (comp * 8), 0xF0,
 			    0x05 << 4);
+	/* Peak Detection Timeout to 5*/
+	snd_soc_update_bits(codec, TAIKO_A_CDC_COMP0_B2_CTL + (comp * 8), 0x0F,
+			    0x05);
 	/* RMS meter Sampling to 0x01 */
 	snd_soc_write(codec, TAIKO_A_CDC_COMP0_B3_CTL + (comp * 8), 0x01);
 }
@@ -7311,7 +7314,7 @@ static int taiko_handle_pdata(struct taiko_priv *taiko)
 				snd_soc_write(codec, TAIKO_A_BIAS_REF_CTL,
 					      0x1E);
 			} else {
-				pr_debug("%s: unsupported CDC_VDDA_RX voltage\n"
+				pr_err("%s: unsupported CDC_VDDA_RX voltage\n"
 				       "min %d, max %d\n", __func__,
 				       pdata->regulator[i].min_uV,
 				       pdata->regulator[i].max_uV);
@@ -7358,7 +7361,7 @@ static int taiko_handle_pdata(struct taiko_priv *taiko)
 			anc_ctl_value = WCD9XXX_ANC_DMIC_X2_OFF;
 			break;
 		default:
-			pr_debug("%s Invalid sample rate %d for mclk %d\n",
+			pr_err("%s Invalid sample rate %d for mclk %d\n",
 			__func__, pdata->dmic_sample_rate, pdata->mclk_rate);
 			rc = -EINVAL;
 			goto done;
@@ -7386,14 +7389,14 @@ static int taiko_handle_pdata(struct taiko_priv *taiko)
 			anc_ctl_value = WCD9XXX_ANC_DMIC_X2_OFF;
 			break;
 		default:
-			pr_debug("%s Invalid sample rate %d for mclk %d\n",
+			pr_err("%s Invalid sample rate %d for mclk %d\n",
 			__func__, pdata->dmic_sample_rate, pdata->mclk_rate);
 			rc = -EINVAL;
 			goto done;
 			break;
 		}
 	} else {
-		pr_debug("%s MCLK is not set!\n", __func__);
+		pr_err("%s MCLK is not set!\n", __func__);
 		rc = -EINVAL;
 		goto done;
 	}
@@ -7502,16 +7505,13 @@ static const struct wcd9xxx_reg_mask_val taiko_2_0_reg_defaults[] = {
 	TAIKO_REG_VAL(TAIKO_A_BUCK_CTRL_CCL_4, 0x51),
 	TAIKO_REG_VAL(TAIKO_A_NCP_DTEST, 0x10),
 	TAIKO_REG_VAL(TAIKO_A_RX_HPH_CHOP_CTL, 0xA4),
+	TAIKO_REG_VAL(TAIKO_A_RX_HPH_BIAS_PA, 0x55),
 	TAIKO_REG_VAL(TAIKO_A_RX_HPH_OCP_CTL, 0x6B),
 	TAIKO_REG_VAL(TAIKO_A_RX_HPH_CNP_WG_CTL, 0xDA),
 	TAIKO_REG_VAL(TAIKO_A_RX_HPH_CNP_WG_TIME, 0x15),
 	TAIKO_REG_VAL(TAIKO_A_RX_EAR_BIAS_PA, 0x76),
 	TAIKO_REG_VAL(TAIKO_A_RX_EAR_CNP, 0xC0),
-#if !defined(CONFIG_MACH_VIENNA_LTE) && !defined(CONFIG_MACH_LT03_LTE) && !defined(CONFIG_MACH_PICASSO_LTE) && !defined(CONFIG_SEC_H_PROJECT) && !defined(CONFIG_SEC_FRESCO_PROJECT) && !defined(CONFIG_MACH_KS01EUR)
-	TAIKO_REG_VAL(TAIKO_A_RX_LINE_BIAS_PA, 0x78),
-#else
 	TAIKO_REG_VAL(TAIKO_A_RX_LINE_BIAS_PA, 0x7A),
-#endif
 	TAIKO_REG_VAL(TAIKO_A_RX_LINE_1_TEST, 0x2),
 	TAIKO_REG_VAL(TAIKO_A_RX_LINE_2_TEST, 0x2),
 	TAIKO_REG_VAL(TAIKO_A_RX_LINE_3_TEST, 0x2),
@@ -7976,8 +7976,11 @@ static int taiko_post_reset_cb(struct wcd9xxx *wcd9xxx)
 	int count;
 
 	codec = (struct snd_soc_codec *)(wcd9xxx->ssr_priv);
+	if (!codec)
+		return -ENOMEM;
 	taiko = snd_soc_codec_get_drvdata(codec);
-
+	if (!taiko)
+		return -ENOMEM;
 	snd_soc_card_change_online_state(codec->card, 1);
 
 	mutex_lock(&codec->mutex);
