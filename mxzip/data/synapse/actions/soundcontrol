@@ -330,6 +330,21 @@ then
     else
         busybox cat /sys/kernel/sound_control/compander_gain_boost
     fi
+elif [ "$1" = "wavegen_override" ]
+then
+    CURVAL=$(busybox cat /sys/kernel/sound_control/wavegen_override)
+    if [ -n "$2" ]
+    then
+        if [ "$2" = "$CURVAL" ]
+        then
+            busybox cat /sys/kernel/sound_control/wavegen_override
+        else
+            busybox echo "$2" > /sys/kernel/sound_control/wavegen_override
+            busybox cat /sys/kernel/sound_control/wavegen_override
+        fi
+    else
+        busybox cat /sys/kernel/sound_control/wavegen_override
+    fi
 elif [ "$1" = "harmonic_distortion_coeffs" ]
 then
     CURVAL=$(busybox cat /sys/kernel/sound_control/harmonic_distortion_coeffs)
