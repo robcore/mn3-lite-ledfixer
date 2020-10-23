@@ -300,6 +300,21 @@ then
     else
         busybox cat /sys/kernel/sound_control/interpolator_boost
     fi
+elif [ "$1" = "interpolator_override" ]
+then
+    CURVAL=$(busybox cat /sys/kernel/sound_control/interpolator_override)
+    if [ -n "$2" ]
+    then
+        if [ "$2" = "$CURVAL" ]
+        then
+            busybox cat /sys/kernel/sound_control/interpolator_override
+        else
+            busybox echo "$2" > /sys/kernel/sound_control/interpolator_override
+            busybox cat /sys/kernel/sound_control/interpolator_override
+        fi
+    else
+        busybox cat /sys/kernel/sound_control/interpolator_override
+    fi
 elif [ "$1" = "compander_gain_lock" ]
 then
     CURVAL=$(busybox cat /sys/kernel/sound_control/compander_gain_lock)

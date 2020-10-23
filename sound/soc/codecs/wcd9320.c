@@ -609,6 +609,7 @@ static unsigned int bypass_static_pa = 0;
 static unsigned int wavegen_override = 0;
 /*RMS (Root Mean Squared) Power Detector*/
 static unsigned int interpolator_boost = 0;
+static unsigned int interpolator_override = 0;
 static bool interpolator_enabled;
 
 #define PA_STAT_ON 8
@@ -1033,6 +1034,15 @@ static inline void update_interpolator(void)
     mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL, 240, (u8)(80));
     mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL, 15, (u8)(5));
     usleep_range(3000, 3100);
+
+    if (interpolator_override) {
+        regwrite(TAIKO_A_CDC_COMP1_B3_CTL, (u8)sc_rms_meter_resamp_fact);
+        mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL,
+            240, (u8)(sc_rms_meter_div_fact << 4));
+        mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL,
+            15, (u8)sc_peak_det_timeout);
+        return;
+    }
 
     if (interpolator_enabled) {
         if (interpolator_boost) {
@@ -8765,11 +8775,38 @@ static ssize_t interpolator_boost_store(struct kobject *kobj,
 		uval = 0;
 	if (uval > 1)
 		uval = 1;
-
+#if 0
     if (hpwidget_any())
         return count;
-
+#endif
 	interpolator_boost = uval;
+    update_interpolator();
+	return count;
+}
+
+static ssize_t interpolator_override_show(struct kobject *kobj,
+		struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", interpolator_override);
+}
+
+static ssize_t interpolator_override_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
+	int uval;
+
+	sscanf(buf, "%d", &uval);
+
+	if (uval < 0)
+		uval = 0;
+	if (uval > 1)
+		uval = 1;
+#if 0
+    if (hpwidget_any())
+        return count;
+#endif
+	interpolator_override = uval;
+    update_interpolator();
 	return count;
 }
 
@@ -9052,9 +9089,10 @@ static ssize_t peak_det_timeout_store(struct kobject *kobj,
 	if (uval > 15)
 		uval = 15;
 
+#if 0
     if (hpwidget_any())
         return count;
-
+#endif
 	sc_peak_det_timeout = (u32)uval;
     update_interpolator();
 
@@ -9079,8 +9117,10 @@ static ssize_t rms_meter_div_fact_store(struct kobject *kobj,
 	if (uval > 15)
 		uval = 15;
 
+#if 0
     if (hpwidget_any())
         return count;
+#endif
 
 	sc_rms_meter_div_fact = (u32)uval;
     update_interpolator();
@@ -9106,8 +9146,10 @@ static ssize_t rms_meter_resamp_fact_store(struct kobject *kobj,
 	if (uval > 255)
 		uval = 255;
 
+#if 0
     if (hpwidget_any())
         return count;
+#endif
 
    	sc_rms_meter_resamp_fact = (u32)uval;
     update_interpolator();
@@ -9311,6 +9353,11 @@ static struct kobj_attribute interpolator_boost_attribute =
 		interpolator_boost_show,
 		interpolator_boost_store);
 
+static struct kobj_attribute interpolator_override_attribute =
+	__ATTR(interpolator_override, 0644,
+		interpolator_override_show,
+		interpolator_override_store);
+
 static struct kobj_attribute hph_pa_enabled_attribute =
 	__ATTR(hph_pa_enabled, 0644,
 		hph_pa_enabled_show,
@@ -9414,6 +9461,7 @@ static struct attribute *sound_control_attrs[] = {
 		&uhqa_mode_attribute.attr,
 		&high_perf_mode_attribute.attr,
 		&interpolator_boost_attribute.attr,
+		&interpolator_override_attribute.attr,
 		&hph_pa_enabled_attribute.attr,
 		&compander_gain_lock_attribute.attr,
 		&compander_gain_boost_attribute.attr,
