@@ -16,11 +16,24 @@ then
     busybox cat /sys/kernel/mdnie_control/bypass
 elif [ "$1" = "force_500cd" ]
 then
-    if [ -n "$2" ]
+    if [ "$(busybox cat /sys/devices/virtual/lcd/panel/force_500cd)" = "0" ]
     then
-        busybox echo "$2" > /sys/devices/virtual/lcd/panel/force_500cd
+        busybox echo "1" > /sys/devices/virtual/lcd/panel/force_500cd
+        busybox echo "HBM Enabled"
+    elif [ "$(busybox cat /sys/devices/virtual/lcd/panel/force_500cd)" = "1" ]
+    then
+        busybox echo "0" > /sys/devices/virtual/lcd/panel/force_500cd
+        busybox echo "HBM Disabled"
     fi
-    busybox cat /sys/devices/virtual/lcd/panel/force_500cd
+elif [ "$1" = "show_force_500cd" ]
+then
+    if [ "$(busybox cat /sys/devices/virtual/lcd/panel/force_500cd)" = "0" ]
+    then
+        busybox echo "HBM Disabled"
+    elif [ "$(busybox cat /sys/devices/virtual/lcd/panel/force_500cd)" = "1" ]
+    then
+        busybox echo "HBM Enabled"
+    fi
 elif [ "$1" = "chroma" ]
 then
     if [ -n "$2" ]

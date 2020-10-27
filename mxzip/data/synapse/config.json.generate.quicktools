@@ -38,14 +38,12 @@ cat << CTAG
             { STitleBar:{
                 title:"HBM Control"
             }},
-            { SSpacer:{
-                height: 1
-            }},
-            { SCheckBox:{
-                label:"HBM",
-                description:"Boost panel brightness to 500cd",
-                default:$(busybox cat /sys/devices/virtual/lcd/panel/force_500cd),
+            { SButton:{
+                label:"HBM Toggle",
                 action:"mdniecontrol force_500cd"
+            }},
+            { SLiveLabel:{
+                action:"mdniecontrol show_force_500cd"
             }},
             { STitleBar:{
                 title:"PMIC Reset Setting"

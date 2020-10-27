@@ -50,21 +50,16 @@ cat << CTAG
                 height: 1
             }},
             { STitleBar:{
-                title:"IIR Locks"
+                title:"IIR Lock"
             }},
             { SSpacer:{
                 height: 1
             }},
-            { SButton:{
+            { SCheckBox:{
                 label:"Lock IIR Filters",
-                action:"soundcontrol lock_iirs_locked"
-            }},
-            { SButton:{
-                label:"Unlock IIR Filters",
-                action:"soundcontrol unlock_iirs_locked"
-            }},
-            { SLiveLabel:{
-                action:"soundcontrol show_iirs_locked"
+                description:"Prevent IIR filter state from changing",
+                default:$(busybox cat /sys/kernel/sound_control/iirs_locked),
+                action:"soundcontrol iirs_locked"
             }},
         ]
     }
