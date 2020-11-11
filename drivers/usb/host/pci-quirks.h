@@ -8,10 +8,19 @@ int usb_amd_find_chipset_info(void);
 void usb_amd_dev_put(void);
 void usb_amd_quirk_pll_disable(void);
 void usb_amd_quirk_pll_enable(void);
+#if !defined(CONFIG_PCI_DISABLE_COMMON_QUIRKS)
 bool usb_is_intel_switchable_xhci(struct pci_dev *pdev);
 void usb_enable_xhci_ports(struct pci_dev *xhci_pdev);
 void usb_disable_xhci_ports(struct pci_dev *xhci_pdev);
-#else
+#else /*CONFIG_PCI_DISABLE_COMMON_QUIRKS*/
+static inline bool usb_is_intel_switchable_xhci(struct pci_dev *pdev)
+{
+	return false;
+}
+static inline void usb_enable_xhci_ports(struct pci_dev *xhci_pdev) {}
+static void usb_disable_xhci_ports(struct pci_dev *xhci_pdev) {}
+#endif /*CONFIG_PCI_DISABLE_COMMON_QUIRKS*/
+#else /* CONFIG_PCI */
 static inline void usb_amd_quirk_pll_disable(void) {}
 static inline void usb_amd_quirk_pll_enable(void) {}
 static inline void usb_amd_dev_put(void) {}
