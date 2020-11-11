@@ -1901,12 +1901,15 @@ static void skb_warn_bad_offload(const struct sk_buff *skb)
 	if (dev && dev->dev.parent)
 		driver = dev_driver_string(dev->dev.parent);
 
+	/*
 	WARN(1, "%s: caps=(%pNF, %pNF) len=%d data_len=%d gso_size=%d "
 	     "gso_type=%d ip_summed=%d\n",
 	     driver, dev ? &dev->features : &null_features,
 	     skb->sk ? &skb->sk->sk_route_caps : &null_features,
 	     skb->len, skb->data_len, skb_shinfo(skb)->gso_size,
 	     skb_shinfo(skb)->gso_type, skb->ip_summed);
+	*/
+	printk("[Warning] skb_warn_bad_offload!!!\n");
 }
 
 /*
