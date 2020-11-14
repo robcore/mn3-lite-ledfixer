@@ -496,6 +496,7 @@ build_boot_img() {
 }
 
 ADBPUSHLOCATION="/sdcard/Download"
+MAGISKFILE="Magisk-21.1.zip"
 
 create_zip() {
 
@@ -563,10 +564,10 @@ create_zip() {
 				echo "Successfully pushed $RDIR/$MX_KERNEL_VERSION.zip to $ADBPUSHLOCATION/$MX_KERNEL_VERSION.zip over ADB!"
 				echo "Installing $ADBPUSHLOCATION/$MX_KERNEL_VERSION.zip via open recovery script"
 				adb shell twrp install "$ADBPUSHLOCATION/$MX_KERNEL_VERSION.zip"
-                echo "Pushing Magisk to $ADBPUSHLOCATION/Magisk-21.0.zip"
-                adb push "$RDIR/Magisk-21.0.zip" "$ADBPUSHLOCATION"
-				echo "Installing $ADBPUSHLOCATION/Magisk-21.0.zip via open recovery script"
-				adb shell twrp install "$ADBPUSHLOCATION/Magisk-21.0.zip"
+                echo "Pushing Magisk to $ADBPUSHLOCATION/$MAGISKFILE"
+                adb push "$RDIR/$MAGISKFILE" "$ADBPUSHLOCATION"
+				echo "Installing $ADBPUSHLOCATION/$MAGISKFILE via open recovery script"
+				adb shell twrp install "$ADBPUSHLOCATION/$MAGISKFILE"
                 echo "Removing leftovers"
                 adb shell rm "/data/dalvik-cache/arm/dev@tmp@install@common@magisk.apk@classes.dex" &> /dev/null
                 adb shell rm "/data/dalvik-cache/arm/data@app@com.topjohnwu.magisk-1@base.apk@classes.dex" &> /dev/null
