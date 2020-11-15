@@ -7,7 +7,7 @@ config SND_PCM
 	select SND_TIMER
 
 config SND_HWDEP
-	tristate "Sound hardware support"
+	tristate
 
 config SND_RAWMIDI
 	tristate
