@@ -140,6 +140,7 @@ extern u8 iir1_cached_gain;
 extern u8 iir2_cached_gain;
 extern u8 iir1_inp2_cached_gain;
 extern u8 iir2_inp2_cached_gain;
+
 #if 0
 extern u8 crossleft_cached_gain; /* RX4 routed from right to left side */
 extern u8 crossright_cached_gain; /* RX3 routed from left to right side */

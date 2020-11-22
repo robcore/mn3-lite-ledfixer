@@ -93,6 +93,15 @@ busybox cat << CTAG
                 default:$(busybox cat /sys/kernel/sound_control/headphone_gain | cut -d ' ' -f 2),
                 action:"soundcontrol headphoneright"
             }},
+            { SCheckBox:{
+                label:"Headphone Mute",
+                description:"Mute Headphones Unconditionally",
+                default:$(busybox cat /sys/kernel/sound_control/headphone_mute),
+                action:"soundcontrol headphone_mute"
+            }},
+            { SSpacer:{
+                height: 1
+            }},
             { SSeekBar:{
                 title:"Speaker Gain",
                 max:40,
@@ -100,6 +109,12 @@ busybox cat << CTAG
                 step:1,
                 default:$(busybox cat /sys/kernel/sound_control/speaker_gain),
                 action:"soundcontrol speaker_gain"
+            }},
+            { SCheckBox:{
+                label:"Speaker Mute",
+                description:"Mute Speaker Unconditionally",
+                default:$(busybox cat /sys/kernel/sound_control/speaker_mute),
+                action:"soundcontrol speaker_mute"
             }},
             { SSpacer:{
                 height: 1

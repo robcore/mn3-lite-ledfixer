@@ -560,6 +560,8 @@ u8 iir1_cached_gain;
 u8 iir2_cached_gain;
 u8 iir1_inp2_cached_gain;
 u8 iir2_inp2_cached_gain;
+static unsigned int headphone_mute;
+static unsigned int speaker_mute;
 
 #if 0
 /* RX4 routed from right to left side */
@@ -567,6 +569,7 @@ u8 crossleft_cached_gain = 241; /* 241 = -15 */
 /* RX3 routed from left to right side */
 u8 crossright_cached_gain = 241; /* 241 = -15 */
 #endif
+
 static u8 hphl_hpf_cutoff = 0;
 static u8 hphr_hpf_cutoff = 0;
 static u8 speaker_hpf_cutoff = 0;
@@ -720,10 +723,19 @@ static bool spkwidget_active(void)
     return false;
 }
 
+#define HEADPHONE_MUTE 172
 static void update_headphone_gain(void)
 {
+	if (headphone_mute) {
+		lock_sound_control(&sound_control_codec_ptr->core_res, 1);
+		regwrite(TAIKO_A_CDC_RX1_VOL_CTL_B2_CTL, HEADPHONE_MUTE);
+		regwrite(TAIKO_A_CDC_RX2_VOL_CTL_B2_CTL, HEADPHONE_MUTE);
+		lock_sound_control(&sound_control_codec_ptr->core_res, 0);
+		return;
+	}
 	if (!hpwidget())
 		return;
+
 	lock_sound_control(&sound_control_codec_ptr->core_res, 1);
 	regwrite(TAIKO_A_CDC_RX1_VOL_CTL_B2_CTL, hphl_cached_gain);
 	regwrite(TAIKO_A_CDC_RX2_VOL_CTL_B2_CTL, hphr_cached_gain);
@@ -813,11 +825,19 @@ static void write_hph_poweramp_regs(void)
 	write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN);
 	write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_R_GAIN);
 }
-
+#define SPEAKER_MUTE 172
 static void update_speaker_gain(void)
 {
+	if (speaker_mute) {
+		lock_sound_control(&sound_control_codec_ptr->core_res, 1);
+		regwrite(TAIKO_A_CDC_RX7_VOL_CTL_B2_CTL, SPEAKER_MUTE);
+		lock_sound_control(&sound_control_codec_ptr->core_res, 0);
+		return;
+	}
+
 	if (!spkwidget_active())
 		return;
+
 	lock_sound_control(&sound_control_codec_ptr->core_res, 1);
 	regwrite(TAIKO_A_CDC_RX7_VOL_CTL_B2_CTL, speaker_cached_gain);
 	lock_sound_control(&sound_control_codec_ptr->core_res, 0);
@@ -8448,6 +8468,26 @@ static ssize_t headphone_gain_store(struct kobject *kobj, struct kobj_attribute 
 	return count;
 }
 
+static ssize_t headphone_mute_show(struct kobject *kobj,
+		struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%d\n", headphone_mute);
+}
+
+static ssize_t headphone_mute_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
+	int hpm;
+
+	sscanf(buf, "%d", &hpm);
+
+	hpm = clamp_val(hpm, 0, 1);
+	headphone_mute = hpm;
+	update_headphone_gain();
+
+	return count;
+}
+
 /*
 	SOC_SINGLE_S8_TLV("IIR1 INP1 Volume", TAIKO_A_CDC_IIR1_GAIN_B1_CTL, -84,
 		40, digital_gain),
@@ -8705,6 +8745,26 @@ static ssize_t speaker_gain_store(struct kobject *kobj,
 	else
 		speaker_cached_gain = (u8)spkinput;
 
+	update_speaker_gain();
+
+	return count;
+}
+
+static ssize_t speaker_mute_show(struct kobject *kobj,
+		struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%d\n", speaker_mute);
+}
+
+static ssize_t speaker_mute_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
+	int spkm;
+
+	sscanf(buf, "%d", &spkm);
+
+	spkm = clamp_val(spkm, 0, 1);
+	speaker_mute = spkm;
 	update_speaker_gain();
 
 	return count;
@@ -9301,6 +9361,12 @@ static struct kobj_attribute headphone_gain_attribute =
 	__ATTR(headphone_gain, 0644,
 		headphone_gain_show,
 		headphone_gain_store);
+
+static struct kobj_attribute headphone_mute_attribute =
+	__ATTR(headphone_mute, 0644,
+		headphone_mute_show,
+		headphone_mute_store);
+
 #if 0
 static struct kobj_attribute crossfeed_gain_attribute =
 	__ATTR(crossfeed_gain, 0644,
@@ -9317,6 +9383,11 @@ static struct kobj_attribute speaker_gain_attribute =
 	__ATTR(speaker_gain, 0644,
 		speaker_gain_show,
 		speaker_gain_store);
+
+static struct kobj_attribute speaker_mute_attribute =
+	__ATTR(speaker_mute, 0644,
+		speaker_mute_show,
+		speaker_mute_store);
 
 static struct kobj_attribute iir1_gain_attribute =
 	__ATTR(iir1_gain, 0644,
@@ -9452,8 +9523,10 @@ static struct attribute *sound_control_attrs[] = {
 		&chopper_bypass_attribute.attr,
 		&bypass_static_pa_attribute.attr,
 		&headphone_gain_attribute.attr,
+		&headphone_mute_attribute.attr,
 		&hph_poweramp_gain_attribute.attr,
 		&speaker_gain_attribute.attr,
+		&speaker_mute_attribute.attr,
 		&iir1_gain_attribute.attr,
 		&iir1_inp2_gain_attribute.attr,
 		&iir2_gain_attribute.attr,
