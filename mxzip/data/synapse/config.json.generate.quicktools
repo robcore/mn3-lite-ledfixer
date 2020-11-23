@@ -57,6 +57,16 @@ cat << CTAG
                 default:$(busybox cat /sys/module/restart/parameters/hard_reset),
                 action:"getinfo hard_reset"
             }},
+            { STitleBar:{
+                title:"Quick Memory Dropper"
+            }},
+            { SDescription:{
+                description:"Easy access to drop unused memory accounted by the kernel."
+            }},
+            { SButton:{
+                label:"Dropper",
+                action:"getinfo dropper"
+            }},
         ]
     }
 CTAG
