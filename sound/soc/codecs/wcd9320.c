@@ -596,7 +596,8 @@ static u32 sc_peak_det_timeout = 0x09;
 static u32 sc_rms_meter_div_fact = 0x0B;
 static u32 sc_rms_meter_resamp_fact = 0x28;
 static u8 hph_pa_bias = 0x55;
-static unsigned int harmonic_distortion_coeffs = 0;
+static unsigned int headphone_hdc = 0;
+static unsigned int speaker_hdc = 0;
 static unsigned int iirs_locked = 0;
 
 /*
@@ -1088,7 +1089,7 @@ static void write_hdc_left(bool enable)
     unsigned int engage;
     engage = !!enable;
 
-	if (engage && harmonic_distortion_coeffs && hpwidget_left) {
+	if (engage && headphone_hdc && hpwidget_left) {
 		mx_update_bits(TAIKO_A_CDC_RX1_B3_CTL, 0xBC, 0x94);
 		mx_update_bits(TAIKO_A_CDC_RX1_B4_CTL, 0x30, 0x10);
     } else {
@@ -1102,7 +1103,7 @@ static void write_hdc_right(bool enable)
     unsigned int engage;
     engage = !!enable;
 
-	if (engage && harmonic_distortion_coeffs && hpwidget_right) {
+	if (engage && headphone_hdc && hpwidget_right) {
 		mx_update_bits(TAIKO_A_CDC_RX2_B3_CTL, 0xBC, 0x94);
 		mx_update_bits(TAIKO_A_CDC_RX2_B4_CTL, 0x30, 0x10);
     } else {
@@ -1113,9 +1114,25 @@ static void write_hdc_right(bool enable)
 
 static void write_hdc_dual(bool enable)
 {
-    
-    write_hdc_left(!!enable);
-    write_hdc_right(!!enable);
+    unsigned int engage;
+    engage = !!enable;
+
+    write_hdc_left(engage);
+    write_hdc_right(engage);
+}
+
+static void write_speaker_hdc(bool enable)
+{
+    unsigned int engage;
+    engage = !!enable;
+
+	if (engage && speaker_hdc && spkwidget_active()) {
+		mx_update_bits(TAIKO_A_CDC_RX7_B3_CTL, 0xBC, 0x94);
+		mx_update_bits(TAIKO_A_CDC_RX7_B4_CTL, 0x30, 0x10);
+    } else {
+		mx_update_bits(TAIKO_A_CDC_RX7_B3_CTL, 0xBC, 0x00);
+		mx_update_bits(TAIKO_A_CDC_RX7_B4_CTL, 0x30, 0x00);
+    }
 }
 
 static void update_control_regs(void)
@@ -3265,9 +3282,10 @@ static int taiko_codec_enable_spk_pa(struct snd_soc_dapm_widget *w,
 	pr_debug("%s: %d %s\n", __func__, event, w->name);
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
-		taiko->spkr_pa_widget_on = true;
 		snd_soc_update_bits(codec, TAIKO_A_SPKR_DRV_EN, 0x80, 0x80);
+		taiko->spkr_pa_widget_on = true;
 		spkwidget = true;
+		write_speaker_hdc(1);
 		update_speaker_gain();
 		write_hpf_cutoff(TAIKO_A_CDC_RX7_B4_CTL);
 		write_hpf_bypass(TAIKO_A_CDC_RX7_B5_CTL);
@@ -3275,6 +3293,8 @@ static int taiko_codec_enable_spk_pa(struct snd_soc_dapm_widget *w,
 	case SND_SOC_DAPM_POST_PMD:
 		taiko->spkr_pa_widget_on = false;
 		spkwidget = false;
+		update_speaker_gain();
+		write_speaker_hdc(0);
 		snd_soc_update_bits(codec, TAIKO_A_SPKR_DRV_EN, 0x80, 0x00);
 		break;
 	}
@@ -4015,7 +4035,7 @@ static int taiko_hphr_dac_event(struct snd_soc_dapm_widget *w,
 		write_hpf_cutoff(TAIKO_A_CDC_RX2_B4_CTL);
 		write_hpf_bypass(TAIKO_A_CDC_RX2_B5_CTL);
 		write_hph_poweramp_regs();
-        if (harmonic_distortion_coeffs) {
+        if (headphone_hdc) {
             write_hdc_right(1);
         }
 		break;
@@ -8920,13 +8940,13 @@ static ssize_t compander_gain_boost_store(struct kobject *kobj,
 	return count;
 }
 
-static ssize_t harmonic_distortion_coeffs_show(struct kobject *kobj,
+static ssize_t headphone_hdc_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%u\n", harmonic_distortion_coeffs);
+	return sprintf(buf, "%u\n", headphone_hdc);
 }
 
-static ssize_t harmonic_distortion_coeffs_store(struct kobject *kobj,
+static ssize_t headphone_hdc_store(struct kobject *kobj,
 			   struct kobj_attribute *attr, const char *buf, size_t count)
 {
 	int uval;
@@ -8938,8 +8958,32 @@ static ssize_t harmonic_distortion_coeffs_store(struct kobject *kobj,
 	if (uval > 1)
 		uval = 1;
 
-	harmonic_distortion_coeffs = uval;
-    write_hdc_dual(harmonic_distortion_coeffs);
+	headphone_hdc = uval;
+    write_hdc_dual(headphone_hdc);
+
+	return count;
+}
+
+static ssize_t speaker_hdc_show(struct kobject *kobj,
+		struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", speaker_hdc);
+}
+
+static ssize_t speaker_hdc_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
+	int uval;
+
+	sscanf(buf, "%d", &uval);
+
+	if (uval < 0)
+		uval = 0;
+	if (uval > 1)
+		uval = 1;
+
+	speaker_hdc = uval;
+    write_speaker_hdc(speaker_hdc);
 
 	return count;
 }
@@ -9444,10 +9488,15 @@ static struct kobj_attribute compander_gain_boost_attribute =
 		compander_gain_boost_show,
 		compander_gain_boost_store);
 
-static struct kobj_attribute harmonic_distortion_coeffs_attribute =
-	__ATTR(harmonic_distortion_coeffs, 0644,
-		harmonic_distortion_coeffs_show,
-		harmonic_distortion_coeffs_store);
+static struct kobj_attribute headphone_hdc_attribute =
+	__ATTR(headphone_hdc, 0644,
+		headphone_hdc_show,
+		headphone_hdc_store);
+
+static struct kobj_attribute speaker_hdc_attribute =
+	__ATTR(speaker_hdc, 0644,
+		speaker_hdc_show,
+		speaker_hdc_store);
 
 static struct kobj_attribute anc_delay_attribute =
 	__ATTR(anc_delay, 0644,
@@ -9538,7 +9587,8 @@ static struct attribute *sound_control_attrs[] = {
 		&hph_pa_enabled_attribute.attr,
 		&compander_gain_lock_attribute.attr,
 		&compander_gain_boost_attribute.attr,
-		&harmonic_distortion_coeffs_attribute.attr,
+		&headphone_hdc_attribute.attr,
+		&speaker_hdc_attribute.attr,
 		&anc_delay_attribute.attr,
 		&headphone_left_hpf_cutoff_attribute.attr,
 		&headphone_right_hpf_cutoff_attribute.attr,

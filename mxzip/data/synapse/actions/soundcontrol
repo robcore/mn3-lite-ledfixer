@@ -360,20 +360,35 @@ then
     else
         busybox cat /sys/kernel/sound_control/wavegen_override
     fi
-elif [ "$1" = "harmonic_distortion_coeffs" ]
+elif [ "$1" = "headphone_hdc" ]
 then
-    CURVAL=$(busybox cat /sys/kernel/sound_control/harmonic_distortion_coeffs)
+    CURVAL=$(busybox cat /sys/kernel/sound_control/headphone_hdc)
     if [ -n "$2" ]
     then
         if [ "$2" = "$CURVAL" ]
         then
-            busybox cat /sys/kernel/sound_control/harmonic_distortion_coeffs
+            busybox cat /sys/kernel/sound_control/headphone_hdc
         else
-            busybox echo "$2" > /sys/kernel/sound_control/harmonic_distortion_coeffs
-            busybox cat /sys/kernel/sound_control/harmonic_distortion_coeffs
+            busybox echo "$2" > /sys/kernel/sound_control/headphone_hdc
+            busybox cat /sys/kernel/sound_control/headphone_hdc
         fi
     else
-        busybox cat /sys/kernel/sound_control/harmonic_distortion_coeffs
+        busybox cat /sys/kernel/sound_control/headphone_hdc
+    fi
+elif [ "$1" = "speaker_hdc" ]
+then
+    CURVAL=$(busybox cat /sys/kernel/sound_control/speaker_hdc)
+    if [ -n "$2" ]
+    then
+        if [ "$2" = "$CURVAL" ]
+        then
+            busybox cat /sys/kernel/sound_control/speaker_hdc
+        else
+            busybox echo "$2" > /sys/kernel/sound_control/speaker_hdc
+            busybox cat /sys/kernel/sound_control/speaker_hdc
+        fi
+    else
+        busybox cat /sys/kernel/sound_control/speaker_hdc
     fi
 elif [ "$1" = "speaker_mute" ]
 then
