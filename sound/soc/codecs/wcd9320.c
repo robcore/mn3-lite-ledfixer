@@ -357,6 +357,60 @@ struct comp_sample_dependent_params {
 	u32 rms_meter_resamp_fact;
 };
 
+struct taiko_priv {
+	struct snd_soc_codec *codec;
+	u32 adc_count;
+	u32 rx_bias_count;
+	s32 dmic_1_2_clk_cnt;
+	s32 dmic_3_4_clk_cnt;
+	s32 dmic_5_6_clk_cnt;
+	s32 ldo_h_users;
+	s32 micb_2_users;
+
+	u32 anc_slot;
+	int anc_func;
+
+	/*track taiko interface type*/
+	u8 intf_type;
+
+	/* num of slim ports required */
+	struct wcd9xxx_codec_dai_data  dai[NUM_CODEC_DAIS];
+
+	/*compander*/
+	int comp_enabled[COMPANDER_MAX];
+	u32 comp_fs[COMPANDER_MAX];
+
+	/* Maintain the status of AUX PGA */
+	int aux_pga_cnt;
+	u8 aux_l_gain;
+	u8 aux_r_gain;
+
+	bool spkr_pa_widget_on;
+	struct regulator *spkdrv_reg;
+
+	bool mbhc_started;
+
+	struct afe_param_cdc_slimbus_slave_cfg slimbus_slave_cfg;
+
+	/* resmgr module */
+	struct wcd9xxx_resmgr resmgr;
+	/* mbhc module */
+	struct wcd9xxx_mbhc mbhc;
+
+	/* class h specific data */
+	struct wcd9xxx_clsh_cdc_data clsh_d;
+
+	int (*machine_codec_event_cb)(struct snd_soc_codec *codec,
+			enum wcd9xxx_codec_event);
+
+	/*
+	 * list used to save/restore registers at start and
+	 * end of impedance measurement
+	 */
+	struct list_head reg_save_restore;
+	struct pm_qos_request pm_qos_req;
+};
+
 struct hpf_work {
 	struct taiko_priv *taiko;
 	u32 decimator;
@@ -415,60 +469,6 @@ static const u32 vport_i2s_check_table[NUM_CODEC_DAIS] = {
 	0,	/* AIF1_CAP */
 	0,	/* AIF2_PB */
 	0,	/* AIF2_CAP */
-};
-
-struct taiko_priv {
-	struct snd_soc_codec *codec;
-	u32 adc_count;
-	u32 rx_bias_count;
-	s32 dmic_1_2_clk_cnt;
-	s32 dmic_3_4_clk_cnt;
-	s32 dmic_5_6_clk_cnt;
-	s32 ldo_h_users;
-	s32 micb_2_users;
-
-	u32 anc_slot;
-	int anc_func;
-
-	/*track taiko interface type*/
-	u8 intf_type;
-
-	/* num of slim ports required */
-	struct wcd9xxx_codec_dai_data  dai[NUM_CODEC_DAIS];
-
-	/*compander*/
-	int comp_enabled[COMPANDER_MAX];
-	u32 comp_fs[COMPANDER_MAX];
-
-	/* Maintain the status of AUX PGA */
-	int aux_pga_cnt;
-	u8 aux_l_gain;
-	u8 aux_r_gain;
-
-	bool spkr_pa_widget_on;
-	struct regulator *spkdrv_reg;
-
-	bool mbhc_started;
-
-	struct afe_param_cdc_slimbus_slave_cfg slimbus_slave_cfg;
-
-	/* resmgr module */
-	struct wcd9xxx_resmgr resmgr;
-	/* mbhc module */
-	struct wcd9xxx_mbhc mbhc;
-
-	/* class h specific data */
-	struct wcd9xxx_clsh_cdc_data clsh_d;
-
-	int (*machine_codec_event_cb)(struct snd_soc_codec *codec,
-			enum wcd9xxx_codec_event);
-
-	/*
-	 * list used to save/restore registers at start and
-	 * end of impedance measurement
-	 */
-	struct list_head reg_save_restore;
-	struct pm_qos_request pm_qos_req;
 };
 
 /* Compander 0's clock source is on interpolator 7 */
@@ -587,6 +587,8 @@ static u8 hphr_pa_cached_gain = 20;
 static unsigned int hph_poweramp_mask = 31; /* (1 << fls(max)) - 1 */
 static unsigned int uhqa_mode = 0;
 static unsigned int high_perf_mode = 0;
+static bool class_ab_left_active = false;
+static bool class_ab_right_active = false;
 static bool hpwidget_left = false;
 static bool hpwidget_right = false;
 static bool spkwidget = false;
@@ -722,6 +724,11 @@ static bool spkwidget_active(void)
 
     spk_wake_unlock();
     return false;
+}
+
+static void set_high_perf_mode(bool enable)
+{
+	struct taiko_priv *taiko = snd_soc_codec_get_drvdata(direct_codec);
 }
 
 #define HEADPHONE_MUTE 172
@@ -3959,15 +3966,18 @@ static int taiko_hphl_dac_event(struct snd_soc_dapm_widget *w,
 	case SND_SOC_DAPM_PRE_PMU:
 		snd_soc_update_bits(codec, TAIKO_A_CDC_CLK_RDAC_CLK_EN_CTL,
 							0x02, 0x02);
-		if (!high_perf_mode) {
+
+		if (high_perf_mode) {
+			wcd9xxx_enable_high_perf_mode(codec, &taiko_p->clsh_d,
+						WCD9XXX_CLSAB_STATE_HPHL,
+						WCD9XXX_CLSAB_REQ_ENABLE);
+			class_ab_left_active = true;
+		} else {
 			wcd9xxx_clsh_fsm(codec, &taiko_p->clsh_d,
 						 WCD9XXX_CLSH_STATE_HPHL,
 						 WCD9XXX_CLSH_REQ_ENABLE,
 						 WCD9XXX_CLSH_EVENT_PRE_DAC);
-		} else {
-			wcd9xxx_enable_high_perf_mode(codec, &taiko_p->clsh_d,
-						WCD9XXX_CLSAB_STATE_HPHL,
-						WCD9XXX_CLSAB_REQ_ENABLE);
+			class_ab_left_active = false;
 		}
 		/*ret = wcd9xxx_mbhc_get_impedance(&taiko_p->mbhc,
 					&impedl, &impedr);
@@ -3992,15 +4002,17 @@ static int taiko_hphl_dac_event(struct snd_soc_dapm_widget *w,
 		snd_soc_update_bits(codec, TAIKO_A_CDC_CLK_RDAC_CLK_EN_CTL,
 							0x02, 0x00);
 		write_hph_poweramp_regs();
-		if (!high_perf_mode) {
+
+		if (high_perf_mode || class_ab_left_active) {
+			wcd9xxx_enable_high_perf_mode(codec, &taiko_p->clsh_d,
+						WCD9XXX_CLSAB_STATE_HPHL,
+						WCD9XXX_CLSAB_REQ_DISABLE);
+			class_ab_left_active = false;
+		} else {
 			wcd9xxx_clsh_fsm(codec, &taiko_p->clsh_d,
 						 WCD9XXX_CLSH_STATE_HPHL,
 						 WCD9XXX_CLSH_REQ_DISABLE,
 						 WCD9XXX_CLSH_EVENT_POST_PA);
-		} else {
-			wcd9xxx_enable_high_perf_mode(codec, &taiko_p->clsh_d,
-						WCD9XXX_CLSAB_STATE_HPHL,
-						WCD9XXX_CLSAB_REQ_DISABLE);
 		}
 	}
 	return 0;
@@ -4020,15 +4032,17 @@ static int taiko_hphr_dac_event(struct snd_soc_dapm_widget *w,
 							0x04, 0x04);
 		snd_soc_update_bits(codec, w->reg, 0x40, 0x40);
 
-		if (!high_perf_mode) {
+		if (high_perf_mode) {
+			wcd9xxx_enable_high_perf_mode(codec, &taiko_p->clsh_d,
+						WCD9XXX_CLSAB_STATE_HPHR,
+						WCD9XXX_CLSAB_REQ_ENABLE);
+			class_ab_right_active = true;
+		} else {
 			wcd9xxx_clsh_fsm(codec, &taiko_p->clsh_d,
 						 WCD9XXX_CLSH_STATE_HPHR,
 						 WCD9XXX_CLSH_REQ_ENABLE,
 						 WCD9XXX_CLSH_EVENT_PRE_DAC);
-		} else {
-			wcd9xxx_enable_high_perf_mode(codec, &taiko_p->clsh_d,
-						WCD9XXX_CLSAB_STATE_HPHR,
-						WCD9XXX_CLSAB_REQ_ENABLE);
+			class_ab_right_active = false;
 		}
 		break;
 	case SND_SOC_DAPM_POST_PMU:
@@ -4049,15 +4063,17 @@ static int taiko_hphr_dac_event(struct snd_soc_dapm_widget *w,
 							0x04, 0x00);
 		snd_soc_update_bits(codec, w->reg, 0x40, 0x00);
 		write_hph_poweramp_regs();
-		if (!high_perf_mode) {
+
+		if (high_perf_mode || class_ab_right_active) {
+			wcd9xxx_enable_high_perf_mode(codec, &taiko_p->clsh_d,
+						WCD9XXX_CLSAB_STATE_HPHR,
+						WCD9XXX_CLSAB_REQ_DISABLE);
+			class_ab_right_active = false;
+		} else {
 			wcd9xxx_clsh_fsm(codec, &taiko_p->clsh_d,
 						 WCD9XXX_CLSH_STATE_HPHR,
 						 WCD9XXX_CLSH_REQ_DISABLE,
 						 WCD9XXX_CLSH_EVENT_POST_PA);
-		} else {
-			wcd9xxx_enable_high_perf_mode(codec, &taiko_p->clsh_d,
-						WCD9XXX_CLSAB_STATE_HPHR,
-						WCD9XXX_CLSAB_REQ_DISABLE);
 		}
 		break;
 	}
