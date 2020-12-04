@@ -15,7 +15,10 @@ then
     done
 fi
 
-if [ -f "/data/synapse/sleeplate.lock" ]
+if [ "$(cat /sys/class/lcd/panel/panel/backlight)" = "0" ]
+then
+    rm /data/synapse/sleeplate.lock
+elif [ -f "/data/synapse/sleeplate.lock" ]
 then
     input keyevent KEYCODE_SLEEP
     rm /data/synapse/sleeplate.lock
