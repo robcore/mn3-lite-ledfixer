@@ -1142,6 +1142,46 @@ static void write_speaker_hdc(bool enable)
     }
 }
 
+static int read_iir_enable(unsigned short reg)
+{
+	unsigned int shift = 2;
+	unsigned int mask = (1 << fls(1)) - 1;
+
+	if (reg == TAIKO_A_CDC_RX1_B5_CTL ||
+		reg == TAIKO_A_CDC_RX2_B5_CTL ||
+		reg == TAIKO_A_CDC_RX7_B5_CTL)
+		return (regread(reg) >> shift) & mask;
+
+	return -EINVAL;
+}
+
+static void write_iir_enable(unsigned short reg)
+{
+	unsigned int shift = 2;
+	unsigned int mask = (1 << fls(1)) - 1;
+	unsigned int val, val_mask, old, new;
+	unsigned short input_value;
+
+	switch (reg) {
+		case TAIKO_A_CDC_RX1_B5_CTL:
+			input_value = hphl_hpf_bypass;
+			break;
+		case TAIKO_A_CDC_RX2_B5_CTL:
+			input_value = hphr_hpf_bypass;
+			break;
+		case TAIKO_A_CDC_RX7_B5_CTL:
+			input_value = speaker_hpf_bypass;
+			break;
+		default:
+			return;
+	}
+	val = (input_value & mask);
+	val_mask = mask << shift;
+	val = val << shift;
+	/*snd_soc_update_bits_locked(codec, reg, val_mask, val);*/
+    mx_update_bits_locked(reg, val_mask, val);
+}
+
 static void update_control_regs(void)
 {
 	write_hpf_cutoff(TAIKO_A_CDC_RX1_B4_CTL);
