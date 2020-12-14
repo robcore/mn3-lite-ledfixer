@@ -46,6 +46,18 @@ cat << CTAG
                 action:"mdniecontrol show_force_500cd"
             }},
             { STitleBar:{
+                title:"Display Power Saving"
+            }},
+            { SDescription:{
+                description:"Enable or Disable LCD power saving mode."
+            }},
+            { SCheckBox:{
+                label:"Power Save",
+                description:"Enable or Disable power save",
+                default:$(busybox cat /sys/devices/virtual/lcd/panel/power_reduce),
+                action:"mdniecontrol power_reduce"
+            }},
+            { STitleBar:{
                 title:"Quick Memory Dropper"
             }},
             { SDescription:{
