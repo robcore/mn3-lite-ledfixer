@@ -1141,6 +1141,7 @@ static void write_speaker_hdc(bool enable)
     }
 }
 
+/* TODO
 static int read_iir_enable(unsigned short reg)
 {
 	unsigned int shift = 2;
@@ -1177,10 +1178,10 @@ static void write_iir_enable(unsigned short reg)
 	val = (input_value & mask);
 	val_mask = mask << shift;
 	val = val << shift;
-	/*snd_soc_update_bits_locked(codec, reg, val_mask, val);*/
+	//snd_soc_update_bits_locked(codec, reg, val_mask, val);
     mx_update_bits_locked(reg, val_mask, val);
 }
-
+*/
 static void update_control_regs(void)
 {
 	write_hpf_cutoff(TAIKO_A_CDC_RX1_B4_CTL);
