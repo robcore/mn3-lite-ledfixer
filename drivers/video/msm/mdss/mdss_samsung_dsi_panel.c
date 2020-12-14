@@ -951,11 +951,9 @@ end:
 static struct dsi_cmd get_aclcont_control_set(void)
 {
 	struct dsi_cmd aclcont_control = {0,};
-	msd.dstat.curr_acl_cond = 0;
 	int cmd_idx = 0;
-	int acl_cond = msd.dstat.curr_acl_cond;
 
-	if (acl_cond) /* already acl condition setted */
+	if (msd.dstat.curr_acl_cond == 1) /* already acl condition setted */
 		goto end;
 
 	/* Get the command desc */
@@ -984,7 +982,7 @@ static struct dsi_cmd get_acl_control_set(int cd_idx)
 		goto end;
 
 	/* Get index in the acl command list*/
-	cmd_idx = 0; //acl_map_table.cmd_idx[cd_idx];
+	cmd_idx = acl_map_table.cmd_idx[cd_idx];
 	c_payload = acl_cmds_list.cmd_desc[cmd_idx].payload;
 
 	/* Check if current & previous commands are same */
