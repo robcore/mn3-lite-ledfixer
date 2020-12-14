@@ -600,7 +600,6 @@ static u32 sc_rms_meter_resamp_fact = 0x28;
 static u8 hph_pa_bias = 0x55;
 static unsigned int headphone_hdc = 0;
 static unsigned int speaker_hdc = 0;
-static unsigned int iirs_locked = 0;
 
 /*
 #define TAIKO_A_RX_HPH_BIAS_CNP (0x1A8)
@@ -1348,8 +1347,6 @@ static int taiko_put_iir_enable_audio_mixer(
 					kcontrol->private_value)->shift;
 	int value = ucontrol->value.integer.value[0];
 
-    if (iirs_locked)
-        return 0;
 	/* Mask first 5 bits, 6-8 are reserved */
 	snd_soc_update_bits(codec, (TAIKO_A_CDC_IIR1_CTL + 16 * iir_idx),
 		(1 << band_idx), (value << band_idx));
@@ -1431,8 +1428,6 @@ static void set_iir_band_coeff(struct snd_soc_codec *codec,
 				int iir_idx, int band_idx,
 				uint32_t value)
 {
-    if (iirs_locked)
-        return;
 	snd_soc_write(codec,
 		(TAIKO_A_CDC_IIR1_COEF_B2_CTL + 16 * iir_idx),
 		(value & 0xFF));
@@ -1461,8 +1456,6 @@ static int taiko_put_iir_band_audio_mixer(
 	int band_idx = ((struct soc_multi_mixer_control *)
 					kcontrol->private_value)->shift;
 
-    if (iirs_locked)
-        return 0;
 	/* Mask top bit it is reserved */
 	/* Updates addr automatically for each B2 write */
 	snd_soc_write(codec,
@@ -8358,29 +8351,6 @@ static ssize_t autochopper_raw_show(struct kobject *kobj,
 	return sprintf(buf, "Autochopper:%d\n", regread(TAIKO_A_RX_HPH_AUTO_CHOP));
 }
 
-static ssize_t iirs_locked_show(struct kobject *kobj,
-		struct kobj_attribute *attr, char *buf)
-{
-	return sprintf(buf, "%d\n", iirs_locked);
-}
-
-static ssize_t iirs_locked_store(struct kobject *kobj,
-			   struct kobj_attribute *attr, const char *buf, size_t count)
-{
-	int uval;
-
-	sscanf(buf, "%d", &uval);
-
-	if (uval < 0)
-		uval = 0;
-	if (uval > 1)
-		uval = 1;
-
-	iirs_locked = uval;
-
-	return count;
-}
-
 static ssize_t wavegen_override_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf)
 {
@@ -9432,11 +9402,6 @@ static struct kobj_attribute autochopper_raw_attribute =
 		autochopper_raw_show,
 		NULL);
 
-static struct kobj_attribute iirs_locked_attribute =
-	__ATTR(iirs_locked, 0644,
-		iirs_locked_show,
-		iirs_locked_store);
-
 static struct kobj_attribute wavegen_override_attribute =
 	__ATTR(wavegen_override, 0644,
 		wavegen_override_show,
@@ -9622,7 +9587,6 @@ static struct attribute *sound_control_attrs[] = {
         &class_h_control_attribute.attr,
 		&chopper_attribute.attr,
 		&autochopper_raw_attribute.attr,
-        &iirs_locked_attribute.attr,
         &wavegen_override_attribute.attr,
 		&autochopper_attribute.attr,
 		&chopper_bypass_attribute.attr,

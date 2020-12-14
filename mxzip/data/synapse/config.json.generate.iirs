@@ -23,43 +23,12 @@ cat << CTAG
                 action:"soundcontrol iir1_gain"
             }},
             { SSeekBar:{
-                title:"IIR1 Input 2 Gain",
-                max:40,
-                min:-84,
-                step:1,
-                default:$(busybox cat /sys/kernel/sound_control/iir1_inp2_gain),
-                action:"soundcontrol iir1_inp2_gain"
-            }},
-            { SSeekBar:{
                 title:"IIR2 Gain",
                 max:40,
                 min:-84,
                 step:1,
                 default:$(busybox cat /sys/kernel/sound_control/iir2_gain),
                 action:"soundcontrol iir2_gain"
-            }},
-            { SSeekBar:{
-                title:"IIR2 Input 2 Gain",
-                max:40,
-                min:-84,
-                step:1,
-                default:$(busybox cat /sys/kernel/sound_control/iir2_inp2_gain),
-                action:"soundcontrol iir2_inp2_gain"
-            }},
-            { SSpacer:{
-                height: 1
-            }},
-            { STitleBar:{
-                title:"IIR Lock"
-            }},
-            { SSpacer:{
-                height: 1
-            }},
-            { SCheckBox:{
-                label:"Lock IIR Filters",
-                description:"Prevent IIR filter state from changing",
-                default:$(busybox cat /sys/kernel/sound_control/iirs_locked),
-                action:"soundcontrol iirs_locked"
             }},
         ]
     }
