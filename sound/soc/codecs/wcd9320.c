@@ -562,14 +562,18 @@ u8 iir1_inp2_cached_gain;
 u8 iir2_inp2_cached_gain;
 static unsigned int headphone_mute;
 static unsigned int speaker_mute;
-
-#if 0
-/* RX4 routed from right to left side */
-u8 crossleft_cached_gain = 241; /* 241 = -15 */
-/* RX3 routed from left to right side */
-u8 crossright_cached_gain = 241; /* 241 = -15 */
-#endif
-
+static u8 iir1_enabled[BAND_MAX] = { 0, 0, 0, 0, 0 };
+static u8 iir1_band_1[BAND_MAX] = { 268435456, 0, 0, 0, 0 };
+static u8 iir1_band_2[BAND_MAX] = { 268435456, 0, 0, 0, 0 };
+static u8 iir1_band_3[BAND_MAX] = { 268435456, 0, 0, 0, 0 };
+static u8 iir1_band_4[BAND_MAX] = { 268435456, 0, 0, 0, 0 };
+static u8 iir1_band_5[BAND_MAX] = { 268435456, 0, 0, 0, 0 };
+static u8 iir2_enabled[BAND_MAX] = { 0, 0, 0, 0, 0 };
+static u8 iir2_band_1[BAND_MAX] = { 268435456, 0, 0, 0, 0 };
+static u8 iir2_band_2[BAND_MAX] = { 268435456, 0, 0, 0, 0 };
+static u8 iir2_band_3[BAND_MAX] = { 268435456, 0, 0, 0, 0 };
+static u8 iir2_band_4[BAND_MAX] = { 268435456, 0, 0, 0, 0 };
+static u8 iir2_band_5[BAND_MAX] = { 268435456, 0, 0, 0, 0 };
 static u8 hphl_hpf_cutoff = 0;
 static u8 hphr_hpf_cutoff = 0;
 static u8 speaker_hpf_cutoff = 0;
