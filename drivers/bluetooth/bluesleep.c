@@ -237,8 +237,7 @@ void bluesleep_sleep_wakeup(void)
 		}
 		set_bit(BT_EXT_WAKE, &flags);
 		clear_bit(BT_ASLEEP, &flags);
-	}
-	else {
+	} else {
 		pr_debug("bluesleep_sleep_wakeup : already wake up, so start timer...");
 		mod_timer(&tx_timer, jiffies + (TX_TIMER_INTERVAL * HZ));
 	}
@@ -891,30 +890,27 @@ static int bluesleep_remove(struct platform_device *pdev)
 static int bluesleep_resume(struct platform_device *pdev)
 {
 	if (test_bit(BT_SUSPEND, &flags)) {
-#ifndef CONFIG_BT_BCM4354
 		if (!bt_enabled) {
 			gpio_tlmm_config(GPIO_CFG(bsi->host_wake, 0, GPIO_CFG_INPUT,
 						GPIO_CFG_NO_PULL, GPIO_CFG_16MA), GPIO_CFG_ENABLE);
 		}
-#endif
+
+		clear_bit(BT_SUSPEND, &flags);
 		if ((bsi->uport != NULL) &&
 			(gpio_get_value(bsi->host_wake) == bsi->irq_polarity)) {
 				pr_debug("bluesleep resume form BT event...");
 				hsuart_power(1);
 		}
-		clear_bit(BT_SUSPEND, &flags);
 	}
 	return 0;
 }
 
 static int bluesleep_suspend(struct platform_device *pdev, pm_message_t state)
 {
-#ifndef CONFIG_BT_BCM4354
 	if (!bt_enabled) {
 		gpio_tlmm_config(GPIO_CFG(bsi->host_wake, 0, GPIO_CFG_INPUT,
 						GPIO_CFG_PULL_DOWN, GPIO_CFG_16MA), GPIO_CFG_ENABLE);
 	}
-#endif
 	set_bit(BT_SUSPEND, &flags);
 	return 0;
 }
