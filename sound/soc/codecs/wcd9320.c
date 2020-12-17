@@ -1145,47 +1145,40 @@ static void write_speaker_hdc(bool enable)
     }
 }
 
-/* TODO
-static int read_iir_enable(unsigned short reg)
+/*
+enum {
+	IIR1 = 0,
+	IIR2 = 1,
+	IIR_MAX = 2,
+};
+
+enum {
+	BAND1 = 0,
+	BAND2 = 1,
+	BAND3 = 2,
+	BAND4 = 3,
+	BAND5 = 4,
+	BAND_MAX = 5,
+};
+ */
+static int read_iir_enable(unsigned short reg, unsigned int iir_slot, unsigned int band_slot)
 {
-	unsigned int shift = 2;
-	unsigned int mask = (1 << fls(1)) - 1;
-
-	if (reg == TAIKO_A_CDC_RX1_B5_CTL ||
-		reg == TAIKO_A_CDC_RX2_B5_CTL ||
-		reg == TAIKO_A_CDC_RX7_B5_CTL)
-		return (regread(reg) >> shift) & mask;
-
-	return -EINVAL;
+	return ((regread((TAIKO_A_CDC_IIR1_CTL + 16 * iir_slot)) &
+		(1 << band_slot)) != 0);
 }
 
-static void write_iir_enable(unsigned short reg)
+static void write_iir_enable(unsigned short reg, unsigned int iir_slot, unsigned int band_slot,
+			int value)
 {
-	unsigned int shift = 2;
-	unsigned int mask = (1 << fls(1)) - 1;
-	unsigned int val, val_mask, old, new;
-	unsigned short input_value;
-
-	switch (reg) {
-		case TAIKO_A_CDC_RX1_B5_CTL:
-			input_value = hphl_hpf_bypass;
-			break;
-		case TAIKO_A_CDC_RX2_B5_CTL:
-			input_value = hphr_hpf_bypass;
-			break;
-		case TAIKO_A_CDC_RX7_B5_CTL:
-			input_value = speaker_hpf_bypass;
-			break;
-		default:
-			return;
-	}
-	val = (input_value & mask);
-	val_mask = mask << shift;
-	val = val << shift;
-	//snd_soc_update_bits_locked(codec, reg, val_mask, val);
-    mx_update_bits_locked(reg, val_mask, val);
+	if (value < 0)
+		value = 0;
+	if (value > 1)
+		value = 1;
+	/* Mask first 5 bits, 6-8 are reserved */
+	mx_update_bits((TAIKO_A_CDC_IIR1_CTL + 16 * iir_slot),
+		(1 << band_slot), (value << band_slot));
 }
-*/
+
 static void update_control_regs(void)
 {
 	write_hpf_cutoff(TAIKO_A_CDC_RX1_B4_CTL);
@@ -1362,6 +1355,7 @@ static int taiko_put_iir_enable_audio_mixer(
 		(1 << band_idx)) != 0));
 	return 0;
 }
+
 static uint32_t get_iir_band_coeff(struct snd_soc_codec *codec,
 				int iir_idx, int band_idx,
 				int coeff_idx)
