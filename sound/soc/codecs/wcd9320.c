@@ -560,6 +560,7 @@ u8 iir1_cached_gain;
 u8 iir2_cached_gain;
 u8 iir1_inp2_cached_gain;
 u8 iir2_inp2_cached_gain;
+unsigned int ramp_volume;
 static unsigned int headphone_mute;
 static unsigned int speaker_mute;
 static u8 iir1_enabled[BAND_MAX] = { 0, 0, 0, 0, 0 };

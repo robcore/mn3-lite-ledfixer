@@ -140,6 +140,7 @@ extern u8 iir1_cached_gain;
 extern u8 iir2_cached_gain;
 extern u8 iir1_inp2_cached_gain;
 extern u8 iir2_inp2_cached_gain;
+extern unsigned int ramp_volume;
 
 #if 0
 extern u8 crossleft_cached_gain; /* RX4 routed from right to left side */
