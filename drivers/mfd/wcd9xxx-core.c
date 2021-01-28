@@ -125,6 +125,9 @@ extern u8 iir1_cached_gain; /*0x340*/
 extern u8 iir2_cached_gain; /*0x350*/
 extern u8 iir1_inp2_cached_gain; /*0x341*/
 extern u8 iir2_inp2_cached_gain; /*0x351*/
+#ifdef CONFIG_RAMP_VOLUME
+extern unsigned int ramp_volume;
+#endif
 
 #if 0
 extern u8 crossleft_cached_gain; /* RX4 routed from right to left side Port: RX4 -> 0x2CF */
@@ -173,15 +176,12 @@ static int wcd9xxx_write(struct wcd9xxx *wcd9xxx, unsigned short reg,
 {
 	int i;
 
-	if (bytes <= 0) {
-		pr_err("%s: Error, invalid write length\n", __func__);
+	if (bytes <= 0)
 		return -EINVAL;
-	}
 
-	if (!sound_control_override) {
-		if (sound_control_reserved(reg))
-			return 0;
-	}
+	if (!sound_control_override && sound_control_reserved(reg))
+		return 0;
+
 	return wcd9xxx->write_dev(wcd9xxx, reg, bytes, src, interface_reg);
 }
 
@@ -189,6 +189,10 @@ static int __wcd9xxx_reg_write(struct wcd9xxx *wcd9xxx,
 							   unsigned short reg, u8 val)
 {
 	int ret;
+#ifdef CONFIG_RAMP_VOLUME
+	int i;
+	u8 oldval, tmpval;
+#endif
 
 	mutex_lock(&wcd9xxx->io_lock);
 	if (sound_control_override) {
@@ -210,10 +214,46 @@ static int __wcd9xxx_reg_write(struct wcd9xxx *wcd9xxx,
 	mutex_lock(&wcd9xxx->io_lock);
 	switch (reg) {
 		case 0x2B7:
+#ifdef CONFIG_RAMP_VOLUME
+			if (ramp_volume) {
+				if (val == 172) {
+					oldval = wcd9xxx_read(wcd9xxx, reg, 1, &val, false);
+					if (oldval > 0 && oldval <= 40) {
+						for (i = oldval - 1; i > 0; i--)
+							wcd9xxx_write(wcd9xxx, reg, 1, &i, false);
+						oldval = i;
+					}
+
+					if (oldval == 0) {
+						oldval = 255;
+						wcd9xxx_write(wcd9xxx, reg, 1, &oldval, false);
+					}
+
+					if (oldval > 173) {
+						for (i = oldval - 1; i > 173; i--)
+							wcd9xxx_write(wcd9xxx, reg, 1, &i, false);
+						ret = wcd9xxx_write(wcd9xxx, reg, 1, &val, false);
+					} else {
+						ret = wcd9xxx_write(wcd9xxx, reg, 1, &val, false);
+					}
+				} else {
+					oldval = wcd9xxx_read(wcd9xxx, reg, 1, &val, false);
+					if (oldval >= 172 && oldval <= 255) {
+					}
+					ret = wcd9xxx_write(wcd9xxx, reg, 1, &hphl_cached_gain, false);
+				}
+			} else {
+				if (val == 172)
+					ret = wcd9xxx_write(wcd9xxx, reg, 1, &val, false);
+				else
+					ret = wcd9xxx_write(wcd9xxx, reg, 1, &hphl_cached_gain, false);
+			}
+#else
 			if (val == 172)
 				ret = wcd9xxx_write(wcd9xxx, reg, 1, &val, false);
 			else
 				ret = wcd9xxx_write(wcd9xxx, reg, 1, &hphl_cached_gain, false);
+#endif /* CONFIG_RAMP_VOLUME */
 			break;
 		case 0x2BF:
 			if (val == 172)
