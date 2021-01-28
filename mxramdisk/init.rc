@@ -25,10 +25,10 @@ on early-init
 
     # Set the security context of /adb_keys if present.
     restorecon /adb_keys
-	symlink /init /sbin/ueventd
-	symlink /init /root/ueventd
-	symlink /init /sbin/watchdogd
-	symlink /init /root/watchdogd
+	#symlink /init /sbin/ueventd
+	#symlink /init /root/ueventd
+	#symlink /init /sbin/watchdogd
+	#symlink /init /root/watchdogd
 
     start ueventd
 
@@ -217,7 +217,11 @@ on init
     chown system log /sys/fs/pstore/console-ramoops
     chmod 0440 /sys/fs/pstore/console-ramoops
 
-# To sync between sdcard & installd
+    # Private Mode
+    mkdir /mnt/shell/privatemode 0700 system system
+    mkdir /storage/Private 0000 system system
+
+# To sync between sdcard and installd
     setprop installd.sdcard_manipulate_done 0
 
 # Healthd can trigger a full boot from charger mode by signaling this
@@ -254,6 +258,7 @@ on late-init
 
 
 on post-fs
+    mkdir /data/misc/vpnclientd 0770 system system
     # once everything is setup, no need to modify /
     mount rootfs rootfs / ro remount
     # mount shared so changes propagate into child namespaces
@@ -276,7 +281,7 @@ on post-fs
     chown root log /proc/slabinfo
     chmod 0440 /proc/slabinfo
 
-    #change permissions on kmsg & sysrq-trigger so bugreports can grab kthread stacks
+    #change permissions on kmsg and sysrq-trigger so bugreports can grab kthread stacks
     chown root system /proc/kmsg
     chmod 0440 /proc/kmsg
     chown root system /proc/sysrq-trigger
@@ -295,7 +300,7 @@ on post-fs
 
 on post-fs-data
     # Reload SE Android Policy
-    setprop selinux.reload_policy 0
+    setprop selinux.reload_policy 1
 
     # sec_efs_file
     mkdir /efs/sec_efs 0775 radio system
@@ -307,6 +312,7 @@ on post-fs-data
     chmod 0771 /data
     # We restorecon /data in case the userdata partition has been reset.
     restorecon /data
+	restorecon /data/lost+found
     restorecon_msc
     restorecon_recursive /data/system/container
     restorecon_recursive /data/media
@@ -391,6 +397,9 @@ on post-fs-data
 	mkdir /data/misc/wifi_share_profile 0771 wifi system
 	chmod 0771 /data/misc/wifi_share_profile
 	chown wifi system /data/misc/wifi_share_profile
+	mkdir /data/misc/wifi_hostapd 0771 wifi system
+	chmod 0771 /data/misc/wifi_hostapd
+	chown wifi system /data/misc/wifi_hostapd
 	mkdir /data/misc/ethernet 0770 system system
 	chmod 0770 /data/misc/ethernet
 	chown system system /data/misc/ethernet
@@ -430,6 +439,8 @@ on post-fs-data
     chown system system /dev/icdr
     chmod 0644 /dev/icdr
     chown system system /dev/tzic
+    restorecon /dev/icd
+    restorecon /dev/icdr
 
     #SideSync
     chown system system /dev/android_ssusbcon
@@ -524,6 +535,9 @@ on post-fs-data
 	chmod 0770 /data/mediadrm
 	chown mediadrm mediadrm /data/mediadrm
 
+	mkdir /data/adb 0700 root root
+	chmod 0700 /data/adb
+	chown root root /data/adb
 # [ SEC_MM_DRM
     # OMA DB directory creation
     mkdir /data/system/databases 0775
@@ -533,30 +547,38 @@ on post-fs-data
     # DRM directory creation
 	mkdir /system/etc/security/.drm 0775
 	chmod 0775 /system/etc/security/.drm
-	chown /system/etc/security/.drm
+	chown root root /system/etc/security/.drm
 
     # Added for Playready DRM Support
 	mkdir /data/data/.drm 0775
 	chmod 0775 /data/data/.drm
-	chown /data/data/.drm
+	chown drm system /data/data/.drm
 	mkdir /data/data/.drm/.playready 0775
 	chmod 0775 /data/data/.drm/.playready
-	chown /data/data/.drm/.playready
+	chown drm system /data/data/.drm/.playready
 
     # Added drm folder to copy drm plugins
 	mkdir /system/lib/drm 0775
 	chmod 0775 /system/lib/drm
-	chown /system/lib/drm
+	chown root root /system/lib/drm
 
     restorecon -R /efs
-#    restorecon -R /carrier
+    restorecon -R /carrier
+    restorecon_recursive /data/misc/keystore
+    restorecon_recursive /data/property
+    restorecon_recursive /data/security
 # ]
 
 # DRK permission
     mkdir /efs/prov 0770 radio system
-	mkdir /efs/prov 0770 radio system
+#	mkdir /efs/prov 0770 radio system
+	mkdir /efs/prov_data 0770 radio system
 	chmod 0770 /efs/prov
 	chown radio system /efs/prov
+    chown radio system /efs/prov_data/dev_root
+    chmod 0770 /efs/prov_data/dev_root
+    chown radio system /efs/prov_data/dev_root/dev_root.dat
+    chmod 0640 /efs/prov_data/dev_root/dev_root.dat
     chmod 0660 /efs/prov/libdevkm.lock
     chown radio system /efs/prov/libdevkm.lock
 
@@ -617,7 +639,9 @@ on boot
 	mkdir /data/app/mcRegistry 0775 system system
 	chmod 0775 /data/app/mcRegistry
 	chown system system /data/app/mcRegistry
-
+    mkdir /efs/TEE  0770 radio system
+	chmod 0770 /efs/TEE
+	chown radio system /efs/TEE
 # MUIC
     chown radio system /sys/class/sec/switch/usb_sel
     chown radio system /sys/class/sec/switch/usb_state
@@ -1015,6 +1039,25 @@ on boot
     chown system radio /sys/class/sensors/ssp_sensor/uncalib_gyro_poll_delay
     chown system radio /sys/class/sensors/ssp_sensor/ssp_flush
     chown system radio /sys/class/sensors/ssp_sensor/shake_cam
+# Sensorhub IIO
+    chown system radio /sys/class/sensors/ssp_sensor/accel_poll_delay
+    chown system radio /sys/class/sensors/ssp_sensor/rot_poll_delay
+    chown system radio /sys/class/sensors/ssp_sensor/game_rot_poll_delay
+    chown system radio /sys/class/sensors/ssp_sensor/step_det_poll_delay
+    chown system radio /sys/class/sensors/ssp_sensor/gyro_poll_delay
+    chown system radio /sys/class/sensors/ssp_sensor/uncalib_gyro_poll_delay
+    chown system radio /sys/class/sensors/ssp_sensor/mag_poll_delay
+    chown system radio /sys/class/sensors/ssp_sensor/uncal_mag_poll_delay
+    chown system radio /sys/class/sensors/ssp_sensor/light_poll_delay
+    chown system radio /sys/class/sensors/ssp_sensor/pressure_poll_delay
+    chown system radio /sys/class/sensors/ssp_sensor/prox_poll_delay
+    chown system radio /sys/class/sensors/ssp_sensor/sig_motion_poll_delay
+    chown system radio /sys/class/sensors/ssp_sensor/step_cnt_poll_delay
+    chown system radio /sys/class/sensors/ssp_sensor/uncal_gyro_poll_delay
+    chown system radio /sys/class/sensors/ssp_sensor/interrupt_gyro_poll_delay
+    chown system radio /sys/class/sensors/ssp_sensor/tilt_poll_delay
+    chown system radio /sys/class/sensors/ssp_sensor/ssp_flush
+    chown system radio /sys/class/sensors/ssp_sensor/int_gyro_enable
     chmod 0600 /dev/batch_io
     chown system system /dev/batch_io
 # Gesture_sensor
@@ -1043,10 +1086,16 @@ on boot
     chown system radio /sys/class/sec/sec_barcode_emul/barcode_ver_check
 
 # Permissions for Charging
+    mkdir /efs/Battery 0775 radio system
+    chown radio system /efs/Battery
+    chmod 0775 /efs/Battery
     chown system radio /sys/class/power_supply/battery/batt_reset_soc
+    chown system radio /sys/class/power_supply/battery/batt_slate_mode
+    chown system radio /sys/class/power_supply/battery/factory_mode
+    chown system radio /sys/class/power_supply/battery/siop_level
+    chown system radio /sys/class/power_supply/battery/wc_enable
     chown system radio /sys/class/power_supply/battery/update
     chown system radio /sys/class/power_supply/battery/factory_mode
-    chown system radio /sys/class/power_supply/battery/batt_slate_mode
     chown sdcard_rw sdcard_rw /sys/class/power_supply/battery/call
     chown sdcard_rw sdcard_rw /sys/class/power_supply/battery/video
     chown sdcard_rw sdcard_rw /sys/class/power_supply/battery/music
@@ -1060,12 +1109,36 @@ on boot
     chown system radio /sys/class/power_supply/battery/gps
     chown system radio /sys/class/power_supply/battery/wifi
     chown system radio /sys/class/power_supply/battery/lte
-    chown system radio /sys/class/power_supply/battery/wc_enable
     chown system radio /sys/class/power_supply/battery/lcd
     chown system radio /sys/class/power_supply/ps/status
     chmod 0664 /sys/class/power_supply/ps/status
     chmod 0664 /sys/class/power_supply/battery/batt_temp_table
     chown system radio /sys/class/power_supply/battery/batt_temp_table
+    chown system radio /sys/class/power_supply/battery/batt_high_current_usb
+    chown system radio /sys/class/power_supply/battery/batt_inbat_voltage
+    chmod 0664 /sys/class/power_supply/battery/batt_high_current_usb
+    chown system radio /sys/class/power_supply/battery/hmt_ta_connected
+    chown system radio /sys/class/power_supply/battery/hmt_ta_charge
+    chown system radio /sys/class/power_supply/battery/battery_cycle
+    chown system radio /sys/class/power_supply/battery/hv_charger_set
+    chown system radio /sys/class/power_supply/otg/online
+    chmod 0664 /sys/class/power_supply/battery/hv_charger_set
+    chmod 0664 /sys/class/power_supply/otg/online
+    chown system radio /sys/class/power_supply/max77833-charger/charge_otg_control
+    chown system radio /sys/class/power_supply/battery/batt_wireless_firmware_update
+    chown system radio /sys/class/power_supply/battery/otp_firmware_result
+    chown system radio /sys/class/power_supply/battery/wc_ic_grade
+    chown system radio /sys/class/power_supply/battery/otp_firmware_ver_bin
+    chown system radio /sys/class/power_supply/battery/otp_firmware_ver
+    chown system radio /sys/class/power_supply/battery/tx_firmware_result
+    chmod 0664 /sys/class/power_supply/max77833-charger/charge_otg_control
+    chmod 0664 /sys/class/power_supply/battery/batt_wireless_firmware_update
+    chmod 0664 /sys/class/power_supply/battery/otp_firmware_result
+    chmod 0664 /sys/class/power_supply/battery/wc_ic_grade
+    chmod 0664 /sys/class/power_supply/battery/otp_firmware_ver_bin
+    chmod 0664 /sys/class/power_supply/battery/otp_firmware_ver
+    chmod 0664 /sys/class/power_supply/battery/tx_firmware_result
+    chmod 0664 /sys/class/power_supply/battery/tx_firmware_ver
 # Permissions for gpio_keys
     chown system radio /sys/class/sec/sec_key/wakeup_keys
     write /sys/class/sec/sec_key/wakeup_keys 116,172
@@ -1161,6 +1234,11 @@ on property:sys.powerctl=*
 on property:sys.sysctl.extra_free_kbytes=*
     write /proc/sys/vm/extra_free_kbytes ${sys.sysctl.extra_free_kbytes}
 
+# Activate Background Compaction
+on property:sys.sysctl.compact_memory=1
+    write /proc/sys/vm/compact_memory 1
+    setprop sys.sysctl.compact_memory=0
+
 # "tcp_default_init_rwnd" Is too long!
 on property:sys.sysctl.tcp_def_init_rwnd=*
     write /proc/sys/net/ipv4/tcp_default_init_rwnd ${sys.sysctl.tcp_def_init_rwnd}
@@ -1196,9 +1274,8 @@ service lpm /system/bin/lpm
 
 #start SEC_PRODUCT_FEATURE_COMMON_SUPPORT_SE_FOR_ANDROID
 # Reload SE Android Policy for MDM
-#on property:persist.security.mdm.policy=1
-    #setprop selinux.reload_policy 1
-setprop persist.security.mdm.policy 0
+on property:persist.security.mdm.policy=1
+    setprop selinux.reload_policy 1
 #end SEC_PRODUCT_FEATURE_COMMON_SUPPORT_SE_FOR_ANDROID
 
 service console /system/bin/sh
@@ -1244,6 +1321,11 @@ on property:selinux.reload_policy=1
     chown system system /sys/fs/selinux/enforce
     chown -R system system /sys/fs/selinux/booleans
     chown system system /sys/fs/selinux/commit_pending_bools
+
+# SEC_SELINUX to support spota
+on property:selinux.sec.restorecon=1
+    restorecon_recursive /data/security/spota
+    restorecon_recursive /data/security/aasa
 
 # SEC_SELINUX
 on property:init.svc.bootanim=stopped
@@ -1326,7 +1408,7 @@ service ril-daemon /system/bin/rild
     socket rild-debug stream 660 radio system
     socket rild-cas stream 660 casdrm mmb
     user root
-    group radio cache inet misc audio log qcom_diag
+    group radio cache inet misc audio log qcom_diag vpn system
 
 service DR-daemon /system/bin/ddexe
     class main
@@ -1504,7 +1586,7 @@ service charon /system/bin/charon
     class main
     socket charon stream 600 system system
     #charon will setuid to vpn after getting necessary resources.
-    group vpn net_admin inet
+    group vpn net_admin inet shell
     disabled
     oneshot
 

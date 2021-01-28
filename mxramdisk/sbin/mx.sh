@@ -41,22 +41,22 @@ rm '/data/dalvik-cache/arm/dev@tmp@install@common@magisk.apk@classes.dex' &> /de
 #fi
 
 #if [ ! -L "/sbin/ueventd" ] && [ ! -L "/root/ueventd" ] || [ ! -L "/sbin/watchdogd" ] && [ ! -L "/root/watchdogd" ]
-if [ ! -L "/root/ueventd" ] || [ ! -L "/root/watchdogd" ]
-then
-	mount -o remount,rw -t auto /
-fi
+#if [ ! -L "/root/ueventd" ] || [ ! -L "/root/watchdogd" ]
+#then
+#	mount -o remount,rw -t auto /
+#fi
 
-if [ ! -L "/root/ueventd" ]
-then
+#if [ ! -L "/root/ueventd" ]
+#then
 	#ln -s /init /sbin/ueventd
-	ln -s /init /root/ueventd
-fi
+#	ln -s /init /root/ueventd
+#fi
 
-if [ ! -L "/root/watchdogd" ]
-then
+#if [ ! -L "/root/watchdogd" ]
+#then
 	#ln -s /init /sbin/watchdogd
-	ln -s /init /root/watchdogd
-fi
+#	ln -s /init /root/watchdogd
+#fi
 #mount -o remount,rw -t auto /
 #mount -t rootfs -o remount,rw rootfs
 #mount -o remount,rw /system
@@ -428,11 +428,13 @@ chmod 400 /sys/devices/virtual/graphics/fb0/csc_cfg
 #echo '7' > /sys/kernel/sound_control/headphone_gain
 #echo '1' > /sys/kernel/sound_control/high_perf_mode
 #echo '1' > /sys/kernel/sound_control/uhqa_mode
-echo 'deadline' > /sys/block/mmcblk0/queue/scheduler
-echo 'deadline' > /sys/block/mmcblk1/queue/scheduler
+echo 'cfq' > /sys/block/mmcblk0/queue/scheduler
+echo 'cfq' > /sys/block/mmcblk1/queue/scheduler
+echo '0' > /sys/block/mmcblk0/queue/iosched/slice_idle
+echo '0' > /sys/block/mmcblk1/queue/iosched/slice_idle
 echo '0' > /sys/devices/virtual/lcd/panel/temperature
 #echo '1' > /sys/kernel/mdnie_control/bypass
-echo 'y' > /sys/module/mdss_hdmi_tx/parameters/hdcp
+#echo 'y' > /sys/module/mdss_hdmi_tx/parameters/hdcp
 
 #magiskpolicy --live "allow s_untrusted_app default_prop property_service set"
 #am startservice com.atmos.daxappUI/com.atmos.daxappUI.DsSetProfileServices

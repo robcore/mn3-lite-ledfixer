@@ -106,4 +106,9 @@ service ipsec-daemon /system/bin/IPSecService
     user root
     group system
 
+# bluetooth dhcp config
+service dhcpcd_bt-pan /system/bin/dhcpcd -BKLG
+    class late_start
+    disabled
+    oneshot
 
