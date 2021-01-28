@@ -37,7 +37,7 @@ on early-init
     symlink /data/tombstones /tombstones
 
     setenforce 0
-    setprop ro.boot.selinux 0
+    #setprop ro.boot.selinux 0
 
 on init
     # Set the property to indicate type of virtual display to 0

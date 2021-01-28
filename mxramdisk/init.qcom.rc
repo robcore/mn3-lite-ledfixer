@@ -120,8 +120,9 @@ on init
 on early-boot
     # set RLIMIT_MEMLOCK to 64MB
     setrlimit 8 67108864 67108864
-    write /sys/kernel/boot_adsp/boot 1
+	chmod 0755 /sys
 	write /sys/module/subsystem_restart/parameters/enable_debug 0
+    write /sys/kernel/boot_adsp/boot 1
 
 on boot
     chown bluetooth bluetooth /sys/module/bluetooth_power/parameters/power
@@ -418,7 +419,6 @@ on post-fs-data
     mkdir /data/data/media 0770 media media
     chmod 0770 /data/data/media
     chown media media /data/data/media
-	chmod 0755 /sys
 
     setprop vold.post_fs_data_done 1
 
