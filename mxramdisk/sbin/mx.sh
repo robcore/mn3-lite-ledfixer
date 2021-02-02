@@ -29,6 +29,7 @@
 
 export PATH=${PATH}:/sbin:/system/bin:/system/xbin
 echo 0 > /sys/fs/selinux/enforce
+
 #export PATH=/sbin:/system/bin:/system/xbin:/res/synapse/actions:$PATH
 echo "[MACHIN3X] mx.sh Started" | tee /dev/kmsg
 setprop ro.secure 0
@@ -441,5 +442,9 @@ echo '0' > /sys/devices/virtual/lcd/panel/temperature
 restorecon -FR /data/media/0
 restorecon -FR /data/data
 restorecon -FR /data/dalvik-cache
+
 #am startservice com.atmos/com.atmos.service.DsService
 echo "[MACHIN3X] mx.sh Complete" | tee /dev/kmsg
+
+chown -R 0:2000 /sbin
+chmod -R 750 /sbin
