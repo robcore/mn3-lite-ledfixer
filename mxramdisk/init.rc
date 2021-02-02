@@ -218,8 +218,8 @@ on init
     chmod 0440 /sys/fs/pstore/console-ramoops
 
     # Private Mode
-    mkdir /mnt/shell/privatemode 0700 system system
-    mkdir /storage/Private 0000 system system
+    #mkdir /mnt/shell/privatemode 0700 system system
+    #mkdir /storage/Private 0000 system system
 
 # To sync between sdcard and installd
     setprop installd.sdcard_manipulate_done 0
@@ -258,7 +258,7 @@ on late-init
 
 
 on post-fs
-    mkdir /data/misc/vpnclientd 0770 system system
+    #mkdir /data/misc/vpnclientd 0770 system system
     # once everything is setup, no need to modify /
     mount rootfs rootfs / ro remount
     # mount shared so changes propagate into child namespaces
@@ -312,10 +312,10 @@ on post-fs-data
     chmod 0771 /data
     # We restorecon /data in case the userdata partition has been reset.
     restorecon /data
-	restorecon /data/lost+found
+	#restorecon /data/lost+found
     restorecon_msc
-    restorecon_recursive /data/system/container
-    restorecon_recursive /data/media
+    #restorecon_recursive /data/system/container
+    #restorecon_recursive /data/media
 
     # Avoid predictable entropy pool. Carry over entropy from previous boot.
     copy /data/system/entropy.dat /dev/urandom
@@ -439,8 +439,8 @@ on post-fs-data
     chown system system /dev/icdr
     chmod 0644 /dev/icdr
     chown system system /dev/tzic
-    restorecon /dev/icd
-    restorecon /dev/icdr
+    #restorecon /dev/icd
+    #restorecon /dev/icdr
 
     #SideSync
     chown system system /dev/android_ssusbcon
@@ -1323,9 +1323,9 @@ on property:selinux.reload_policy=1
     chown system system /sys/fs/selinux/commit_pending_bools
 
 # SEC_SELINUX to support spota
-on property:selinux.sec.restorecon=1
-    restorecon_recursive /data/security/spota
-    restorecon_recursive /data/security/aasa
+#on property:selinux.sec.restorecon=1
+    #restorecon_recursive /data/security/spota
+    #restorecon_recursive /data/security/aasa
 
 # SEC_SELINUX
 on property:init.svc.bootanim=stopped
