@@ -25,17 +25,12 @@ on early-init
 
     # Set the security context of /adb_keys if present.
     restorecon /adb_keys
-	#symlink /init /sbin/ueventd
-	#symlink /init /root/ueventd
-	#symlink /init /sbin/watchdogd
-	#symlink /init /root/watchdogd
 
     start ueventd
 
     # create mountpoints
     mkdir /mnt 0775 root system
-	chmod 755 /mnt
-	chown root system /mnt
+
 on init
     sysclktz 0
 
@@ -51,8 +46,6 @@ on init
     # Vibetonz
     export VIBE_PIPE_PATH /dev/pipes
     mkdir /dev/pipes 0771 vibe vibe
-	chmod 771 /dev/pipes
-	chown vibe vibe /dev/pipes
     restorecon /dev/pipes
 
     # Backward compatibility
@@ -83,74 +76,48 @@ on init
 
     mkdir /system
     mkdir /data 0771 system system
-	chmod 771 /data
-	chown system system /data
     mkdir /cache 0770 system cache
-	chmod 770 /cache
-	chown system cache /cache
     mkdir /config 0500 root root
-	chmod 500 /config
-	chown root root /config
     mkdir /efs 0771 system radio
-	chmod 771 /efs
-	chown system radio /efs
 
     # See storage config details at http://source.android.com/tech/storage/
 # [ S Professional Audio
     mkdir /mnt/shell 0750 shell shell
-	chmod 750 /mnt/shell
-	chown shell shell /mnt/shell
 # ]
     mkdir /mnt/media_rw 0700 media_rw media_rw
-	chmod 700 /mnt/media_rw
-	chown media_rw media_rw /mnt/media_rw
     mkdir /storage 0751 root sdcard_r
-	chmod 751 /storage
-	chown root sdcard_r /storage
 
     # Directory for putting things only root should see.
     mkdir /mnt/secure 0700 root root
-	chmod 700 /mnt/secure
-	chown root root /mnt/secure
 
     # Create private mountpoint so we can MS_MOVE from staging
     mount tmpfs tmpfs /mnt/secure mode=0700,uid=0,gid=0
 
     # Directory for staging bindmounts
     mkdir /mnt/secure/staging 0700 root root
-	chmod 700 /mnt/secure/staging
-	chmod root root /mnt/secure/staging
     restorecon_recursive /mnt/secure/staging
 
     # Directory-target for where the secure container
     # imagefile directory will be bind-mounted
-    mkdir /mnt/secure/asec 0700 root root
-	chmod 700 /mnt/secure/asec
-	chown root root /mnt/secure/asec
+    mkdir /mnt/secure/asec  0700 root root
     restorecon_recursive /mnt/secure/asec
 
     # Secure container public mount points.
-    mkdir /mnt/asec 0700 root system
-	chmod 700 /mnt/asec
-	chown root system /mnt/asec
+    mkdir /mnt/asec  0700 root system
     mount tmpfs tmpfs /mnt/asec mode=0755,gid=1000
     restorecon_recursive /mnt/asec
 
     # Filesystem image public mount points.
     mkdir /mnt/obb 0700 root system
-	chmod 700 /mnt/obb
-	chown root system /mnt/obb
     mount tmpfs tmpfs /mnt/obb mode=0755,gid=1000
     restorecon_recursive /mnt/obb
 
     # memory control cgroup
     mkdir /dev/memcg 0700 root system
-	chmod 700 /dev/memcg
-	chown root system /dev/memcg
     mount cgroup none /dev/memcg memory
 
     write /proc/sys/kernel/panic_on_oops 1
-    #write /proc/sys/kernel/hung_task_timeout_secs 0
+    write /proc/sys/kernel/hung_task_timeout_secs 0
     write /proc/cpu/alignment 4
     write /proc/sys/kernel/sched_latency_ns 10000000
     write /proc/sys/kernel/sched_wakeup_granularity_ns 2000000
@@ -209,19 +176,13 @@ on init
     # Create location for fs_mgr to store abbreviated output from filesystem
     # checker programs.
     mkdir /dev/fscklogs 0770 root system
-	chmod 770 /dev/fscklogs
-	chown root system /dev/fscklogs
 
     # pstore/ramoops previous console log
     mount pstore pstore /sys/fs/pstore
     chown system log /sys/fs/pstore/console-ramoops
     chmod 0440 /sys/fs/pstore/console-ramoops
 
-    # Private Mode
-    #mkdir /mnt/shell/privatemode 0700 system system
-    #mkdir /storage/Private 0000 system system
-
-# To sync between sdcard and installd
+# To sync between sdcard installd
     setprop installd.sdcard_manipulate_done 0
 
 # Healthd can trigger a full boot from charger mode by signaling this
@@ -258,7 +219,6 @@ on late-init
 
 
 on post-fs
-    #mkdir /data/misc/vpnclientd 0770 system system
     # once everything is setup, no need to modify /
     mount rootfs rootfs / ro remount
     # mount shared so changes propagate into child namespaces
@@ -294,8 +254,6 @@ on post-fs
 
     # create the lost+found directories, so as to enforce our permissions
     mkdir /cache/lost+found 0770 root root
-	chmod 0770 /cache/lost+found
-	chown root root /cache/lost+found
     restorecon /cache/lost+found
 
 on post-fs-data
@@ -304,18 +262,13 @@ on post-fs-data
 
     # sec_efs_file
     mkdir /efs/sec_efs 0775 radio system
-	chmod 0775 /efs/sec_efs
-	chown radio system /efs/sec_efs
 
     # We chown/chmod /data again so because mount is run as root + defaults
     chown system system /data
     chmod 0771 /data
     # We restorecon /data in case the userdata partition has been reset.
     restorecon /data
-	#restorecon /data/lost+found
     restorecon_msc
-    #restorecon_recursive /data/system/container
-    #restorecon_recursive /data/media
 
     # Avoid predictable entropy pool. Carry over entropy from previous boot.
     copy /data/system/entropy.dat /dev/urandom
@@ -324,8 +277,6 @@ on post-fs-data
     # Do this before we mount cache so eventually we can use cache for
     # storing dumps on platforms which do not have a dedicated dump partition.
     mkdir /data/dontpanic 0750 root log
-	chmod 0750 /data/dontpanic
-	chown root log /data/dontpanic
 
     # Collect apanic data, free resources and re-arm trigger
     copy /proc/apanic_console /data/dontpanic/apanic_console
@@ -340,96 +291,41 @@ on post-fs-data
 
     # create basic filesystem structure
     mkdir /data/misc 01771 system misc
-	chmod 1771 /data/misc
-	chown system misc /data/misc
     mkdir /data/misc/adb 02750 system shell
-	chmod 2750 /data/dontpanic
-	chown system shell /data/dontpanic
     # SEC_SELINUX
-	mkdir /data/misc/audit 02775 audit system
-	chmod 02775 /data/misc/audit
-	chown audit system /data/misc/audit
-	mkdir /data/misc/bluedroid 0770 bluetooth net_bt_stack
-	chmod 0770 /data/misc/bluedroid
-	chown bluetooth net_bt_stack /data/misc/bluedroid
-	mkdir /data/misc/bluedroiddump 0770 system system
-	chmod 0770 /data/misc/bluedroiddump
-	chown system system /data/misc/bluedroiddump
-	mkdir /data/misc/bluetooth 0770 system system
-	chmod 0770 /data/misc/bluetooth
-	chown system system /data/misc/bluetooth
-	mkdir /data/misc/keystore 0700 keystore keystore
-	chmod 0700 /data/misc/keystore
-	chown keystore keystore /data/misc/keystore
-	mkdir /data/misc/keychain 0771 system system
-	chmod 0771 /data/misc/keychain
-	chown system system /data/misc/keychain
-	mkdir /data/misc/net 0750 root shell
-	chmod 0750 /data/misc/net
-	chown root shell /data/misc/net
-	mkdir /data/misc/radio 0771 system radio
-	chmod 0771 /data/misc/radio
-	chown system radio /data/misc/radio
-	mkdir /data/misc/sms 0770 system radio
-	chmod 0770 /data/misc/sms
-	chown system radio /data/misc/sms
-	mkdir /data/misc/zoneinfo 0775 system system
-	chmod 0775 /data/misc/zoneinfo
-	chown system system /data/misc/zoneinfo
-	mkdir /data/misc/vpn 0770 system vpn
-	chmod 0770 /data/misc/vpn
-	chown system vpn /data/misc/vpn
-	mkdir /data/misc/shared_relro 0771 shared_relro shared_relro
-	chmod 0771 /data/misc/shared_relro
-	chown shared_relro shared_relro /data/misc/shared_relro
-	mkdir /data/misc/systemkeys 0700 system system
-	chmod 0700 /data/misc/systemkeys
-	chown system system /data/misc/systemkeys
-	mkdir /data/misc/wifi 0770 wifi wifi
-	chmod 0770 /data/misc/wifi
-	chown wifi wifi /data/misc/wifi
-	mkdir /data/misc/wifi/sockets 0770 wifi wifi
-	chmod 0770 /data/misc/wifi/sockets
-	chown wifi wifi /data/misc/wifi/sockets
-	mkdir /data/misc/wifi/wpa_supplicant 0770 wifi wifi
-	chmod 0770 /data/misc/wifi/wpa_supplicant
-	chown wifi wifi /data/misc/wifi/wpa_supplicant
-	mkdir /data/misc/wifi_share_profile 0771 wifi system
-	chmod 0771 /data/misc/wifi_share_profile
-	chown wifi system /data/misc/wifi_share_profile
-	mkdir /data/misc/wifi_hostapd 0771 wifi system
-	chmod 0771 /data/misc/wifi_hostapd
-	chown wifi system /data/misc/wifi_hostapd
-	mkdir /data/misc/ethernet 0770 system system
-	chmod 0770 /data/misc/ethernet
-	chown system system /data/misc/ethernet
-	mkdir /data/misc/dhcp 0770 dhcp dhcp
-	chmod 0770 /data/misc/dhcp
-	chown dhcp dhcp /data/misc/dhcp
-	mkdir /data/misc/user 0771 root root
-	chmod 0771 /data/misc/user
-	chown root root /data/misc/user
-	mkdir /data/misc/jack 0770 jack system
-	chmod 0770 /data/misc/jack
-	chown jack system /data/misc/jack
+    mkdir /data/misc/audit 02775 audit system
+    mkdir /data/misc/bluedroid 0770 bluetooth net_bt_stack
+    mkdir /data/misc/bluedroiddump 0770 system system
+    mkdir /data/misc/bluetooth 0770 system system
+    mkdir /data/misc/keystore 0700 keystore keystore
+    mkdir /data/misc/keychain 0771 system system
+    mkdir /data/misc/net 0750 root shell
+    mkdir /data/misc/radio 0771 system radio
+    mkdir /data/misc/sms 0770 system radio
+    mkdir /data/misc/zoneinfo 0775 system system
+    mkdir /data/misc/vpn 0770 system vpn
+    mkdir /data/misc/shared_relro 0771 shared_relro shared_relro
+    mkdir /data/misc/systemkeys 0700 system system
+    mkdir /data/misc/wifi 0770 wifi wifi
+    mkdir /data/misc/wifi/sockets 0770 wifi wifi
+    mkdir /data/misc/wifi/wpa_supplicant 0770 wifi wifi
+    mkdir /data/misc/wifi_share_profile 0771 wifi system
+    mkdir /data/misc/ethernet 0770 system system
+    mkdir /data/misc/dhcp 0770 dhcp dhcp
+    mkdir /data/misc/user 0771 root root
+    mkdir /data/misc/jack 0770 jack system
     # give system access to wpa_supplicant.conf for backup and restore
     chmod 0660 /data/misc/wifi/wpa_supplicant.conf
     chown system wifi /data/misc/wifi/wpa_supplicant.conf
-	mkdir /data/local 0751 root root
-	chmod 0751 /data/local
-	chown root root /data/local
-	mkdir /data/misc/media 0700 media media
-	chmod 0700 /data/misc/media
-	chown media media /data/misc/media
-	mkdir /data/misc/radio/hatp 0755 radio system
-	chmod 0755 /data/misc/radio/hatp
-	chown radio system /data/misc/radio/hatp
+    mkdir /data/local 0751 root root
+    mkdir /data/misc/media 0700 media media
+    mkdir /data/misc/radio/hatp 0755 radio system
 
-	# h2k permission
-	chmod 0644 /efs/redata.bin
-	chown radio radio /efs/h2k.dat
-	chmod 0644 /efs/h2k.dat
-	chown system system /efs/drm/h2k
+   # h2k permission
+  chmod 0644 /efs/redata.bin
+  chown radio radio /efs/h2k.dat
+  chmod 0644 /efs/h2k.dat
+  chown system system /efs/drm/h2k
 
 
     # icd
@@ -439,8 +335,6 @@ on post-fs-data
     chown system system /dev/icdr
     chmod 0644 /dev/icdr
     chown system system /dev/tzic
-    #restorecon /dev/icd
-    #restorecon /dev/icdr
 
     #SideSync
     chown system system /dev/android_ssusbcon
@@ -448,49 +342,19 @@ on post-fs-data
 
     # For security reasons, /data/local/tmp should always be empty.
     # Do not place files or directories in /data/local/tmp
-	mkdir /data/local/tmp 0771 shell shell
-	chmod 0771 /data/local/tmp
-	chown shell shell /data/local/tmp
-	mkdir /data/data 0771 system system
-	chmod 0771 /data/data
-	chown system system /data/data
-	mkdir /data/app-private 0771 system system
-	chmod 0771 /data/app-private
-	chown system system /data/app-private
-	mkdir /data/app-asec 0700 root root
-	chmod 0700 /data/app-asec
-	chown root root /data/app-asec
-	mkdir /data/app-lib 0771 system system
-	chmod 0771 /data/app-lib
-	chown system system /data/app-lib
-	mkdir /data/app 0771 system system
-	chmod 0771 /data/app
-	chown system system /data/app
-	mkdir /data/property 0700 root root
-	chmod 0700 /data/property
-	chown root root /data/property
-
-    chown system system /data/data
-    chown system system /data/app-private
-    chown root root /data/app-asec
-    chown system system /data/app-lib
-    chown system system /data/app
-    chown root root /data/property
-
-    chmod 0771 /data/data
-    chmod 0771 /data/app-private
-    chmod 0700 /data/app-asec
-    chmod 0771 /data/app-lib
-    chmod 0771 /data/app
-    chmod 0700 /data/property
+    mkdir /data/local/tmp 0771 shell shell
+    mkdir /data/data 0771 system system
+    mkdir /data/app-private 0771 system system
+    mkdir /data/app-asec 0700 root root
+    mkdir /data/app-lib 0771 system system
+    mkdir /data/app 0771 system system
+    mkdir /data/property 0700 root root
 
     # SA, System SW, SAMSUNG
     # create log directory
-	mkdir /data/log 0775 system log
-	chmod 0775 /data/log
-	chown system log /data/log
+    mkdir /data/log 0775 system log
+    chown system log /data/log
     mkdir /data/anr 0775 system system
-    chmod 0775 /data/anr
     chown system system /data/anr
     chmod 0775 /data/log
     chmod 0775 /data/anr
@@ -499,93 +363,60 @@ on post-fs-data
 
     # create dalvik-cache, so as to enforce our permissions
     mkdir /data/dalvik-cache 0771 root root
-	chmod 0771 /data/dalvik-cache
-	chown root root /data/dalvik-cache
-
     mkdir /data/dalvik-cache/profiles 0711 system system
-	chmod 0711 /data/dalvik-cache/profiles
-	chown system system /data/dalvik-cache/profiles
-
-    mkdir /data/dalvik-cache/arm 0711 system system
-	chmod 0711 /data/dalvik-cache/arm
-	chown system system /data/dalvik-cache/arm
 
     # create resource-cache and double-check the perms
     mkdir /data/resource-cache 0771 system system
-    chmod 0771 /data/resource-cache
     chown system system /data/resource-cache
-
+    chmod 0771 /data/resource-cache
 
     # create the lost+found directories, so as to enforce our permissions
-	mkdir /data/lost+found 0770 root root
-	chmod 0770 /data/lost+found
-	chown root root /data/lost+found
-
+    mkdir /data/lost+found 0770 root root
     restorecon /data/lost+found
 
     # create directory for DRM plug-ins - give drm the read/write access to
     # the following directory.
-	mkdir /data/drm 0770 drm drm
-	chmod 0770 /data/drm
-	chown drm drm /data/drm
+    mkdir /data/drm 0770 drm drm
 
     # create directory for MediaDrm plug-ins - give drm the read/write access to
     # the following directory.
-	mkdir /data/mediadrm 0770 mediadrm mediadrm
-	chmod 0770 /data/mediadrm
-	chown mediadrm mediadrm /data/mediadrm
+    mkdir /data/mediadrm 0770 mediadrm mediadrm
 
-	mkdir /data/adb 0700 root root
-	chmod 0700 /data/adb
-	chown root root /data/adb
 # [ SEC_MM_DRM
     # OMA DB directory creation
     mkdir /data/system/databases 0775
-    chmod 0775 /data/system/databases
     chown system system /data/system/databases
+    chmod 0775 /data/system/databases
 
     # DRM directory creation
-	mkdir /system/etc/security/.drm 0775
-	chmod 0775 /system/etc/security/.drm
-	chown root root /system/etc/security/.drm
+    mkdir /system/etc/security/.drm 0775
+    chown root root /system/etc/security/.drm
+    chmod 0775 /system/etc/security/.drm
 
     # Added for Playready DRM Support
-	mkdir /data/data/.drm 0775
-	chmod 0775 /data/data/.drm
-	chown drm system /data/data/.drm
-	mkdir /data/data/.drm/.playready 0775
-	chmod 0775 /data/data/.drm/.playready
-	chown drm system /data/data/.drm/.playready
+    mkdir /data/data/.drm 0775
+    chown drm system /data/data/.drm
+    chmod 0775 /data/data/.drm
+    mkdir /data/data/.drm/.playready 0775
+    chown drm system /data/data/.drm/.playready
+    chmod 0775 /data/data/.drm/.playready
 
     # Added drm folder to copy drm plugins
-	mkdir /system/lib/drm 0775
-	chmod 0775 /system/lib/drm
-	chown root root /system/lib/drm
+    mkdir /system/lib/drm 0775
+    chown root root /system/lib/drm
+    chmod 0775 /system/lib/drm
 
     restorecon -R /efs
     restorecon -R /carrier
-    restorecon_recursive /data/misc/keystore
-    restorecon_recursive /data/property
-    restorecon_recursive /data/security
 # ]
 
 # DRK permission
     mkdir /efs/prov 0770 radio system
-#	mkdir /efs/prov 0770 radio system
-	mkdir /efs/prov_data 0770 radio system
-	chmod 0770 /efs/prov
-	chown radio system /efs/prov
-    chown radio system /efs/prov_data/dev_root
-    chmod 0770 /efs/prov_data/dev_root
-    chown radio system /efs/prov_data/dev_root/dev_root.dat
-    chmod 0640 /efs/prov_data/dev_root/dev_root.dat
-    chmod 0660 /efs/prov/libdevkm.lock
     chown radio system /efs/prov/libdevkm.lock
+    chmod 0660 /efs/prov/libdevkm.lock
 
 # CS socket
-	mkdir /dev/socket/cs_socket 0770 system system
-	chmod 0770 /dev/socket/cs_socket
-	chown system system /dev/socket/cs_socket
+    mkdir /dev/socket/cs_socket 0770 system system
 
     # symlink to bugreport storage location
     symlink /data/data/com.android.shell/files/bugreports /data/bugreports
@@ -599,9 +430,7 @@ on post-fs-data
 
 # Separate location for storing security policy files on data
 #start SEC_PRODUCT_FEATURE_COMMON_SUPPORT_SE_FOR_ANDROID
-	mkdir /data/security 0700 system system
-	chmod 0700 /data/security
-	chown system system /data/security
+    mkdir /data/security 0700 system system
 #end SEC_PRODUCT_FEATURE_COMMON_SUPPORT_SE_FOR_ANDROID
 
 # Permissions for svc led
@@ -619,15 +448,9 @@ on post-fs-data
     chmod 0660 /dev/ice4_dev
 
 # Downloadable Filter
-	mkdir /data/DownFilters 0775 system system
-	chmod 0775 /data/DownFilters
-	chown system system /data/DownFilters
-	mkdir /data/DownFilters/Lib 0775 system system
-	chmod 0775 /data/DownFilters/Lib
-	chown system system /data/DownFilters/Lib
-	mkdir /data/DownFilters/Lib64 0775 system system
-	chmod 0775 /data/DownFilters/Lib64
-	chown system system /data/DownFilters/Lib64
+    mkdir /data/DownFilters       0775 system system
+    mkdir /data/DownFilters/Lib   0775 system system
+    mkdir /data/DownFilters/Lib64 0775 system system
 
 on boot
 
@@ -636,12 +459,8 @@ on boot
     chmod 0600 /proc/reset_reason
 
 # Mobicore
-	mkdir /data/app/mcRegistry 0775 system system
-	chmod 0775 /data/app/mcRegistry
-	chown system system /data/app/mcRegistry
-    mkdir /efs/TEE  0770 radio system
-	chmod 0770 /efs/TEE
-	chown radio system /efs/TEE
+    mkdir /data/app/mcRegistry 0775 system system
+
 # MUIC
     chown radio system /sys/class/sec/switch/usb_sel
     chown radio system /sys/class/sec/switch/usb_state
@@ -675,8 +494,8 @@ on boot
     chmod 0644 /sys/module/lowmemorykiller/parameters/minfree
 
     # Tweak background writeout
-    #write /proc/sys/vm/dirty_expire_centisecs 200
-    #write /proc/sys/vm/dirty_background_ratio  5
+    write /proc/sys/vm/dirty_expire_centisecs 200
+    write /proc/sys/vm/dirty_background_ratio  5
 
     # Permissions for System Server and daemons.
     chown radio system /sys/android_power/state
@@ -904,29 +723,19 @@ on boot
     # NFC_BROADCOM
     chmod 0600 /dev/bcm2079x
     chown nfc nfc /dev/bcm2079x
-	mkdir /data/bcmnfc 0700 nfc nfc
-	chmod 0700 /data/bcmnfc
-	chown nfc nfc /data/bcmnfc
-	mkdir /data/bcmnfc/param 0700 nfc nfc
-	chmod 0700 /data/bcmnfc/param
-	chown nfc nfc /data/bcmnfc/param
+    mkdir /data/bcmnfc 0700 nfc nfc
+    mkdir /data/bcmnfc/param 0700 nfc nfc
 
     # NFC_SLSI
     chmod 0660 /dev/sec-nfc
     chown nfc nfc /dev/sec-nfc
-	mkdir /data/nfc 0700 nfc nfc
-	chmod 0700 /data/nfc
-	chown nfc nfc /data/nfc
-	mkdir /data/nfc/param 0700 nfc nfc
-	chmod 0700 /data/nfc/param
-	chown nfc nfc /data/nfc/param
+    mkdir /data/nfc 0700 nfc nfc
+    mkdir /data/nfc/param 0700 nfc nfc
 
 # MTP permission
     chmod 0660 /dev/usb_mtp_gadget
     chown system mtp /dev/usb_mtp_gadget
-	mkdir /dev/socket/mtp 0770 system mtp
-	chmod 0770 /dev/socket/mtp
-	chown system mtp /dev/socket/mtp
+    mkdir /dev/socket/mtp 0770 system mtp
 
 # Accelerometer_sensor
     chown system radio /sys/class/sensors/accelerometer_sensor/raw_data
@@ -1039,25 +848,6 @@ on boot
     chown system radio /sys/class/sensors/ssp_sensor/uncalib_gyro_poll_delay
     chown system radio /sys/class/sensors/ssp_sensor/ssp_flush
     chown system radio /sys/class/sensors/ssp_sensor/shake_cam
-# Sensorhub IIO
-    chown system radio /sys/class/sensors/ssp_sensor/accel_poll_delay
-    chown system radio /sys/class/sensors/ssp_sensor/rot_poll_delay
-    chown system radio /sys/class/sensors/ssp_sensor/game_rot_poll_delay
-    chown system radio /sys/class/sensors/ssp_sensor/step_det_poll_delay
-    chown system radio /sys/class/sensors/ssp_sensor/gyro_poll_delay
-    chown system radio /sys/class/sensors/ssp_sensor/uncalib_gyro_poll_delay
-    chown system radio /sys/class/sensors/ssp_sensor/mag_poll_delay
-    chown system radio /sys/class/sensors/ssp_sensor/uncal_mag_poll_delay
-    chown system radio /sys/class/sensors/ssp_sensor/light_poll_delay
-    chown system radio /sys/class/sensors/ssp_sensor/pressure_poll_delay
-    chown system radio /sys/class/sensors/ssp_sensor/prox_poll_delay
-    chown system radio /sys/class/sensors/ssp_sensor/sig_motion_poll_delay
-    chown system radio /sys/class/sensors/ssp_sensor/step_cnt_poll_delay
-    chown system radio /sys/class/sensors/ssp_sensor/uncal_gyro_poll_delay
-    chown system radio /sys/class/sensors/ssp_sensor/interrupt_gyro_poll_delay
-    chown system radio /sys/class/sensors/ssp_sensor/tilt_poll_delay
-    chown system radio /sys/class/sensors/ssp_sensor/ssp_flush
-    chown system radio /sys/class/sensors/ssp_sensor/int_gyro_enable
     chmod 0600 /dev/batch_io
     chown system system /dev/batch_io
 # Gesture_sensor
@@ -1086,16 +876,10 @@ on boot
     chown system radio /sys/class/sec/sec_barcode_emul/barcode_ver_check
 
 # Permissions for Charging
-    mkdir /efs/Battery 0775 radio system
-    chown radio system /efs/Battery
-    chmod 0775 /efs/Battery
     chown system radio /sys/class/power_supply/battery/batt_reset_soc
-    chown system radio /sys/class/power_supply/battery/batt_slate_mode
-    chown system radio /sys/class/power_supply/battery/factory_mode
-    chown system radio /sys/class/power_supply/battery/siop_level
-    chown system radio /sys/class/power_supply/battery/wc_enable
     chown system radio /sys/class/power_supply/battery/update
     chown system radio /sys/class/power_supply/battery/factory_mode
+    chown system radio /sys/class/power_supply/battery/batt_slate_mode
     chown sdcard_rw sdcard_rw /sys/class/power_supply/battery/call
     chown sdcard_rw sdcard_rw /sys/class/power_supply/battery/video
     chown sdcard_rw sdcard_rw /sys/class/power_supply/battery/music
@@ -1109,36 +893,12 @@ on boot
     chown system radio /sys/class/power_supply/battery/gps
     chown system radio /sys/class/power_supply/battery/wifi
     chown system radio /sys/class/power_supply/battery/lte
+    chown system radio /sys/class/power_supply/battery/wc_enable
     chown system radio /sys/class/power_supply/battery/lcd
     chown system radio /sys/class/power_supply/ps/status
     chmod 0664 /sys/class/power_supply/ps/status
     chmod 0664 /sys/class/power_supply/battery/batt_temp_table
     chown system radio /sys/class/power_supply/battery/batt_temp_table
-    chown system radio /sys/class/power_supply/battery/batt_high_current_usb
-    chown system radio /sys/class/power_supply/battery/batt_inbat_voltage
-    chmod 0664 /sys/class/power_supply/battery/batt_high_current_usb
-    chown system radio /sys/class/power_supply/battery/hmt_ta_connected
-    chown system radio /sys/class/power_supply/battery/hmt_ta_charge
-    chown system radio /sys/class/power_supply/battery/battery_cycle
-    chown system radio /sys/class/power_supply/battery/hv_charger_set
-    chown system radio /sys/class/power_supply/otg/online
-    chmod 0664 /sys/class/power_supply/battery/hv_charger_set
-    chmod 0664 /sys/class/power_supply/otg/online
-    chown system radio /sys/class/power_supply/max77833-charger/charge_otg_control
-    chown system radio /sys/class/power_supply/battery/batt_wireless_firmware_update
-    chown system radio /sys/class/power_supply/battery/otp_firmware_result
-    chown system radio /sys/class/power_supply/battery/wc_ic_grade
-    chown system radio /sys/class/power_supply/battery/otp_firmware_ver_bin
-    chown system radio /sys/class/power_supply/battery/otp_firmware_ver
-    chown system radio /sys/class/power_supply/battery/tx_firmware_result
-    chmod 0664 /sys/class/power_supply/max77833-charger/charge_otg_control
-    chmod 0664 /sys/class/power_supply/battery/batt_wireless_firmware_update
-    chmod 0664 /sys/class/power_supply/battery/otp_firmware_result
-    chmod 0664 /sys/class/power_supply/battery/wc_ic_grade
-    chmod 0664 /sys/class/power_supply/battery/otp_firmware_ver_bin
-    chmod 0664 /sys/class/power_supply/battery/otp_firmware_ver
-    chmod 0664 /sys/class/power_supply/battery/tx_firmware_result
-    chmod 0664 /sys/class/power_supply/battery/tx_firmware_ver
 # Permissions for gpio_keys
     chown system radio /sys/class/sec/sec_key/wakeup_keys
     write /sys/class/sec/sec_key/wakeup_keys 116,172
@@ -1234,11 +994,6 @@ on property:sys.powerctl=*
 on property:sys.sysctl.extra_free_kbytes=*
     write /proc/sys/vm/extra_free_kbytes ${sys.sysctl.extra_free_kbytes}
 
-# Activate Background Compaction
-on property:sys.sysctl.compact_memory=1
-    write /proc/sys/vm/compact_memory 1
-    setprop sys.sysctl.compact_memory 0
-
 # "tcp_default_init_rwnd" Is too long!
 on property:sys.sysctl.tcp_def_init_rwnd=*
     write /proc/sys/net/ipv4/tcp_default_init_rwnd ${sys.sysctl.tcp_def_init_rwnd}
@@ -1322,11 +1077,6 @@ on property:selinux.reload_policy=1
     chown -R system system /sys/fs/selinux/booleans
     chown system system /sys/fs/selinux/commit_pending_bools
 
-# SEC_SELINUX to support spota
-#on property:selinux.sec.restorecon=1
-    #restorecon_recursive /data/security/spota
-    #restorecon_recursive /data/security/aasa
-
 # SEC_SELINUX
 on property:init.svc.bootanim=stopped
     start auditd
@@ -1408,7 +1158,7 @@ service ril-daemon /system/bin/rild
     socket rild-debug stream 660 radio system
     socket rild-cas stream 660 casdrm mmb
     user root
-    group radio cache inet misc audio log qcom_diag vpn system
+    group radio cache inet misc audio log qcom_diag
 
 service DR-daemon /system/bin/ddexe
     class main
@@ -1586,7 +1336,7 @@ service charon /system/bin/charon
     class main
     socket charon stream 600 system system
     #charon will setuid to vpn after getting necessary resources.
-    group vpn net_admin inet shell
+    group vpn net_admin inet
     disabled
     oneshot
 
@@ -1679,3 +1429,11 @@ service initscripts /system/xbin/busybox run-parts /system/etc/init.d
 
 on property:init.svc.bootanim=stopped
   start initscripts
+
+# bootchecker
+service bootchecker /system/bin/bootchecker
+    class late_start
+    user system
+    group system log
+    oneshot
+

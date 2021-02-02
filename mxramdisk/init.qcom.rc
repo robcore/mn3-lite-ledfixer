@@ -35,43 +35,21 @@ on early-init
 on init
     # Support Preload install apks
     mkdir /preload 0771 system system
-    chmod 0771 /preload
-    chown system system /preload
 
     # See storage config details at http://source.android.com/tech/storage/
     mkdir /mnt/media_rw/extSdCard 0700 media_rw media_rw
-    chmod 0700 /mnt/media_rw/extSdCard
-    chown media_rw media_rw /mnt/media_rw/extSdCard
     mkdir /mnt/media_rw/UsbDriveA 0700 media_rw media_rw
-    chmod 0700 /mnt/media_rw/UsbDriveA
-    chown media_rw media_rw /mnt/media_rw/UsbDriveA
     mkdir /mnt/media_rw/UsbDriveB 0700 media_rw media_rw
-    chmod 0700 /mnt/media_rw/UsbDriveB
-    chown media_rw media_rw /mnt/media_rw/UsbDriveB
     mkdir /mnt/media_rw/UsbDriveC 0700 media_rw media_rw
-    chmod 0700 /mnt/media_rw/UsbDriveC
-    chown media_rw media_rw /mnt/media_rw/UsbDriveC
     mkdir /mnt/media_rw/UsbDriveD 0700 media_rw media_rw
-    chmod 0700 /mnt/media_rw/UsbDriveD
-    chown media_rw media_rw /mnt/media_rw/UsbDriveD
     mkdir /mnt/media_rw/UsbDriveE 0700 media_rw media_rw
-    chmod 0700 /mnt/media_rw/UsbDriveE
-    chown media_rw media_rw /mnt/media_rw/UsbDriveE
     mkdir /mnt/media_rw/UsbDriveF 0700 media_rw media_rw
-    chmod 0700 /mnt/media_rw/UsbDriveF
-    chown media_rw media_rw /mnt/media_rw/UsbDriveF
     
     # Set permissions for persist partition
     mkdir /persist 0771 system system
-    chmod 0771 /persist
-    chown system system /persist
     # See storage config details at http://source.android.com/tech/storage/
     mkdir /mnt/shell/emulated 0700 shell shell
-    chmod 0700 /mnt/shell/emulated
-    chown shell shell /mnt/shell/emulated
     mkdir /storage/emulated 0555 root root
-    chmod 0555 /storage/emulated
-    chown root root /storage/emulated
 
     export EXTERNAL_STORAGE /storage/emulated/legacy
     export EMULATED_STORAGE_SOURCE /mnt/shell/emulated
@@ -93,35 +71,20 @@ on init
     symlink /storage/UsbDriveD /mnt/UsbDriveD
     symlink /storage/UsbDriveE /mnt/UsbDriveE
     symlink /storage/UsbDriveF /mnt/UsbDriveF
-    #symlink /storage/extSdCard /external_sd
 
     mkdir /storage/extSdCard 0700 root root
-    chmod 0700 /storage/extSdCard
-    chown root root /storage/extSdCard
     mkdir /storage/UsbDriveA 0700 root root
-    chmod 0700 /storage/UsbDriveA
-    chown root root /storage/UsbDriveA
     mkdir /storage/UsbDriveB 0700 root root
-    chmod 0700 /storage/UsbDriveB
-    chown root root /storage/UsbDriveB
     mkdir /storage/UsbDriveC 0700 root root
-    chmod 0700 /storage/UsbDriveC
-    chown root root /storage/UsbDriveC
     mkdir /storage/UsbDriveD 0700 root root
-    chmod 0700 /storage/UsbDriveD
-    chown root root /storage/UsbDriveD
     mkdir /storage/UsbDriveE 0700 root root
-    chmod 0700 /storage/UsbDriveE
-    chown root root /storage/UsbDriveE
     mkdir /storage/UsbDriveF 0700 root root
-    chmod 0700 /storage/UsbDriveF
-    chown root root /storage/UsbDriveF
 
 on early-boot
     # set RLIMIT_MEMLOCK to 64MB
     setrlimit 8 67108864 67108864
-	chmod 0755 /sys
-	write /sys/module/subsystem_restart/parameters/enable_debug 0
+    # Allow subsystem (modem etc) debugging
+    write /sys/module/subsystem_restart/parameters/enable_debug ${persist.sys.ssr.enable_debug}
     write /sys/kernel/boot_adsp/boot 1
 
 on boot
@@ -149,8 +112,6 @@ on boot
 
     # for BT MAC address
     mkdir /efs/bluetooth 0775 radio system
-    chmod 0775 /efs/bluetooth
-    chown radio system /efs/bluetooth
     # if already exist
     chown radio system /efs/bluetooth
     chmod 0775 /efs/bluetooth
@@ -162,24 +123,18 @@ on boot
     #Create QMUX deamon socket area
     mkdir /dev/socket/qmux_radio 0770 radio radio
     chmod 2770 /dev/socket/qmux_radio
-    chown radio radio /dev/socket/qmux_radio
     mkdir /dev/socket/qmux_audio 0770 media audio
     chmod 2770 /dev/socket/qmux_audio
-    chown media audio /dev/socket/qmux_audio
     mkdir /dev/socket/qmux_bluetooth 0770 bluetooth bluetooth
     chmod 2770 /dev/socket/qmux_bluetooth
-    chown bluetooth bluetooth /dev/socket/qmux_bluetooth
     mkdir /dev/socket/qmux_gps 0770 gps gps
     chmod 2770 /dev/socket/qmux_gps
-    chown gps gps /dev/socket/qmux_gps
 
 #Create PERFD deamon related dirs
     mkdir /data/misc/perfd 0755 root system
     chmod 2755 /data/misc/perfd
-    chown root system /data/misc/perfd
     mkdir /data/system/perfd 0770 root system
     chmod 2770 /data/system/perfd
-    chown root system /data/system/perfd
 
     setprop wifi.interface wlan0
 
@@ -266,43 +221,27 @@ on boot
 
     # NFC local data and nfcee xml storage
     mkdir /data/nfc 0770 nfc nfc
-    chmod 0770 /data/nfc
-    chown nfc nfc /data/nfc
     mkdir /data/nfc/param 0770 nfc nfc
-    chmod 0770 /data/nfc/param
-    chown nfc nfc /data/nfc/param
 
     # Set the console loglevel to KERN_INFO
     # Set the default message loglevel to KERN_INFO
-    #write /proc/sys/kernel/printk "6 6 1 7"
+    write /proc/sys/kernel/printk "6 6 1 7"
 
 # msm specific files that need to be created on /data
 on post-fs-data
     # we will remap this as /mnt/sdcard with the sdcard fuse tool
     mkdir /data/misc/camera 0770 camera camera
-    chmod 0770 /data/misc/camera
-    chown camera camera /data/misc/camera
 
     mkdir /data/media 0770 media_rw media_rw
-    chmod 0770 /data/media
     chown media_rw media_rw /data/media
 
     mkdir /data/misc/bluetooth 0770 bluetooth bluetooth
-    chmod 0770 /data/misc/bluetooth
-    chown bluetooth bluetooth /data/misc/bluetooth
 
     # Create the directories used by the Wireless subsystem
     mkdir /data/misc/wifi 0770 wifi system
-    chmod 0770 /data/misc/wifi
-    chown wifi system /data/misc/wifi
     mkdir /data/misc/wifi/sockets 0770 wifi wifi
-    chmod 0770 /data/misc/wifi/sockets
-    chown wifi wifi /data/misc/wifi/sockets
     mkdir /data/misc/wifi/wpa_supplicant 0770 wifi wifi
-    chmod 0770 /data/misc/wifi/wpa_supplicant
-    chown wifi wifi /data/misc/wifi/wpa_supplicant
     mkdir /data/misc/dhcp 0775 dhcp dhcp
-    chmod 0775 /data/misc/dhcp
     chown dhcp dhcp /data/misc/dhcp
 
 	# for WIFI TRP/TIS
@@ -315,8 +254,6 @@ on post-fs-data
 
     # for WIFI MAC address
     mkdir /efs/wifi 0775 radio system
-    chmod 0775 /efs/wifi
-    chown radio system /efs/wifi
     chown system wifi /efs/wifi/.mac.info
     chmod 0660 /efs/wifi/.mac.info
     chmod 0660 /efs/wifi/.mac.cob
@@ -328,30 +265,20 @@ on post-fs-data
 
     # Create the directories used by CnE subsystem
     mkdir /data/connectivity 0771 system system
-    chmod 0771 /data/connectivity
     chown system system /data/connectivity
 
     # Create the directories used by DPM subsystem
     mkdir /data/dpm 0771 system system
-    chmod 0771 /data/dpm
     chown system system /data/dpm
 
     mkdir /data/dpm/nsrm 0771 system system
-    chmod 0771 /data/dpm/nsrm
     chown system system /data/dpm/nsrm
 
     # Create directory used by audio subsystem
     mkdir /data/misc/audio 0770 audio audio
-    chmod 0770 /data/misc/audio
-    chown audio audio /data/misc/audio
 
     # Create directory used by the DASH client
     mkdir /data/misc/dash 0770 media audio
-    chmod 0770 /data/misc/dash
-    chown media audio /data/misc/dash
-
-    # Create directory used by display clients
-    mkdir /data/misc/display 0770 system graphics
 
     # Mounting of persist is moved to 'on emmc-fs' and 'on fs' sections
     # We chown/chmod /persist again so because mount is run as root + defaults
@@ -370,60 +297,37 @@ on post-fs-data
 
     #Create the symlink to qcn wpa_supplicant folder for ar6000 wpa_supplicant
     mkdir /data/system 0775 system system
-    chmod 0775 /data/system
-    chown system system /data/system
     #symlink /data/misc/wifi/wpa_supplicant /data/system/wpa_supplicant
 
     #Create directories for Location services
     mkdir /data/misc/location 0770 gps gps
-    chmod 0770 /data/misc/location
-    chown gps gps /data/misc/location
     mkdir /data/misc/location/mq 0770 gps gps
-    chmod 0770 /data/misc/location/mq
-    chown gps gps /data/misc/location/mq
     mkdir /data/misc/location/xtwifi 0770 gps gps
-    chmod 0770 /data/misc/location/xtwifi
-    chown gps gps /data/misc/location/xtwifi
     mkdir /data/misc/location/gpsone_d 0770 system gps
-    chmod 0770 /data/misc/location/gpsone_d
-    chown system gps /data/misc/location/gpsone_d
     mkdir /data/misc/location/quipc 0770 gps system
-    chmod 0770 /data/misc/location/quipc
-    chown gps system /data/misc/location/quipc
     mkdir /data/misc/location/gsiff 0770 gps gps
-    chmod 0770 /data/misc/location/gsiff
-    chown gps gps /data/misc/location/gsiff
 
     #Create directory from IMS services
     mkdir /data/shared 0755
-	chmod 0755 /data/shared
     chown system system /data/shared
 
     #Create directory for FOTA
     mkdir /data/fota 0771
-	chmod 0771 /data/fota
     chown system system /data/fota
 
     #Create directory for hostapd
     mkdir /data/hostapd 0770 system wifi
-    chmod 0770 /data/hostapd
-    chown system wifi /data/hostapd
 
     # Create /data/time folder for time-services
     mkdir /data/time 0700 system system
-    chmod 0700 /data/time
-    chown system system /data/time
 
     mkdir /data/audio 0770 media audio
-    chmod 0770 /data/audio
-    chown media audio /data/audio
+
+    setprop vold.post_fs_data_done 1
 
     #Create a folder for SRS to be able to create a usercfg file
     mkdir /data/data/media 0770 media media
-    chmod 0770 /data/data/media
-    chown media media /data/data/media
 
-    setprop vold.post_fs_data_done 1
 
 # Export GPIO56 for fusion targets to enable/disable hub
 service usbhub_init /system/bin/usbhub_init
@@ -448,14 +352,9 @@ on property:sys.boot_completed=1
 on property:persist.radio.atfwd.start=false
     stop atfwd
 
-on property:radio.atfwd.start=false
-    stop atfwd
-
 # corefile limit and ETB enabling
 on property:persist.debug.trace=1
     mkdir /data/core 0777 root root
-    chmod 0777 /data/core
-    chown root root /data/core
     write /proc/sys/kernel/core_pattern "/data/core/%E.%p.%e"
     write /sys/devices/system/cpu/cpu1/online 1
     write /sys/devices/system/cpu/cpu2/online 1
@@ -603,7 +502,7 @@ service bt-sap /system/bin/sapd 15
 
 service btsnoop /system/bin/btsnoop
    user bluetooth
-   group bluetooth net_bt_admin sdcard_rw sdcard_r media_rw
+   group bluetooth net_bt_admin sdcard_rw sdcard_r
    class late_start
    disabled
    oneshot

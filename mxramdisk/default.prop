@@ -4,7 +4,7 @@
 persist.cne.feature=0
 persist.security.ams.enforcing=0
 ro.secure=0
-#ro.build.selinux.enforce=0
+ro.build.selinux.enforce=0
 #ro.boot.security_mode=NONE
 #persist.sys.root_access=3
 ro.adb.secure=0

@@ -29,15 +29,8 @@
 
 on early-init
     mkdir /firmware 0771 system system
-    chmod 0771 /firmware
-    chown system system /firmware
     mkdir /firmware-modem 0771 system system
-    chmod 0771 /firmware-modem
-    chown system system /firmware-modem
     symlink /data/tombstones /tombstones
-
-    setenforce 0
-    #setprop ro.boot.selinux 0
 
 on init
     # Set the property to indicate type of virtual display to 0
@@ -60,8 +53,6 @@ on fs
     check_fs /dev/block/platform/msm_sdcc.1/by-name/persist ext4
     mount ext4 /dev/block/platform/msm_sdcc.1/by-name/persist /persist nosuid nodev noatime noauto_da_alloc,discard,journal_async_commit,errors=panic
     mkdir /persist/data 0700 system system
-    chmod 0700 /persist/data
-    chown system system /persist/data
 
     wait /dev/block/platform/msm_sdcc.1/by-name/efs
     check_fs /dev/block/platform/msm_sdcc.1/by-name/efs ext4
@@ -88,20 +79,10 @@ on fs_selinux
 
 on post-fs-data
     mkdir /data/tombstones 0771 system system
-    chmod 0771 /data/tombstones
-    chown system system /data/tombstones
     mkdir /tombstones/modem 0771 system system
-    chmod 0771 /tombstones/modem
-    chown system system /tombstones/modem
     mkdir /tombstones/lpass 0771 system system
-    chmod 0771 /tombstones/lpass
-    chown system system /tombstones/lpass
     mkdir /tombstones/wcnss 0771 system system
-    chmod 0771 /tombstones/wcnss
-    chown system system /tombstones/wcnss
     mkdir /tombstones/dsps 0771 system system
-    chmod 0771 /tombstones/dsps
-    chown system system /tombstones/dsps
 
 # Mobicore
     export MC_AUTH_TOKEN_PATH /efs
@@ -159,15 +140,15 @@ service qrngd /system/bin/qrngd -f
     user root
     group root
 
-#service qrngp /system/bin/qrngp
-#    class main
-#    user root
-#    group root
-#    oneshot
-#    disabled
+service qrngp /system/bin/qrngp
+    class main
+    user root
+    group root
+    oneshot
+    disabled
 
-#on property:sys.boot_completed=1
-#    start qrngd
+on property:sys.boot_completed=1
+    start qrngp
 
 service qseecomd /system/bin/qseecomd
    class core
@@ -329,8 +310,8 @@ service ml_daemon /system/bin/ml_daemon
     class core
     user root
     group root
-
 # SecEDS
+
 service TvoutService_C /system/bin/bintvoutservice
      class main
      user system
@@ -340,22 +321,23 @@ on property:ro.SecEDS.enable=false
     stop TvoutService_C
 
 # Secure Storage startup
-#service secure_storage /system/bin/secure_storage_daemon
-#    class core
-#    user system
-#    group system
-#    disabled
+service secure_storage /system/bin/secure_storage_daemon
+    class core
+    user system
+    group system
+    disabled
 
-#on property:ro.securestorage.support=true
-#    mkdir /dev/.secure_storage
-#    chmod 0711 /dev/.secure_storage
-#    chown system system /dev/.secure_storage
-#    restorecon -R /dev/.secure_storage
-#    start secure_storage
+on property:ro.securestorage.support=true
+    mkdir /dev/.secure_storage
+    chmod 0711 /dev/.secure_storage
+    chown system system /dev/.secure_storage
+    restorecon -R /dev/.secure_storage
+    start secure_storage
 
-#on property:ro.securestorage.knox=true
-#    mkdir /dev/.secure_storage
-#    chmod 0711 /dev/.secure_storage
-#    chown system system /dev/.secure_storage
-#    restorecon -R /dev/.secure_storage
-#    start secure_storage
+on property:ro.securestorage.knox=true
+    mkdir /dev/.secure_storage
+    chmod 0711 /dev/.secure_storage
+    chown system system /dev/.secure_storage
+    restorecon -R /dev/.secure_storage
+    start secure_storage
+
