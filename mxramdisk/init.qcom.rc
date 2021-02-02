@@ -76,8 +76,6 @@ on init
     export EXTERNAL_STORAGE /storage/emulated/legacy
     export EMULATED_STORAGE_SOURCE /mnt/shell/emulated
     export EMULATED_STORAGE_TARGET /storage/emulated
-    export SECONDARY_STORAGE /storage/extSdCard
-    mkdir /storage/extSdCard 0555 root root
 
     # Support legacy paths
     symlink /storage/emulated/legacy /sdcard
@@ -98,6 +96,7 @@ on init
     mkdir /storage/extSdCard 0700 root root
     chmod 0700 /storage/extSdCard
     chown root root /storage/extSdCard
+    export SECONDARY_STORAGE /storage/extSdCard
     mkdir /storage/UsbDriveA 0700 root root
     chmod 0700 /storage/UsbDriveA
     chown root root /storage/UsbDriveA
@@ -418,12 +417,13 @@ on post-fs-data
     chmod 0770 /data/audio
     chown media audio /data/audio
 
+    setprop vold.post_fs_data_done 1
+
     #Create a folder for SRS to be able to create a usercfg file
     mkdir /data/data/media 0770 media media
     chmod 0770 /data/data/media
     chown media media /data/data/media
 
-    setprop vold.post_fs_data_done 1
 
 # Export GPIO56 for fusion targets to enable/disable hub
 service usbhub_init /system/bin/usbhub_init
@@ -719,7 +719,7 @@ service olsrd /system/bin/olsrd -f /etc/wifi/olsrd.conf
     disabled
     oneshot
 
-service dhcpcd_wlan0 /system/bin/dhcpcd -ABKL
+service dhcpcd_wlan0 /system/bin/dhcpcd -ABKLG
     class late_start
     disabled
     oneshot

@@ -438,8 +438,8 @@ echo '0' > /sys/devices/virtual/lcd/panel/temperature
 
 #magiskpolicy --live "allow s_untrusted_app default_prop property_service set"
 #am startservice com.atmos.daxappUI/com.atmos.daxappUI.DsSetProfileServices
-#restorecon -R /data/media/0
-#restorecon -R /data/data
-#restorecon -R /data/dalvik-cache
+restorecon -FR /data/media/0
+restorecon -FR /data/data
+restorecon -FR /data/dalvik-cache
 #am startservice com.atmos/com.atmos.service.DsService
 echo "[MACHIN3X] mx.sh Complete" | tee /dev/kmsg

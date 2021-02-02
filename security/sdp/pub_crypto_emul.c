@@ -285,15 +285,7 @@ int dh_encryptDEK(dek_t *dek, dek_t *edek, kek_t *kek){
 
 static int __init pub_crypto_mod_init(void) {
 
-#if 0
-	struct netlink_kernel_cfg cfg = {
-		.input  = crypto_recver,
-	};
-
-	crypto_sock = netlink_kernel_create(&init_net, NETLINK_FIPS_CRYPTO, &cfg);
-#else
 	crypto_sock = netlink_kernel_create(&init_net, NETLINK_FIPS_CRYPTO, 0, crypto_recver, NULL, THIS_MODULE);
-#endif
 
 	if (!crypto_sock) {
 		printk(KERN_CRIT "Failed to create Crypto Netlink Socket .. Exiting \n");
