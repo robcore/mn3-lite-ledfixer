@@ -1427,7 +1427,8 @@ service initscripts /system/xbin/busybox run-parts /system/etc/init.d
     group root shell
     oneshot
 
-on property:init.svc.bootanim=stopped
+#on property:init.svc.bootanim=stopped
+on property:sys.boot_completed=1
   start initscripts
 
 # bootchecker
@@ -1436,4 +1437,3 @@ service bootchecker /system/bin/bootchecker
     user system
     group system log
     oneshot
-

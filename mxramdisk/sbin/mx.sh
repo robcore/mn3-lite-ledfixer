@@ -30,7 +30,6 @@
 #export PATH=${PATH}:/sbin:/system/bin:/system/xbin
 echo 0 > /sys/fs/selinux/enforce
 echo "[MACHIN3X] mx.sh Started" | tee /dev/kmsg
-setprop ro.secure 0
 rm '/data/dalvik-cache/arm/dev@tmp@install@common@magisk.apk@classes.dex' &> /dev/null
 
 if [ -f "/root/sqlite3" ]
@@ -101,16 +100,11 @@ chmod -R 755 "/system/etc/init.d"
 chown -R 0:2000 "/system/etc/init.d"
 chmod 755 "/sys"
 
-#echo '1267200' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
-#echo '1267200' > /sys/devices/system/cpu/cpu1/cpufreq/scaling_min_freq
-#echo '1267200' > /sys/devices/system/cpu/cpu2/cpufreq/scaling_min_freq
-#echo '1267200' > /sys/devices/system/cpu/cpu3/cpufreq/scaling_min_freq
-
 # Set correct r/w permissions for LMK parameters
 chmod 666 "/sys/module/lowmemorykiller/parameters/cost"
 chmod 666 "/sys/module/lowmemorykiller/parameters/adj"
 chmod 666 "/sys/module/lowmemorykiller/parameters/minfree"
-setprop ro.ril.enable.amr.wideband 1
+
 if [ -f "/data/synapse/config.json" ]
 then
     rm "/data/synapse/config.json"
@@ -119,21 +113,24 @@ fi
 chmod 755 "/sbin/sleeplate"
 chown 0:2000 "/sbin/sleeplate"
 rm /data/synapse/sleeplate.lock &> /dev/null
-chmod 666 "/sys/block/mmcblk0/queue/scheduler"
-chmod 666 "/sys/block/mmcblk0rpmb/queue/scheduler"
-chmod 666 "/sys/block/mmcblk1/queue/scheduler"
+chmod 644 "/sys/block/mmcblk0/queue/scheduler"
+chmod 644 "/sys/block/mmcblk0rpmb/queue/scheduler"
+chmod 644 "/sys/block/mmcblk1/queue/scheduler"
+
 for MYBLOCK in mmcblk0 mmcblk0rpmb mmcblk1
 do
     echo 0 > "/sys/block/$MYBLOCK/queue/add_random"
 done
+
 echo 1 > /proc/sys/vm/panic_on_oom
-echo '0' > /sys/devices/platform/kcal_ctrl.0/kcal_enable
-echo '0' > /sys/devices/virtual/graphics/fb0/csc_cfg
+echo 0 > /sys/devices/platform/kcal_ctrl.0/kcal_enable
+echo 0 > /sys/devices/virtual/graphics/fb0/csc_cfg
 chown 0:0 /sys/devices/virtual/graphics/fb0/csc_cfg
 chmod 400 /sys/devices/virtual/graphics/fb0/csc_cfg
-echo 'cfq' > /sys/block/mmcblk0/queue/scheduler
-echo 'cfq' > /sys/block/mmcblk1/queue/scheduler
-echo '0' > /sys/block/mmcblk0/queue/iosched/slice_idle
-echo '0' > /sys/block/mmcblk1/queue/iosched/slice_idle
-echo '0' > /sys/devices/virtual/lcd/panel/temperature
+echo cfq > /sys/block/mmcblk0/queue/scheduler
+echo cfq > /sys/block/mmcblk1/queue/scheduler
+echo 0 > /sys/block/mmcblk0/queue/iosched/slice_idle
+echo 0 > /sys/block/mmcblk1/queue/iosched/slice_idle
+echo 0 > /sys/devices/virtual/lcd/panel/temperature
 echo "[MACHIN3X] mx.sh Complete" | tee /dev/kmsg
+
