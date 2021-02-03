@@ -30,7 +30,7 @@
 #export PATH=${PATH}:/sbin:/system/bin:/system/xbin
 echo 0 > /sys/fs/selinux/enforce
 echo "[MACHIN3X] mx.sh Started" | tee /dev/kmsg
-rm '/data/dalvik-cache/arm/dev@tmp@install@common@magisk.apk@classes.dex' &> /dev/null
+#rm '/data/dalvik-cache/arm/dev@tmp@install@common@magisk.apk@classes.dex' &> /dev/null
 
 if [ -f "/root/sqlite3" ]
 then
@@ -51,49 +51,49 @@ then
 	chmod 755 "/sbin/zip"
 fi
 
-if [ -f "/sbin/resetprop" ] || [ -L "/sbin/resetprop" ]
-then
-    rm "/sbin/resetprop"
-    ln -s "/sbin/magisk" "/sbin/resetprop"
-else
-    ln -s "/sbin/magisk" "/sbin/resetprop"
-fi
+#if [ -f "/sbin/resetprop" ] || [ -L "/sbin/resetprop" ]
+#then
+#    rm "/sbin/resetprop"
+#    ln -s "/sbin/magisk" "/sbin/resetprop"
+#else
+#    ln -s "/sbin/magisk" "/sbin/resetprop"
+#fi
+#
+#if [ -f "/sbin/magiskpolicy" ] || [ -L "/sbin/magiskpolicy" ]
+#then
+#    rm "/sbin/magiskpolicy"
+#    ln -s "/sbin/magiskinit" "/sbin/magiskpolicy"
+#else
+#    ln -s "/sbin/magiskinit" "/sbin/magiskpolicy"
+#fi
+#
+#if [ -f "/sbin/su" ] || [ -L "/sbin/su" ]
+#then
+#    rm "/sbin/su"
+#    ln -s "/sbin/magisk" "/sbin/su"
+#else
+#    ln -s "/sbin/magisk" "/sbin/su"
+#fi
+#
+#if [ -f "/sbin/supolicy" ] || [ -L "/sbin/supolicy" ]
+#then
+#    rm "/sbin/supolicy"
+#    ln -s "/sbin/magiskinit" "/sbin/supolicy"
+#else
+#    ln -s "/sbin/magiskinit" "/sbin/supolicy"
+#fi
 
-if [ -f "/sbin/magiskpolicy" ] || [ -L "/sbin/magiskpolicy" ]
-then
-    rm "/sbin/magiskpolicy"
-    ln -s "/sbin/magiskinit" "/sbin/magiskpolicy"
-else
-    ln -s "/sbin/magiskinit" "/sbin/magiskpolicy"
-fi
+#if [ -f "/sbin/magiskhide" ] || [ -L "/sbin/magiskhide" ]
+#then
+#    rm "/sbin/magiskhide"
+#    ln -s "/sbin/magisk" "/sbin/magiskhide"
+#else
+#    ln -s "/sbin/magisk" "/sbin/magiskhide"
+#fi
 
-if [ -f "/sbin/su" ] || [ -L "/sbin/su" ]
-then
-    rm "/sbin/su"
-    ln -s "/sbin/magisk" "/sbin/su"
-else
-    ln -s "/sbin/magisk" "/sbin/su"
-fi
-
-if [ -f "/sbin/supolicy" ] || [ -L "/sbin/supolicy" ]
-then
-    rm "/sbin/supolicy"
-    ln -s "/sbin/magiskinit" "/sbin/supolicy"
-else
-    ln -s "/sbin/magiskinit" "/sbin/supolicy"
-fi
-
-if [ -f "/sbin/magiskhide" ] || [ -L "/sbin/magiskhide" ]
-then
-    rm "/sbin/magiskhide"
-    ln -s "/sbin/magisk" "/sbin/magiskhide"
-else
-    ln -s "/sbin/magisk" "/sbin/magiskhide"
-fi
-
-magiskpolicy --live "permissive audio_data_file audio_prop default_android_service init default_prop platform_app property_socket system_app system_data_file system_file system_prop system_server tmpfs untrusted_app s_untrusted_app"
-magiskpolicy --live "allow s_untrusted_app default_prop property_service {set}"
-magiskpolicy --live "allow s_untrusted_app * property_service {set}"
+#magiskpolicy --live "permissive audio_data_file audio_prop default_android_service init default_prop platform_app property_socket system_app system_data_file system_file system_prop system_server tmpfs untrusted_app s_untrusted_app"
+#magiskpolicy --live "allow s_untrusted_app default_prop property_service {set}"
+#magiskpolicy --live "allow s_untrusted_app * property_service {set}"
 
 # Init.d
 chmod -R 755 "/system/etc/init.d"
