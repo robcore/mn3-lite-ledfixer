@@ -31,7 +31,7 @@ TOOLCHAIN="/opt/arm-cortex_a15-linux-gnueabihf-linaro_4.9.4-2015.06/bin/arm-cort
 #export ARCH="arm"
 export CROSS_COMPILE="$TOOLCHAIN"
 
-if [ "$2" = "noreboot" ]
+if [ "$2" = "noreboot" ] || [ "$1" = "-anr" ] || [ "$1" = "--allnoreboot" ]
 then
     NOREBOOT="true"
     echo "Script will not reboot after recovery install!"
@@ -623,6 +623,7 @@ Script written by jcadduono, frequentc & robcore
 usage: ./mxbuild.sh [OPTION]
 Common options:
  -a|--all            Do a complete build (starting at the beginning)
+ -anr|--allnoreboot  Do a complete build (starting at the beginning), do not reboot
  -d|--debug          Same as --all but skips final cleanup
  -r|--rebuildme      Same as --all but defaults to rebuilding previous version
  -b|--bsd            Build single driver (path/to/folder/ | path/to/file.o)
@@ -633,6 +634,12 @@ Common options:
  -o|--kernel-only    Recompile only the kernel, nothing else
 -rd|--ramdisk        Try the build again starting at the ramdisk
  -t|--tests          Testing playground
+
+Extra command line options are possibe, with more to be added in the future:
+Currently, it is just the one.
+Appending "noreboot" as the second option will keep the device from rebooting.
+Or, just use the -anr option that is the same as -a to build all,
+but skips the reboot.
 EOF
 
 	exit 1
@@ -686,6 +693,13 @@ do
 	extrargs="$2"
 	case "$1" in
 	     -a|--all)
+			checkrecov
+			handle_existing
+			build_all
+			break
+	    	;;
+
+	     -anr|--allnoreboot)
 			checkrecov
 			handle_existing
 			build_all
