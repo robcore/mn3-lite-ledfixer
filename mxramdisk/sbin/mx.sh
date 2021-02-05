@@ -32,6 +32,9 @@ echo 0 > /sys/fs/selinux/enforce
 echo "[MACHIN3X] mx.sh Started" | tee /dev/kmsg
 #rm '/data/dalvik-cache/arm/dev@tmp@install@common@magisk.apk@classes.dex' &> /dev/null
 
+/system/bin/chmod -h 755 /system/bin/app_process32 &> /dev/null
+/system/bin/chmod -h 755 /system/bin/app_process &> /dev/null
+
 if [ -f "/root/sqlite3" ]
 then
 	chown 0:0 "/root/sqlite3"
@@ -98,7 +101,7 @@ fi
 # Init.d
 chmod -R 755 "/system/etc/init.d"
 chown -R 0:2000 "/system/etc/init.d"
-chmod 755 "/sys"
+#chmod 755 "/sys"
 
 # Set correct r/w permissions for LMK parameters
 chmod 666 "/sys/module/lowmemorykiller/parameters/cost"
