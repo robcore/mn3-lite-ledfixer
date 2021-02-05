@@ -3,13 +3,11 @@
 on init
 
     # create Container (KNOX 1.0) mountpoints for KNOX Migration
-#    mkdir /knox_data 0775 root system
-#    mkdir /knox_data/userdata 0775 system system
-#    mkdir /knox_data/appdata 0775 system system
-
-#    mkdir /mnt/shell/knox-emulated 0700 system system
-
-#    symlink /mnt/shell/knox-emulated /storage/knox-emulated
+    mkdir /knox_data 0775 root system
+    mkdir /knox_data/userdata 0775 system system
+    mkdir /knox_data/appdata 0775 system system
+    mkdir /mnt/shell/knox-emulated 0700 system system
+    symlink /mnt/shell/knox-emulated /storage/knox-emulated
 
     chown system system /dev/dek_evt
     chmod 600 /dev/dek_evt
@@ -23,19 +21,17 @@ on init
     chown system net_bt /dev/sdp_mm
     chmod 660 /dev/sdp_mm
 
-#on post-fs-data
+on post-fs-data
 
     # create knox filesystem structure
-#    mkdir /data/knox 0771 system system
-#    mkdir /data/knox/data 0771 system system
-#    mkdir /data/knox/sdcard 0771 system system
-#    mkdir /data/knox/ext_sdcard 0771 system system
-#    mkdir /data/knox/app 0771 system system
-#    mkdir /data/knox/tmp 0771 system system
-
-#    export KNOX_STORAGE /data/knox/ext_sdcard
-
-#    restorecon /data/knox
+    mkdir /data/knox 0771 system system
+    mkdir /data/knox/data 0771 system system
+    mkdir /data/knox/sdcard 0771 system system
+    mkdir /data/knox/ext_sdcard 0771 system system
+    mkdir /data/knox/app 0771 system system
+    mkdir /data/knox/tmp 0771 system system
+    export KNOX_STORAGE /data/knox/ext_sdcard
+    restorecon /data/knox
 
 #on boot
 

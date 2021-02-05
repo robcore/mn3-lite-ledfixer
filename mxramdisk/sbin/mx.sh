@@ -28,12 +28,11 @@
 # Removed Generalized BULLSHIT and kept our device specific props
 
 #export PATH=${PATH}:/sbin:/system/bin:/system/xbin
+chmod 755 /sys
+chmod 644 /sys/fs/selinux/enforce
 echo 0 > /sys/fs/selinux/enforce
 echo "[MACHIN3X] mx.sh Started" | tee /dev/kmsg
 #rm '/data/dalvik-cache/arm/dev@tmp@install@common@magisk.apk@classes.dex' &> /dev/null
-
-/system/bin/chmod -h 755 /system/bin/app_process32 &> /dev/null
-/system/bin/chmod -h 755 /system/bin/app_process &> /dev/null
 
 if [ -f "/root/sqlite3" ]
 then
