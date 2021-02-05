@@ -13,6 +13,11 @@
 #Settings start now
 
 resetprop ro.secure 0
+resetprop ro.debuggable 1
+resetprop dev.knoxapp.running false
+resetprop audit.ondenial 0
+resetprop ro.build.selinux.enforce 0
+
 echo 0 > /sys/fs/selinux/enforce
 
 for MYBLOCK in mmcblk0 mmcblk0rpmb mmcblk1

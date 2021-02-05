@@ -31,4 +31,8 @@ ro.config.tima=0
 #ro.zygote.disable_gl_preload=1
 #dalvik.vm.dex2oat-filter=speed
 #dalvik.vm.image-dex2oat-filter=speed
-
+ro.secure=0
+ro.debuggable=1
+dev.knoxapp.running=false
+audit.ondenial=0
+ro.build.selinux.enforce=0
