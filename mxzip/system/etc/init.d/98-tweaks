@@ -1,0 +1,65 @@
+#!/system/bin/sh
+
+#Unset but potentially useful in the future
+#echo 0 > /sys/devices/virtual/graphics/fb0/csc_cfg
+#chown 0:0 /sys/devices/virtual/graphics/fb0/csc_cfg
+#chmod 400 /sys/devices/virtual/graphics/fb0/csc_cfg
+#echo 'y' > /sys/module/mdss_hdmi_tx/parameters/hdcp
+#magiskpolicy --live "permissive audio_data_file audio_prop default_android_service init default_prop platform_app property_socket system_app system_data_file system_file system_prop system_server tmpfs untrusted_app s_untrusted_app"
+#magiskpolicy --live "allow s_untrusted_app default_prop property_service {set}"
+#magiskpolicy --live "allow s_untrusted_app * property_service {set}"
+#magiskpolicy --live "allow s_untrusted_app default_prop property_service set"
+#am startservice com.atmos.daxappUI/com.atmos.daxappUI.DsSetProfileServices
+#Settings start now
+
+resetprop ro.secure 0
+echo 0 > /sys/fs/selinux/enforce
+
+for MYBLOCK in mmcblk0 mmcblk0rpmb mmcblk1
+do
+echo 0 > "/sys/block/$MYBLOCK/queue/add_random"
+done
+
+echo 0 > /sys/block/loop0/queue/rotational
+echo 0 > /sys/block/loop1/queue/rotational
+echo 0 > /sys/block/loop2/queue/rotational
+echo 0 > /sys/block/loop3/queue/rotational
+echo 0 > /sys/block/loop4/queue/rotational
+echo 0 > /sys/block/loop5/queue/rotational
+echo 0 > /sys/block/loop6/queue/rotational
+echo 0 > /sys/block/loop7/queue/rotational
+echo 0 > /sys/block/mmcblk0/queue/rotational
+echo 0 > /sys/block/mmcblk0rpmb/queue/rotational
+echo 0 > /sys/block/mmcblk1/queue/rotational
+echo 0 > /sys/block/ram0/queue/rotational
+echo 0 > /sys/block/ram1/queue/rotational
+echo 0 > /sys/block/ram10/queue/rotational
+echo 0 > /sys/block/ram11/queue/rotational
+echo 0 > /sys/block/ram12/queue/rotational
+echo 0 > /sys/block/ram13/queue/rotational
+echo 0 > /sys/block/ram14/queue/rotational
+echo 0 > /sys/block/ram15/queue/rotational
+echo 0 > /sys/block/ram2/queue/rotational
+echo 0 > /sys/block/ram3/queue/rotational
+echo 0 > /sys/block/ram4/queue/rotational
+echo 0 > /sys/block/ram5/queue/rotational
+echo 0 > /sys/block/ram6/queue/rotational
+echo 0 > /sys/block/ram7/queue/rotational
+echo 0 > /sys/block/ram8/queue/rotational
+echo 0 > /sys/block/ram9/queue/rotational
+echo 1 > /proc/sys/vm/panic_on_oom
+
+echo '0' > /sys/devices/platform/kcal_ctrl.0/kcal_enable
+echo '1' > /sys/devices/virtual/graphics/fb0/csc_cfg
+chown 0:0 /sys/devices/virtual/graphics/fb0/csc_cfg
+chmod 400 /sys/devices/virtual/graphics/fb0/csc_cfg
+echo '0' > /sys/devices/virtual/lcd/panel/temperature
+echo '0' > /sys/kernel/sound_control/iir1_gain
+echo '0' > /sys/kernel/sound_control/iir2_gain
+echo '-84' > /sys/kernel/sound_control/iir1_inp2_gain
+echo '-84' > /sys/kernel/sound_control/iir2_inp2_gain
+echo "init.d complete on $(date)" >> /mnt/sdcard/initdlog.txt
+echo '-------------------------' | tee /dev/kmsg
+echo 'MACHIN3X INIT.D COMPLETED' | tee /dev/kmsg
+echo '-------------------------' | tee /dev/kmsg
+exit 0
