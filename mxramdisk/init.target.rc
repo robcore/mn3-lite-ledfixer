@@ -32,6 +32,9 @@ on early-init
     mkdir /firmware-modem 0771 system system
     symlink /data/tombstones /tombstones
 
+    setenforce 0
+    setprop ro.boot.selinux 0
+
 on init
     # Set the property to indicate type of virtual display to 0
     # 0 indicates that virtual display is not a Wifi display and that the

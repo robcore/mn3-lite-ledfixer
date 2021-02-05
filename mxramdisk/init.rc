@@ -494,8 +494,8 @@ on boot
     chmod 0644 /sys/module/lowmemorykiller/parameters/minfree
 
     # Tweak background writeout
-    write /proc/sys/vm/dirty_expire_centisecs 200
-    write /proc/sys/vm/dirty_background_ratio  5
+    #write /proc/sys/vm/dirty_expire_centisecs 200
+    #write /proc/sys/vm/dirty_background_ratio  5
 
     # Permissions for System Server and daemons.
     chown radio system /sys/android_power/state
@@ -1029,8 +1029,8 @@ service lpm /system/bin/lpm
 
 #start SEC_PRODUCT_FEATURE_COMMON_SUPPORT_SE_FOR_ANDROID
 # Reload SE Android Policy for MDM
-on property:persist.security.mdm.policy=1
-    setprop selinux.reload_policy 1
+#on property:persist.security.mdm.policy=1
+    #setprop selinux.reload_policy 1
 #end SEC_PRODUCT_FEATURE_COMMON_SUPPORT_SE_FOR_ANDROID
 
 service console /system/bin/sh
@@ -1427,8 +1427,8 @@ service initscripts /system/xbin/busybox run-parts /system/etc/init.d
     group root shell
     oneshot
 
-#on property:init.svc.bootanim=stopped
-on property:sys.boot_completed=1
+#on property:sys.boot_completed=1
+on property:init.svc.bootanim=stopped
   start initscripts
 
 # bootchecker

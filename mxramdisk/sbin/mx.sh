@@ -124,13 +124,13 @@ done
 
 echo 1 > /proc/sys/vm/panic_on_oom
 echo 0 > /sys/devices/platform/kcal_ctrl.0/kcal_enable
-echo 0 > /sys/devices/virtual/graphics/fb0/csc_cfg
-chown 0:0 /sys/devices/virtual/graphics/fb0/csc_cfg
-chmod 400 /sys/devices/virtual/graphics/fb0/csc_cfg
+#echo 0 > /sys/devices/virtual/graphics/fb0/csc_cfg
+#chown 0:0 /sys/devices/virtual/graphics/fb0/csc_cfg
+#chmod 400 /sys/devices/virtual/graphics/fb0/csc_cfg
 echo cfq > /sys/block/mmcblk0/queue/scheduler
 echo cfq > /sys/block/mmcblk1/queue/scheduler
 echo 0 > /sys/block/mmcblk0/queue/iosched/slice_idle
 echo 0 > /sys/block/mmcblk1/queue/iosched/slice_idle
-echo 0 > /sys/devices/virtual/lcd/panel/temperature
+#echo 0 > /sys/devices/virtual/lcd/panel/temperature
 echo "[MACHIN3X] mx.sh Complete" | tee /dev/kmsg
 
