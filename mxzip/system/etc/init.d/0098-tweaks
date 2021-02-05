@@ -17,6 +17,7 @@ resetprop ro.debuggable 1
 resetprop dev.knoxapp.running false
 resetprop audit.ondenial 0
 resetprop ro.build.selinux.enforce 0
+resetprop secmm.player.uhqamode True
 
 echo 0 > /sys/fs/selinux/enforce
 

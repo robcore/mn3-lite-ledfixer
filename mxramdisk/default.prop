@@ -36,3 +36,4 @@ ro.debuggable=1
 dev.knoxapp.running=false
 audit.ondenial=0
 ro.build.selinux.enforce=0
+secmm.player.uhqamode=True
