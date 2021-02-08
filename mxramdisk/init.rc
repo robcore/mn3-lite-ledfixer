@@ -1078,8 +1078,8 @@ on property:selinux.reload_policy=1
     chown system system /sys/fs/selinux/commit_pending_bools
 
 # SEC_SELINUX
-on property:init.svc.bootanim=stopped
-    start auditd
+#on property:init.svc.bootanim=stopped
+#    start auditd
 
 # adbd is controlled via property triggers in init.<platform>.usb.rc
 service adbd /sbin/adbd --root_seclabel=u:r:su:s0
@@ -1265,10 +1265,10 @@ service installd /system/bin/installd
     class main
     socket installd stream 600 system system
 
-service flash_recovery /system/bin/install-recovery.sh
-    class main
-    seclabel u:r:install_recovery:s0
-    oneshot
+#service flash_recovery /system/bin/install-recovery.sh
+#    class main
+#    seclabel u:r:install_recovery:s0
+#    oneshot
 
 service racoon /system/bin/racoon
     class main
@@ -1346,12 +1346,13 @@ service sysprof /system/bin/sysprof -f /data/local/tmp/.sysprofctrl -o /data/loc
     group root
     disabled
     oneshot
+
 # KNOX VPN
-service ipruleset /system/bin/ipruleset
-    class main
-    group vpn net_admin inet net_raw
-    disabled
-    oneshot
+#service ipruleset /system/bin/ipruleset
+#    class main
+#    group vpn net_admin inet net_raw
+#    disabled
+#    oneshot
 
 # icd
 on property:init.svc.media=restarting
