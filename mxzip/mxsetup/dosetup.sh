@@ -107,37 +107,38 @@ done
 for OFIL in /overlay.d/system/preloadedkiosk/kioskdefault/kioskdefault.apk \
 /overlay.d/system/preloadedsso/samsungsso.apk_ \
 /overlay.d/system/preloadedsso/ssoservice.apk_ \
-/overlay.d./system/etc/secure_storage/.system.bin.app_process/ss_id \
-/overlay.d./system/etc/secure_storage/.system.bin.dex2oat/ss_id \
-/overlay.d./system/etc/secure_storage/.system.bin.dexopt/ss_id \
-/overlay.d./system/etc/secure_storage/.system.bin.vold/ss_id \
-/overlay.d./system/etc/secure_storage/.system.bin.wpa_supplicant/ss_id \
-/overlay.d./system/etc/secure_storage/.system.lib.libSecFileServerUnit.so/ss_id \
-/overlay.d./system/etc/secure_storage/.system.lib.libandroid_runtime.so/ss_id \
-/overlay.d./system/etc/secure_storage/.system.lib.libart.so/ss_id \
-/overlay.d./system/etc/secure_storage/.system.lib.libc.so/ss_id \
-/overlay.d./system/etc/secure_storage/.system.lib.libcrypto.so/ss_id \
-/overlay.d./system/etc/secure_storage/.system.lib.libdirencryption.so/ss_id \
-/overlay.d./system/etc/secure_storage/.system.lib.libdvm.so/ss_id \
-/overlay.d./system/etc/secure_storage/.system.lib.libhsvtest.so/ss_id \
-/overlay.d./system/etc/secure_storage/.system.lib.libm.so/ss_id \
-/overlay.d./system/etc/secure_storage/.system.lib.libsec_ecryptfs.so/ss_id \
-/overlay.d./system/etc/secure_storage/.system.lib.libsec_ode_km.so/ss_id \
-/overlay.d./system/etc/secure_storage/.system.lib.libsecure_storage.so/ss_id \
-/overlay.d./system/etc/secure_storage/.system.lib.libsecure_storage_jni.so/ss_id \
-/overlay.d./system/etc/secure_storage/.system.lib.libsqlite.so/ss_id \
-/overlay.d./system/etc/secure_storage/com.policydm/ss_id \
-/overlay.d./system/etc/secure_storage/com.samsung.android.intelligenceservice/ss_id \
-/overlay.d./system/etc/secure_storage/com.samsung.android.personalpage.service/ss_id \
-/overlay.d./system/etc/secure_storage/com.samsung.android.providers.context/ss_id \
-/overlay.d./system/etc/secure_storage/com.samsung.android.securitylogagent/ss_id \
-/overlay.d./system/etc/secure_storage/com.sec.android.app.shealth.heartrate/ss_id \
-/overlay.d./system/etc/secure_storage/com.sec.android.service.health/ss_id \
-/overlay.d./system/etc/secure_storage/com.sec.android.signaturelock/ss_id \
-/overlay.d./system/etc/secure_storage/com.sec.android.spc/ss_id \
-/overlay.d./system/etc/secure_storage/com.sec.knox.store/ss_id \
-/overlay.d./system/etc/secure_storage/ss_config \
-/overlay.d./system/etc/secure_storage/system_server/ss_id
+/overlay.d/system/etc/secure_storage/.system.bin.app_process/ss_id \
+/overlay.d/system/etc/secure_storage/.system.bin.dex2oat/ss_id \
+/overlay.d/system/etc/secure_storage/.system.bin.dexopt/ss_id \
+/overlay.d/system/etc/secure_storage/.system.bin.vold/ss_id \
+/overlay.d/system/etc/secure_storage/.system.bin.wpa_supplicant/ss_id \
+/overlay.d/system/etc/secure_storage/.system.lib.libSecFileServerUnit.so/ss_id \
+/overlay.d/system/etc/secure_storage/.system.lib.libandroid_runtime.so/ss_id \
+/overlay.d/system/etc/secure_storage/.system.lib.libart.so/ss_id \
+/overlay.d/system/etc/secure_storage/.system.lib.libc.so/ss_id \
+/overlay.d/system/etc/secure_storage/.system.lib.libcrypto.so/ss_id \
+/overlay.d/system/etc/secure_storage/.system.lib.libdirencryption.so/ss_id \
+/overlay.d/system/etc/secure_storage/.system.lib.libdvm.so/ss_id \
+/overlay.d/system/etc/secure_storage/.system.lib.libhsvtest.so/ss_id \
+/overlay.d/system/etc/secure_storage/.system.lib.libm.so/ss_id \
+/overlay.d/system/etc/secure_storage/.system.lib.libsec_ecryptfs.so/ss_id \
+/overlay.d/system/etc/secure_storage/.system.lib.libsec_ode_km.so/ss_id \
+/overlay.d/system/etc/secure_storage/.system.lib.libsecure_storage.so/ss_id \
+/overlay.d/system/etc/secure_storage/.system.lib.libsecure_storage_jni.so/ss_id \
+/overlay.d/system/etc/secure_storage/.system.lib.libsqlite.so/ss_id \
+/overlay.d/system/etc/secure_storage/com.policydm/ss_id \
+/overlay.d/system/etc/secure_storage/com.samsung.android.intelligenceservice/ss_id \
+/overlay.d/system/etc/secure_storage/com.samsung.android.personalpage.service/ss_id \
+/overlay.d/system/etc/secure_storage/com.samsung.android.providers.context/ss_id \
+/overlay.d/system/etc/secure_storage/com.samsung.android.securitylogagent/ss_id \
+/overlay.d/system/etc/secure_storage/com.sec.android.app.shealth.heartrate/ss_id \
+/overlay.d/system/etc/secure_storage/com.sec.android.service.health/ss_id \
+/overlay.d/system/etc/secure_storage/com.sec.android.signaturelock/ss_id \
+/overlay.d/system/etc/secure_storage/com.sec.android.spc/ss_id \
+/overlay.d/system/etc/secure_storage/com.sec.knox.store/ss_id \
+/overlay.d/system/etc/secure_storage/ss_config \
+/overlay.d/system/etc/secure_storage/system_server/ss_id \
+/system/etc/init.qcom.post_boot.sh
 do
     chown 0:0 "$OFIL"
     chmod 644 "$OFIL"
