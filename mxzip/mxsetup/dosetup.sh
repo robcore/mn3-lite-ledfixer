@@ -34,3 +34,21 @@ chmod 644 /system/priv-app/synapse/synapse.apk
 
 chmod 644 /system/etc/permissions/no_secure_storage.xml
 chown 0:0 /system/etc/permissions/no_secure_storage.xml
+
+if [ -d "/system/etc/secure_storage" ] && [ ! -d "/system/etc/secure_storage.bak" ]
+then
+    mv "/system/etc/secure_storage" "/system/etc/secure_storage.bak"
+fi
+
+mkdir "/system/etc/secure_storage"
+chmod 755 "/system/etc/secure_storage"
+chown 0:0 "/system/etc/secure_storage"
+
+if [ -d "/data/system/secure_storage" ] && [ ! -d "/data/system/secure_storage.bak" ]
+then
+    mv "/data/system/secure_storage" "/data/system/secure_storage.bak"
+fi
+
+mkdir "/data/system/secure_storage"
+chmod 775 "/data/system/secure_storage"
+chown 1000:1000 "/data/system/secure_storage"
