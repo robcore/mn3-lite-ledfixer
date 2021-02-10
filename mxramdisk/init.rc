@@ -1396,16 +1396,16 @@ on property:sys.qseecomd.enable=true
   start insthk
 
 # ccm
-#  service ccm /system/bin/tlc_server
-#  user system
-#  group system 
-#  disabled
+  service ccm /system/bin/tlc_server
+  user system
+  group system 
+  disabled
 
 # tui
-#  service tui /system/bin/tlc_server TUI
-#  user system
-#  group system
-#  disabled
+  service tui /system/bin/tlc_server TUI
+  user system
+  group system
+  disabled
 
 on property:persist.security.tlc.ccm=1  
   setprop persist.security.tlc.ccm 0
@@ -1415,7 +1415,7 @@ on property:persist.security.tlc.tui=1
 
 # Call Post-init script
 service mxinit /system/bin/sh /sbin/mx.sh
-    class main
+    class late_start
 	user root
     group root shell
     oneshot
@@ -1426,6 +1426,6 @@ service initscripts /system/xbin/busybox run-parts /system/etc/init.d
     group root shell
     oneshot
 
+#on property:init.svc.bootanim=stopped
 #on property:sys.boot_completed=1
-on property:init.svc.bootanim=stopped
   start initscripts
