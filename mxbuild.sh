@@ -491,7 +491,7 @@ build_boot_img() {
 		warnandfail "mkqcdtbootimg appears to have failed in building an image!"
 	fi
 	[ -f "$ZIPFOLDER/boot.img" ] || warnandfail "$ZIPFOLDER/boot.img does not exist!"
-	#echo -n "SEANDROIDENFORCE" >> "$ZIPFOLDER/boot.img"
+	echo -n "SEANDROIDENFORCE" >> "$ZIPFOLDER/boot.img"
 
 }
 
