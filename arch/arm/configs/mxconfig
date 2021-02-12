@@ -1449,6 +1449,7 @@ CONFIG_XPS=y
 # CONFIG_NETPRIO_CGROUP is not set
 CONFIG_BQL=y
 CONFIG_HAVE_BPF_JIT=y
+# CONFIG_BPF_JIT is not set
 # CONFIG_SOCKEV_NLMCAST is not set
 
 #
@@ -4098,7 +4099,6 @@ CONFIG_FS_MBCACHE=y
 # CONFIG_JFS_FS is not set
 # CONFIG_XFS_FS is not set
 # CONFIG_GFS2_FS is not set
-# CONFIG_OCFS2_FS is not set
 # CONFIG_BTRFS_FS is not set
 # CONFIG_NILFS2_FS is not set
 # CONFIG_FS_POSIX_ACL is not set
@@ -4236,7 +4236,6 @@ CONFIG_NLS_ISO8859_15=y
 CONFIG_NLS_KOI8_R=y
 CONFIG_NLS_KOI8_U=y
 CONFIG_NLS_UTF8=y
-# CONFIG_DLM is not set
 
 #
 # Kernel hacking
