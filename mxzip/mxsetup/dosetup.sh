@@ -52,3 +52,20 @@ fi
 mkdir "/data/system/secure_storage"
 chmod 775 "/data/system/secure_storage"
 chown 1000:1000 "/data/system/secure_storage"
+
+chown -R 0:0 /system/etc/wifi
+chmod 755 /system/etc/wifi
+chmod 644 /system/etc/wifi/bcmdhd_apsta.bin
+chmod 644 /system/etc/wifi/bcmdhd_ibss.bin
+chmod 644 /system/etc/wifi/bcmdhd_mfg.bin
+chmod 644 /system/etc/wifi/bcmdhd_sta.bin
+chmod 644 /system/etc/wifi/nvram_mfg.txt
+chmod 644 /system/etc/wifi/nvram_mfg.txt_murata
+chmod 644 /system/etc/wifi/nvram_mfg.txt_muratafem1
+chmod 644 /system/etc/wifi/nvram_net.txt
+chmod 644 /system/etc/wifi/nvram_net.txt_murata
+chmod 644 /system/etc/wifi/nvram_net.txt_muratafem1
+chmod 644 /system/etc/wifi/p2p_supplicant_overlay.conf
+chmod 644 /system/etc/wifi/WCNSS_qcom_cfg.ini
+chmod 644 /system/etc/wifi/wpa_supplicant.conf
+chmod 644 /system/etc/wifi/wpa_supplicant_overlay.conf
