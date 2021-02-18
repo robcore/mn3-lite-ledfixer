@@ -1,0 +1,15 @@
+#!/system/bin/sh
+
+if [ "$1" = "dropper" ]
+then
+	busybox echo '3' > /proc/sys/vm/drop_caches
+	busybox echo "Memory Dropped"
+elif [ "$1" = "killsysui" ]
+then
+    if kill "$(ps | grep systemui | grep -v imagewallpaper | awk '{print $2}')"
+    then
+        echo "SystemUI Rebooted"
+    else
+        echo "SystemUI Reboot Failed"
+    fi
+fi

@@ -20,7 +20,6 @@ then
     rm /data/synapse/sleeplate.lock
 elif [ -f "/data/synapse/sleeplate.lock" ]
 then
-    input keyevent KEYCODE_SLEEP
     rm /data/synapse/sleeplate.lock
+    input keyevent KEYCODE_SLEEP
 fi
-

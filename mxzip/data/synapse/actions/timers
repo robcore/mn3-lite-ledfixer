@@ -1,0 +1,60 @@
+#!/system/bin/sh
+
+if [ "$1" = "sleeptimer" ]
+then
+    if [ -f "/data/synapse/sleeplate.lock" ]
+    then
+        busybox echo "Sleeptimer already Running"
+    else
+        busybox echo 'RUN' > /data/synapse/sleeplate.lock
+        /sbin/sleepcond &
+        busybox echo "Sleeptimer Running"
+    fi
+elif [ "$1" = "cancelsleeptimer" ]
+then
+    if [ -f "/data/synapse/sleeplate.lock" ]
+    then
+        busybox rm "/data/synapse/sleeplate.lock"
+        busybox echo "Sleeptimer Cancelled"
+    else
+        busybox echo "Sleeptimer Not Running"
+    fi
+elif [ "$1" = "reboottimer" ]
+then
+    if [ -f "/data/synapse/rebootlate.lock" ]
+    then
+        busybox echo "Reboottimer already Running"
+    else
+        busybox echo 'RUN' > /data/synapse/rebootlate.lock
+        /sbin/recond &
+        busybox echo "Reboottimer Running"
+    fi
+elif [ "$1" = "cancelreboottimer" ]
+then
+    if [ -f "/data/synapse/rebootlate.lock" ]
+    then
+        busybox rm "/data/synapse/rebootlate.lock"
+        busybox echo "Reboottimer Cancelled"
+    else
+        busybox echo "Reboottimer Not Running"
+    fi
+elif [ "$1" = "powerofftimer" ]
+then
+    if [ -f "/data/synapse/powerofflate.lock" ]
+    then
+        busybox echo "PowerOfftimer already Running"
+    else
+        busybox echo 'RUN' > /data/synapse/powerofflate.lock
+        /sbin/powond &
+        busybox echo "PowerOfftimer Running"
+    fi
+elif [ "$1" = "cancelpowerofftimer" ]
+then
+    if [ -f "/data/synapse/powerofflate.lock" ]
+    then
+        busybox rm "/data/synapse/powerofflate.lock"
+        busybox echo "PowerOfftimer Cancelled"
+    else
+        busybox echo "PowerOfftimer Not Running"
+    fi
+fi

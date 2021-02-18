@@ -3,6 +3,7 @@ cat << CTAG
     name:QUICKTOOLS,
         elements:[
             { SLiveLabel:{
+                refresh:0,
                 action:"getinfo label"
             }},
             { SSpacer:{
@@ -36,14 +37,48 @@ cat << CTAG
             }},
             { SButton:{
                 label:"Sleeptimer",
-                action:"getinfo sleeptimer"
+                action:"timers sleeptimer"
             }},
             { SSpacer:{
                 height: 1
             }},
             { SButton:{
                 label:"Cancel Sleeptimer",
-                action:"getinfo cancelsleeptimer"
+                action:"timers cancelsleeptimer"
+            }},
+            { SSpacer:{
+                height: 1
+            }},
+            { STitleBar:{
+                title:"RebootTimer"
+            }},
+            { SButton:{
+                label:"RebootTimer",
+                action:"timers reboottimer"
+            }},
+            { SSpacer:{
+                height: 1
+            }},
+            { SButton:{
+                label:"Cancel RebootTimer",
+                action:"timers cancelreboottimer"
+            }},
+            { SSpacer:{
+                height: 1
+            }},
+            { STitleBar:{
+                title:"PowerOffTimer"
+            }},
+            { SButton:{
+                label:"PowerOffTimer",
+                action:"timers powerofftimer"
+            }},
+            { SSpacer:{
+                height: 1
+            }},
+            { SButton:{
+                label:"Cancel PowerOffTimer",
+                action:"timers cancelpowerofftimer"
             }},
             { SSpacer:{
                 height: 1
@@ -56,7 +91,7 @@ cat << CTAG
             }},
             { SButton:{
                 label:"Dropper",
-                action:"getinfo dropper"
+                action:"utils dropper"
             }},
             { STitleBar:{
                 title:"Reboot SystemUI"
@@ -66,7 +101,7 @@ cat << CTAG
             }},
             { SButton:{
                 label:"Reboot SystemUI",
-                action:"getinfo killsysui"
+                action:"utils killsysui"
             }},
         ]
     }

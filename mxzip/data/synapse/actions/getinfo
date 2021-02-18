@@ -3,53 +3,7 @@
 if [ "$1" = "label" ]
 then
     busybox echo "Machin3x"
-elif [ "$1" = "sleeptimer" ]
-then
-    if [ -f "/data/synapse/sleeplate.lock" ]
-    then
-        busybox echo "Sleeptimer already Running"
-    else
-        busybox echo 'RUN' > /data/synapse/sleeplate.lock
-        /sbin/sleepcond &
-        busybox echo "Sleeptimer Running"
-    fi
-elif [ "$1" = "cancelsleeptimer" ]
-then
-    if [ -f "/data/synapse/sleeplate.lock" ]
-    then
-        busybox rm "/data/synapse/sleeplate.lock"
-        busybox echo "Sleeptimer Cancelled"
-    else
-        busybox echo "Sleeptimer Not Running"
-    fi
 elif [ "$1" = "current_now" ]
 then
     busybox cat /sys/class/power_supply/battery/current_now
-elif [ "$1" = "hard_reset" ]
-then
-    CURVAL=$(busybox cat /sys/module/restart/parameters/hard_reset)
-    if [ -n "$2" ]
-    then
-        if [ "$2" = "$CURVAL" ]
-        then
-            busybox cat /sys/module/restart/parameters/hard_reset
-        else
-            busybox echo "$2" > /sys/module/restart/parameters/hard_reset
-            busybox cat /sys/module/restart/parameters/hard_reset
-        fi
-    else
-        busybox cat /sys/module/restart/parameters/hard_reset
-    fi
-elif [ "$1" = "dropper" ]
-then
-	busybox echo '3' > /proc/sys/vm/drop_caches
-	busybox echo "Memory Dropped"
-elif [ "$1" = "killsysui" ]
-then
-    if kill "$(ps | grep systemui | grep -v imagewallpaper | awk '{print $2}')"
-    then
-        echo "SystemUI Rebooted"
-    else
-        echo "SystemUI Reboot Failed"
-    fi
 fi
