@@ -19,6 +19,32 @@ then
     else
         busybox echo "Sleeptimer Not Running"
     fi
+elif [ "$1" = "stout" ]
+then
+    if [ ! -f "/data/synapse/stimeout" ] || [ -z "$(busybox cat /data/synapse/stimeout)" ]
+    then
+        busybox echo "$((60*60))" > /data/synapse/stimeout
+    fi
+    RAWVAL="$(busybox cat /data/synapse/stimeout)"
+    CURVAL="$((RAWVAL/60))"
+    if [ -n "$2" ]
+    then
+        if [ "$2" = "$CURVAL" ]
+        then
+            busybox echo "$CURVAL"
+        elif [ -f "/data/synapse/sleeplate.lock" ]
+        then
+            busybox echo "$CURVAL"
+        else
+            NEWVAL="$2"
+            busybox echo "$((NEWVAL*60))" > /data/synapse/stimeout
+            NEWRAW="$(busybox cat /data/synapse/stimeout)"
+            NEWCUR="$((NEWRAW/60))"
+            busybox echo "$NEWCUR"
+        fi
+    else
+        busybox echo "$CURVAL"
+    fi
 elif [ "$1" = "reboottimer" ]
 then
     if [ -f "/data/synapse/rebootlate.lock" ]
@@ -38,6 +64,32 @@ then
     else
         busybox echo "Reboottimer Not Running"
     fi
+elif [ "$1" = "rtout" ]
+then
+    if [ ! -f "/data/synapse/rtimeout" ] || [ -z "$(busybox cat /data/synapse/rtimeout)" ]
+    then
+        busybox echo "$((60*60))" > /data/synapse/rtimeout
+    fi
+    RAWVAL="$(busybox cat /data/synapse/rtimeout)"
+    CURVAL="$((RAWVAL/60))"
+    if [ -n "$2" ]
+    then
+        if [ "$2" = "$CURVAL" ]
+        then
+            busybox echo "$CURVAL"
+        elif [ -f "/data/synapse/rebootlate.lock" ]
+        then
+            busybox echo "$CURVAL"
+        else
+            NEWVAL="$2"
+            busybox echo "$((NEWVAL*60))" > /data/synapse/rtimeout
+            NEWRAW="$(busybox cat /data/synapse/rtimeout)"
+            NEWCUR="$((NEWRAW/60))"
+            busybox echo "$NEWCUR"
+        fi
+    else
+        busybox echo "$CURVAL"
+    fi
 elif [ "$1" = "powerofftimer" ]
 then
     if [ -f "/data/synapse/powerofflate.lock" ]
@@ -56,5 +108,31 @@ then
         busybox echo "PowerOfftimer Cancelled"
     else
         busybox echo "PowerOfftimer Not Running"
+    fi
+elif [ "$1" = "ptout" ]
+then
+    if [ ! -f "/data/synapse/ptimeout" ] || [ -z "$(busybox cat /data/synapse/ptimeout)" ]
+    then
+        busybox echo "$((60*60))" > /data/synapse/ptimeout
+    fi
+    RAWVAL="$(busybox cat /data/synapse/ptimeout)"
+    CURVAL="$((RAWVAL/60))"
+    if [ -n "$2" ]
+    then
+        if [ "$2" = "$CURVAL" ]
+        then
+            busybox echo "$CURVAL"
+        elif [ -f "/data/synapse/powerofflate.lock" ]
+        then
+            busybox echo "$CURVAL"
+        else
+            NEWVAL="$2"
+            busybox echo "$((NEWVAL*60))" > /data/synapse/ptimeout
+            NEWRAW="$(busybox cat /data/synapse/ptimeout)"
+            NEWCUR="$((NEWRAW/60))"
+            busybox echo "$NEWCUR"
+        fi
+    else
+        busybox echo "$CURVAL"
     fi
 fi

@@ -35,6 +35,14 @@ cat << CTAG
             { STitleBar:{
                 title:"SleepTimer"
             }},
+            { SSeekBar:{
+                title:"SleepTimer Timeout",
+                max:720,
+                min:1,
+                step:1,
+                default:60,
+                action:"timers stout"
+            }},
             { SButton:{
                 label:"Sleeptimer",
                 action:"timers sleeptimer"
@@ -52,6 +60,14 @@ cat << CTAG
             { STitleBar:{
                 title:"RebootTimer"
             }},
+            { SSeekBar:{
+                title:"RebootTimer Timeout",
+                max:720,
+                min:1,
+                step:1,
+                default:60,
+                action:"timers rtout"
+            }},
             { SButton:{
                 label:"RebootTimer",
                 action:"timers reboottimer"
@@ -68,6 +84,14 @@ cat << CTAG
             }},
             { STitleBar:{
                 title:"PowerOffTimer"
+            }},
+            { SSeekBar:{
+                title:"PowerOffTimer Timeout",
+                max:720,
+                min:1,
+                step:1,
+                default:60,
+                action:"timers ptout"
             }},
             { SButton:{
                 label:"PowerOffTimer",

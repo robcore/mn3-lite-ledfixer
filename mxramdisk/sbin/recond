@@ -1,17 +1,29 @@
 #!/system/xbin/busybox sh
 
-i="0"
+RTIME="0"
+
+if [ ! -f "/data/synapse/rtimeout" ] || [ -z "$(busybox cat /data/synapse/rtimeout)" ]
+then
+    busybox echo "3600" > /data/synapse/rtimeout
+fi
+
+TIMEOUTVAL="$(busybox cat /data/synapse/rtimeout)"
+
+if [ -z "$TIMEOUTVAL" ]
+then
+    TIMEOUTVAL="3600"
+fi
 
 if [ -f "/data/synapse/rebootlate.lock" ]
 then
-    while [ $i -lt 3600 ]
+    while [ $RTIME -lt $TIMEOUTVAL ]
     do
         if [ ! -f "/data/synapse/rebootlate.lock" ]
         then
             break
         fi
         sleep 1
-        i=$(( i + 1 ))
+        RTIME=$(( RTIME + 1 ))
     done
 fi
 
