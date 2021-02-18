@@ -135,4 +135,7 @@ echo 0 > /sys/block/mmcblk0/queue/iosched/slice_idle
 echo 0 > /sys/block/mmcblk1/queue/iosched/slice_idle
 #echo 0 > /sys/devices/virtual/lcd/panel/temperature
 echo "[MACHIN3X] mx.sh Complete" | tee /dev/kmsg
+echo "[MACHIN3X] Running Init.d" | tee /dev/kmsg
 
+/system/xbin/busybox run-parts /system/etc/init.d &
+exit 0

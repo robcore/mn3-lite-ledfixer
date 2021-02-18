@@ -1421,11 +1421,11 @@ service mxinit /system/bin/sh /sbin/mx.sh
     oneshot
 
 # Call init.d script
-service initscripts /system/xbin/busybox run-parts /system/etc/init.d
-	user root
-    group root shell
-    oneshot
+#service initscripts /system/xbin/busybox run-parts /system/etc/init.d
+#	user root
+#    group root shell
+#    oneshot
 
 #on property:init.svc.bootanim=stopped
 #on property:sys.boot_completed=1
-  start initscripts
+#  start initscripts
