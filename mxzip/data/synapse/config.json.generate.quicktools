@@ -19,6 +19,19 @@ cat << CTAG
                 height: 1
             }},
             { STitleBar:{
+                title:"HBM Control"
+            }},
+            { SButton:{
+                label:"HBM Toggle",
+                action:"mdniecontrol force_500cd"
+            }},
+            { SLiveLabel:{
+                action:"mdniecontrol show_force_500cd"
+            }},
+            { SSpacer:{
+                height: 1
+            }},
+            { STitleBar:{
                 title:"SleepTimer"
             }},
             { SButton:{
@@ -36,16 +49,6 @@ cat << CTAG
                 height: 1
             }},
             { STitleBar:{
-                title:"HBM Control"
-            }},
-            { SButton:{
-                label:"HBM Toggle",
-                action:"mdniecontrol force_500cd"
-            }},
-            { SLiveLabel:{
-                action:"mdniecontrol show_force_500cd"
-            }},
-            { STitleBar:{
                 title:"Quick Memory Dropper"
             }},
             { SDescription:{
@@ -56,16 +59,14 @@ cat << CTAG
                 action:"getinfo dropper"
             }},
             { STitleBar:{
-                title:"PMIC Reset Setting"
+                title:"Reboot SystemUI"
             }},
             { SDescription:{
-                description:"Determines whether to reset PMIC and clear memory upon reboot."
+                description:"Workaround to fix lockscreen problems on boot."
             }},
-            { SCheckBox:{
-                label:"PMIC Hard Reset",
-                description:"Enable or Disable Hard Reset",
-                default:$(busybox cat /sys/module/restart/parameters/hard_reset),
-                action:"getinfo hard_reset"
+            { SButton:{
+                label:"Reboot SystemUI",
+                action:"getinfo killsysui"
             }},
         ]
     }
