@@ -34,13 +34,6 @@ then
     then
         busybox echo "HBM Enabled"
     fi
-elif [ "$1" = "power_reduce" ]
-then
-    if [ -n "$2" ]
-    then
-        busybox echo "$2" > /sys/devices/virtual/lcd/panel/power_reduce
-    fi
-    busybox cat /sys/devices/virtual/lcd/panel/power_reduce
 elif [ "$1" = "chroma" ]
 then
     if [ -n "$2" ]
