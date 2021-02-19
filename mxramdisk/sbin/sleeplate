@@ -1,8 +1,0 @@
-#!/system/bin/sh
-
-if [ -f "/data/synapse/sleeplate.lock" ]
-then
-    sleep 3600
-    input keyevent KEYCODE_SLEEP
-    rm /data/synapse/sleeplate.lock
-fi

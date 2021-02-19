@@ -107,14 +107,38 @@ chmod 666 "/sys/module/lowmemorykiller/parameters/cost"
 chmod 666 "/sys/module/lowmemorykiller/parameters/adj"
 chmod 666 "/sys/module/lowmemorykiller/parameters/minfree"
 
+chmod 755 /data/synapse
+chown -R 0:0 /data/synapse
+chmod 644 /data/synapse/config.json*
+chmod -R 755 /data/synapse/actions
+if [ ! -d "/data/synapse/stemp" ]
+then
+    mkdir "/data/synapse/stemp"
+fi
+
+chmod 755 /data/synapse/stemp
+chown -R 0:0 /data/synapse/stemp
+chmod 644 /data/synapse/stemp/*
+
 if [ -f "/data/synapse/config.json" ]
 then
     rm "/data/synapse/config.json"
 fi
 
-chmod 755 "/sbin/sleeplate"
-chown 0:2000 "/sbin/sleeplate"
-rm /data/synapse/sleeplate.lock &> /dev/null
+chmod 755 "/sbin/powond"
+chown 0:2000 "/sbin/powond"
+chmod 755 "/sbin/recond"
+chown 0:2000 "/sbin/recond"
+chmod 755 "/sbin/sleepcond"
+chown 0:2000 "/sbin/sleepcond"
+
+rm /data/synapse/stemp/sleeplate.lock &> /dev/null
+rm /data/synapse/stemp/powerofflate.lock &> /dev/null
+rm /data/synapse/stemp/rebootlate.lock &> /dev/null
+
+echo "0" > /data/synapse/stemp/sleepclock
+echo "0" > /data/synapse/stemp/rebootclock
+echo "0" > /data/synapse/stemp/poweroffclock
 chmod 644 "/sys/block/mmcblk0/queue/scheduler"
 chmod 644 "/sys/block/mmcblk0rpmb/queue/scheduler"
 chmod 644 "/sys/block/mmcblk1/queue/scheduler"

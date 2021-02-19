@@ -33,76 +33,14 @@ cat << CTAG
                 height: 1
             }},
             { STitleBar:{
-                title:"SleepTimer"
+                title:"Reboot SystemUI"
             }},
-            { SSeekBar:{
-                title:"SleepTimer Timeout",
-                max:720,
-                min:1,
-                step:1,
-                default:60,
-                action:"timers stout"
+            { SDescription:{
+                description:"Workaround to fix lockscreen problems on boot."
             }},
             { SButton:{
-                label:"Sleeptimer",
-                action:"timers sleeptimer"
-            }},
-            { SSpacer:{
-                height: 1
-            }},
-            { SButton:{
-                label:"Cancel Sleeptimer",
-                action:"timers cancelsleeptimer"
-            }},
-            { SSpacer:{
-                height: 1
-            }},
-            { STitleBar:{
-                title:"RebootTimer"
-            }},
-            { SSeekBar:{
-                title:"RebootTimer Timeout",
-                max:720,
-                min:1,
-                step:1,
-                default:60,
-                action:"timers rtout"
-            }},
-            { SButton:{
-                label:"RebootTimer",
-                action:"timers reboottimer"
-            }},
-            { SSpacer:{
-                height: 1
-            }},
-            { SButton:{
-                label:"Cancel RebootTimer",
-                action:"timers cancelreboottimer"
-            }},
-            { SSpacer:{
-                height: 1
-            }},
-            { STitleBar:{
-                title:"PowerOffTimer"
-            }},
-            { SSeekBar:{
-                title:"PowerOffTimer Timeout",
-                max:720,
-                min:1,
-                step:1,
-                default:60,
-                action:"timers ptout"
-            }},
-            { SButton:{
-                label:"PowerOffTimer",
-                action:"timers powerofftimer"
-            }},
-            { SSpacer:{
-                height: 1
-            }},
-            { SButton:{
-                label:"Cancel PowerOffTimer",
-                action:"timers cancelpowerofftimer"
+                label:"Reboot SystemUI",
+                action:"utils killsysui"
             }},
             { SSpacer:{
                 height: 1
@@ -116,16 +54,6 @@ cat << CTAG
             { SButton:{
                 label:"Dropper",
                 action:"utils dropper"
-            }},
-            { STitleBar:{
-                title:"Reboot SystemUI"
-            }},
-            { SDescription:{
-                description:"Workaround to fix lockscreen problems on boot."
-            }},
-            { SButton:{
-                label:"Reboot SystemUI",
-                action:"utils killsysui"
             }},
         ]
     }

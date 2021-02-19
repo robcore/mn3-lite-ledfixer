@@ -2,6 +2,7 @@ busybox cat << CTAG
 {
   sections:[
     $(. /data/synapse/config.json.generate.quicktools),
+    $(. /data/synapse/config.json.generate.timers),
     $(. /data/synapse/config.json.generate.sound),
     $(. /data/synapse/config.json.generate.iirs),
     $(. /data/synapse/config.json.generate.mdnie)

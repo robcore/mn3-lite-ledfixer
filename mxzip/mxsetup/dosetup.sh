@@ -10,6 +10,8 @@ chmod 755 /data/synapse
 chown -R 0:0 /data/synapse
 chmod 644 /data/synapse/config.*
 chmod -R 755 /data/synapse/actions
+chmod 755 /data/synapse/stemp
+chmod 644 /data/synapse/stemp/*
 
 if [ -f "/data/synapse/config.json" ]
 then
@@ -38,18 +40,18 @@ chown 0:0 /system/etc/permissions/no_secure_storage.xml
 if [ -d "/system/etc/secure_storage" ] && [ ! -d "/system/etc/secure_storage.bak" ]
 then
     mv "/system/etc/secure_storage" "/system/etc/secure_storage.bak"
+    mkdir "/system/etc/secure_storage"
 fi
 
-mkdir "/system/etc/secure_storage"
 chmod 755 "/system/etc/secure_storage"
 chown 0:0 "/system/etc/secure_storage"
 
 if [ -d "/data/system/secure_storage" ] && [ ! -d "/data/system/secure_storage.bak" ]
 then
     mv "/data/system/secure_storage" "/data/system/secure_storage.bak"
+    mkdir "/data/system/secure_storage"
 fi
 
-mkdir "/data/system/secure_storage"
 chmod 775 "/data/system/secure_storage"
 chown 1000:1000 "/data/system/secure_storage"
 
