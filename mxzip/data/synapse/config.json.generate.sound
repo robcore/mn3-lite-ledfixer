@@ -21,7 +21,7 @@ busybox cat << CTAG
                 description:"HEADPHONE JACK:"
             }},
             { SLiveLabel:{
-                refresh:500,
+                refresh:1000,
                 action:"soundcontrol secjack_state"
             }},
             { SSpacer:{
@@ -31,7 +31,7 @@ busybox cat << CTAG
                 description:"HEADPHONE DAC:"
             }},
             { SLiveLabel:{
-                refresh:500,
+                refresh:1000,
                 action:"soundcontrol headphone_dac_enabled"
             }},
             { SSpacer:{
@@ -41,7 +41,7 @@ busybox cat << CTAG
                 description:"HEADPHONE PA:"
             }},
             { SLiveLabel:{
-                refresh:500,
+                refresh:1000,
                 action:"soundcontrol hph_status"
             }},
             { STitleBar:{
@@ -309,7 +309,7 @@ busybox cat << CTAG
                 action:"soundcontrol autochopper"
             }},
             { SLiveLabel:{
-                refresh:500,
+                refresh:1000,
                 action:"soundcontrol autochopper_raw"
             }},
             { SCheckBox:{
@@ -319,7 +319,7 @@ busybox cat << CTAG
                 action:"soundcontrol chopbypass"
             }},
             { SLiveLabel:{
-                refresh:500,
+                refresh:1000,
                 action:"soundcontrol chopper"
             }},
             { SSpacer:{
@@ -332,7 +332,7 @@ busybox cat << CTAG
                 description:"Compander Values for Debugging"
             }},
             { SLiveLabel:{
-                refresh:500,
+                refresh:1000,
                 action:"soundcontrol compander1"
             }},
         ]
