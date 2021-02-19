@@ -64,7 +64,7 @@ then
         busybox echo "0" > /data/synapse/stemp/sleepclock
     fi
     RAWTIME="$(busybox cat /data/synapse/stemp/sleepclock)"
-    printf '%d:%02d\n' $((RAWTIME/3600)) $((RAWTIME%3600/60))
+    printf '%d:%02d:%02d\n' $((RAWTIME/3600)) $((RAWTIME%3600/60)) $((RAWTIME%60))
 elif [ "$1" = "reboottimer" ]
 then
     if [ -f "/data/synapse/stemp/rebootlate.lock" ]
@@ -129,7 +129,7 @@ then
         busybox echo "0" > /data/synapse/stemp/rebootclock
     fi
     RAWTIME="$(busybox cat /data/synapse/stemp/rebootclock)"
-    printf '%d:%02d\n' $((RAWTIME/3600)) $((RAWTIME%3600/60))
+    printf '%d:%02d:%02d\n' $((RAWTIME/3600)) $((RAWTIME%3600/60)) $((RAWTIME%60))
 elif [ "$1" = "powerofftimer" ]
 then
     if [ -f "/data/synapse/stemp/powerofflate.lock" ]
@@ -194,5 +194,5 @@ then
         busybox echo "0" > /data/synapse/stemp/poweroffclock
     fi
     RAWTIME="$(busybox cat /data/synapse/stemp/poweroffclock)"
-    printf '%d:%02d\n' $((RAWTIME/3600)) $((RAWTIME%3600/60))
+    printf '%d:%02d:%02d\n' $((RAWTIME/3600)) $((RAWTIME%3600/60)) $((RAWTIME%60))
 fi
