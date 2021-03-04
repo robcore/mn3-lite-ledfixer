@@ -157,6 +157,9 @@ echo cfq > /sys/block/mmcblk0/queue/scheduler
 echo cfq > /sys/block/mmcblk1/queue/scheduler
 echo 0 > /sys/block/mmcblk0/queue/iosched/slice_idle
 echo 0 > /sys/block/mmcblk1/queue/iosched/slice_idle
+echo 0 > /proc/sys/net/ipv4/tcp_slow_start_after_idle
+echo 1 > /proc/sys/net/ipv4/tcp_no_metrics_save
+
 #echo 0 > /sys/devices/virtual/lcd/panel/temperature
 echo "[MACHIN3X] mx.sh Complete" | tee /dev/kmsg
 echo "[MACHIN3X] Running Init.d" | tee /dev/kmsg
