@@ -1,14 +1,14 @@
 /*
  * Misc useful os-independent macros and functions.
  *
- * Copyright (C) 1999-2015, Broadcom Corporation
- *
+ * Copyright (C) 1999-2014, Broadcom Corporation
+ * 
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
  * under the terms of the GNU General Public License version 2 (the "GPL"),
  * available at http://www.broadcom.com/licenses/GPLv2.php, with the
  * following added to such license:
- *
+ * 
  *      As a special exception, the copyright holders of this software give you
  * permission to link this software with independent modules, and to copy and
  * distribute the resulting executable under terms of your choice, provided that
@@ -16,12 +16,12 @@
  * the license of that module.  An independent module is a module which is not
  * derived from this software.  The special exception does not apply to any
  * modifications of the software.
- *
+ * 
  *      Notwithstanding the above, under no circumstances may you combine this
  * software in any way with any other Broadcom software provided under a license
  * other than the GPL, without Broadcom's express prior written consent.
  *
- * $Id: bcmutils.h 529304 2015-01-27 04:26:56Z $
+ * $Id: bcmutils.h 457888 2014-02-25 03:34:39Z $
  */
 
 #ifndef	_bcmutils_h_
@@ -408,8 +408,6 @@ extern void *pktq_mpeek(struct pktq *pq, uint prec_bmp, int *prec_out);
 #define pktdeq_tail(pq)		pktq_pdeq_tail(((struct pktq *)(void *)pq), 0)
 #define pktqinit(pq, len)	pktq_init(((struct pktq *)(void *)pq), 1, len)
 
-#define UP_TABLE_MAX	((IPV4_TOS_DSCP_MASK >> IPV4_TOS_DSCP_SHIFT) + 1)	/* 64 max */
-
 extern void pktq_init(struct pktq *pq, int num_prec, int max_len);
 extern void pktq_set_max_plen(struct pktq *pq, int prec, int max_len);
 
@@ -454,8 +452,6 @@ extern void *pktoffset(osl_t *osh, void *p,  uint offset);
 #define DSCP_EF		0x2E
 
 extern uint pktsetprio(void *pkt, bool update_vtag);
-extern uint pktsetuserprio(void *pkt, int8* up_table, bool update_vtag);
-extern bool pktgetdscp(uint8 *pktdata, uint pktlen, uint8 *dscp);
 
 /* string */
 extern int bcm_atoi(const char *s);
@@ -540,7 +536,7 @@ extern int bcm_iovar_lencheck(const bcm_iovar_t *table, void *arg, int len, bool
 #if defined(WLTINYDUMP) || defined(WLMSG_INFORM) || defined(WLMSG_ASSOC) || \
 	defined(WLMSG_PRPKT) || defined(WLMSG_WSEC)
 extern int bcm_format_ssid(char* buf, const uchar ssid[], uint ssid_len);
-#endif
+#endif 
 #endif	/* BCMDRIVER */
 
 /* Base type definitions */
