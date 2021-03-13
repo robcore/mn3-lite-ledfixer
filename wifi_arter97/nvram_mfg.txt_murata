@@ -9,7 +9,7 @@ boardflags=0x10401001
 boardflags2=0x0
 boardflags3=0x0800c08b
 macaddr=00:90:4c:c5:12:38
-ccode=0
+ccode=ALL
 regrev=0
 antswitch=0
 pdgain5g=1
@@ -60,7 +60,7 @@ dot11agofdmhrbw202gpo=0x6666
 ofdmlrbw202gpo=0x0022
 mcsbw202gpo=0x88866662
 # Default Target Power for 5G -- 14dBm(54)/13dBm(HT20-MCS7,VHT20-MCS8)/12dBm(HT40-MCS7,VHT40-MCS9)/11dBm(VHT80-MCS8/MCS9)/16dBm(6,20HT-MCS0)
-maxp5ga0=74,74,74,74
+maxp5ga0=68,68,68,68
 # Low
 mcslr5glpo=0
 mcsbw205glpo=0x88866662

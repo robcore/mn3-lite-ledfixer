@@ -1,4 +1,4 @@
-# bcm94339wlcspMS_ES40_RC37p32p1_07232013_MM_mdfy_PAparam_11abg+1dB.txt -- 7/23/2013 by Murata, based on bcm94339wlcspMS_ES40_RC37p32p2_0705.txt, changed PA parameters, ccode, default Target Power for 2G and 5G for Samsung.
+# bcm94339wlcspMS_ES40_RC37p32p1_07172013_MM_mdfy_PAparam.txt -- 7/17/2013 by Murata, based on bcm94339wlcspMS_ES40_RC37p32p2_0705.txt, changed PA parameters, ccode.
 # bcm94339wlcspMS_ES40_RC37p32p2_0705.txt -- 7/5/2013 by Broadcom Corporation
 # Use with AARDVARK01S_REL_6_37_32_2 -- Murata BCM4339 WLCSP 11AC Module ES4.0
 # Sample variables file for Murata Type-YY ES4.0 -- bcm94339wlcspMS_MM.txt as original
@@ -9,8 +9,6 @@ boardflags=0x10401001
 boardflags2=0x0
 boardflags3=0x0810c08b
 macaddr=00:90:4c:c5:12:38
-#ccode modified by Murata
-#ccode=0
 ccode=ALL
 regrev=0
 antswitch=0
@@ -57,44 +55,30 @@ pa2gccka0=0xff35,0x16DB,0xFD20
 pa5ga0=0xff28,0x1614,0xFD31,0xff26,0x15FC,0xFD35,0xff25,0x1568,0xFD44,0xff25,0x1463,0xFD61
 pa5gbw40a0=0xff28,0x156B,0xFD48,0xff26,0x157A,0xFD46,0xff26,0x14F5,0xFD55,0xff29,0x1449,0xFD66
 pa5gbw80a0=0xff29,0x15D8,0xFD3B,0xff29,0x15FB,0xFD37,0xff28,0x1510,0xFD51,0xff27,0x1451,0xFD65
-# Default Target Power for 2G -- 18dBm(11)/15dBm(54)/13dBm(MCS7,MCS8)/17dBm(6)/16dBm(MCS0)
-# Default Target Power for 2G modified by Murata for Samsung
-#maxp2ga0=74
-maxp2ga0=78
+# Default Target Power for 2G -- 17dBm(11)/14dBm(54)/13dBm(MCS7,MCS8)/16dBm(6,MCS0)
+maxp2ga0=74
 cckbw202gpo=0x0
 cckbw20ul2gpo=0x0
 dot11agofdmhrbw202gpo=0x6666
-ofdmlrbw202gpo=0x0022
-#mcsbw202gpo=0x88866662
-mcsbw202gpo=0xAAA88884
-# Default Target Power for 5G -- 15dBm(54)/13dBm(HT20-MCS7,VHT20-MCS8)/12dBm(HT40-MCS7,VHT40-MCS9)/11dBm(VHT80-MCS8/MCS9)/17dBm(6)/16dBm(20HT-MCS0)
-# Default Target Power for 5G modified by Murata for Samsung
-#maxp5ga0=74,74,74,74
-maxp5ga0=78,78,78,78
+ofdmlrbw202gpo=0x0055
+mcsbw202gpo=0xCCC66669
+# Default Target Power for 5G -- 14dBm(54)/13dBm(HT20-MCS7,VHT20-MCS8)/12dBm(HT40-MCS7,VHT40-MCS9)/11dBm(VHT80-MCS8/MCS9)/16dBm(6,20HT-MCS0)
+maxp5ga0=68,68,68,68
 # Low
 mcslr5glpo=0x0
-#mcsbw205glpo=0x88866662
-#mcsbw405glpo=0xAAA88884
-#mcsbw805glpo=0xCCCAAAA6
-mcsbw205glpo=0xAAA88884
-mcsbw405glpo=0xCCCAAAA6
-mcsbw805glpo=0xEEECCCC8
+mcsbw205glpo=0x88866666
+mcsbw405glpo=0x88888886
+mcsbw805glpo=0xCCCAAAA6
 # Mid
 mcslr5gmpo=0x0
-#mcsbw205gmpo=0x88866662
-#mcsbw405gmpo=0xAAA88884
-#mcsbw805gmpo=0xCCCAAAA6
-mcsbw205gmpo=0xAAA88884
-mcsbw405gmpo=0xCCCAAAA6
-mcsbw805gmpo=0xEEECCCC8
+mcsbw205gmpo=0x88866662
+mcsbw405gmpo=0x88888886
+mcsbw805gmpo=0xCCCAAAA6
 # High
 mcslr5ghpo=0x0
-#mcsbw205ghpo=0x88866662
-#mcsbw405ghpo=0xAAA88884
-#mcsbw805ghpo=0xCCCAAAA6
-mcsbw205ghpo=0xAAA88884
-mcsbw405ghpo=0xCCCAAAA6
-mcsbw805ghpo=0xEEECCCC8
+mcsbw205ghpo=0x88866666
+mcsbw405ghpo=0x88888886
+mcsbw805ghpo=0xCCCAAAA6
 #20MHz High Rate
 sb20in40hrpo=0x0
 sb20in80and160hr5glpo=0x0
