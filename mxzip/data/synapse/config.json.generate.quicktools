@@ -46,6 +46,19 @@ cat << CTAG
                 height: 1
             }},
             { STitleBar:{
+                title:"Restart ViperFX"
+            }},
+            { SDescription:{
+                description:"Workaround to fix ViperFX after clearing cache breaks it."
+            }},
+            { SButton:{
+                label:"Restart ViperFX",
+                action:"utils killviper"
+            }},
+            { SSpacer:{
+                height: 1
+            }},
+            { STitleBar:{
                 title:"Quick Memory Dropper"
             }},
             { SDescription:{

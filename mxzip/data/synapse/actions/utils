@@ -12,4 +12,12 @@ then
     else
         echo "SystemUI Reboot Failed"
     fi
+elif [ "$1" = "killviper" ]
+then
+    if kill "$(ps | grep viper | awk '{print $2}')"
+    then
+        echo "ViperFX Restarted"
+    else
+        echo "ViperFX Restart Failed"
+    fi
 fi
