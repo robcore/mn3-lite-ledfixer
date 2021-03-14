@@ -1,14 +1,14 @@
 /*
  * Linux platform device for DHD WLAN adapter
  *
- * Copyright (C) 1999-2014, Broadcom Corporation
- * 
+ * Copyright (C) 1999-2015, Broadcom Corporation
+ *
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
  * under the terms of the GNU General Public License version 2 (the "GPL"),
  * available at http://www.broadcom.com/licenses/GPLv2.php, with the
  * following added to such license:
- * 
+ *
  *      As a special exception, the copyright holders of this software give you
  * permission to link this software with independent modules, and to copy and
  * distribute the resulting executable under terms of your choice, provided that
@@ -16,7 +16,7 @@
  * the license of that module.  An independent module is a module which is not
  * derived from this software.  The special exception does not apply to any
  * modifications of the software.
- * 
+ *
  *      Notwithstanding the above, under no circumstances may you combine this
  * software in any way with any other Broadcom software provided under a license
  * other than the GPL, without Broadcom's express prior written consent.
@@ -41,13 +41,20 @@
 #endif
 
 #if !defined(CONFIG_WIFI_CONTROL_FUNC)
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 58))
+#define WLAN_PLAT_NODFS_FLAG    0x01
+#endif /* LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 58) */
 struct wifi_platform_data {
 	int (*set_power)(int val);
 	int (*set_reset)(int val);
 	int (*set_carddetect)(int val);
 	void *(*mem_prealloc)(int section, unsigned long size);
 	int (*get_mac_addr)(unsigned char *buf);
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 58))
+	void *(*get_country_code)(char *ccode, u32 flags);
+#else
 	void *(*get_country_code)(char *ccode);
+#endif /* LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 58) */
 };
 #endif /* CONFIG_WIFI_CONTROL_FUNC */
 
@@ -162,13 +169,11 @@ int wifi_platform_set_power(wifi_adapter_info_t *adapter, bool on, unsigned long
 			/* For a exceptional case, release btlock */
 			bcm_bt_unlock(lock_cookie_wifi);
 		}
-#endif /* ENABLE_4335BT_WAR */
 
-#ifdef ENABLE_4335BT_WAR
 		err = plat_data->set_power(on,is4335_revb0);
 #else
 		err = plat_data->set_power(on);
-#endif
+#endif /* ENABLE_4335BT_WAR */
 	}
 
 	if (msec && !err)
@@ -225,7 +230,11 @@ void *wifi_platform_get_country_code(wifi_adapter_info_t *adapter, char *ccode)
 
 	DHD_TRACE(("%s\n", __FUNCTION__));
 	if (plat_data->get_country_code) {
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 58))
+		return plat_data->get_country_code(ccode, WLAN_PLAT_NODFS_FLAG);
+#else
 		return plat_data->get_country_code(ccode);
+#endif /* (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 58)) */
 	}
 #endif /* (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 39)) */
 
@@ -512,7 +521,7 @@ extern int dhd_dpc_prio;
 extern uint dhd_deferred_tx;
 #if defined(BCMLXSDMMC)
 extern struct semaphore dhd_registration_sem;
-#endif 
+#endif
 
 static int dhd_wifi_platform_load_sdio(void)
 {
@@ -561,7 +570,9 @@ static int dhd_wifi_platform_load_sdio(void)
 			}
 			err = wifi_platform_set_power(adapter, TRUE, WIFI_TURNON_DELAY);
 			if (err) {
-					DHD_ERROR(("failed to set WIFI_REG_ON\n"));
+				/* WL_REG_ON state unknown, Power off forcely */
+				wifi_platform_set_power(adapter, FALSE, WIFI_TURNOFF_DELAY);
+				continue;
 			} else {
 				wifi_platform_bus_enumerate(adapter, TRUE);
 				err = 0;
@@ -620,7 +631,7 @@ fail:
 	/* x86 bring-up PC needs no power-up operations */
 	err = dhd_bus_register();
 
-#endif 
+#endif
 
 	return err;
 }

@@ -2,14 +2,14 @@
  * Misc utility routines for accessing chip-specific features
  * of the SiliconBackplane-based Broadcom chips.
  *
- * Copyright (C) 1999-2014, Broadcom Corporation
- * 
+ * Copyright (C) 1999-2015, Broadcom Corporation
+ *
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
  * under the terms of the GNU General Public License version 2 (the "GPL"),
  * available at http://www.broadcom.com/licenses/GPLv2.php, with the
  * following added to such license:
- * 
+ *
  *      As a special exception, the copyright holders of this software give you
  * permission to link this software with independent modules, and to copy and
  * distribute the resulting executable under terms of your choice, provided that
@@ -17,12 +17,12 @@
  * the license of that module.  An independent module is a module which is not
  * derived from this software.  The special exception does not apply to any
  * modifications of the software.
- * 
+ *
  *      Notwithstanding the above, under no circumstances may you combine this
  * software in any way with any other Broadcom software provided under a license
  * other than the GPL, without Broadcom's express prior written consent.
  *
- * $Id: aiutils.c 432226 2013-10-26 04:34:36Z $
+ * $Id: aiutils.c 531050 2015-02-02 07:21:19Z $
  */
 #include <bcm_cfg.h>
 #include <typedefs.h>
@@ -41,7 +41,6 @@
 #define BCM4707_DMP() (0)
 #define remap_coreid(sih, coreid)	(coreid)
 #define remap_corerev(sih, corerev)	(corerev)
-#define ER_SZ_MAX 4096
 
 /* EROM parsing */
 
@@ -50,7 +49,7 @@ get_erom_ent(si_t *sih, uint32 **eromptr, uint32 mask, uint32 match)
 {
 	uint32 ent;
 	uint inv = 0, nom = 0;
-    uint32 size = 0;
+	uint32 size = 0;
 
 	while (TRUE) {
 		ent = R_REG(si_osh(sih), *eromptr);
