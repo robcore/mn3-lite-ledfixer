@@ -127,7 +127,7 @@ static u64 boostpulse_endtime;
 #define DEFAULT_TIMER_SLACK (4 * DEFAULT_TIMER_RATE)
 static int timer_slack_val = DEFAULT_TIMER_SLACK;
 
-static bool io_is_busy;
+static bool io_is_busy = false;
 
 #ifdef CONFIG_MODE_AUTO_CHANGE
 struct cpufreq_loadinfo {
@@ -196,9 +196,10 @@ static int mode_count = 0;
  * up_threshold_any_cpu_freq then do not let the frequency to drop below
  * sync_freq
  */
+//300000 422400 652800 729600 883200 960000 1036800 1190400 1267200 1497600 1574400 1728000 1958400 2265600
 static unsigned int up_threshold_any_cpu_load = 80;
-static unsigned int sync_freq = 1497600;
-static unsigned int up_threshold_any_cpu_freq = 1036800;
+static unsigned int sync_freq = 1190400;
+static unsigned int up_threshold_any_cpu_freq = 1574400;
 
 static int cpufreq_governor_interactive(struct cpufreq_policy *policy,
 		unsigned int event);
@@ -1758,7 +1759,7 @@ static int cpufreq_governor_interactive(struct cpufreq_policy *policy,
 		if (!hispeed_freq)
 			hispeed_freq = policy->max;
 #ifdef CONFIG_MODE_AUTO_CHANGE
-	        for (j = 0 ; j < 4; j++)
+	        for (j = 0; j < 4; j++)
 			if (!hispeed_freq_set[j])
 				hispeed_freq_set[j] = policy->max;
 #endif

@@ -158,7 +158,13 @@ echo cfq > /sys/block/mmcblk1/queue/scheduler
 echo 0 > /sys/block/mmcblk0/queue/iosched/slice_idle
 echo 0 > /sys/block/mmcblk1/queue/iosched/slice_idle
 echo 0 > /proc/sys/net/ipv4/tcp_slow_start_after_idle
-echo 1 > /proc/sys/net/ipv4/tcp_no_metrics_save
+
+#echo 1 > /proc/sys/net/ipv4/tcp_no_metrics_save
+echo 'f' > /sys/class/net/wlan0/queues/tx-0/xps_cpus
+echo 0 > /sys/class/net/wlan0/queues/tx-0/tx_timeout
+echo 'f' > /sys/class/net/wlan0/queues/rx-0/rps_cpus
+echo 7516192768 > /sys/class/net/wlan0/queues/tx-0/byte_queue_limits/limit_max
+echo 0 > /sys/class/net/wlan0/queues/tx-0/byte_queue_limits/hold_time
 
 #echo 0 > /sys/devices/virtual/lcd/panel/temperature
 echo "[MACHIN3X] mx.sh Complete" | tee /dev/kmsg
