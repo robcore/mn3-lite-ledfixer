@@ -2108,22 +2108,23 @@ bcmdumpfields(bcmutl_rdreg_rtn read_rtn, void *arg0, uint arg1, struct fielddesc
 	return filled_len;
 }
 
-uint
-bcm_mkiovar(char *name, char *data, uint datalen, char *buf, uint buflen)
+uint bcm_mkiovar(char *name, char *data, uint datalen, char *buf, uint buflen)
 {
 	uint len;
 
-	len = strlen(name) + 1;
+    if (name) {
+    	len = strlen(name) + 1;
 
-	if ((len + datalen) > buflen)
-		return 0;
+    	if ((len + datalen) > buflen)
+    		return 0;
 
-	strncpy(buf, name, buflen);
-
-	/* append data onto the end of the name string */
-	memcpy(&buf[len], data, datalen);
-	len += datalen;
-
+    	strncpy(buf, name, buflen);
+    }
+	if (data) {
+    	/* append data onto the end of the name string */
+    	memcpy(&buf[len], data, datalen);
+    	len += datalen;
+    }
 	return len;
 }
 

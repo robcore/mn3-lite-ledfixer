@@ -41,6 +41,7 @@
 #define BCM4707_DMP() (0)
 #define remap_coreid(sih, coreid)	(coreid)
 #define remap_corerev(sih, corerev)	(corerev)
+#define ER_SZ_MAX 4096
 
 /* EROM parsing */
 
@@ -49,6 +50,7 @@ get_erom_ent(si_t *sih, uint32 **eromptr, uint32 mask, uint32 match)
 {
 	uint32 ent;
 	uint inv = 0, nom = 0;
+    uint32 size = 0;
 
 	while (TRUE) {
 		ent = R_REG(si_osh(sih), *eromptr);
@@ -67,6 +69,13 @@ get_erom_ent(si_t *sih, uint32 **eromptr, uint32 mask, uint32 match)
 
 		if ((ent & mask) == match)
 			break;
+
+		/* escape condition related EROM size if it has invalid values */
+		size += sizeof(*eromptr);
+		if (size >= ER_SZ_MAX) {
+			SI_ERROR(("Failed to find end of EROM marker\n"));
+			break;
+		}
 
 		nom++;
 	}

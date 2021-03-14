@@ -216,7 +216,7 @@ static const struct sdio_device_id bcmsdh_sdmmc_ids[] = {
 
 MODULE_DEVICE_TABLE(sdio, bcmsdh_sdmmc_ids);
 
-#if (LINUX_VERSION_CODE > KERNEL_VERSION(2, 6, 39)) && defined(CONFIG_PM)
+#if defined(CONFIG_PM)
 static int bcmsdh_sdmmc_suspend(struct device *pdev)
 {
 	int err;

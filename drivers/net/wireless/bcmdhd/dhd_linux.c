@@ -2022,8 +2022,6 @@ dhd_txflowcontrol(dhd_pub_t *dhdp, int ifidx, bool state)
 	dhd_info_t *dhd = dhdp->info;
 	int i;
 
-	DHD_TRACE(("%s: Enter\n", __FUNCTION__));
-
 	ASSERT(dhd);
 
 	if (ifidx == ALL_INTERFACES) {
