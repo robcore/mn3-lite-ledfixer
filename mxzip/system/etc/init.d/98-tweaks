@@ -7,7 +7,6 @@ echo 0 > /sys/fs/selinux/enforce
 #echo "deadline" > /sys/block/mmcblk0/queue/scheduler
 #echo "deadline" > /sys/block/mmcblk1/queue/scheduler
 #echo "cfq" > /sys/block/mmcblk0rpmb/queue/scheduler
-#what am I? /sys/block/mmcblk0rpmb/queue/scheduler
 #echo '64' > /sys/block/mmcblk0/queue/read_ahead_kb
 #echo '64' > /sys/block/mmcblk0rpmb/queue/read_ahead_kb
 #echo '64' > /sys/block/mmcblk1/queue/read_ahead_kb
@@ -23,10 +22,9 @@ echo 0 > /sys/fs/selinux/enforce
 #echo 16384 > /proc/sys/net/netfilter/nf_conntrack_expect_max
 for MYBLOCK in mmcblk0 mmcblk0rpmb mmcblk1
 do
-echo "cfq" > "/sys/block/$MYBLOCK/queue/scheduler"
 echo 0 > "/sys/block/$MYBLOCK/queue/add_random"
 #echo 0 > "/sys/block/$MYBLOCK/queue/iostats"
-echo 0 > "/sys/block/$MYBLOCK/queue/iosched/slice_idle"
+#echo 0 > "/sys/block/$MYBLOCK/queue/iosched/slice_idle"
 done
 for BLOCK in /sys/block/*/queue/rotational
 do
@@ -43,9 +41,9 @@ echo 1 > /proc/sys/vm/panic_on_oom
 #echo 6 > /sys/kernel/sound_control_3/gpl_speaker_gain
 echo 0 > /sys/kernel/debug/tracing/tracing_on
 echo 0 > /sys/kernel/debug/tracing/tracing_enabled
-echo f > /sys/class/net/wlan0/queues/rx-0/rps_cpus
-echo f > /sys/class/net/wlan0/queues/tx-0/xps_cpus
-echo 0 > /sys/class/net/wlan0/queues/tx-0/byte_queue_limits/hold_time
+#echo f > /sys/class/net/wlan0/queues/rx-0/rps_cpus
+#echo f > /sys/class/net/wlan0/queues/tx-0/xps_cpus
+#echo 0 > /sys/class/net/wlan0/queues/tx-0/byte_queue_limits/hold_time
 #echo 2 > /sys/class/mdnie/mdnie/scenario
 #echo 0 > /sys/devices/virtual/graphics/fb0/csc_cfg
 #chown 0:0 /sys/devices/virtual/graphics/fb0/csc_cfg
@@ -80,7 +78,6 @@ echo '0' > /sys/kernel/sound_control/iir1_gain
 echo '0' > /sys/kernel/sound_control/iir2_gain
 echo '-84' > /sys/kernel/sound_control/iir1_inp2_gain
 echo '-84' > /sys/kernel/sound_control/iir2_inp2_gain
-echo '-1000' > "/proc/$(pidof com.audlabs.viperfx)/oom_score_adj"
 
 echo "init.d complete on $(date)" >> /mnt/sdcard/initdlog.txt
 echo ' ' > /dev/kmsg
