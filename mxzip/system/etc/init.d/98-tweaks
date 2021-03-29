@@ -78,6 +78,7 @@ echo '0' > /sys/kernel/sound_control/iir1_gain
 echo '0' > /sys/kernel/sound_control/iir2_gain
 echo '-84' > /sys/kernel/sound_control/iir1_inp2_gain
 echo '-84' > /sys/kernel/sound_control/iir2_inp2_gain
+echo '-1000' > "/proc/$(pidof com.audlabs.viperfx)/oom_score_adj"
 
 echo "init.d complete on $(date)" >> /mnt/sdcard/initdlog.txt
 echo ' ' > /dev/kmsg
