@@ -6,7 +6,8 @@ then
 	busybox echo "Memory Dropped"
 elif [ "$1" = "killsysui" ]
 then
-    if kill "$(ps | grep systemui | grep -v imagewallpaper | awk '{print $2}')"
+    SYSUIPID="$(pidof com.android.systemui)"
+    if kill "$SYSUIPID"
     then
         echo "SystemUI Rebooted"
     else
@@ -14,7 +15,8 @@ then
     fi
 elif [ "$1" = "killviper" ]
 then
-    if kill "$(ps | grep viper | awk '{print $2}')"
+    VPPID="$(pidof com.audlabs.viperfx)"
+    if kill "$VPPID"
     then
         echo "ViperFX Restarted"
     else
