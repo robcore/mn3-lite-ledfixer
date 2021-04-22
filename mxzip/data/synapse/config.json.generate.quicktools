@@ -68,6 +68,19 @@ cat << CTAG
                 label:"Dropper",
                 action:"utils dropper"
             }},
+            { SSpacer:{
+                height: 1
+            }},
+            { STitleBar:{
+                title:"TCP Route Cache Flush"
+            }},
+            { SDescription:{
+                description:"Easy access to flush tcp route cache."
+            }},
+            { SButton:{
+                label:"TCP Flush",
+                action:"utils flushtcp"
+            }},
         ]
     }
 CTAG

@@ -2,12 +2,12 @@
 
 if [ "$1" = "dropper" ]
 then
-	busybox echo '3' > /proc/sys/vm/drop_caches
-	busybox echo "Memory Dropped"
+	echo '3' > /proc/sys/vm/drop_caches
+	echo "Memory Dropped"
 elif [ "$1" = "killsysui" ]
 then
     SYSUIPID="$(pidof com.android.systemui)"
-    if kill "$SYSUIPID"
+    if kill -9 "$SYSUIPID"
     then
         echo "SystemUI Rebooted"
     else
@@ -16,10 +16,15 @@ then
 elif [ "$1" = "killviper" ]
 then
     VPPID="$(pidof com.audlabs.viperfx)"
-    if kill "$VPPID"
+    if kill -9 "$VPPID"
     then
         echo "ViperFX Restarted"
     else
         echo "ViperFX Restart Failed"
     fi
+elif [ "$1" = "flushtcp" ]
+then
+    echo '1' > /proc/sys/net/ipv4/route/flush
+    echo "TCP Cache Flushed"
 fi
+
