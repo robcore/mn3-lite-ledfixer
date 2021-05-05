@@ -636,7 +636,7 @@ Common options:
 -rd|--ramdisk        Try the build again starting at the ramdisk
  -t|--tests          Testing playground
 
-Extra command line options are possibe, with more to be added in the future:
+Extra command line options are possible, with more to be added in the future:
 Currently, it is just the one.
 Appending "noreboot" as the second option will keep the device from rebooting.
 Or, just use the -anr option that is the same as -a to build all,
