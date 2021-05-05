@@ -414,7 +414,7 @@ struct taiko_priv {
 struct hpf_work {
 	struct taiko_priv *taiko;
 	u32 decimator;
-	u8 tx_hpf_cut_of_freq;
+	u8 tx_hpf_cut_off_freq;
 	struct delayed_work dwork;
 };
 
@@ -1064,33 +1064,33 @@ static void update_bias(void)
 
 static inline void update_interpolator(void)
 {
-    regwrite(TAIKO_A_CDC_COMP1_B3_CTL, (u8)1);
-    mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL, 240, (u8)(80));
-    mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL, 15, (u8)(5));
+    regwrite(TAIKO_A_CDC_COMP1_B3_CTL, 1);
+    mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL, 240, 80);
+    mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL, 15, 5);
     usleep_range(3000, 3100);
 
     if (interpolator_override) {
-        regwrite(TAIKO_A_CDC_COMP1_B3_CTL, (u8)sc_rms_meter_resamp_fact);
+        regwrite(TAIKO_A_CDC_COMP1_B3_CTL, sc_rms_meter_resamp_fact);
         mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL,
-            240, (u8)(sc_rms_meter_div_fact << 4));
+            240, (sc_rms_meter_div_fact << 4));
         mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL,
-            15, (u8)sc_peak_det_timeout);
+            15, sc_peak_det_timeout);
         return;
     }
 
     if (interpolator_enabled) {
         if (interpolator_boost) {
-            regwrite(TAIKO_A_CDC_COMP1_B3_CTL, (u8)sc_rms_meter_resamp_fact);
+            regwrite(TAIKO_A_CDC_COMP1_B3_CTL, sc_rms_meter_resamp_fact);
             mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL,
-            	    240, (u8)(sc_rms_meter_div_fact << 4));
+            	    240, (sc_rms_meter_div_fact << 4));
             mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL,
-            		15, (u8)sc_peak_det_timeout);
+            		15, sc_peak_det_timeout);
         } else {
-            regwrite(TAIKO_A_CDC_COMP1_B3_CTL, (u8)0x28);
+            regwrite(TAIKO_A_CDC_COMP1_B3_CTL, 0x28);
             mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL,
-                    240, (u8)(0x0B << 4));
+                    240, (0x0B << 4));
             mx_update_bits(TAIKO_A_CDC_COMP1_B2_CTL,
-                    240, (u8)(0x09));
+                    240, 0x09);
         }
     }
 }
@@ -1764,26 +1764,26 @@ static int taiko_config_compander(struct snd_soc_dapm_widget *w,
                 /* Worst case timeout for compander CnP sleep timeout */
             	usleep_range(3000, 3100);
     			snd_soc_write(codec, TAIKO_A_CDC_COMP0_B3_CTL + (comp * 8),
-                              (u8)comp_params->rms_meter_resamp_fact);
+                              comp_params->rms_meter_resamp_fact);
     			snd_soc_update_bits(codec,
                                     TAIKO_A_CDC_COMP0_B2_CTL + (comp * 8),
-                                    0xF0, (u8)(comp_params->rms_meter_div_fact << 4));
+                                    0xF0, (comp_params->rms_meter_div_fact << 4));
     			snd_soc_update_bits(codec,
                                     TAIKO_A_CDC_COMP0_B2_CTL + (comp * 8),
-                                    0x0F, (u8)comp_params->peak_det_timeout);
+                                    0x0F, comp_params->peak_det_timeout);
             }
 		} else {
     		taiko_discharge_comp(codec, comp);
             /* Worst case timeout for compander CnP sleep timeout */
         	usleep_range(3000, 3100);
 			snd_soc_write(codec, TAIKO_A_CDC_COMP0_B3_CTL + (comp * 8),
-                          (u8)comp_params->rms_meter_resamp_fact);
+                          comp_params->rms_meter_resamp_fact);
 			snd_soc_update_bits(codec,
                                 TAIKO_A_CDC_COMP0_B2_CTL + (comp * 8),
-                                0xF0, (u8)(comp_params->rms_meter_div_fact << 4));
+                                0xF0, (comp_params->rms_meter_div_fact << 4));
 			snd_soc_update_bits(codec,
                                 TAIKO_A_CDC_COMP0_B2_CTL + (comp * 8),
-                                0x0F, (u8)comp_params->peak_det_timeout);
+                                0x0F, comp_params->peak_det_timeout);
 		}
 		break;
 	case SND_SOC_DAPM_PRE_PMD:
@@ -3688,21 +3688,21 @@ static void tx_hpf_corner_freq_callback(struct work_struct *work)
 	struct taiko_priv *taiko;
 	struct snd_soc_codec *codec;
 	u16 tx_mux_ctl_reg;
-	u8 hpf_cut_of_freq;
+	u8 hpf_cut_off_freq;
 
 	hpf_delayed_work = to_delayed_work(work);
 	hpf_work = container_of(hpf_delayed_work, struct hpf_work, dwork);
 	taiko = hpf_work->taiko;
 	codec = hpf_work->taiko->codec;
-	hpf_cut_of_freq = hpf_work->tx_hpf_cut_of_freq;
+	hpf_cut_off_freq = hpf_work->tx_hpf_cut_off_freq;
 
 	tx_mux_ctl_reg = TAIKO_A_CDC_TX1_MUX_CTL +
 			(hpf_work->decimator - 1) * 8;
 
-	pr_debug("%s(): decimator %u hpf_cut_of_freq 0x%x\n", __func__,
-		hpf_work->decimator, (unsigned int)hpf_cut_of_freq);
+	pr_debug("%s(): decimator %u hpf_cut_off_freq 0x%x\n", __func__,
+		hpf_work->decimator, (unsigned int)hpf_cut_off_freq);
 
-	snd_soc_update_bits(codec, tx_mux_ctl_reg, 0x30, hpf_cut_of_freq << 4);
+	snd_soc_update_bits(codec, tx_mux_ctl_reg, 0x30, hpf_cut_off_freq << 4);
 }
 
 #define  TX_MUX_CTL_CUT_OFF_FREQ_MASK	0x30
@@ -3720,7 +3720,7 @@ static int taiko_codec_enable_dec(struct snd_soc_dapm_widget *w,
 	char *temp;
 	int ret = 0;
 	u16 dec_reset_reg, tx_vol_ctl_reg, tx_mux_ctl_reg;
-	u8 dec_hpf_cut_of_freq;
+	u8 dec_hpf_cut_off_freq;
 	int offset;
 
 
@@ -3773,14 +3773,14 @@ static int taiko_codec_enable_dec(struct snd_soc_dapm_widget *w,
 			1 << w->shift);
 		snd_soc_update_bits(codec, dec_reset_reg, 1 << w->shift, 0x0);
 
-		dec_hpf_cut_of_freq = snd_soc_read(codec, tx_mux_ctl_reg);
+		dec_hpf_cut_off_freq = snd_soc_read(codec, tx_mux_ctl_reg);
 
-		dec_hpf_cut_of_freq = (dec_hpf_cut_of_freq & 0x30) >> 4;
+		dec_hpf_cut_off_freq = (dec_hpf_cut_off_freq & 0x30) >> 4;
 
-		tx_hpf_work[decimator - 1].tx_hpf_cut_of_freq =
-			dec_hpf_cut_of_freq;
+		tx_hpf_work[decimator - 1].tx_hpf_cut_off_freq =
+			dec_hpf_cut_off_freq;
 
-		if ((dec_hpf_cut_of_freq != CF_MIN_3DB_150HZ)) {
+		if ((dec_hpf_cut_off_freq != CF_MIN_3DB_150HZ)) {
 
 			/* set cut of freq to CF_MIN_3DB_150HZ (0x2); */
 			snd_soc_update_bits(codec, tx_mux_ctl_reg, 0x30,
@@ -3797,7 +3797,7 @@ static int taiko_codec_enable_dec(struct snd_soc_dapm_widget *w,
 		/* Disable TX digital mute */
 		snd_soc_update_bits(codec, tx_vol_ctl_reg, 0x01, 0x00);
 
-		if (tx_hpf_work[decimator - 1].tx_hpf_cut_of_freq !=
+		if (tx_hpf_work[decimator - 1].tx_hpf_cut_off_freq !=
 				CF_MIN_3DB_150HZ) {
 
 			schedule_delayed_work(&tx_hpf_work[decimator - 1].dwork,
@@ -3823,7 +3823,7 @@ static int taiko_codec_enable_dec(struct snd_soc_dapm_widget *w,
 
 		snd_soc_update_bits(codec, tx_mux_ctl_reg, 0x08, 0x08);
 		snd_soc_update_bits(codec, tx_mux_ctl_reg, 0x30,
-			(tx_hpf_work[decimator - 1].tx_hpf_cut_of_freq) << 4);
+			(tx_hpf_work[decimator - 1].tx_hpf_cut_off_freq) << 4);
 
 		break;
 	}
@@ -8490,22 +8490,22 @@ static ssize_t headphone_gain_store(struct kobject *kobj, struct kobj_attribute 
 		leftinput = clamp_val(leftinput, -84, 40);
 		rightinput = clamp_val(rightinput, -84, 40);
 		if (leftinput < 0)
-			hphl_cached_gain = (u8)(leftinput + 256);
+			hphl_cached_gain = (leftinput + 256);
 		else
-			hphl_cached_gain = (u8)leftinput;
+			hphl_cached_gain = leftinput;
 		if (rightinput < 0)
-			hphr_cached_gain = (u8)(rightinput + 256);
+			hphr_cached_gain = (rightinput + 256);
 		else
-			hphr_cached_gain = (u8)rightinput;
+			hphr_cached_gain = rightinput;
 	} else if (sscanf(buf, "%d", &dualinput) == 1) {
 			dualinput = clamp_val(dualinput, -84, 40);
 
 		if (dualinput < 0) {
-			hphl_cached_gain = (u8)(dualinput + 256);
-			hphr_cached_gain = (u8)(dualinput + 256);
+			hphl_cached_gain = (dualinput + 256);
+			hphr_cached_gain = (dualinput + 256);
 		} else {
-			hphl_cached_gain = (u8)dualinput;
-			hphr_cached_gain = (u8)dualinput;
+			hphl_cached_gain = dualinput;
+			hphr_cached_gain = dualinput;
 		}
 	} else {
 		return -EINVAL;
@@ -8571,9 +8571,9 @@ static ssize_t iir1_gain_store(struct kobject *kobj,
 	iirinput = clamp_val(iirinput, -84, 40);
 
 	if (iirinput < 0)
-		iir1_cached_gain = (u8)(iirinput + 256);
+		iir1_cached_gain = (iirinput + 256);
 	else
-		iir1_cached_gain = (u8)iirinput;
+		iir1_cached_gain = iirinput;
 
 	update_iir_gain();
 
@@ -8608,9 +8608,9 @@ static ssize_t iir1_inp2_gain_store(struct kobject *kobj,
 	iirinput = clamp_val(iirinput, -84, 40);
 
 	if (iirinput < 0)
-		iir1_inp2_cached_gain = (u8)(iirinput + 256);
+		iir1_inp2_cached_gain = (iirinput + 256);
 	else
-		iir1_inp2_cached_gain = (u8)iirinput;
+		iir1_inp2_cached_gain = iirinput;
 
 	update_iir_gain();
 
@@ -8645,9 +8645,9 @@ static ssize_t iir2_gain_store(struct kobject *kobj,
 	iirinput = clamp_val(iirinput, -84, 40);
 
 	if (iirinput < 0)
-		iir2_cached_gain = (u8)(iirinput + 256);
+		iir2_cached_gain = (iirinput + 256);
 	else
-		iir2_cached_gain = (u8)iirinput;
+		iir2_cached_gain = iirinput;
 
 	update_iir_gain();
 
@@ -8682,9 +8682,9 @@ static ssize_t iir2_inp2_gain_store(struct kobject *kobj,
 	iirinput = clamp_val(iirinput, -84, 40);
 
 	if (iirinput < 0)
-		iir2_inp2_cached_gain = (u8)(iirinput + 256);
+		iir2_inp2_cached_gain = (iirinput + 256);
 	else
-		iir2_inp2_cached_gain = (u8)iirinput;
+		iir2_inp2_cached_gain = iirinput;
 
 	update_iir_gain();
 
@@ -8744,15 +8744,15 @@ static ssize_t hph_poweramp_gain_store(struct kobject *kobj,
 			rightinput = 0;
 		if (rightinput > 20)
 			rightinput = 20;
-		hphl_pa_cached_gain = (u8)leftinput;
-		hphr_pa_cached_gain = (u8)rightinput;
+		hphl_pa_cached_gain = leftinput;
+		hphr_pa_cached_gain = rightinput;
 	} else if (sscanf(buf, "%d", &dualinput) == 1) {
 		if (dualinput < 0)
 			dualinput = 0;
 		if (dualinput > 20)
 			dualinput = 20;
-		hphl_pa_cached_gain = (u8)dualinput;
-		hphr_pa_cached_gain = (u8)dualinput;
+		hphl_pa_cached_gain = dualinput;
+		hphr_pa_cached_gain = dualinput;
 	}
 
 	if (hpwidget())
@@ -8789,9 +8789,9 @@ static ssize_t speaker_gain_store(struct kobject *kobj,
 	spkinput = clamp_val(spkinput, -84, 40);
 
 	if (spkinput < 0)
-		speaker_cached_gain = (u8)(spkinput + 256);
+		speaker_cached_gain = (spkinput + 256);
 	else
-		speaker_cached_gain = (u8)spkinput;
+		speaker_cached_gain = spkinput;
 
 	update_speaker_gain();
 
@@ -9043,7 +9043,7 @@ static ssize_t headphone_left_hpf_cutoff_store(struct kobject *kobj,
 	if (input > 2)
 		input = 2;
 
-	hphl_hpf_cutoff = (u8)input;
+	hphl_hpf_cutoff = input;
 	write_hpf_cutoff(TAIKO_A_CDC_RX1_B4_CTL);
 
 	return count;
@@ -9070,7 +9070,7 @@ static ssize_t headphone_right_hpf_cutoff_store(struct kobject *kobj,
 	if (input > 2)
 		input = 2;
 
-	hphr_hpf_cutoff = (u8)input;
+	hphr_hpf_cutoff = input;
 	write_hpf_cutoff(TAIKO_A_CDC_RX2_B4_CTL);
 
 	return count;
@@ -9099,7 +9099,7 @@ static ssize_t speaker_hpf_cutoff_store(struct kobject *kobj,
 	if (uval > 2)
 		uval = 2;
 
-	speaker_hpf_cutoff = (u8)uval;
+	speaker_hpf_cutoff = uval;
 
 	write_hpf_cutoff(TAIKO_A_CDC_RX7_B4_CTL);
 
@@ -9146,7 +9146,7 @@ static ssize_t headphone_left_hpf_bypass_store(struct kobject *kobj,
 		input = 0;
 	if (input > 1)
 		input = 1;
-	hphl_hpf_bypass = (u8)input;
+	hphl_hpf_bypass = input;
 	write_hpf_bypass(TAIKO_A_CDC_RX1_B5_CTL);
 
 	return count;
@@ -9172,7 +9172,7 @@ static ssize_t headphone_right_hpf_bypass_store(struct kobject *kobj,
 		input = 0;
 	if (input > 1)
 		input = 1;
-	hphr_hpf_bypass = (u8)input;
+	hphr_hpf_bypass = input;
 	write_hpf_bypass(TAIKO_A_CDC_RX2_B5_CTL);
 
 	return count;
@@ -9196,7 +9196,7 @@ static ssize_t speaker_hpf_bypass_store(struct kobject *kobj,
 	if (uval > 1)
 		uval = 1;
 
-	speaker_hpf_bypass = (u8)uval;
+	speaker_hpf_bypass = uval;
 
 	write_hpf_bypass(TAIKO_A_CDC_RX7_B5_CTL);
 
@@ -9311,7 +9311,7 @@ static ssize_t hph_pa_bias_store(struct kobject *kobj,
         spkwidget_active())
         return count;
 
-	hph_pa_bias = (u8)uval;
+	hph_pa_bias = uval;
 
     update_bias();
 
@@ -9340,7 +9340,7 @@ static ssize_t compander_bias_store(struct kobject *kobj,
         spkwidget_active())
         return count;
 
-	compander_bias = (u8)uval;
+	compander_bias = uval;
 
     update_bias();
 
