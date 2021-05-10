@@ -44,6 +44,16 @@ busybox cat << CTAG
                 refresh:1000,
                 action:"soundcontrol hph_status"
             }},
+            { SSpacer:{
+                height: 1
+            }},
+            { SDescription:{
+                description:"Headphones Compander:"
+            }},
+            { SLiveLabel:{
+                refresh:1000,
+                action:"soundcontrol compander_status"
+            }},
             { STitleBar:{
                 title:"General"
             }},

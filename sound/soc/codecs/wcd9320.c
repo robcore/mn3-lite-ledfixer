@@ -8316,6 +8316,20 @@ static ssize_t compander1_show(struct kobject *kobj,
 						"CNP_DIS_STATUS:", regread(TAIKO_A_CDC_COMP1_SHUT_DOWN_STATUS));
 }
 
+static ssize_t compander_enabled_show(struct kobject *kobj,
+        struct kobj_attribute *attr, char *buf)
+{
+    unsigned int comp_disabled;
+
+    comp_disabled = regread(TAIKO_A_CDC_COMP1_SHUT_DOWN_STATUS);
+    if (comp_disabled > 0)
+    	return sprintf(buf, "%s\n", "Compander:Disabled");
+    else if (!comp_disabled)
+    	return sprintf(buf, "%s\n", "Compander:Enabled");
+    else
+        return sprintf(buf, "%s\n", "Compander:ERROR");
+}
+
 static ssize_t hph_status_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf)
 {
@@ -9342,6 +9356,11 @@ static struct kobj_attribute compander1_attribute =
 		compander1_show,
 		NULL);
 
+static struct kobj_attribute compander_enabled_attribute =
+	__ATTR(compander_enabled, 0444,
+		compander_enabled_show,
+		NULL);
+
 static struct kobj_attribute hph_status_attribute =
 	__ATTR(hph_status, 0444,
 		hph_status_show,
@@ -9538,6 +9557,7 @@ static struct attribute *sound_control_attrs[] = {
         &headphone_dac_enabled_attribute.attr,
         &secjack_state_attribute.attr,
 		&compander1_attribute.attr,
+		&compander_enabled_attribute.attr,
 		&hph_status_attribute.attr,
         &class_h_control_attribute.attr,
 		&chopper_attribute.attr,

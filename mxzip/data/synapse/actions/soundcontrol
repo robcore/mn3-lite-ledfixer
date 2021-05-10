@@ -612,6 +612,12 @@ then
     do 
         printf "%s\n" $LINE@n;
     done < /sys/kernel/sound_control/hph_status
+elif [ "$1" = "compander_status" ]
+then
+    while read -r LINE; 
+    do 
+        printf "%s\n" $LINE@n;
+    done < /sys/kernel/sound_control/compander_enabled
 elif [ "$1" = "class_h_control" ]
 then
     while read -r LINE; 
