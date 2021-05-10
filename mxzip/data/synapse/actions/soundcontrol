@@ -612,6 +612,15 @@ then
     do 
         printf "%s\n" $LINE@n;
     done < /sys/kernel/sound_control/hph_status
+elif [ "$1" = "headphone_audio_active" ]
+then
+    CURVAL="$(busybox cat /sys/kernel/sound_control/headphone_audio_active)"
+    if [ "$CURVAL" = "0" ]
+    then
+        busybox echo "Setting is Locked"
+    else
+        busybox echo "Setting is Unlocked"
+    fi
 elif [ "$1" = "compander_status" ]
 then
     while read -r LINE; 

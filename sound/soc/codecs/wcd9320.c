@@ -708,11 +708,12 @@ static bool hpwidget(void)
     return false;
 }
 
+#if 0
 static bool poweramp_active(void)
 {
 	return (hph_pa_enabled && hpwidget());
 }
-
+#endif
 static bool hpwidget_any(void)
 {
     return (regread(TAIKO_A_RX_HPH_L_STATUS) == PA_STAT_ON ||
@@ -8338,6 +8339,17 @@ static ssize_t hph_status_show(struct kobject *kobj,
                    (regread(TAIKO_A_RX_HPH_R_STATUS) == PA_STAT_ON ? "On" : "Off"));
 }
 
+static ssize_t headphone_audio_active_show(struct kobject *kobj,
+		struct kobj_attribute *attr, char *buf)
+{
+    unsigned int headphone_audio_active = 0;
+
+    if (hpwidget_any())
+        headphone_audio_active = 1;
+
+    return sprintf(buf, "%d\n", headphone_audio_active);
+}
+
 static ssize_t class_h_control_show(struct kobject *kobj,
         struct kobj_attribute *attr, char *buf)
 {
@@ -9366,6 +9378,11 @@ static struct kobj_attribute hph_status_attribute =
 		hph_status_show,
 		NULL);
 
+static struct kobj_attribute headphone_audio_active_attribute =
+	__ATTR(headphone_audio_active, 0444,
+		headphone_audio_active_show,
+		NULL);
+
 static struct kobj_attribute class_h_control_attribute =
 	__ATTR(class_h_control, 0444,
 		class_h_control_show,
@@ -9559,6 +9576,7 @@ static struct attribute *sound_control_attrs[] = {
 		&compander1_attribute.attr,
 		&compander_enabled_attribute.attr,
 		&hph_status_attribute.attr,
+		&headphone_audio_active_attribute.attr,
         &class_h_control_attribute.attr,
 		&chopper_attribute.attr,
 		&autochopper_raw_attribute.attr,

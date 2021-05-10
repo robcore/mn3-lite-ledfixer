@@ -48,7 +48,7 @@ busybox cat << CTAG
                 height: 1
             }},
             { SDescription:{
-                description:"Headphones Compander:"
+                description:"HEADPHONE COMPANDER:"
             }},
             { SLiveLabel:{
                 refresh:1000,
@@ -137,6 +137,10 @@ busybox cat << CTAG
             }},
             { STitleBar:{
                 title:"Analog Gains"
+            }},
+            { SLiveLabel:{
+                refresh:1000,
+                action:"soundcontrol headphone_audio_active"
             }},
             { SCheckBox:{
                 label:"Headphone Poweramp Switch",
@@ -257,6 +261,10 @@ busybox cat << CTAG
                 step:1,
                 default:$(busybox cat /sys/kernel/sound_control/compander_bias),
                 action:"soundcontrol compander_bias"
+            }},
+            { SLiveLabel:{
+                refresh:1000,
+                action:"soundcontrol headphone_audio_active"
             }},
             { SCheckBox:{
                 label:"Root Mean Squared Power Detector",
