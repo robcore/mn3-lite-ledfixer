@@ -254,12 +254,6 @@ busybox cat << CTAG
                 default:$(busybox cat /sys/kernel/sound_control/interpolator_boost),
                 action:"soundcontrol interpolator_boost"
             }},
-            { SCheckBox:{
-                label:"RMS Override",
-                description:"Override RMS values to constant values of your choosing",
-                default:$(busybox cat /sys/kernel/sound_control/interpolator_override),
-                action:"soundcontrol interpolator_override"
-            }},
             { SSeekBar:{
                 title:"RMS Peak Detection Timeout",
                 max:15,
