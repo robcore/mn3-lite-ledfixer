@@ -230,10 +230,6 @@
 #define NUM_KPDBL_LEDS			4
 #define KPDBL_MASTER_BIT_INDEX		0
 
-#if !defined(CONFIG_SEC_VIENNA_PROJECT) && !defined(CONFIG_SEC_V2_PROJECT) && !defined(CONFIG_SEC_LT03_PROJECT) && !defined(CONFIG_SEC_MONDRIAN_PROJECT) && !defined(CONFIG_SEC_K_PROJECT) && !defined(CONFIG_SEC_N2_PROJECT) && !defined(CONFIG_SEC_PICASSO_PROJECT) && !defined(CONFIG_SEC_KACTIVE_PROJECT)
-#define SAMSUNG_LED_PATTERN 1
-#endif
-
 #define SAMSUNG_TKEY_LED_BRIGHTNESS  90
 #if defined(CONFIG_SEC_AFYON_PROJECT) || defined(CONFIG_SEC_ATLANTIC_PROJECT) || defined( CONFIG_SEC_VASTA_PROJECT) || defined(CONFIG_MACH_MEGA2LTE_KTT)
 #define SAMSUNG_USE_EXTERNAL_CHARGER
@@ -295,17 +291,15 @@ enum led_mode {
 	MANUAL_MODE,
 };
 
-#ifdef SAMSUNG_LED_PATTERN
 enum rgb_led_patternRGB {
-       LED_CHARGING_PAT = 1,
-       LED_CHARGING_ERROR_PAT,
+    LED_CHARGING_PAT = 1,
+    LED_CHARGING_ERROR_PAT,
 	LED_MISSED_CALL_PAT,
 	LED_LOW_BATTERY_PAT,
 	LED_FULL_BATTERY_PAT,
 	LED_POWERING_ON_PAT,
 	LED_PATTERN_MAX,
 };
-#endif
 
 enum RGB_LEDS{
         RGB_RED,
@@ -493,7 +487,6 @@ struct rgb_config_data {
 	u8	enable;
 };
 
-#ifdef SAMSUNG_LED_PATTERN
 struct patt_config {
         u8  id;
         int *duty_pcts;
@@ -510,7 +503,6 @@ struct patt_registry {
         struct patt_config *patt;
         int len;
 };
-#endif
 
 /**
  * struct qpnp_led_data - internal led data structure
@@ -556,7 +548,6 @@ DECLARE_BITMAP(kpdbl_leds_in_use, NUM_KPDBL_LEDS);
 static bool is_kpdbl_master_turn_on;
 
 static struct device *led_dev;
-#ifdef SAMSUNG_LED_PATTERN
 #define RGB_LED_MAX_BRIGHTNESS  255
 #define RGB_LED_NORM_BRIGHTNESS  100
 #define CURRENT_DIVIDER 12
@@ -781,9 +772,6 @@ static struct patt_registry led_blink_patt[] = {
         },
 };
 
-
-
-#endif
 #ifdef SAMSUNG_USE_EXTERNAL_CHARGER
 static int qpnp_led_masked_write_new(struct qpnp_led_data *led, u16 addr, u8 mask, u8 val)
 {
@@ -1914,16 +1902,8 @@ static void qpnp_led_set(struct led_classdev *led_cdev,
 
 	if (value > led->cdev.max_brightness)
 		value = led->cdev.max_brightness;
-#if defined(CONFIG_MACH_AFYONLTE_TMO) || defined(CONFIG_MACH_AFYONLTE_CAN) || defined(CONFIG_MACH_MS01_EUR_3G) \
-	|| defined(CONFIG_MACH_AFYONLTE_MTR)
-	pr_info("[LED]%s: %s value = %d\n", __func__, led_cdev->name, value);
-	if(strncmp(led_cdev->name, "button-backlight",  16))
-		led->cdev.brightness = value;
-	else
-		led->cdev.brightness = value?SAMSUNG_TKEY_LED_BRIGHTNESS:0;
-#else
+
 	led->cdev.brightness = value;
-#endif
 	schedule_work(&led->work);
 }
 
@@ -3859,9 +3839,6 @@ static int __devinit qpnp_get_config_mpp(struct qpnp_led_data *led,
 	return 0;
 }
 
-#ifdef SAMSUNG_LED_PATTERN
-/* Pattern Start*/
-
 static void samsung_led_set(struct qpnp_led_data *info,
                                                 enum led_brightness value){
     int rc;
@@ -4372,8 +4349,6 @@ static struct attribute *sec_led_attributes[] = {
 static struct attribute_group sec_led_attr_group = {
         .attrs = sec_led_attributes,
 };
-/* Pattern end*/
-#endif
 
 static int __devinit qpnp_leds_probe(struct spmi_device *spmi)
 {
@@ -4644,7 +4619,6 @@ static int __devinit qpnp_leds_probe(struct spmi_device *spmi)
                 goto fail_id_check;
             }
             dev_set_drvdata(led_dev, led_array);
-#ifdef SAMSUNG_LED_PATTERN
 	rc = sysfs_create_group(&led_dev->kobj, &sec_led_attr_group);
             if(rc) {
                 printk(KERN_ERR "[LED]unable to create sysfs\n");
@@ -4653,7 +4627,6 @@ static int __devinit qpnp_leds_probe(struct spmi_device *spmi)
             mutex_init(&leds_mutex_lock);
             low_powermode = 0;
             on_patt = 0;
-#endif
 	}
 	dev_set_drvdata(&spmi->dev, led_array);
 	return 0;
@@ -4754,9 +4727,7 @@ static int __devexit qpnp_leds_remove(struct spmi_device *spmi)
 			return -EINVAL;
 		}
 	}
-#ifdef SAMSUNG_LED_PATTERN
     mutex_destroy(&leds_mutex_lock);
-#endif
 
     return 0;
 }
@@ -4781,13 +4752,10 @@ static struct spmi_driver qpnp_leds_driver = {
 
 static int __init qpnp_led_init(void)
 {
-
-#ifdef SAMSUNG_LED_PATTERN
 	/* Yank555.lu : Extended LED controls */
 	led_speed_on  = 1;
 	led_speed_off = 1;
 	led_intensity = RGB_LED_NORM_BRIGHTNESS; /* 100 = default Samsung value */
-#endif
 
 	return spmi_driver_register(&qpnp_leds_driver);
 }
