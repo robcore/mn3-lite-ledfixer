@@ -384,57 +384,64 @@ rebuild() {
 
 build_new_config() {
 
+    export KBUILD_LOCALVERSION=" $MX_KERNEL_VERSION"
 	echo "Creating kernel config..."
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
 	MX_KERNEL_VERSION="dummyconfigbuild"
 	mkdir -p "$BUILDIR" || warnandfail "Failed to make $BUILDIR directory!"
 	cat "$RDIR/arch/arm/configs/msm8974_sec_hlte_tmo_defconfig" "$RDIR/arch/arm/configs/msm8974_sec_defconfig" "$RDIR/arch/arm/configs/selinux_defconfig" > "$RDIR/arch/arm/configs/mxconfig"
 	cp "$MXCONFIG" "$BUILDIR/.config" || warnandfail "Config Copy Error!"
-	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" CONFIG_LOCALVERSION=" $MX_KERNEL_VERSION" -C "$RDIR" O="$BUILDIR" menuconfig
+	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -C "$RDIR" O="$BUILDIR" menuconfig
 
 }
 
 build_menuconfig() {
 
+    export KBUILD_LOCALVERSION=" $MX_KERNEL_VERSION"
 	echo "Creating kernel config..."
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
 	MX_KERNEL_VERSION="dummyconfigbuild"
 	mkdir -p "$BUILDIR" || warnandfail "Failed to make $BUILDIR directory!"
 	cp "$MXCONFIG" "$BUILDIR/.config" || warnandfail "Config Copy Error!"
-	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" CONFIG_LOCALVERSION=" $MX_KERNEL_VERSION" -C "$RDIR" O="$BUILDIR" menuconfig
+	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -C "$RDIR" O="$BUILDIR" menuconfig
 
 }
 
 build_single_config() {
 
+    export KBUILD_LOCALVERSION=" $MX_KERNEL_VERSION"
 	echo "Creating kernel config..."
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
 	MX_KERNEL_VERSION="buildingsingledriver"
 	mkdir -p "$BUILDIR" || warnandfail "Failed to make $BUILDIR directory!"
 	cp "$MXCONFIG" "$BUILDIR/.config" || warnandfail "Config Copy Error!"
-	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" CONFIG_LOCALVERSION=" $MX_KERNEL_VERSION" -C "$RDIR" O="$BUILDIR" oldconfig || warnandfail "make oldconfig Failed!"
+	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -C "$RDIR" O="$BUILDIR" oldconfig || warnandfail "make oldconfig Failed!"
 
 }
 
 build_kernel_config() {
 
+    export KBUILD_LOCALVERSION=" $MX_KERNEL_VERSION"
 	echo "Creating kernel config..."
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
 	mkdir -p "$BUILDIR" || warnandfail "Failed to make $BUILDIR directory!"
 	cp "$MXCONFIG" "$BUILDIR/.config" || warnandfail "Config Copy Error!"
-	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" CONFIG_LOCALVERSION=" $MX_KERNEL_VERSION" -C "$RDIR" O="$BUILDIR" oldconfig || warnandfail "make oldconfig Failed!"
+	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -C "$RDIR" O="$BUILDIR" oldconfig || warnandfail "make oldconfig Failed!"
 	getmxrecent
 
 }
 
 build_single_driver() {
 
+    export KBUILD_LOCALVERSION=" $MX_KERNEL_VERSION"
 	echo "Building Single Driver..."
-	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" CONFIG_LOCALVERSION=" $MX_KERNEL_VERSION" -C "$RDIR" -S -s -j16 O="$BUILDIR/" "$1"
+	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -C "$RDIR" -S -s -j16 O="$BUILDIR/" "$1"
 
 }
 
 build_kernel() {
+
+    export KBUILD_LOCALVERSION=" $MX_KERNEL_VERSION"
 	OLDCFG="/root/mn3-oldconfigs"
 	echo "Backing up .config to $OLDCFG/config.$QUICKDATE"
 	cp "$BUILDIR/.config" "$OLDCFG/config.$QUICKDATE"
@@ -442,7 +449,7 @@ build_kernel() {
 	#env
 	echo -n "$(date +%s)" > "$RDIR/.starttime"
 	echo "Starting build..."
-	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" CONFIG_LOCALVERSION=" $MX_KERNEL_VERSION" -S -s -j16 -C "$RDIR" O="$BUILDIR" || warnandfail "Kernel Build failed!"
+	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -S -s -j16 -C "$RDIR" O="$BUILDIR" || warnandfail "Kernel Build failed!"
 
 }
 
