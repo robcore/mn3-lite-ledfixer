@@ -476,7 +476,7 @@ build_boot_img() {
 		make -C "$RDIR/scripts/mkqcdtbootimg" || warnandfail "Failed to make dtb tool!"
 	fi
 
-	$RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg --kernel "$KDIR/zImage-dtb" \
+	$RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg --kernel "$KDIR/zImage" \
 		--ramdisk "$KDIR/ramdisk.cpio.gz" \
         --dt_dir "$KDIR" \
 		--cmdline "console=null androidboot.hardware=qcom user_debug=23 msm_rtb.filter=0x37 ehci-hcd.park=3" \
