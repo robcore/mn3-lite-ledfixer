@@ -350,7 +350,7 @@ int usage(void)
             "       --kernel <filename>\n"
             "       --ramdisk <filename>\n"
             "       [ --second <2ndbootloader-filename> ]\n"
-	    "       [ --dt_dir <dtb path> ]\n"
+            "       [ --dt_dir <dtb path> ]\n"
             "       [ --cmdline <kernel-commandline> ]\n"
             "       [ --board <boardname> ]\n"
             "       [ --base <address> ]\n"

@@ -30,8 +30,6 @@ TOOLCHAIN="/opt/toolchains/gcc-linaro-7.5.0-2019.12-x86_64_arm-linux-gnueabihf/b
 #TOOLCHAIN="/opt/toolchains/gcc-linaro-6.5.0-2018.12-x86_64_arm-linux-gnueabihf/bin/arm-linux-gnueabihf-"
 #TOOLCHAIN="/opt/toolchains/gcc-arm-9.2-2019.12-x86_64-arm-none-linux-gnueabihf/bin/arm-none-linux-gnueabihf-"
 #export ARCH="arm"
-DTBTOOL="$RDIR/tools/dtbTool"
-MKBOOTIMG="/usr/bin/mkbootimg"
 export CROSS_COMPILE="$TOOLCHAIN"
 
 if [ "$2" = "noreboot" ] || [ "$1" = "-anr" ] || [ "$1" = "--allnoreboot" ]
@@ -473,39 +471,26 @@ build_boot_img() {
 
 	echo "Generating boot.img..."
 	rm -f "$ZIPFOLDER/boot.img"
-    [ -f "$KDIR/zImage-dtb" ] && rm "$KDIR/zImage-dtb"
-#	if [ ! -f "$RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg" ]
-#	then
-#		make -C "$RDIR/scripts/mkqcdtbootimg" || warnandfail "Failed to make dtb tool!"
-#	fi
-#DTBTOOL="$RDIR/tools/dtbTool"
-#MKBOOTIMG="/usr/bin/mkbootimg"
-#	$RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg --kernel "$KDIR/zImage" \
-#		--ramdisk "$KDIR/ramdisk.cpio.gz" \
-#		--dt_dir "$KDIR" \
-#		--cmdline "console=null androidboot.hardware=qcom user_debug=23 msm_rtb.filter=0x37 ehci-hcd.park=3" \
-#		--base "0x00000000" \
-#		--pagesize "2048" \
-#		--ramdisk_offset "0x02000000" \
-#		--tags_offset "0x01e00000" \
-#		--output "$ZIPFOLDER/boot.img"
-#	if [ "$?" -eq 0 ]
-#	then
-#		echo "mkqcdtbootimg appears to have succeeded in building an image"
-#	else
-#		warnandfail "mkqcdtbootimg appears to have failed in building an image!"
-#	fi
-    $RDIR/tools/dtbTool -o $KDIR/dt.img -s 2048 -p $RDIR/scripts/dtc/ $KDIR/arch/arm/boot/
-    $RDIR/tools/dt-mkbootimg
-    $RDIR/tools/dt-mkbootimg --base 0x00000000 \
-    --kernel $KDIR/arch/arm/boot/zImage \
-    --ramdisk_offset 0x02000000 \
-    --tags_offset 0x01e00000 \
-    --pagesize 2048 \
-    --cmdline 'console=null androidboot.hardware=qcom user_debug=23 msm_rtb.filter=0x37 ehci-hcd.park=3' \
-    --ramdisk $KDIR/ramdisk.cpio.gz \
-    --dt $KDIR/dt.img \
-    -o $ZIPFOLDER/boot.img
+	if [ ! -f "$RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg" ]
+	then
+		make -C "$RDIR/scripts/mkqcdtbootimg" || warnandfail "Failed to make dtb tool!"
+	fi
+
+	$RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg --kernel "$KDIR/zImage-dtb" \
+		--ramdisk "$KDIR/ramdisk.cpio.gz" \
+		#--dt_dir "$KDIR" \
+		--cmdline "console=null androidboot.hardware=qcom user_debug=23 msm_rtb.filter=0x37 ehci-hcd.park=3" \
+		--base "0x00000000" \
+		--pagesize "2048" \
+		--ramdisk_offset "0x02000000" \
+		--tags_offset "0x01e00000" \
+		--output "$ZIPFOLDER/boot.img"
+	if [ "$?" -eq 0 ]
+	then
+		echo "mkqcdtbootimg appears to have succeeded in building an image"
+	else
+		warnandfail "mkqcdtbootimg appears to have failed in building an image!"
+	fi
 	[ -f "$ZIPFOLDER/boot.img" ] || warnandfail "$ZIPFOLDER/boot.img does not exist!"
 	echo -n "SEANDROIDENFORCE" >> "$ZIPFOLDER/boot.img"
 
