@@ -478,7 +478,7 @@ build_boot_img() {
 
 	$RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg --kernel "$KDIR/zImage-dtb" \
 		--ramdisk "$KDIR/ramdisk.cpio.gz" \
-		#--dt_dir "$KDIR" \
+        --dt_dir "$KDIR" \
 		--cmdline "console=null androidboot.hardware=qcom user_debug=23 msm_rtb.filter=0x37 ehci-hcd.park=3" \
 		--base "0x00000000" \
 		--pagesize "2048" \
