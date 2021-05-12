@@ -594,8 +594,8 @@ static irqreturn_t flip_cover_detect(int irq, void *dev_id)
 	cancel_delayed_work_sync(&ddata->flip_cover_dwork);
 #ifdef CONFIG_SENSORS_HALL_DEBOUNCE
     wake_unlock(&ddata->flip_wake_lock);
-    wake_lock_timeout(&ddata->flip_wake_lock, dtime_wake);
-	schedule_delayed_work(&ddata->flip_cover_dwork, dtime_irq);
+    wake_lock_timeout(&ddata->flip_wake_lock, msecs_to_jiffies(dtime_wake));
+	schedule_delayed_work(&ddata->flip_cover_dwork, msecs_to_jiffies(dtime_irq));
 #else /* CONFIG_SENSORS_HALL_DEBOUNCE */
 	if (ddata->flip_code == SW_LID)
 		flip_status = !gpio_get_value(ddata->gpio_flip_cover);
@@ -660,7 +660,7 @@ static int gpio_keys_open(struct input_dev *input)
 	ret = request_threaded_irq(
 			irq, NULL,
 			flip_cover_detect,
-			IRQF_DISABLED | IRQF_TRIGGER_RISING |
+			IRQF_TRIGGER_RISING |
 			IRQF_TRIGGER_FALLING | IRQF_ONESHOT,
 			"flip_cover", ddata);
 	if (ret >= 0) {
