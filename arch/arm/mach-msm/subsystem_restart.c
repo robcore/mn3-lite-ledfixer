@@ -792,9 +792,6 @@ int subsystem_restart_dev(struct subsys_device *dev)
 	name = dev->desc->name;
 
 #ifdef CONFIG_SEC_DEBUG
-#ifdef CONFIG_SEC_SSR_DEBUG_LEVEL_CHK 
-	if (!sec_debug_is_enabled_for_ssr())
-#else
 	if (!sec_debug_is_enabled())
 #endif
 	{
@@ -807,7 +804,7 @@ int subsystem_restart_dev(struct subsys_device *dev)
 		else {
 			pr_info("Restart sequence requested for %s, restart_level = %s.\n",
 				name, restart_levels[dev->restart_level]);
-			dev->restart_level = RESET_SUBSYS_COUPLED; //Why is it delete the RESET_SUBSYS_INDEPENDENT on MSM8974 ?
+			dev->restart_level = RESET_SUBSYS_COUPLED;
 		}
 	}
 	else
@@ -824,25 +821,6 @@ int subsystem_restart_dev(struct subsys_device *dev)
 		pr_err("%s crashed during a system poweroff/shutdown.\n", name);
 		return -EBUSY;
 	}
-
-#if defined(CONFIG_MACH_BAFFIN2_SGLTE)
-	if (strncmp(name, _order_8x60_all[0], 14) == 0) {
-		if (dev->flag_skip_ramdump) {		// to skip ramdump if status pin did go to HIGH.
-			enable_ramdumps = 0;
-			dev->flag_skip_ramdump = false;
-		} else
-			enable_ramdumps = sec_debug_is_enabled()? 1 : 0;
-		dev->restart_level = RESET_SUBSYS_COUPLED;
-		pr_info("Restart sequence requested for %s, restart_level = %s, enable_ramdumps = %d. \n",
-				name, restart_levels[dev->restart_level], enable_ramdumps);
-	}
-	if (strncmp(name, _order_8x60_all[1], 5) == 0) {
-		enable_ramdumps = sec_debug_is_enabled()? 1 : 0;
-		dev->restart_level = RESET_SUBSYS_COUPLED;
-		pr_info("Restart sequence requested for %s, restart_level = %s, enable_ramdumps = %d. \n",
-				name, restart_levels[dev->restart_level], enable_ramdumps);
-	}
-#endif
 	
 	pr_info("Restart sequence requested for %s, restart_level = %s.\n",
 		name, restart_levels[dev->restart_level]);
@@ -1383,16 +1361,6 @@ static void panic_for_silentLog_work(struct work_struct *work)
 static int __init subsys_restart_init(void)
 {
 	int ret;
-#if 0 //It shoud be modified with dev struct for CONFIG_SEC_DEBUG on MSM8947
-#ifdef CONFIG_SEC_SSR_DEBUG_LEVEL_CHK
-	if (!sec_debug_is_enabled_for_ssr())
-#else
-	if (!sec_debug_is_enabled())
-#endif
-		dev->restart_level = RESET_SUBSYS_INDEPENDENT;
-	else
-		dev->restart_level = RESET_SOC;
-#endif
 
 	ssr_wq = alloc_workqueue("ssr_wq", WQ_CPU_INTENSIVE, 0);
 	BUG_ON(!ssr_wq);
