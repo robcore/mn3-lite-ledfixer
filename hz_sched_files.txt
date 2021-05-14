@@ -75,7 +75,6 @@
 /root/mn3lite/drivers/net/wireless/ipw2x00/ipw2200.c
 /root/mn3lite/drivers/net/wireless/ipw2x00/ipw2100.c
 /root/mn3lite/drivers/net/wireless/rndis_wlan.c
-/root/mn3lite/drivers/net/wireless/bcmdhd/wl_cfg80211.c
 /root/mn3lite/drivers/net/wireless/b43/main.c
 /root/mn3lite/drivers/net/wireless/mac80211_hwsim.c
 /root/mn3lite/drivers/net/wireless/iwlegacy/3945-mac.c
@@ -208,9 +207,6 @@
 /root/mn3lite/drivers/misc/max77888-muic.c
 /root/mn3lite/drivers/misc/max77828-muic.c
 /root/mn3lite/drivers/edac/i5100_edac.c
-/root/mn3lite/drivers/platform/x86/msi-laptop.c
-/root/mn3lite/drivers/platform/x86/dell-laptop.c
-/root/mn3lite/drivers/platform/x86/acer-wmi.c
 /root/mn3lite/drivers/barcode_emul/barcode_emul_ice4_hlte.c
 /root/mn3lite/drivers/barcode_emul/barcode_emul_ice4.c
 /root/mn3lite/net/ceph/osd_client.c
