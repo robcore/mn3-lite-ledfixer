@@ -845,7 +845,7 @@ int subsystem_restart_dev(struct subsys_device *dev)
 				name);
 			strncpy(subsys_name, name, sizeof(subsys_name)-1);
 			subsys_name[sizeof(subsys_name)-1] = '\0';
-			queue_delayed_work(panic_wq, &panic_dwork, 300);
+			queue_delayed_work(panic_wq, &panic_dwork, msecs_to_jiffies(300));
 			dump_stack();
 		} else
 			panic("%s crashed: subsys-restart: Resetting the SoC",
