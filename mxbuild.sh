@@ -501,7 +501,7 @@ build_boot_img() {
 }
 
 ADBPUSHLOCATION="/sdcard/Download"
-MAGISKFILE="Magisk-v22.1.zip"
+MAGISKFILE="Magisk-v23.0.zip"
 
 create_zip() {
 
