@@ -1,8 +1,3 @@
-/root/mn3lite/drivers/usb/core/hub.c
-/root/mn3lite/drivers/usb/atm/cxacru.c
-/root/mn3lite/drivers/usb/otg/ab8500-usb.c
-/root/mn3lite/drivers/usb/otg/mv_otg.c
-/root/mn3lite/drivers/usb/otg/msm_otg.c
 /root/mn3lite/drivers/usb/wusbcore/devconnect.c
 /root/mn3lite/drivers/usb/wusbcore/wusbhc.c
 /root/mn3lite/drivers/usb/gadget/android.c

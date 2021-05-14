@@ -74,7 +74,7 @@
 #define USB_PHY_VDD_DIG_VOL_MIN	1045000 /* uV */
 #define USB_PHY_VDD_DIG_VOL_MAX	1320000 /* uV */
 
-#define USB_SUSPEND_DELAY_TIME	(500 * HZ/1000) /* 500 msec */
+#define USB_SUSPEND_DELAY_TIME	500 /* 500 msec */
 
 #define USE_MUIC_CHGTYPE	(CONFIG_USB_SWITCH_RT8973)
 
@@ -867,7 +867,7 @@ static int msm_otg_set_suspend(struct usb_phy *phy, int suspend)
 			if (!atomic_read(&motg->in_lpm))
 				queue_delayed_work(system_nrt_wq,
 					&motg->suspend_work,
-					USB_SUSPEND_DELAY_TIME);
+					msecs_to_jiffies(USB_SUSPEND_DELAY_TIME));
 			break;
 
 		default:
@@ -1639,7 +1639,7 @@ static void msm_hsusb_vbus_power(struct msm_otg *motg, bool on)
 #ifdef CONFIG_USB_HOST_NOTIFY
 		else
 			schedule_delayed_work(&motg->late_power_work,
-					(1000 * HZ / 1000));
+					msecs_to_jiffies(100));
 #endif
 		return;
 	}
@@ -2389,10 +2389,10 @@ static const char *chg_to_string(enum usb_chg_type chg_type)
 	}
 }
 
-#define MSM_CHG_DCD_TIMEOUT		(750 * HZ/1000) /* 750 msec */
-#define MSM_CHG_DCD_POLL_TIME		(50 * HZ/1000) /* 50 msec */
-#define MSM_CHG_PRIMARY_DET_TIME	(50 * HZ/1000) /* TVDPSRC_ON */
-#define MSM_CHG_SECONDARY_DET_TIME	(50 * HZ/1000) /* TVDMSRC_ON */
+#define MSM_CHG_DCD_TIMEOUT	750 /* 750 msec */
+#define MSM_CHG_DCD_POLL_TIME 50 /* 50 msec */
+#define MSM_CHG_PRIMARY_DET_TIME 50 /* TVDPSRC_ON */
+#define MSM_CHG_SECONDARY_DET_TIME 50 /* TVDMSRC_ON */
 static void msm_chg_detect_work(struct work_struct *w)
 {
 	struct msm_otg *motg = container_of(w, struct msm_otg, chg_work.work);
@@ -2534,7 +2534,7 @@ static void msm_chg_detect_work(struct work_struct *w)
 		return;
 	}
 
-	queue_delayed_work(system_nrt_wq, &motg->chg_work, delay);
+	queue_delayed_work(system_nrt_wq, &motg->chg_work, msecs_to_jiffies(delay));
 }
 
 /*
