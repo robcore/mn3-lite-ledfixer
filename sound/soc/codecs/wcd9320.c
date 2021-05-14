@@ -1030,12 +1030,7 @@ TAIKO_A_RX_HPH_CHOP_CTL 0x1A5
 static void write_chopper(void)
 {
 
-    if (!hpwidget()) {
-        mx_update_bits(TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20);
-        mx_update_bits(TAIKO_A_RX_HPH_CHOP_CTL, 0x80, 0x00);
-        return;
-    }
-	if (chopper_bypass) {
+    if (!hpwidget() || chopper_bypass) {
         mx_update_bits(TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20);
         mx_update_bits(TAIKO_A_RX_HPH_CHOP_CTL, 0x80, 0x00);
         return;
@@ -1044,10 +1039,7 @@ static void write_chopper(void)
     if (uhqa_mode) {
         mx_update_bits(TAIKO_A_RX_HPH_CHOP_CTL, 0x80, 0x80);
         mx_update_bits(TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x00);
-        return;
-    }
-
-    if (!hph_pa_enabled) {
+    } else {
         mx_update_bits(TAIKO_A_RX_HPH_CHOP_CTL, 0x80, 0x80);
         mx_update_bits(TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20);
     }
@@ -5308,15 +5300,8 @@ static int taiko_prepare(struct snd_pcm_substream *substream,
 
     if (chopper_bypass) {
         pr_info("%s: uhqa_mode disabled by chopper_bypass", __func__);
-        return 0;
+        goto handleshit;
     }
-
-	if (!taiko_p->comp_enabled[COMPANDER_1] || hph_pa_enabled) {
-		taiko_p->clsh_d.hs_perf_mode_enabled = false;
-		snd_soc_update_bits(codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20);
-		pr_info("%s: uhqa_mode disabled by hph_pa_enabled", __func__);
-		goto handleshit;
-	}
 
 	paths = snd_soc_dapm_codec_dai_get_playback_connected_widgets(dai, &wlist);
 
@@ -5341,7 +5326,7 @@ static int taiko_prepare(struct snd_pcm_substream *substream,
 	kfree(wlist);
 
 	if (!found_hs_pa) {
-        taiko_p->clsh_d.hs_perf_mode_enabled = false;
+		taiko_p->clsh_d.hs_perf_mode_enabled = false;
 		goto handleshit;
 	}
 
@@ -5349,7 +5334,6 @@ static int taiko_prepare(struct snd_pcm_substream *substream,
 			__func__, taiko_p->dai[dai->id].rate,
 			taiko_p->dai[dai->id].bit_width,
 			taiko_p->comp_enabled[COMPANDER_1]);
-
 
 	if (uhqa_mode) {
 		taiko_p->clsh_d.hs_perf_mode_enabled = true;
