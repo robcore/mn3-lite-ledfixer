@@ -1033,10 +1033,7 @@ static void write_chopper(void)
     if (!hpwidget() || chopper_bypass) {
         mx_update_bits(TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20);
         mx_update_bits(TAIKO_A_RX_HPH_CHOP_CTL, 0x80, 0x00);
-        return;
-    }
-
-    if (uhqa_mode) {
+    } else if (uhqa_mode) {
         mx_update_bits(TAIKO_A_RX_HPH_CHOP_CTL, 0x80, 0x80);
         mx_update_bits(TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x00);
     } else {
@@ -5281,6 +5278,7 @@ static int taiko_prepare(struct snd_pcm_substream *substream,
 
 	if (substream->stream) {
 		taiko_p->clsh_d.hs_perf_mode_enabled = false;
+        pr_info("%s: uhqa_mode disabled by substream stream", __func__);
 		goto handleshit;
 	}
 
@@ -5299,13 +5297,14 @@ static int taiko_prepare(struct snd_pcm_substream *substream,
 			taiko_p->comp_enabled[COMPANDER_1]);
 
     if (chopper_bypass) {
+        taiko_p->clsh_d.hs_perf_mode_enabled = false;
         pr_info("%s: uhqa_mode disabled by chopper_bypass", __func__);
         goto handleshit;
     }
 
 	paths = snd_soc_dapm_codec_dai_get_playback_connected_widgets(dai, &wlist);
 
-	if (!paths || wlist == NULL) {
+	if (!paths) {
 		dev_dbg(dai->dev, "%s(): found no audio playback paths\n",
 			__func__);
         taiko_p->clsh_d.hs_perf_mode_enabled = false;
@@ -5337,17 +5336,14 @@ static int taiko_prepare(struct snd_pcm_substream *substream,
 
 	if (uhqa_mode) {
 		taiko_p->clsh_d.hs_perf_mode_enabled = true;
-    	snd_soc_update_bits(codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x00);
         pr_info("%s: uhqa_mode enabled by user", __func__);
 	} else if (taiko_p->dai[dai->id].rate == 192000 ||
 		(taiko_p->dai[dai->id].rate == 96000 &&
 	    taiko_p->dai[dai->id].bit_width == 24)) {
 		taiko_p->clsh_d.hs_perf_mode_enabled = true;
-   		snd_soc_update_bits(codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x00);
        	pr_info("%s: uhqa_mode enabled by audio properties", __func__);
 	} else {
 		taiko_p->clsh_d.hs_perf_mode_enabled = false;
-		snd_soc_update_bits(codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20);
 		pr_info("%s: uhqa_mode disabled", __func__);
 	}
 handleshit:
