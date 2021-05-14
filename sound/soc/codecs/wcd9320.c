@@ -5305,8 +5305,8 @@ static int taiko_prepare(struct snd_pcm_substream *substream,
 
 	paths = snd_soc_dapm_codec_dai_get_playback_connected_widgets(dai, &wlist);
 
-	if (!paths) {
-		dev_err(dai->dev, "%s(): found no audio playback paths\n",
+	if (!paths || wlist == NULL) {
+		dev_dbg(dai->dev, "%s(): found no audio playback paths\n",
 			__func__);
         taiko_p->clsh_d.hs_perf_mode_enabled = false;
 		goto handleshit;

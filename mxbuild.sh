@@ -720,12 +720,14 @@ do
 
 	     -r|--rebuildme)
 			checkrecov
+            handle_existing
 			rebuild
 			build_all
 			break
 	    	;;
 
 	     -b|--bsd)
+            handle_existing
 			bsdwrapper "$extrargs"
 			break
 	    	;;
@@ -735,10 +737,12 @@ do
 	    	break
 	    	;;
 		 -nc|--newconfig)
+            handle_existing
 			build_new_config
 			break
 			;;
 		 -m|--menuconfig)
+            handle_existing
 			build_menuconfig
 			break
 			;;
