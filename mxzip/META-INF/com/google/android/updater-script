@@ -1,4 +1,7 @@
-ui_print("MACHIN3X");
+ui_print(" ");
+ui_print("*--------*");
+ui_print("*MACHIN3X*");
+ui_print("*--------*");
 ui_print(" ");
 ui_print("Adjusting jiggawattage in flux capacitor");
 ui_print("Mounting Filesystems");
