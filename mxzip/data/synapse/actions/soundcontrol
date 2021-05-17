@@ -617,9 +617,9 @@ then
     CURVAL="$(busybox cat /sys/kernel/sound_control/headphone_audio_active)"
     if [ "$CURVAL" = "1" ]
     then
-        busybox echo "Setting is Locked"
+        busybox echo "The Below Setting is Locked"
     else
-        busybox echo "Setting is Unlocked"
+        busybox echo "The Below Setting is Unlocked"
     fi
 elif [ "$1" = "compander_status" ]
 then

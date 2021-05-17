@@ -57,9 +57,13 @@ busybox cat << CTAG
             { STitleBar:{
                 title:"General"
             }},
+            { SLiveLabel:{
+                refresh:1000,
+                action:"soundcontrol headphone_audio_active"
+            }},
             { SCheckBox:{
                 label:"High Perf Mode",
-                description:"Operate as a class AB Amp",
+                description:"Operate as a class AB Amp instead of default Class H amp",
                 default:$(busybox cat /sys/kernel/sound_control/high_perf_mode),
                 action:"soundcontrol highperfmode"
             }},
