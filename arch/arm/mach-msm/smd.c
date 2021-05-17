@@ -144,10 +144,9 @@ enum {
 	SMSM_APPS_DEM_I = 3,
 };
 
-int msm_smd_debug_mask = MSM_SMD_POWER_INFO | MSM_SMD_INFO |
-							MSM_SMSM_POWER_INFO;
+int msm_smd_debug_mask = 0;
 module_param_named(debug_mask, msm_smd_debug_mask,
-		   int, S_IRUGO | S_IWUSR | S_IWGRP);
+		   int, 644);
 void *smd_log_ctx;
 void *smsm_log_ctx;
 #define NUM_LOG_PAGES 4
@@ -3330,15 +3329,17 @@ static __init int modem_restart_late_init(void)
 }
 late_initcall(modem_restart_late_init);
 
+static bool registered;
+
 int __init msm_smd_init(void)
 {
-	static bool registered;
 	int rc;
 	int i;
 
 	if (registered)
 		return 0;
 
+#if defined(CONFIG_MSM_IPC_LOGGING)
 	smd_log_ctx = ipc_log_context_create(NUM_LOG_PAGES, "smd", 0);
 	if (!smd_log_ctx) {
 		pr_err("%s: unable to create SMD logging context\n", __func__);
@@ -3350,7 +3351,9 @@ int __init msm_smd_init(void)
 		pr_err("%s: unable to create SMSM logging context\n", __func__);
 		msm_smd_debug_mask = 0;
 	}
-
+#else
+    msm_smd_debug_mask = 0;
+#endif
 	registered = true;
 
 	for (i = 0; i < NUM_SMD_SUBSYSTEMS; ++i) {
