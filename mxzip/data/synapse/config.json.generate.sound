@@ -59,10 +59,10 @@ busybox cat << CTAG
             }},
             { SLiveLabel:{
                 refresh:1000,
-                action:"soundcontrol headphone_audio_active"
+                action:"soundcontrol headphone_audio_active ClassAB"
             }},
             { SCheckBox:{
-                label:"High Perf Mode",
+                label:"Class AB Switch",
                 description:"Operate as a class AB Amp instead of default Class H amp",
                 default:$(busybox cat /sys/kernel/sound_control/high_perf_mode),
                 action:"soundcontrol highperfmode"
@@ -144,7 +144,7 @@ busybox cat << CTAG
             }},
             { SLiveLabel:{
                 refresh:1000,
-                action:"soundcontrol headphone_audio_active"
+                action:"soundcontrol headphone_audio_active PowerAmp"
             }},
             { SCheckBox:{
                 label:"Headphone Poweramp Switch",
@@ -268,7 +268,7 @@ busybox cat << CTAG
             }},
             { SLiveLabel:{
                 refresh:1000,
-                action:"soundcontrol headphone_audio_active"
+                action:"soundcontrol headphone_audio_active RMS"
             }},
             { SCheckBox:{
                 label:"Root Mean Squared Power Detector",
@@ -299,6 +299,10 @@ busybox cat << CTAG
                 step:1,
                 default:$(busybox cat /sys/kernel/sound_control/rms_meter_resamp_fact),
                 action:"soundcontrol rms_meter_resamp_fact"
+            }},
+            { SLiveLabel:{
+                refresh:1000,
+                action:"soundcontrol headphone_audio_active Compander"
             }},
             { SCheckBox:{
                 label:"Compander Gain Lock",
