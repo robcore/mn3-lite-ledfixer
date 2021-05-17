@@ -146,24 +146,13 @@ enum {
 
 int msm_smd_debug_mask = 0;
 module_param_named(debug_mask, msm_smd_debug_mask,
-		   int, 644);
+		   int, 0644);
 void *smd_log_ctx;
 void *smsm_log_ctx;
 #define NUM_LOG_PAGES 4
 
-#define IPC_LOG_SMD(level, x...) do { \
-	if (smd_log_ctx) \
-		ipc_log_string(smd_log_ctx, x); \
-	else \
-		printk(level x); \
-	} while (0)
-
-#define IPC_LOG_SMSM(level, x...) do { \
-	if (smsm_log_ctx) \
-		ipc_log_string(smsm_log_ctx, x); \
-	else \
-		printk(level x); \
-	} while (0)
+#define IPC_LOG_SMD(level, x...) do { } while (0)
+#define IPC_LOG_SMSM(level, x...) do { } while (0)
 
 #if defined(CONFIG_MSM_SMD_DEBUG)
 #define SMD_DBG(x...) do {				\
