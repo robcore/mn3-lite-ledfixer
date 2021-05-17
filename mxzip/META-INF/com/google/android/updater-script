@@ -1,6 +1,6 @@
 ui_print("MACHIN3X");
-ui_print("Adjusting jiggawattage in flux capacitor");
 ui_print(" ");
+ui_print("Adjusting jiggawattage in flux capacitor");
 ui_print("Mounting Filesystems");
 run_program("/sbin/busybox", "mount", "/system");
 run_program("/sbin/busybox", "mount", "/data");
