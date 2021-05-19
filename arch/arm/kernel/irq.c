@@ -43,6 +43,13 @@
 
 #include <asm/perftypes.h>
 
+/*
+ * No architecture-specific irq_finish function defined in arm/arch/irqs.h.
+ */
+#ifndef irq_finish
+#define irq_finish(irq) do { } while (0)
+#endif
+
 unsigned long irq_err_count;
 
 int arch_show_interrupts(struct seq_file *p, int prec)
