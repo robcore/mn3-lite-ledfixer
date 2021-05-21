@@ -635,10 +635,10 @@ int sec_debug_save_panic_info(const char *str, unsigned int caller);
 
 extern uint32_t global_pvs;
 extern struct class *sec_class;
-
-
-
-#endif
+#else
+extern uint32_t global_pvs;
+extern struct class *sec_class;
+#endif //CONFIG_SEC_DEBUG_SUBSYS
 
 #ifdef CONFIG_SEC_DEBUG_DOUBLE_FREE
 extern void *kfree_hook(void *p, void *caller);
