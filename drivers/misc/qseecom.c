@@ -4506,9 +4506,7 @@ static int __devinit qseecom_probe(struct platform_device *pdev)
 				pr_warn("secure app region addr=0x%x size=0x%x",
 							req.addr, req.size);
 #ifdef CONFIG_SEC_DEBUG
-#ifdef CONFIG_SEC_DEBUG_SUBSYS
 				sec_debug_secure_app_addr_size(req.addr, req.size);
-#endif
 #endif
 			} else {
 				pr_err("Fail to get secure app region info\n");

@@ -351,18 +351,14 @@ DEFINE_PER_CPU(enum sec_debug_upload_cause_t, sec_debug_upload_cause);
 /* save last_pet and last_ns with these nice functions */
 void sec_debug_save_last_pet(unsigned long long last_pet)
 {
-#ifdef CONFIG_SEC_DEBUG_SCHED_LOG
 	if(secdbg_log)
 		secdbg_log->last_pet = last_pet;
-#endif
 }
 
 void sec_debug_save_last_ns(unsigned long long last_ns)
 {
-#ifdef CONFIG_SEC_DEBUG_SCHED_LOG
 	if(secdbg_log)
 		atomic64_set(&(secdbg_log->last_ns), last_ns);
-#endif
 }
 EXPORT_SYMBOL(sec_debug_save_last_pet);
 EXPORT_SYMBOL(sec_debug_save_last_ns);
@@ -1026,7 +1022,7 @@ static void sec_debug_set_build_info(void)
 	strlcat(p, "Time:", sizeof(sec_build_info));
 	strlcat(p, sec_build_time[1], sizeof(sec_build_info));
 }
-#ifdef CONFIG_SEC_DEBUG_SCHED_LOG
+
 static int __init __init_sec_debug_log(void)
 {
 	int i;
@@ -1083,14 +1079,10 @@ static int __init __init_sec_debug_log(void)
 
 	return 0;
 }
-#endif
 
 #ifdef CONFIG_SEC_DEBUG_SUBSYS
 int sec_debug_save_die_info(const char *str, struct pt_regs *regs)
 {
-#ifndef CONFIG_SEC_DEBUG_SCHED_LOG
-    return -ENOMEM;
-#else
 	if (!secdbg_krait)
 		return -ENOMEM;
 	snprintf(secdbg_krait->excp.pc_sym, sizeof(secdbg_krait->excp.pc_sym),
@@ -1099,14 +1091,10 @@ int sec_debug_save_die_info(const char *str, struct pt_regs *regs)
 		"%pS", (void *)regs->ARM_lr);
 
 	return 0;
-#endif
 }
 
 int sec_debug_save_panic_info(const char *str, unsigned int caller)
 {
-#ifndef CONFIG_SEC_DEBUG_SCHED_LOG
-    return -ENOMEM;
-#else
 	if (!secdbg_krait)
 		return -ENOMEM;
 	snprintf(secdbg_krait->excp.panic_caller,
@@ -1118,14 +1106,10 @@ int sec_debug_save_panic_info(const char *str, unsigned int caller)
 		task_pid_nr(current));
 
 	return 0;
-#endif
 }
 
 int sec_debug_subsys_add_infomon(char *name, unsigned int size, unsigned int pa)
 {
-#ifndef CONFIG_SEC_DEBUG_SCHED_LOG
-    return -ENOMEM;
-#else
 	if (!secdbg_krait)
 		return -ENOMEM;
 
@@ -1141,14 +1125,10 @@ int sec_debug_subsys_add_infomon(char *name, unsigned int size, unsigned int pa)
 	secdbg_krait->info_mon.idx++;
 
 	return 0;
-#endif
 }
 
 int sec_debug_subsys_add_varmon(char *name, unsigned int size, unsigned int pa)
 {
-#ifndef CONFIG_SEC_DEBUG_SCHED_LOG
-    return -ENOMEM;
-#else
 	if (!secdbg_krait)
 		return -ENOMEM;
 
@@ -1163,7 +1143,6 @@ int sec_debug_subsys_add_varmon(char *name, unsigned int size, unsigned int pa)
 	secdbg_krait->var_mon.idx++;
 
 	return 0;
-#endif
 }
 
 #ifdef CONFIG_SEC_DEBUG_MDM_FILE_INFO
@@ -1609,13 +1588,13 @@ int __init sec_debug_procfs_init(void)
 // SEC_CP_CRASH_LOG
 int sec_debug_get_cp_crash_log(char *str)
 {
-#ifdef CONFIG_SEC_DEBUG_SUBSYS
     struct sec_debug_subsys_data_modem *modem = (struct sec_debug_subsys_data_modem *)&secdbg_subsys->priv.modem;
+
+//  if(!strcmp(modem->state, "Init"))
+//      return strcpy(str, "There is no cp crash log);
+
     return sprintf(str, "%s, %s, %s, %d, %s",
         modem->excp.type, modem->excp.task, modem->excp.file, modem->excp.line, modem->excp.msg);
-#else
-    return sprintf(str, "%s\n", "Disabled");
-#endif
 }
 #endif /* CONFIG_USER_RESET_DEBUG */
 
@@ -1847,6 +1826,7 @@ asmlinkage int sec_debug_msg_log(void *caller, const char *fmt, ...)
 	int r = 0;
 	int i;
 	va_list args;
+
 	if (!secdbg_log)
 		return 0;
 
@@ -1865,7 +1845,7 @@ asmlinkage int sec_debug_msg_log(void *caller, const char *fmt, ...)
 	return r;
 }
 
-#endif //CONFIG_SEC_DEBUG_MSG_LOG
+#endif
 
 #ifdef CONFIG_SEC_DEBUG_AVC_LOG
 asmlinkage int sec_debug_avc_log(const char *fmt, ...)
