@@ -1,5 +1,4 @@
 /root/mn3lite/kernel/printk.c
-/root/mn3lite/kernel/softirq.c
 /root/mn3lite/arch/arm/mach-msm/restart.c
 /root/mn3lite/arch/arm/mach-msm/Makefile
 /root/mn3lite/arch/arm/mach-msm/sec_debug.c

@@ -29,9 +29,6 @@
 #include <trace/events/irq.h>
 
 #include <asm/irq.h>
-#ifdef CONFIG_SEC_DEBUG
-#include <mach/sec_debug.h>
-#endif
 
 /*
    - No shared variables, all the data are CPU local.
