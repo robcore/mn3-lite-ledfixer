@@ -1,4 +1,3 @@
-/root/mn3lite/kernel/irq/handle.c
 /root/mn3lite/kernel/printk.c
 /root/mn3lite/kernel/softirq.c
 /root/mn3lite/arch/arm/mach-msm/restart.c
