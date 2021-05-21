@@ -1088,7 +1088,7 @@ static int __init __init_sec_debug_log(void)
 #ifdef CONFIG_SEC_DEBUG_SUBSYS
 int sec_debug_save_die_info(const char *str, struct pt_regs *regs)
 {
-#ifdef CONFIG_SEC_DEBUG_SCHED_LOG
+#ifndef CONFIG_SEC_DEBUG_SCHED_LOG
     return -ENOMEM;
 #else
 	if (!secdbg_krait)
@@ -1104,7 +1104,7 @@ int sec_debug_save_die_info(const char *str, struct pt_regs *regs)
 
 int sec_debug_save_panic_info(const char *str, unsigned int caller)
 {
-#ifdef CONFIG_SEC_DEBUG_SCHED_LOG
+#ifndef CONFIG_SEC_DEBUG_SCHED_LOG
     return -ENOMEM;
 #else
 	if (!secdbg_krait)
@@ -1123,7 +1123,7 @@ int sec_debug_save_panic_info(const char *str, unsigned int caller)
 
 int sec_debug_subsys_add_infomon(char *name, unsigned int size, unsigned int pa)
 {
-#ifdef CONFIG_SEC_DEBUG_SCHED_LOG
+#ifndef CONFIG_SEC_DEBUG_SCHED_LOG
     return -ENOMEM;
 #else
 	if (!secdbg_krait)
@@ -1146,7 +1146,7 @@ int sec_debug_subsys_add_infomon(char *name, unsigned int size, unsigned int pa)
 
 int sec_debug_subsys_add_varmon(char *name, unsigned int size, unsigned int pa)
 {
-#ifdef CONFIG_SEC_DEBUG_SCHED_LOG
+#ifndef CONFIG_SEC_DEBUG_SCHED_LOG
     return -ENOMEM;
 #else
 	if (!secdbg_krait)
@@ -1609,13 +1609,13 @@ int __init sec_debug_procfs_init(void)
 // SEC_CP_CRASH_LOG
 int sec_debug_get_cp_crash_log(char *str)
 {
+#ifdef CONFIG_SEC_DEBUG_SUBSYS
     struct sec_debug_subsys_data_modem *modem = (struct sec_debug_subsys_data_modem *)&secdbg_subsys->priv.modem;
-
-//  if(!strcmp(modem->state, "Init"))
-//      return strcpy(str, "There is no cp crash log);
-
     return sprintf(str, "%s, %s, %s, %d, %s",
         modem->excp.type, modem->excp.task, modem->excp.file, modem->excp.line, modem->excp.msg);
+#else
+    return sprintf(str, "%s\n", "Disabled");
+#endif
 }
 #endif /* CONFIG_USER_RESET_DEBUG */
 
