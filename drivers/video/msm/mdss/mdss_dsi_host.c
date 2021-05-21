@@ -1640,7 +1640,7 @@ int mdss_dsi_cmdlist_commit(struct mdss_dsi_ctrl_pdata *ctrl, int from_mdp)
 	req = mdss_dsi_cmdlist_get(ctrl);
 
 	//MDSS_XLOG(ctrl->ndx, from_mdp, ctrl->mdp_busy, current->pid,
-							XLOG_FUNC_ENTRY);
+							//XLOG_FUNC_ENTRY);
 #if defined (CONFIG_FB_MSM_MDSS_DSI_DBG)
 	if (req != NULL)
 		xlog(__func__, req->flags, req->cmds_cnt, ctrl->ndx, from_mdp, ctrl->mdp_busy, current->pid);
@@ -1692,7 +1692,7 @@ need_lock:
 		mdss_dsi_cmd_mdp_start(ctrl);
 
 	//MDSS_XLOG(ctrl->ndx, from_mdp, ctrl->mdp_busy, current->pid,
-							XLOG_FUNC_EXIT);
+							//XLOG_FUNC_EXIT);
 #if defined (CONFIG_FB_MSM_MDSS_DSI_DBG)
 	xlog(__func__, 0, ctrl->ndx, from_mdp, ctrl->mdp_busy, 0x222, current->pid);
 #endif
