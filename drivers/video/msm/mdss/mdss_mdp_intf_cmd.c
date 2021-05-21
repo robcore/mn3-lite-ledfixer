@@ -588,8 +588,8 @@ static int mdss_mdp_cmd_add_vsync_handler(struct mdss_mdp_ctl *ctl,
 		xlog(__func__, ctl->num, ctx->koff_cnt, ctx->clk_enabled, ctx->rdptr_enabled, 0, 0);
 #endif
 
-	MDSS_XLOG(ctl->num, ctx->koff_cnt, ctx->clk_enabled,
-					ctx->rdptr_enabled);
+	/*MDSS_XLOG(ctl->num, ctx->koff_cnt, ctx->clk_enabled,
+					ctx->rdptr_enabled); */
 
 	spin_lock_irqsave(&ctx->clk_lock, flags);
 	if (!handle->enabled) {
@@ -620,8 +620,8 @@ static int mdss_mdp_cmd_remove_vsync_handler(struct mdss_mdp_ctl *ctl,
 		return -ENODEV;
 	}
 
-	MDSS_XLOG(ctl->num, ctx->koff_cnt, ctx->clk_enabled,
-				ctx->rdptr_enabled, 0x88888);
+	/*MDSS_XLOG(ctl->num, ctx->koff_cnt, ctx->clk_enabled,
+				ctx->rdptr_enabled, 0x88888);*/
 #if defined (CONFIG_FB_MSM_MDSS_DSI_DBG)
 		xlog(__func__, ctl->num, ctx->koff_cnt, ctx->clk_enabled, ctx->rdptr_enabled, 0, 0x88888);
 #endif
@@ -708,9 +708,9 @@ static int mdss_mdp_cmd_wait4pingpong(struct mdss_mdp_ctl *ctl, void *arg)
 	ctl->roi_bkup.w = ctl->width;
 	ctl->roi_bkup.h = ctl->height;
 
-	MDSS_XLOG(ctl->num, ctx->koff_cnt, ctx->clk_enabled,
+	/*MDSS_XLOG(ctl->num, ctx->koff_cnt, ctx->clk_enabled,
 			ctx->rdptr_enabled, ctl->roi_bkup.w,
-			ctl->roi_bkup.h);
+			ctl->roi_bkup.h); */
 
 	pr_debug("%s: need_wait=%d  intf_num=%d ctx=%p\n",
 			__func__, need_wait, ctl->intf_num, ctx);
@@ -751,8 +751,8 @@ static int mdss_mdp_cmd_wait4pingpong(struct mdss_mdp_ctl *ctl, void *arg)
 	xlog(__func__,ctl->num, ctx->koff_cnt, ctx->clk_enabled, ctx->rdptr_enabled, 0, rc);
 #endif
 
-	MDSS_XLOG(ctl->num, ctx->koff_cnt, ctx->clk_enabled,
-					ctx->rdptr_enabled, rc);
+	/*MDSS_XLOG(ctl->num, ctx->koff_cnt, ctx->clk_enabled,
+					ctx->rdptr_enabled, rc); */
 	return rc;
 }
 
@@ -806,8 +806,8 @@ int mdss_mdp_cmd_kickoff(struct mdss_mdp_ctl *ctl, void *arg)
 				(void *)&ctx->recovery);
 	}
 
-	MDSS_XLOG(ctl->num, ctl->roi.x, ctl->roi.y, ctl->roi.w,
-						ctl->roi.h);
+	/*MDSS_XLOG(ctl->num, ctl->roi.x, ctl->roi.y, ctl->roi.w,
+						ctl->roi.h); */
 #if defined (CONFIG_FB_MSM_MDSS_DSI_DBG)
 	xlog(__func__, ctl->num, ctl->roi.x, ctl->roi.y, ctl->roi.w, ctl->roi.h, 0x1234);
 #endif
@@ -834,8 +834,8 @@ int mdss_mdp_cmd_kickoff(struct mdss_mdp_ctl *ctl, void *arg)
 	mdss_mdp_ctl_perf_set_transaction_status(ctl,
 	PERF_SW_COMMIT_STATE, PERF_STATUS_DONE);
 	mb();
-	MDSS_XLOG(ctl->num,  ctx->koff_cnt, ctx->clk_enabled,
-						ctx->rdptr_enabled);
+	/* MDSS_XLOG(ctl->num,  ctx->koff_cnt, ctx->clk_enabled,
+						ctx->rdptr_enabled); */
 #if defined (CONFIG_FB_MSM_MDSS_DSI_DBG)
 	{
 		void mdss_mdp_mixer_read(void);

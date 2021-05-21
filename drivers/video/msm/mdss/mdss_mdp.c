@@ -820,7 +820,7 @@ void mdss_mdp_clk_ctrl(int enable, int isr)
 		}
 	}
 
-	MDSS_XLOG(mdp_clk_cnt, changed, enable, current->pid);
+	//MDSS_XLOG(mdp_clk_cnt, changed, enable, current->pid);
 #if defined (CONFIG_FB_MSM_MDSS_DSI_DBG)
 	xlog(__func__, mdp_clk_cnt, changed, enable, 0, 0, 0);
 #endif
@@ -950,7 +950,7 @@ int mdss_iommu_attach(struct mdss_data_type *mdata)
 	struct mdss_iommu_map_type *iomap;
 	int i, rc = 0;
 
-	MDSS_XLOG(mdata->iommu_attached);
+	//MDSS_XLOG(mdata->iommu_attached);
 
 #if defined (CONFIG_FB_MSM_MDSS_DSI_DBG)
 	xlog(__func__, mdata->iommu_attached, 0, 0, 0, 0, 0); 
@@ -992,7 +992,7 @@ int mdss_iommu_dettach(struct mdss_data_type *mdata)
 	struct mdss_iommu_map_type *iomap;
 	int i;
 
-	MDSS_XLOG(mdata->iommu_attached);
+	//MDSS_XLOG(mdata->iommu_attached);
 
 #if defined (CONFIG_FB_MSM_MDSS_DSI_DBG)
 	xlog(__func__, mdata->iommu_attached, 0, 0, 0, 0, 0); 
