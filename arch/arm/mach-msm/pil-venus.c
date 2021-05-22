@@ -562,10 +562,10 @@ static int __devinit pil_venus_probe(struct platform_device *pdev)
 
 	if (pas_supported(PAS_VIDC) > 0) {
 		desc->ops = &pil_venus_ops_trusted;
-		dev_info(&pdev->dev, "using secure boot\n");
+		dev_dbg(&pdev->dev, "using secure boot\n");
 	} else {
 		desc->ops = &pil_venus_ops;
-		dev_info(&pdev->dev, "using non-secure boot\n");
+		dev_dbg(&pdev->dev, "using non-secure boot\n");
 	}
 
 	drv->ramdump_dev = create_ramdump_device("venus", &pdev->dev);

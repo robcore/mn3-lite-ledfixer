@@ -55,7 +55,7 @@
 #define pil_err(desc, fmt, ...)						\
 	dev_err(desc->dev, "%s: " fmt, desc->name, ##__VA_ARGS__)
 #define pil_info(desc, fmt, ...)					\
-	dev_info(desc->dev, "%s: " fmt, desc->name, ##__VA_ARGS__)
+	dev_dbg(desc->dev, "%s: " fmt, desc->name, ##__VA_ARGS__)
 
 #define PIL_IMAGE_INFO_BASE	(MSM_IMEM_BASE + 0x94c)
 
@@ -907,7 +907,7 @@ void write_hw_rev_to_smem(unsigned int hw_rev)
 	}
 	/* write hw_rev to smem region */
 	writel_relaxed(hw_rev, hw_rev_sdata); 
-	pr_info("hw_rev just written = %u\n", readl_relaxed(hw_rev_sdata));
+	pr_debug("hw_rev just written = %u\n", readl_relaxed(hw_rev_sdata));
 }
 #endif
 
