@@ -5278,7 +5278,7 @@ static int taiko_prepare(struct snd_pcm_substream *substream,
 
 	if (substream->stream) {
 		taiko_p->clsh_d.hs_perf_mode_enabled = false;
-        pr_info("%s: uhqa_mode disabled by substream stream", __func__);
+        pr_debug("%s: uhqa_mode disabled by substream stream", __func__);
 		goto handleshit;
 	}
 
@@ -5298,7 +5298,7 @@ static int taiko_prepare(struct snd_pcm_substream *substream,
 
     if (chopper_bypass) {
         taiko_p->clsh_d.hs_perf_mode_enabled = false;
-        pr_info("%s: uhqa_mode disabled by chopper_bypass", __func__);
+        pr_debug("%s: uhqa_mode disabled by chopper_bypass", __func__);
         goto handleshit;
     }
 
@@ -5312,7 +5312,7 @@ static int taiko_prepare(struct snd_pcm_substream *substream,
 	}
 
 	for (i = 0; i < wlist->num_widgets; i++) {
-		dev_info(dai->dev, " dai stream_name = %s, widget name = %s\n",
+		dev_dbg(dai->dev, " dai stream_name = %s, widget name = %s\n",
 			dai->driver->playback.stream_name, wlist->widgets[i]->name);
 
 		if (!strcmp(wlist->widgets[i]->name, "HPHL") ||
@@ -5329,22 +5329,22 @@ static int taiko_prepare(struct snd_pcm_substream *substream,
 		goto handleshit;
 	}
 
-	pr_info("%s(): rate = %u. bit_width = %u.  hs compander_enabled = %u",
+	pr_debug("%s(): rate = %u. bit_width = %u.  hs compander_enabled = %u",
 			__func__, taiko_p->dai[dai->id].rate,
 			taiko_p->dai[dai->id].bit_width,
 			taiko_p->comp_enabled[COMPANDER_1]);
 
 	if (uhqa_mode) {
 		taiko_p->clsh_d.hs_perf_mode_enabled = true;
-        pr_info("%s: uhqa_mode enabled by user", __func__);
+        pr_debug("%s: uhqa_mode enabled by user", __func__);
 	} else if (taiko_p->dai[dai->id].rate == 192000 ||
 		(taiko_p->dai[dai->id].rate == 96000 &&
 	    taiko_p->dai[dai->id].bit_width == 24)) {
 		taiko_p->clsh_d.hs_perf_mode_enabled = true;
-       	pr_info("%s: uhqa_mode enabled by audio properties", __func__);
+       	pr_debug("%s: uhqa_mode enabled by audio properties", __func__);
 	} else {
 		taiko_p->clsh_d.hs_perf_mode_enabled = false;
-		pr_info("%s: uhqa_mode disabled", __func__);
+		pr_debug("%s: uhqa_mode disabled", __func__);
 	}
 handleshit:
 	update_control_regs();
