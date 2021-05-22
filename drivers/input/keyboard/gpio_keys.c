@@ -660,7 +660,7 @@ static int gpio_keys_open(struct input_dev *input)
 	ret = request_threaded_irq(
 			irq, NULL,
 			flip_cover_detect,
-			IRQF_TRIGGER_RISING |
+			IRQF_DISABLED | IRQF_TRIGGER_RISING |
 			IRQF_TRIGGER_FALLING | IRQF_ONESHOT,
 			"flip_cover", ddata);
 	if (ret >= 0) {
@@ -1250,7 +1250,10 @@ static int gpio_keys_resume(struct device *dev)
 			disable_irq_wake(bdata->irq);
 
 		if (gpio_is_valid(bdata->button->gpio))
-			gpio_keys_gpio_report_event(bdata);
+		{
+			if(!(bdata->button->code == 172))
+				gpio_keys_gpio_report_event(bdata);
+		}
 	}
 #ifdef CONFIG_SENSORS_HALL
 	if (device_may_wakeup(dev) && ddata->gpio_flip_cover != 0) {
