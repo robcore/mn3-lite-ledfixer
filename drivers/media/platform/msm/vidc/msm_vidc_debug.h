@@ -57,6 +57,7 @@ extern int msm_vidc_hw_rsp_timeout;
 extern u32 msm_vidc_firmware_unload_delay;
 extern int msm_vidc_vpe_csc_601_to_709;
 
+#if 0
 #define dprintk(__level, __fmt, arg...)	\
 	do { \
 		if (msm_vidc_debug & __level) { \
@@ -69,7 +70,10 @@ extern int msm_vidc_vpe_csc_601_to_709;
 			} \
 		} \
 	} while (0)
-
+#else
+#define dprintk(__level, __fmt, arg...)	\
+	do {} while (0)
+#endif
 
 struct dentry *msm_vidc_debugfs_init_core(struct msm_vidc_core *core,
 		struct dentry *parent);
