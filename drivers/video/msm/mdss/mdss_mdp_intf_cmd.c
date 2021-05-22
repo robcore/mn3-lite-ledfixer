@@ -346,7 +346,7 @@ static void mdss_mdp_cmd_readptr_done(void *arg)
 	ctl->vsync_cnt++;
  
 	if (duration <= 8000 || duration >= 22000)
-		pr_err("[DEBUG]%s:time : %lld, duration : %lld\n",
+		pr_debug("[DEBUG]%s:time : %lld, duration : %lld\n",
 				__func__, vsync[index + add_value], duration);
 
 #if defined(CONFIG_FB_MSM_MIPI_SAMSUNG_OCTA_CMD_WQHD_PT_PANEL)
@@ -396,7 +396,7 @@ static void mdss_mdp_cmd_readptr_done(void *arg)
 				if (get_lcd_ldi_info())
 					if (!(te_set_done == TE_SET_DONE || te_set_done == TE_SET_FAIL))
 					{
-						pr_info("now restoring TE/ rdptr_enabled++\n");
+						pr_debug("now restoring TE/ rdptr_enabled++\n");
 						if (ctx->rdptr_enabled == 0)
 							ctx->rdptr_enabled++;
 					}						
