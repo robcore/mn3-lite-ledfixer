@@ -619,9 +619,9 @@ then
     then
         if [ "$CURVAL" = "1" ]
         then
-            busybox echo "$2 is Locked"
+            busybox echo "$2 Setting Locked"
         else
-            busybox echo "$2 is Unlocked"
+            busybox echo "$2 Setting Unlocked"
         fi
     else
         if [ "$CURVAL" = "1" ]

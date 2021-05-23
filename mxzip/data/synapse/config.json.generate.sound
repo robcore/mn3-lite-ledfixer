@@ -69,7 +69,7 @@ busybox cat << CTAG
             }},
             { SCheckBox:{
                 label:"ANC Delay",
-                description:"Adds delay in ANC and High Perf Modes",
+                description:"Adds delay in ANC and Class AB Modes",
                 default:$(busybox cat /sys/kernel/sound_control/anc_delay),
                 action:"soundcontrol anc_delay"
             }},
