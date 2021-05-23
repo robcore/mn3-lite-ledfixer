@@ -81,8 +81,6 @@
 		gpios = <&msmgpio 87 0 /* sda */
 				&msmgpio 88 0 /* scl */
 		>;
-		#address-cells = <1>;
-		#size-cells = <0>;
 
 		sec-fuelgauge@36 {
 			compatible = "sec-fuelgauge,i2c";
@@ -112,8 +110,6 @@
 		gpios = <&msmgpio 95 0 /* sda */
 		&msmgpio 96 0 /* scl */
 		>;
-		#address-cells = <1>;
-		#size-cells = <0>;
 
 		cypress_touchkey@20 {
 			compatible = "cypress,cypress-tkey";
@@ -421,8 +417,6 @@
 	spi_11: spi@f9967000 {
 		compatible = "qcom,spi-qup-v2";
 		cell-index = <11>;
-		#address-cells = <1>;
-		#size-cells = <0>;
 		reg = <0xf9967000 0x1000>;
 		interrupt-names = "spi_irq";
 		interrupts = <0 105 0>;
@@ -523,7 +517,6 @@
 	hsic_host: hsic@f9a00000 {
 		compatible = "qcom,hsic-host";
 		reg = <0xf9a00000 0x400>;
-		#address-cells = <0>;
 		interrupt-parent = <&hsic_host>;
 		interrupts = <0 1 2>;
 		#interrupt-cells = <1>;
@@ -636,7 +629,6 @@
 };
 
 &sdcc2 {
-	#address-cells = <0>;
 	interrupt-parent = <&sdcc2>;
 	interrupts = <0 1>;
 	#interrupt-cells = <1>;
@@ -690,7 +682,6 @@
 };
 
 &sdhc_2 {
-	#address-cells = <0>;
 	interrupt-parent = <&sdhc_2>;
 	interrupts = <0 1>;
 	#interrupt-cells = <1>;
@@ -725,7 +716,6 @@
 };
 
 &sdhc_3 {
-	#address-cells = <0>;
 	interrupt-parent = <&sdhc_3>;
 	interrupts = <0 1 2>;
 	#interrupt-cells = <1>;
