@@ -1588,7 +1588,7 @@ static __sum16 tcp_v4_checksum_init(struct sk_buff *skb)
 
 
 /* The socket must have it's spinlock held when we get
- * here, unless it is a TCP_LISTEN socket.
+ * here.
  *
  * We have a potential double-lock case here, so even when
  * doing backlog processing we use the BH locking scheme.
@@ -1730,13 +1730,7 @@ process:
 
 	skb->dev = NULL;
 
-	if (sk->sk_state == TCP_LISTEN) {
-		ret = tcp_v4_do_rcv(sk, skb);
-		goto put_and_return;
-	}
-
 	bh_lock_sock_nested(sk);
-	tcp_sk(sk)->segs_in += max_t(u16, 1, skb_shinfo(skb)->gso_segs);
 	ret = 0;
 	if (!sock_owned_by_user(sk)) {
 #ifdef CONFIG_NET_DMA
@@ -1758,7 +1752,6 @@ process:
 	}
 	bh_unlock_sock(sk);
 
-put_and_return:
 	sock_put(sk);
 
 	return ret;
@@ -2705,3 +2698,4 @@ void __init tcp_v4_init(void)
 	if (register_pernet_subsys(&tcp_sk_ops))
 		panic("Failed to create the TCP control socket.\n");
 }
+
