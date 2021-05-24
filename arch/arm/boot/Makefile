@@ -97,7 +97,7 @@ else
 endif
 $(obj)/dtbs: $(DTB_OBJS)
 
-clean-files := *.dtb
+clean-files := *.dtb *-dtb
 
 ifneq ($(LOADADDR),)
   UIMAGE_LOADADDR=$(LOADADDR)
