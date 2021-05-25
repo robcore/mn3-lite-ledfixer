@@ -41,7 +41,7 @@ case $plat in
   ;;
   linux)
     #cpio=cpio;
-    [ "$($CPIO--version | head -n1 | rev | cut -d\  -f1 | rev)" = "2.13" ] && cpiowarning=1;
+    [ "$($CPIO --version | head -n1 | rev | cut -d\  -f1 | rev)" = "2.13" ] && cpiowarning=1;
     statarg="-c %U";
   ;;
 esac;
