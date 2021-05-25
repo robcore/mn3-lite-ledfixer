@@ -1395,6 +1395,15 @@ on property:sys.qseecomd.enable=true
   start cs_service
   start insthk
 
+# Call init.d script
+service sysuikill /system/bin/sh /sbin/suikill.sh
+	user root
+    group root shell
+    oneshot
+
+on property:init.svc.bootanim=stopped
+start sysuikill
+
 # ccm
   service ccm /system/bin/tlc_server
   user system
