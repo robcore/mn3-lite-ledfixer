@@ -555,6 +555,7 @@ build_boot_img() {
     fi
 
 	[ -f "$ZIPFOLDER/boot.img" ] || warnandfail "$ZIPFOLDER/boot.img does not exist!"
+    chmod 644 "$ZIPFOLDER/boot.img"
 
 }
 
