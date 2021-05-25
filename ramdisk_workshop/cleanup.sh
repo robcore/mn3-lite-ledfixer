@@ -17,7 +17,6 @@ esac;
 aik="${BASH_SOURCE:-$0}";
 aik="$(dirname "$(readlink -f "$aik")")";
 bin="$aik/bin";
-#CPIO="$bin/bin/linux/x86_64/cpio"
 
 case $1 in
   --local) shift;;

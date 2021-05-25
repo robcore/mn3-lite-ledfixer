@@ -30,7 +30,7 @@ aik="${BASH_SOURCE:-$0}";
 aik="$(dirname "$(readlink -f "$aik")")";
 bin="$aik/bin";
 cur="$(readlink -f "$PWD")";
-CPIO="$bin/bin/linux/x86_64/cpio"
+CPIO="$bin/linux/x86_64/cpio"
 
 case $plat in
   macos)
