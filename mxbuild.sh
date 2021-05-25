@@ -524,11 +524,11 @@ build_boot_img() {
 
 	echo "Generating $DTIMG"
 
-    ./tools/dtbtool -o "$DTIMG" -s 2048 -p "$DTCDIR" "$KDIR"
+    ./skales/dtbTool -o "$DTIMG" -s 2048 -p "$DTCDIR" "$KDIR"
 
     if [ ! -f "$DTIMG" ]
     then
-		warnandfail "dtbtool failed to build $DTIMG!"
+		warnandfail "dtbTool failed to build $DTIMG!"
 	fi
 
     echo "Packing up boot.img"
