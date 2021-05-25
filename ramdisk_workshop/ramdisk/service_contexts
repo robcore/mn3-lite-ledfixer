@@ -8,6 +8,8 @@ appops                                    u:object_r:system_server_service:s0
 appwidget                                 u:object_r:system_server_service:s0
 assetatlas                                u:object_r:system_server_service:s0
 audio                                     u:object_r:system_server_service:s0
+com.atmos.service.DsService				  u:object_r:mediaserver_service:s0
+com.atmos.daxappUI.DsSetProfileServices	  u:object_r:mediaserver_service:s0
 backup                                    u:object_r:system_server_service:s0
 batteryproperties                         u:object_r:healthd_service:s0
 batterypropreg                            u:object_r:healthd_service:s0

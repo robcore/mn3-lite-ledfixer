@@ -32,6 +32,9 @@ on early-init
     mkdir /firmware-modem 0771 system system
     symlink /data/tombstones /tombstones
 
+    setenforce 0
+    setprop ro.boot.selinux 0
+
 on init
     # Set the property to indicate type of virtual display to 0
     # 0 indicates that virtual display is not a Wifi display and that the
@@ -155,10 +158,10 @@ service qseecomd /system/bin/qseecomd
    user root
    group root
 
-service mpdecision /system/bin/mpdecision --avg_comp
-   class main
-   user root
-   disabled
+#service mpdecision /system/bin/mpdecision --avg_comp
+#   class main
+#   user root
+#   disabled
 
 service qosmgrd /system/bin/qosmgr /system/etc/qosmgr_rules.xml
    user system
@@ -311,31 +314,33 @@ service ml_daemon /system/bin/ml_daemon
     user root
     group root
 # SecEDS
+
 service TvoutService_C /system/bin/bintvoutservice
      class main
      user system
      group graphics
+
 on property:ro.SecEDS.enable=false
     stop TvoutService_C
 
 # Secure Storage startup
-service secure_storage /system/bin/secure_storage_daemon
-    class core
-    user system
-    group system
-    disabled
+#service secure_storage /system/bin/secure_storage_daemon
+#    class core
+#    user system
+#    group system
+#    disabled
 
-on property:ro.securestorage.support=true
-    mkdir /dev/.secure_storage
-    chmod 0711 /dev/.secure_storage
-    chown system system /dev/.secure_storage
-    restorecon -R /dev/.secure_storage
-    start secure_storage
+#on property:ro.securestorage.support=true
+#    mkdir /dev/.secure_storage
+#    chmod 0711 /dev/.secure_storage
+#    chown system system /dev/.secure_storage
+#    restorecon -R /dev/.secure_storage
+#    start secure_storage
 
-on property:ro.securestorage.knox=true
-    mkdir /dev/.secure_storage
-    chmod 0711 /dev/.secure_storage
-    chown system system /dev/.secure_storage
-    restorecon -R /dev/.secure_storage
-    start secure_storage
+#on property:ro.securestorage.knox=true
+#    mkdir /dev/.secure_storage
+#    chmod 0711 /dev/.secure_storage
+#    chown system system /dev/.secure_storage
+#    restorecon -R /dev/.secure_storage
+#    start secure_storage
 

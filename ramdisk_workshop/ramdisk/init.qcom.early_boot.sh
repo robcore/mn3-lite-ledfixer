@@ -179,12 +179,12 @@ dev_file=/dev/graphics/fb$fb_cnt
         chown -h system.system $file/hdcp/tp
         chown -h system.graphics $file/vendor_name
         chown -h system.graphics $file/product_description
-        chmod -h 0664 $file/hpd
-        chmod -h 0664 $file/hdcp/tp
-        chmod -h 0664 $file/vendor_name
-        chmod -h 0664 $file/product_description
-        chmod -h 0664 $file/video_mode
-        chmod -h 0664 $file/format_3d
+        /system/bin/chmod -h 0664 $file/hpd
+        /system/bin/chmod -h 0664 $file/hdcp/tp
+        /system/bin/chmod -h 0664 $file/vendor_name
+        /system/bin/chmod -h 0664 $file/product_description
+        /system/bin/chmod -h 0664 $file/video_mode
+        /system/bin/chmod -h 0664 $file/format_3d
         # create symbolic link
         ln -s $dev_file /dev/graphics/hdmi
         # Change owner and group for media server and surface flinger

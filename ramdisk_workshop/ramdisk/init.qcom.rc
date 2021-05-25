@@ -176,7 +176,7 @@ on boot
     setprop net.tcp.buffersize.gprs    4092,8760,11680,4096,8760,11680
     setprop net.tcp.buffersize.evdo    4094,87380,262144,4096,16384,262144
 
-# Define TCP delayed ack settings for WiFi & LTE
+# Define TCP delayed ack settings for WiFi LTE
     setprop net.tcp.delack.default     1
     setprop net.tcp.delack.wifi        20
     setprop net.tcp.delack.lte         8
@@ -223,7 +223,7 @@ on boot
     mkdir /data/nfc 0770 nfc nfc
     mkdir /data/nfc/param 0770 nfc nfc
 
-    # Set the console loglevel to < KERN_INFO
+    # Set the console loglevel to KERN_INFO
     # Set the default message loglevel to KERN_INFO
     write /proc/sys/kernel/printk "6 6 1 7"
 
@@ -319,9 +319,9 @@ on post-fs-data
     mkdir /data/hostapd 0770 system wifi
 
     # Create /data/time folder for time-services
-    mkdir /data/time/ 0700 system system
+    mkdir /data/time 0700 system system
 
-    mkdir /data/audio/ 0770 media audio
+    mkdir /data/audio 0770 media audio
 
     setprop vold.post_fs_data_done 1
 
@@ -851,7 +851,6 @@ service profiler_daemon /system/bin/profiler_daemon
 service sdcard /system/bin/sdcard -u 1023 -g 1023 -l -r /data/media /mnt/shell/emulated
     class late_start
     oneshot
-    
 
 service fuse_extSdCard /system/bin/sdcard -u 1023 -g 1023 -w 1023 -d -f /mnt/media_rw/extSdCard /storage/extSdCard
     class late_start
@@ -970,13 +969,13 @@ on property:persist.sys.qlogd=1
 on property:persist.sys.qlogd=0
     stop qlogd
 
-service rootagent /system/bin/sh /system/etc/init.qcom.rootagent.sh
-    disabled
-    oneshot
-on property:persist.sys.rootagent=1
-    start rootagent
-on property:persist.sys.rootagent=0
-    stop rootagent
+#service rootagent /system/bin/sh /system/etc/init.qcom.rootagent.sh
+#    disabled
+#    oneshot
+#on property:persist.sys.rootagent=1
+#    start rootagent
+#on property:persist.sys.rootagent=0
+#    stop rootagent
 
 # umount service
 service umount_service /system/bin/umount /preload

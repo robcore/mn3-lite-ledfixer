@@ -164,6 +164,7 @@
 /system/bin/dex2oat     u:object_r:dex2oat_exec:s0
 # patchoat executable has (essentially) the same requirements as dex2oat.
 /system/bin/patchoat    u:object_r:dex2oat_exec:s0
+/system/etc/dolby/ds-default.xml u:object_r:audio_data_file:s0
 
 #############################
 # Vendor files
@@ -184,6 +185,7 @@
 /data/resource-cache(/.*)? u:object_r:resourcecache_data_file:s0
 /data/dalvik-cache(/.*)? u:object_r:dalvikcache_data_file:s0
 /data/dalvik-cache/profiles(/.*)? u:object_r:dalvikcache_profiles_data_file:s0
+/data/adb(/.*)?		u:object_r:adb_data_file:s0
 /data/anr(/.*)?		u:object_r:anr_data_file:s0
 /data/app(/.*)?                       u:object_r:apk_data_file:s0
 /data/app/vmdl.*\.tmp(/.*)?           u:object_r:apk_tmp_file:s0
