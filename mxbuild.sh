@@ -524,7 +524,7 @@ build_boot_img() {
 
 	echo "Generating $DTIMG"
 
-    ./skales/dtbTool -o "$DTIMG" -s 2048 -p "$DTCDIR" "$KDIR"
+    ./tools/skales/dtbTool -o "$DTIMG" -s 2048 -p "$DTCDIR" "$KDIR"
 
     if [ ! -f "$DTIMG" ]
     then
