@@ -272,7 +272,7 @@ static int  msm_thermal_cpufreq_callback(struct notifier_block *nfb,
 			max_freq_req);
 
 		if (max_freq_req < min_freq_req)
-			pr_err("Invalid frequency request Max:%u Min:%u\n",
+			pr_debug("Invalid frequency request Max:%u Min:%u\n",
 				max_freq_req, min_freq_req);
 		break;
 	}
@@ -291,7 +291,6 @@ static int check_freq_table(void)
 
 	table = cpufreq_frequency_get_table(0);
 	if (!table) {
-		pr_debug("error reading cpufreq table\n");
 		return -EINVAL;
 	}
 	freq_table_get = 1;
@@ -301,13 +300,8 @@ static int check_freq_table(void)
 
 static void update_cpu_freq(int cpu)
 {
-	int ret = 0;
-
 	if (cpu_online(cpu)) {
-		ret = cpufreq_update_policy(cpu);
-		if (ret)
-			pr_err("Unable to update policy for cpu:%d. err:%d\n",
-				cpu, ret);
+        cpufreq_update_policy(cpu);
 	}
 }
 
@@ -319,7 +313,7 @@ static int update_cpu_min_freq_all(uint32_t min)
 	if (!freq_table_get) {
 		ret = check_freq_table();
 		if (ret) {
-			//pr_err("Fail to get freq table. err:%d\n", ret);
+			//pr_debug("Fail to get freq table. err:%d\n", ret);
 			return ret;
 		}
 	}
@@ -363,7 +357,7 @@ static int vdd_restriction_apply_freq(struct rail *r, int level)
 		else
 			r->curr_level = level;
 	} else {
-		pr_err("level input:%d is not within range\n", level);
+		pr_debug("level input:%d is not within range\n", level);
 		return -EINVAL;
 	}
 
@@ -375,8 +369,8 @@ static int vdd_restriction_apply_voltage(struct rail *r, int level)
 	int ret = 0;
 
 	if (r->reg == NULL) {
-		pr_err("%s don't have regulator handle. can't apply vdd\n",
-				r->name);
+        pr_debug("%s don't have regulator handle. can't apply vdd\n",
+				  r->name);
 		return -EFAULT;
 	}
 	if (level == r->curr_level)
@@ -388,17 +382,17 @@ static int vdd_restriction_apply_voltage(struct rail *r, int level)
 			r->levels[r->num_levels - 1]);
 		if (!ret)
 			r->curr_level = -1;
-		pr_debug("Requested min level for %s. curr level: %d\n",
-				r->name, r->curr_level);
+            pr_debug("Requested min level for %s. curr level: %d\n",
+                      r->name, r->curr_level);
 	} else if (level >= 0 && level < (r->num_levels)) {
 		ret = regulator_set_voltage(r->reg, r->levels[level],
 			r->levels[r->num_levels - 1]);
 		if (!ret)
 			r->curr_level = level;
-		pr_debug("Requesting level %d for %s. curr level: %d\n",
-			r->levels[level], r->name, r->levels[r->curr_level]);
+            pr_debug("Requesting level %d for %s. curr level: %d\n",
+                      r->levels[level], r->name, r->levels[r->curr_level]);
 	} else {
-		pr_err("level input:%d is not within range\n", level);
+		pr_debug("level input:%d is not within range\n", level);
 		return -EINVAL;
 	}
 
@@ -417,7 +411,7 @@ static int psm_set_mode_all(int mode)
 		if (psm_rails[i].mode != mode) {
 			ret = rpm_regulator_set_mode(psm_rails[i].reg, mode);
 			if (ret) {
-				pr_err("Cannot set mode:%d for %s. err:%d",
+				pr_debug("Cannot set mode:%d for %s. err:%d",
 					mode, psm_rails[i].name, ret);
 				fail_cnt++;
 			} else
@@ -457,7 +451,7 @@ static ssize_t vdd_rstr_en_store(struct kobject *kobj,
 	kp.arg = &val;
 	ret = param_set_bool(buf, &kp);
 	if (ret) {
-		pr_err("Invalid input %s for enabled\n", buf);
+		pr_debug("Invalid input %s for enabled\n", buf);
 		goto done_vdd_rstr_en;
 	}
 
@@ -477,7 +471,7 @@ static ssize_t vdd_rstr_en_store(struct kobject *kobj,
 		 * others. Continue the loop
 		 */
 		if (ret)
-			pr_err("Set vdd restriction for %s failed\n",
+			pr_debug("Set vdd restriction for %s failed\n",
 					rails[i].name);
 		else {
 			if (val)
@@ -551,12 +545,12 @@ static ssize_t vdd_rstr_reg_level_store(struct kobject *kobj,
 
 	ret = kstrtouint(buf, 10, &val);
 	if (ret) {
-		pr_err("Invalid input %s for level\n", buf);
+		pr_debug("Invalid input %s for level\n", buf);
 		goto done_store_level;
 	}
 
 	if (val < 0 || val > reg->num_levels - 1) {
-		pr_err(" Invalid number %d for level\n", val);
+		pr_debug(" Invalid number %d for level\n", val);
 		goto done_store_level;
 	}
 
@@ -566,7 +560,7 @@ static ssize_t vdd_rstr_reg_level_store(struct kobject *kobj,
 		else {
 			ret = vdd_restriction_apply_voltage(reg, val);
 			if (ret) {
-				pr_err( \
+				pr_debug( \
 				"Set vdd restriction for regulator %s failed. err:%d\n",
 				reg->name, ret);
 				goto done_store_level;
@@ -588,7 +582,7 @@ static int request_optimum_current(struct psm_rail *rail, enum ocr_request req)
 
 	if ((!rail) || (req >= OPTIMUM_CURRENT_NR) ||
 		(req < 0)) {
-		pr_err("%s:%s Invalid input\n", KBUILD_MODNAME, __func__);
+		pr_debug("%s:%s Invalid input\n", KBUILD_MODNAME, __func__);
 		ret = -EINVAL;
 		goto request_ocr_exit;
 	}
@@ -596,7 +590,7 @@ static int request_optimum_current(struct psm_rail *rail, enum ocr_request req)
 	ret = regulator_set_optimum_mode(rail->phase_reg,
 		(req == OPTIMUM_CURRENT_MAX) ? MAX_CURRENT_UA : 0);
 	if (ret < 0) {
-		pr_err("%s: Optimum current request failed\n", KBUILD_MODNAME);
+		pr_debug("%s: Optimum current request failed\n", KBUILD_MODNAME);
 		goto request_ocr_exit;
 	}
 	ret = 0; /*regulator_set_optimum_mode returns the mode on success*/
@@ -644,14 +638,14 @@ static ssize_t ocr_reg_mode_store(struct kobject *kobj,
 	mutex_lock(&ocr_mutex);
 	ret = kstrtoint(buf, 10, &val);
 	if (ret) {
-		pr_err("%s: Invalid input %s for mode\n",
+		pr_debug("%s: Invalid input %s for mode\n",
 			KBUILD_MODNAME, buf);
 		goto done_ocr_store;
 	}
 
 	if ((val != OPTIMUM_CURRENT_MAX) &&
 		(val != OPTIMUM_CURRENT_MIN)) {
-		pr_err("%s: Invalid value %d for mode\n",
+		pr_debug("%s: Invalid value %d for mode\n",
 			KBUILD_MODNAME, val);
 		goto done_ocr_store;
 	}
@@ -685,19 +679,19 @@ static ssize_t psm_reg_mode_store(struct kobject *kobj,
 	mutex_lock(&psm_mutex);
 	ret = kstrtoint(buf, 10, &val);
 	if (ret) {
-		pr_err("Invalid input %s for mode\n", buf);
+		pr_debug("Invalid input %s for mode\n", buf);
 		goto done_psm_store;
 	}
 
 	if ((val != PMIC_PWM_MODE) && (val != PMIC_AUTO_MODE)) {
-		pr_err("Invalid number %d for mode\n", val);
+		pr_debug("Invalid number %d for mode\n", val);
 		goto done_psm_store;
 	}
 
 	if (val != reg->mode) {
 		ret = rpm_regulator_set_mode(reg->reg, val);
 		if (ret) {
-			pr_err("Fail to set Mode:%d for %s. err:%d\n",
+			pr_debug("Fail to set Mode:%d for %s. err:%d\n",
 			val, reg->name, ret);
 			goto done_psm_store;
 		}
@@ -722,7 +716,7 @@ static int check_sensor_id(int sensor_id)
 		}
 	}
 	if (!hw_id_found) {
-		pr_err("Invalid sensor hw id:%d\n", sensor_id);
+		pr_debug("Invalid sensor hw id:%d\n", sensor_id);
 		return -EINVAL;
 	}
 
@@ -737,7 +731,7 @@ static int create_sensor_id_map(void)
 	tsens_id_map = kzalloc(sizeof(int) * max_tsens_num,
 			GFP_KERNEL);
 	if (!tsens_id_map) {
-		pr_err("Cannot allocate memory for tsens_id_map\n");
+		pr_debug("Cannot allocate memory for tsens_id_map\n");
 		return -ENOMEM;
 	}
 
@@ -749,7 +743,7 @@ static int create_sensor_id_map(void)
 				tsens_id_map[i] = i;
 				ret = 0;
 			} else {
-				pr_err("Failed to get hw id for id:%d.err:%d\n",
+				pr_debug("Failed to get hw id for id:%d.err:%d\n",
 						i, ret);
 				goto fail;
 			}
@@ -779,7 +773,7 @@ static int vdd_restriction_apply_all(int en)
 			ret = vdd_restriction_apply_voltage(&rails[i],
 					en ? 0 : -1);
 		if (ret) {
-			pr_err("Failed to %s for %s. err:%d",
+			pr_debug("Failed to %s for %s. err:%d",
 					(en) ? "enable" : "disable",
 					rails[i].name, ret);
 			fail_cnt++;
@@ -813,7 +807,7 @@ static int msm_thermal_get_freq_table(void)
 
 	table = cpufreq_frequency_get_table(0);
 	if (table == NULL) {
-		pr_err("error reading cpufreq table\n");
+		pr_debug("error reading cpufreq table\n");
 		ret = -EINVAL;
 		goto fail;
 	}
@@ -838,14 +832,14 @@ static int set_and_activate_threshold(uint32_t sensor_id,
 
 	ret = sensor_set_trip(sensor_id, threshold);
 	if (ret != 0) {
-		pr_err("sensor:%u Error in setting trip:%d. err:%d\n",
+		pr_debug("sensor:%u Error in setting trip:%d. err:%d\n",
 			sensor_id, threshold->trip, ret);
 		goto set_done;
 	}
 
 	ret = sensor_activate_trip(sensor_id, threshold, true);
 	if (ret != 0) {
-		pr_err("sensor:%u Error in enabling trip:%d. err:%d\n",
+		pr_debug("sensor:%u Error in enabling trip:%d. err:%d\n",
 			sensor_id, threshold->trip, ret);
 		goto set_done;
 	}
@@ -860,7 +854,7 @@ static int therm_get_temp(uint32_t id, enum sensor_id_type type, long *temp)
 	struct tsens_device tsens_dev;
 
 	if (!temp) {
-		pr_err("Invalid value\n");
+		pr_debug("Invalid value\n");
 		ret = -EINVAL;
 		goto get_temp_exit;
 	}
@@ -873,7 +867,7 @@ static int therm_get_temp(uint32_t id, enum sensor_id_type type, long *temp)
 		tsens_dev.sensor_num = id;
 		break;
 	default:
-		pr_err("Invalid type\n");
+		pr_debug("Invalid type\n");
 		ret = -EINVAL;
 		goto get_temp_exit;
 		break;
@@ -881,7 +875,7 @@ static int therm_get_temp(uint32_t id, enum sensor_id_type type, long *temp)
 
 	ret = tsens_get_temp(&tsens_dev, temp);
 	if (ret) {
-		pr_err("Unable to read TSENS sensor:%d\n",
+		pr_debug("Unable to read TSENS sensor:%d\n",
 			tsens_dev.sensor_num);
 		goto get_temp_exit;
 	}
@@ -897,14 +891,14 @@ static int set_threshold(uint32_t zone_id,
 	long temp;
 
 	if ((!threshold) || (zone_id >= max_tsens_num)) {
-		pr_err("Invalid input\n");
+		pr_debug("Invalid input\n");
 		ret = -EINVAL;
 		goto set_threshold_exit;
 	}
 
 	ret = therm_get_temp(zone_id, THERM_ZONE_ID, &temp);
 	if (ret) {
-		pr_err("Unable to read temperature for zone:%d. err:%d\n",
+		pr_debug("Unable to read temperature for zone:%d. err:%d\n",
 			zone_id, ret);
 		goto set_threshold_exit;
 	}
@@ -928,7 +922,7 @@ static int set_threshold(uint32_t zone_id,
 			}
 			break;
 		default:
-			pr_err("zone:%u Invalid trip:%d\n", zone_id,
+			pr_debug("zone:%u Invalid trip:%d\n", zone_id,
 					threshold[i].trip);
 			break;
 		}
@@ -940,7 +934,7 @@ set_threshold_exit:
 
 static void msm_thermal_bite(int tsens_id, long temp)
 {
-	pr_err("TSENS:%d reached temperature:%ld. System reset\n",
+	pr_debug("TSENS:%d reached temperature:%ld. System reset\n",
 		tsens_id, temp);
 	scm_call_atomic1(SCM_SVC_BOOT, THERM_SECURE_BITE_CMD, 0);
 }
@@ -959,7 +953,7 @@ static int do_therm_reset(void)
 			THERM_TSENS_ID,
 			&temp);
 		if (ret) {
-			pr_err("Unable to read TSENS sensor:%d. err:%d\n",
+			pr_debug("Unable to read TSENS sensor:%d. err:%d\n",
 			thresh[MSM_THERM_RESET].thresh_list[i].sensor_id,
 			ret);
 			continue;
@@ -982,7 +976,7 @@ static void therm_reset_notify(struct therm_threshold *thresh_data)
 		return;
 
 	if (!thresh_data) {
-		pr_err("Invalid input\n");
+		pr_debug("Invalid input\n");
 		return;
 	}
 
@@ -991,7 +985,7 @@ static void therm_reset_notify(struct therm_threshold *thresh_data)
 		ret = therm_get_temp(thresh_data->sensor_id,
 				THERM_TSENS_ID, &temp);
 		if (ret)
-			pr_err("Unable to read TSENS sensor:%d. err:%d\n",
+			pr_debug("Unable to read TSENS sensor:%d. err:%d\n",
 				thresh_data->sensor_id, ret);
 		msm_thermal_bite(tsens_id_map[thresh_data->sensor_id],
 					temp);
@@ -999,7 +993,7 @@ static void therm_reset_notify(struct therm_threshold *thresh_data)
 	case THERMAL_TRIP_CONFIGURABLE_LOW:
 		break;
 	default:
-		pr_err("Invalid trip type\n");
+		pr_debug("Invalid trip type\n");
 		break;
 	}
 	set_threshold(thresh_data->sensor_id, thresh_data->threshold);
@@ -1026,7 +1020,7 @@ static void __ref do_core_control(long temp)
 					i, temp);
 			ret = cpu_down(i);
 			if (ret)
-				pr_err("Error %d offline core %d\n",
+				pr_debug("Error %d offline core %d\n",
 					ret, i);
 			cpus_offlined |= BIT(i);
 			break;
@@ -1048,7 +1042,7 @@ static void __ref do_core_control(long temp)
 				continue;
 			ret = cpu_up(i);
 			if (ret)
-				pr_err("Error %d online core %d\n",
+				pr_debug("Error %d online core %d\n",
 						ret, i);
 			break;
 		}
@@ -1073,7 +1067,7 @@ static int __ref update_offline_cores(int val)
 			continue;
 		ret = cpu_down(cpu);
 		if (ret)
-			pr_err("Unable to offline CPU%d. err:%d\n",
+			pr_debug("Unable to offline CPU%d. err:%d\n",
 				cpu, ret);
 		else
 			pr_debug("Offlined CPU%d\n", cpu);
@@ -1156,7 +1150,7 @@ static int do_ocr(void)
 					ocr_rails[j].init = OPTIMUM_CURRENT_NR;
 			ret = ocr_set_mode_all(OPTIMUM_CURRENT_MAX);
 			if (ret)
-				pr_err("Error setting max ocr. err:%d\n",
+				pr_debug("Error setting max ocr. err:%d\n",
 					ret);
 			else
 				pr_debug("Requested MAX OCR. tsens:%d Temp:%ld",
@@ -1179,7 +1173,7 @@ static int do_ocr(void)
 				ocr_rails[j].init = OPTIMUM_CURRENT_NR;
 		ret = ocr_set_mode_all(OPTIMUM_CURRENT_MIN);
 		if (ret) {
-			pr_err("Error setting min optimum current\n");
+			pr_debug("Error setting min optimum current\n");
 			goto do_ocr_exit;
 		} else {
 			pr_debug("Requested MIN OCR. Temp:%ld", temp);
@@ -1210,7 +1204,7 @@ static int do_vdd_restriction(void)
 	for (i = 0; i < max_tsens_num; i++) {
 		ret = therm_get_temp(tsens_id_map[i], THERM_TSENS_ID, &temp);
 		if (ret) {
-			pr_err("Unable to read TSENS sensor:%d. err:%d\n",
+			pr_debug("Unable to read TSENS sensor:%d. err:%d\n",
 				tsens_id_map[i], ret);
 			dis_cnt++;
 			continue;
@@ -1218,7 +1212,7 @@ static int do_vdd_restriction(void)
 		if (temp <=  msm_thermal_info.vdd_rstr_temp_degC) {
 			ret = vdd_restriction_apply_all(1);
 			if (ret) {
-				pr_err( \
+				pr_debug( \
 				"Enable vdd rstr for all failed. err:%d\n",
 					ret);
 				goto exit;
@@ -1233,7 +1227,7 @@ static int do_vdd_restriction(void)
 	if (dis_cnt == max_tsens_num) {
 		ret = vdd_restriction_apply_all(0);
 		if (ret) {
-			pr_err("Disable vdd rstr for all failed. err:%d\n",
+			pr_debug("Disable vdd rstr for all failed. err:%d\n",
 					ret);
 			goto exit;
 		}
@@ -1255,7 +1249,7 @@ static int do_psm(void)
 	for (i = 0; i < max_tsens_num; i++) {
 		ret = therm_get_temp(tsens_id_map[i], THERM_TSENS_ID, &temp);
 		if (ret) {
-			pr_err("Unable to read TSENS sensor:%d. err:%d\n",
+			pr_debug("Unable to read TSENS sensor:%d. err:%d\n",
 					tsens_id_map[i], ret);
 			auto_cnt++;
 			continue;
@@ -1269,7 +1263,7 @@ static int do_psm(void)
 		if (temp >  msm_thermal_info.psm_temp_degC) {
 			ret = psm_set_mode_all(PMIC_PWM_MODE);
 			if (ret) {
-				pr_err("Set pwm mode for all failed. err:%d\n",
+				pr_debug("Set pwm mode for all failed. err:%d\n",
 						ret);
 				goto exit;
 			}
@@ -1283,7 +1277,7 @@ static int do_psm(void)
 	if (auto_cnt == max_tsens_num) {
 		ret = psm_set_mode_all(PMIC_AUTO_MODE);
 		if (ret) {
-			pr_err("Set auto mode for all failed. err:%d\n", ret);
+			pr_debug("Set auto mode for all failed. err:%d\n", ret);
 			goto exit;
 		}
 		pr_debug("Requested PMIC AUTO Mode\n");
@@ -1356,7 +1350,7 @@ static void __ref check_temp(struct work_struct *work)
 
 	ret = therm_get_temp(msm_thermal_info.sensor_id, THERM_TSENS_ID, &temp);
 	if (ret) {
-		pr_err("Unable to read TSENS sensor:%d. err:%d\n",
+		pr_debug("Unable to read TSENS sensor:%d. err:%d\n",
 				msm_thermal_info.sensor_id, ret);
 		goto reschedule;
 	}
@@ -1641,7 +1635,7 @@ static int freq_mitigation_notify(enum thermal_trip_type type,
 		cpu_node->freq_thresh_clear = true;
 		complete(&freq_mitigation_complete);
 	} else {
-		pr_err("Frequency mitigation task is not initialized\n");
+		pr_debug("Frequency mitigation task is not initialized\n");
 	}
 
 	return 0;
@@ -1680,7 +1674,7 @@ init_freq_thread:
 		"msm_thermal:freq_mitig");
 
 	if (IS_ERR(freq_mitigation_task)) {
-		pr_err("Failed to create frequency mitigation thread. err:%ld\n",
+		pr_debug("Failed to create frequency mitigation thread. err:%ld\n",
 				PTR_ERR(freq_mitigation_task));
 		return;
 	}
@@ -1691,7 +1685,7 @@ int msm_thermal_set_frequency(uint32_t cpu, uint32_t freq, bool is_max)
 	int ret = 0;
 
 	if (cpu >= num_possible_cpus()) {
-		pr_err("Invalid input\n");
+		pr_debug("Invalid input\n");
 		ret = -EINVAL;
 		goto set_freq_exit;
 	}
@@ -1713,7 +1707,7 @@ int msm_thermal_set_frequency(uint32_t cpu, uint32_t freq, bool is_max)
 	if (freq_mitigation_task) {
 		complete(&freq_mitigation_complete);
 	} else {
-		pr_err("Frequency mitigation task is not initialized\n");
+		pr_debug("Frequency mitigation task is not initialized\n");
 		ret = -ESRCH;
 		goto set_freq_exit;
 	}
@@ -1728,7 +1722,7 @@ int therm_set_threshold(struct threshold_info *thresh_inp)
 	struct therm_threshold *thresh_ptr;
 
 	if (!thresh_inp) {
-		pr_err("Invalid input\n");
+		pr_debug("Invalid input\n");
 		ret = -EINVAL;
 		goto therm_set_exit;
 	}
@@ -1757,7 +1751,7 @@ static void vdd_restriction_notify(struct therm_threshold *trig_thresh)
 	if (!vdd_rstr_enabled)
 		return;
 	if (!trig_thresh) {
-		pr_err("Invalid input\n");
+		pr_debug("Invalid input\n");
 		return;
 	}
 	if (trig_thresh->trip_triggered < 0)
@@ -1777,14 +1771,14 @@ static void vdd_restriction_notify(struct therm_threshold *trig_thresh)
 		vdd_sens_status |= BIT(trig_thresh->sensor_id);
 		break;
 	default:
-		pr_err("Unsupported trip type\n");
+		pr_debug("Unsupported trip type\n");
 		goto unlock_and_exit;
 		break;
 	}
 
 	ret = vdd_restriction_apply_all((vdd_sens_status) ? 1 : 0);
 	if (ret) {
-		pr_err("%s vdd rstr votlage for all failed\n",
+		pr_debug("%s vdd rstr votlage for all failed\n",
 			(vdd_sens_status) ?
 			"Enable" : "Disable");
 			goto unlock_and_exit;
@@ -1833,7 +1827,7 @@ static void thermal_monitor_init(void)
 	thermal_monitor_task = kthread_run(do_thermal_monitor, NULL,
 		"msm_thermal:therm_monitor");
 	if (IS_ERR(thermal_monitor_task)) {
-		pr_err("Failed to create thermal monitor thread. err:%ld\n",
+		pr_debug("Failed to create thermal monitor thread. err:%ld\n",
 				PTR_ERR(thermal_monitor_task));
 		goto init_exit;
 	}
@@ -1857,7 +1851,7 @@ static int msm_thermal_notify(enum thermal_trip_type type, int temp, void *data)
 		thresh_data->parent->thresh_triggered = true;
 		complete(&thermal_monitor_complete);
 	} else {
-		pr_err("Thermal monitor task is not initialized\n");
+		pr_debug("Thermal monitor task is not initialized\n");
 	}
 	return 0;
 }
@@ -1871,13 +1865,13 @@ static int init_threshold(enum msm_thresh_list index,
 
 	if (!callback || index >= MSM_LIST_MAX_NR || index < 0
 		|| sensor_id == -ENODEV) {
-		pr_err("Invalid input. sensor:%d. index:%d\n",
+		pr_debug("Invalid input. sensor:%d. index:%d\n",
 				sensor_id, index);
 		ret = -EINVAL;
 		goto init_thresh_exit;
 	}
 	if (thresh[index].thresh_list) {
-		pr_err("threshold id:%d already initialized\n", index);
+		pr_debug("threshold id:%d already initialized\n", index);
 		ret = -EEXIST;
 		goto init_thresh_exit;
 	}
@@ -1888,7 +1882,7 @@ static int init_threshold(enum msm_thresh_list index,
 	thresh[index].thresh_list = kzalloc(sizeof(struct therm_threshold) *
 					thresh[index].thresh_ct, GFP_KERNEL);
 	if (!thresh[index].thresh_list) {
-		pr_err("kzalloc failed for thresh index:%d\n", index);
+		pr_debug("kzalloc failed for thresh index:%d\n", index);
 		ret = -ENOMEM;
 		goto init_thresh_exit;
 	}
@@ -2015,7 +2009,7 @@ static ssize_t __ref store_cc_enabled(struct kobject *kobj,
 
 	ret = kstrtoint(buf, 10, &val);
 	if (ret) {
-		pr_err("Invalid input %s. err:%d\n", buf, ret);
+		pr_debug("Invalid input %s. err:%d\n", buf, ret);
 		goto done_store_cc;
 	}
 
@@ -2029,7 +2023,7 @@ static ssize_t __ref store_cc_enabled(struct kobject *kobj,
 		if (hotplug_task)
 			complete(&hotplug_notify_complete);
 		else
-			pr_err("Hotplug task is not initialized\n");
+			pr_debug("Hotplug task is not initialized\n");
 	} else {
 		pr_debug("Core control disabled\n");
 		unregister_cpu_notifier(&msm_thermal_cpu_notifier);
@@ -2055,12 +2049,12 @@ static ssize_t __ref store_cpus_offlined(struct kobject *kobj,
 	mutex_lock(&core_control_mutex);
 	ret = kstrtouint(buf, 10, &val);
 	if (ret) {
-		pr_err("Invalid input %s. err:%d\n", buf, ret);
+		pr_debug("Invalid input %s. err:%d\n", buf, ret);
 		goto done_cc;
 	}
 
 	if (polling_enabled) {
-		pr_err("Ignoring request; polling thread is enabled.\n");
+		pr_debug("Ignoring request; polling thread is enabled.\n");
 		goto done_cc;
 	}
 
@@ -2076,7 +2070,7 @@ static ssize_t __ref store_cpus_offlined(struct kobject *kobj,
 	if (hotplug_task)
 		complete(&hotplug_notify_complete);
 	else
-		pr_err("Hotplug task is not initialized\n");
+		pr_debug("Hotplug task is not initialized\n");
 done_cc:
 	mutex_unlock(&core_control_mutex);
 	return count;
@@ -2111,7 +2105,7 @@ static ssize_t store_wakeup_ms(struct kobject *kobj,
 	ret = kstrtouint(buf, 10, &wakeup_ms);
 
 	if (ret) {
-		pr_err("%s: Trying to set invalid wakeup timer\n",
+		pr_debug("%s: Trying to set invalid wakeup timer\n",
 				KBUILD_MODNAME);
 		return ret;
 	}
@@ -2151,21 +2145,21 @@ static __init int msm_thermal_add_cc_nodes(void)
 
 	module_kobj = kset_find_obj(module_kset, KBUILD_MODNAME);
 	if (!module_kobj) {
-		pr_err("cannot find kobject\n");
+		pr_debug("cannot find kobject\n");
 		ret = -ENOENT;
 		goto done_cc_nodes;
 	}
 
 	cc_kobj = kobject_create_and_add("core_control", module_kobj);
 	if (!cc_kobj) {
-		pr_err("cannot create core control kobj\n");
+		pr_debug("cannot create core control kobj\n");
 		ret = -ENOMEM;
 		goto done_cc_nodes;
 	}
 
 	ret = sysfs_create_group(cc_kobj, &cc_attr_group);
 	if (ret) {
-		pr_err("cannot create sysfs group. err:%d\n", ret);
+		pr_debug("cannot create sysfs group. err:%d\n", ret);
 		goto done_cc_nodes;
 	}
 
@@ -2184,7 +2178,7 @@ static __init int msm_thermal_add_timer_nodes(void)
 
 	module_kobj = kset_find_obj(module_kset, KBUILD_MODNAME);
 	if (!module_kobj) {
-		pr_err("%s: cannot find kobject for module\n",
+		pr_debug("%s: cannot find kobject for module\n",
 			KBUILD_MODNAME);
 		ret = -ENOENT;
 		goto failed;
@@ -2192,7 +2186,7 @@ static __init int msm_thermal_add_timer_nodes(void)
 
 	tt_kobj = kobject_create_and_add("thermal_timer", module_kobj);
 	if (!tt_kobj) {
-		pr_err("%s: cannot create timer kobj\n",
+		pr_debug("%s: cannot create timer kobj\n",
 				KBUILD_MODNAME);
 		ret = -ENOMEM;
 		goto failed;
@@ -2200,7 +2194,7 @@ static __init int msm_thermal_add_timer_nodes(void)
 
 	ret = sysfs_create_group(tt_kobj, &tt_attr_group);
 	if (ret) {
-		pr_err("%s: cannot create group\n", KBUILD_MODNAME);
+		pr_debug("%s: cannot create group\n", KBUILD_MODNAME);
 		goto failed;
 	}
 
@@ -2218,7 +2212,7 @@ int msm_thermal_pre_init(void)
 
 	tsens_get_max_sensor_num(&max_tsens_num);
 	if (create_sensor_id_map()) {
-		pr_err("Creating sensor id map failed\n");
+		pr_debug("Creating sensor id map failed\n");
 		ret = -EINVAL;
 		goto pre_init_exit;
 	}
@@ -2228,7 +2222,7 @@ int msm_thermal_pre_init(void)
 				sizeof(struct threshold_info) * MSM_LIST_MAX_NR,
 				GFP_KERNEL);
 		if (!thresh) {
-			pr_err("kzalloc failed\n");
+			pr_debug("kzalloc failed\n");
 			ret = -ENOMEM;
 			goto pre_init_exit;
 		}
@@ -2260,7 +2254,7 @@ int msm_thermal_init(struct msm_thermal_data *pdata)
 	memcpy(&msm_thermal_info, pdata, sizeof(struct msm_thermal_data));
 
 	if (check_sensor_id(msm_thermal_info.sensor_id)) {
-		pr_err("Invalid sensor:%d for polling\n",
+		pr_debug("Invalid sensor:%d for polling\n",
 				msm_thermal_info.sensor_id);
 		return -EINVAL;
 	}
@@ -2270,7 +2264,7 @@ int msm_thermal_init(struct msm_thermal_data *pdata)
 	ret = cpufreq_register_notifier(&msm_thermal_cpufreq_notifier,
 			CPUFREQ_POLICY_NOTIFIER);
 	if (ret)
-		pr_err("cannot register cpufreq notifier. err:%d\n", ret);
+		pr_debug("cannot register cpufreq notifier. err:%d\n", ret);
 
 	INIT_DELAYED_WORK(&check_temp_work, check_temp);
 	schedule_delayed_work(&check_temp_work, 0);
@@ -2303,7 +2297,7 @@ static int ocr_reg_init(struct platform_device *pdev)
 		if (IS_ERR_OR_NULL(ocr_rails[i].phase_reg)) {
 			ret = PTR_ERR(ocr_rails[i].phase_reg);
 			if (ret != -EPROBE_DEFER) {
-				pr_err("%s, could not get regulator: %s\n",
+				pr_debug("%s, could not get regulator: %s\n",
 					__func__, ocr_rails[i].name);
 				ocr_rails[i].phase_reg = NULL;
 				ocr_rails[i].mode = 0;
@@ -2340,7 +2334,7 @@ static int vdd_restriction_reg_init(struct platform_device *pdev)
 			if (IS_ERR_OR_NULL(rails[i].reg)) {
 				ret = PTR_ERR(rails[i].reg);
 				if (ret != -EPROBE_DEFER) {
-					pr_err( \
+					pr_debug( \
 					"could not get regulator: %s. err:%d\n",
 					rails[i].name, ret);
 					rails[i].reg = NULL;
@@ -2374,7 +2368,7 @@ static int psm_reg_init(struct platform_device *pdev)
 		if (IS_ERR_OR_NULL(psm_rails[i].reg)) {
 			ret = PTR_ERR(psm_rails[i].reg);
 			if (ret != -EPROBE_DEFER) {
-				pr_err("couldn't get rpm regulator %s. err%d\n",
+				pr_debug("couldn't get rpm regulator %s. err%d\n",
 					psm_rails[i].name, ret);
 				psm_rails[i].reg = NULL;
 				goto psm_reg_exit;
@@ -2388,7 +2382,7 @@ static int psm_reg_init(struct platform_device *pdev)
 		ret = rpm_regulator_set_mode(psm_rails[i].reg,
 				psm_rails[i].init);
 		if (ret) {
-			pr_err("Cannot set PMIC PWM mode. err:%d\n", ret);
+			pr_debug("Cannot set PMIC PWM mode. err:%d\n", ret);
 			return ret;
 		} else
 			psm_rails[i].mode = PMIC_PWM_MODE;
@@ -2424,14 +2418,14 @@ static int msm_thermal_add_default_temp_limit_nodes(void)
 
 	module_kobj = kset_find_obj(module_kset, KBUILD_MODNAME);
 	if (!module_kobj) {
-		pr_err("cannot find kobject\n");
+		pr_debug("cannot find kobject\n");
 		return -ENOENT;
 	}
 
 	sysfs_attr_init(&default_cpu_temp_limit_attr.attr);
 	ret = sysfs_create_file(module_kobj, &default_cpu_temp_limit_attr.attr);
 	if (ret) {
-		pr_err(
+		pr_debug(
 		"cannot create default_cpu_temp_limit attribute. err:%d\n",
 		ret);
 		return ret;
@@ -2457,21 +2451,21 @@ static int msm_thermal_add_vdd_rstr_nodes(void)
 
 	module_kobj = kset_find_obj(module_kset, KBUILD_MODNAME);
 	if (!module_kobj) {
-		pr_err("cannot find kobject\n");
+		pr_debug("cannot find kobject\n");
 		rc = -ENOENT;
 		goto thermal_sysfs_add_exit;
 	}
 
 	vdd_rstr_kobj = kobject_create_and_add("vdd_restriction", module_kobj);
 	if (!vdd_rstr_kobj) {
-		pr_err("cannot create vdd_restriction kobject\n");
+		pr_debug("cannot create vdd_restriction kobject\n");
 		rc = -ENOMEM;
 		goto thermal_sysfs_add_exit;
 	}
 
 	rc = sysfs_create_group(vdd_rstr_kobj, &vdd_rstr_en_attribs_gp);
 	if (rc) {
-		pr_err("cannot create kobject attribute group. err:%d\n", rc);
+		pr_debug("cannot create kobject attribute group. err:%d\n", rc);
 		rc = -ENOMEM;
 		goto thermal_sysfs_add_exit;
 	}
@@ -2480,7 +2474,7 @@ static int msm_thermal_add_vdd_rstr_nodes(void)
 		vdd_rstr_reg_kobj[i] = kobject_create_and_add(rails[i].name,
 					vdd_rstr_kobj);
 		if (!vdd_rstr_reg_kobj[i]) {
-			pr_err("cannot create kobject for %s\n",
+			pr_debug("cannot create kobject for %s\n",
 					rails[i].name);
 			rc = -ENOMEM;
 			goto thermal_sysfs_add_exit;
@@ -2489,7 +2483,7 @@ static int msm_thermal_add_vdd_rstr_nodes(void)
 		rails[i].attr_gp.attrs = kzalloc(sizeof(struct attribute *) * 3,
 					GFP_KERNEL);
 		if (!rails[i].attr_gp.attrs) {
-			pr_err("kzalloc failed\n");
+			pr_debug("kzalloc failed\n");
 			rc = -ENOMEM;
 			goto thermal_sysfs_add_exit;
 		}
@@ -2501,7 +2495,7 @@ static int msm_thermal_add_vdd_rstr_nodes(void)
 		rc = sysfs_create_group(vdd_rstr_reg_kobj[i],
 				&rails[i].attr_gp);
 		if (rc) {
-			pr_err("cannot create attribute group for %s. err:%d\n",
+			pr_debug("cannot create attribute group for %s. err:%d\n",
 					rails[i].name, rc);
 			goto thermal_sysfs_add_exit;
 		}
@@ -2539,7 +2533,7 @@ static int msm_thermal_add_ocr_nodes(void)
 
 	module_kobj = kset_find_obj(module_kset, KBUILD_MODNAME);
 	if (!module_kobj) {
-		pr_err("%s: cannot find kobject for module %s\n",
+		pr_debug("%s: cannot find kobject for module %s\n",
 			__func__, KBUILD_MODNAME);
 		rc = -ENOENT;
 		goto ocr_node_exit;
@@ -2547,7 +2541,7 @@ static int msm_thermal_add_ocr_nodes(void)
 
 	ocr_kobj = kobject_create_and_add("opt_curr_req", module_kobj);
 	if (!ocr_kobj) {
-		pr_err("%s: cannot create ocr kobject\n", KBUILD_MODNAME);
+		pr_debug("%s: cannot create ocr kobject\n", KBUILD_MODNAME);
 		rc = -ENOMEM;
 		goto ocr_node_exit;
 	}
@@ -2556,7 +2550,7 @@ static int msm_thermal_add_ocr_nodes(void)
 		ocr_reg_kobj[i] = kobject_create_and_add(ocr_rails[i].name,
 					ocr_kobj);
 		if (!ocr_reg_kobj[i]) {
-			pr_err("%s: cannot create for kobject for %s\n",
+			pr_debug("%s: cannot create for kobject for %s\n",
 					KBUILD_MODNAME, ocr_rails[i].name);
 			rc = -ENOMEM;
 			goto ocr_node_exit;
@@ -2573,7 +2567,7 @@ static int msm_thermal_add_ocr_nodes(void)
 
 		rc = sysfs_create_group(ocr_reg_kobj[i], &ocr_rails[i].attr_gp);
 		if (rc) {
-			pr_err("%s: cannot create attribute group for %s\n",
+			pr_debug("%s: cannot create attribute group for %s\n",
 				KBUILD_MODNAME, ocr_rails[i].name);
 			goto ocr_node_exit;
 		}
@@ -2613,14 +2607,14 @@ static int msm_thermal_add_psm_nodes(void)
 
 	module_kobj = kset_find_obj(module_kset, KBUILD_MODNAME);
 	if (!module_kobj) {
-		pr_err("cannot find kobject\n");
+		pr_debug("cannot find kobject\n");
 		rc = -ENOENT;
 		goto psm_node_exit;
 	}
 
 	psm_kobj = kobject_create_and_add("pmic_sw_mode", module_kobj);
 	if (!psm_kobj) {
-		pr_err("cannot create psm kobject\n");
+		pr_debug("cannot create psm kobject\n");
 		rc = -ENOMEM;
 		goto psm_node_exit;
 	}
@@ -2629,7 +2623,7 @@ static int msm_thermal_add_psm_nodes(void)
 		psm_reg_kobj[i] = kobject_create_and_add(psm_rails[i].name,
 					psm_kobj);
 		if (!psm_reg_kobj[i]) {
-			pr_err("cannot create kobject for %s\n",
+			pr_debug("cannot create kobject for %s\n",
 					psm_rails[i].name);
 			rc = -ENOMEM;
 			goto psm_node_exit;
@@ -2637,7 +2631,7 @@ static int msm_thermal_add_psm_nodes(void)
 		psm_rails[i].attr_gp.attrs = kzalloc( \
 				sizeof(struct attribute *) * 2, GFP_KERNEL);
 		if (!psm_rails[i].attr_gp.attrs) {
-			pr_err("kzalloc failed\n");
+			pr_debug("kzalloc failed\n");
 			rc = -ENOMEM;
 			goto psm_node_exit;
 		}
@@ -2647,7 +2641,7 @@ static int msm_thermal_add_psm_nodes(void)
 
 		rc = sysfs_create_group(psm_reg_kobj[i], &psm_rails[i].attr_gp);
 		if (rc) {
-			pr_err("cannot create attribute group for %s. err:%d\n",
+			pr_debug("cannot create attribute group for %s. err:%d\n",
 					psm_rails[i].name, rc);
 			goto psm_node_exit;
 		}
@@ -2695,14 +2689,14 @@ static int probe_vdd_rstr(struct device_node *node,
 	if (rails_cnt == 0)
 		goto read_node_fail;
 	if (rails_cnt >= MAX_RAILS) {
-		pr_err("Too many rails:%d.\n", rails_cnt);
+		pr_debug("Too many rails:%d.\n", rails_cnt);
 		return -EFAULT;
 	}
 
 	rails = kzalloc(sizeof(struct rail) * rails_cnt,
 				GFP_KERNEL);
 	if (!rails) {
-		pr_err("Fail to allocate memory for rails.\n");
+		pr_debug("Fail to allocate memory for rails.\n");
 		return -ENOMEM;
 	}
 
@@ -2719,7 +2713,7 @@ static int probe_vdd_rstr(struct device_node *node,
 		rails[i].num_levels = arr_size/sizeof(__be32);
 		if (rails[i].num_levels >
 			sizeof(rails[i].levels)/sizeof(uint32_t)) {
-			pr_err("Array size:%d too large for index:%d\n",
+			pr_debug("Array size:%d too large for index:%d\n",
 				rails[i].num_levels, i);
 			return -EFAULT;
 		}
@@ -2748,7 +2742,7 @@ static int probe_vdd_rstr(struct device_node *node,
 	if (rails_cnt) {
 		ret = vdd_restriction_reg_init(pdev);
 		if (ret) {
-			pr_err("Err regulator init. err:%d. KTM continues.\n",
+			pr_debug("Err regulator init. err:%d. KTM continues.\n",
 					ret);
 			goto read_node_fail;
 		}
@@ -2756,7 +2750,7 @@ static int probe_vdd_rstr(struct device_node *node,
 			data->vdd_rstr_temp_hyst_degC, data->vdd_rstr_temp_degC,
 			vdd_restriction_notify);
 		if (ret) {
-			pr_err("Error in initializing thresholds. err:%d\n",
+			pr_debug("Error in initializing thresholds. err:%d\n",
 					ret);
 			goto read_node_fail;
 		}
@@ -2792,7 +2786,7 @@ static int get_efuse_temp_map(struct device_node *node,
 	}
 
 	if (efuse_map_cnt % (sizeof(__be32) * 2)) {
-		pr_err("Invalid number(%d) of entry for %s\n",
+		pr_debug("Invalid number(%d) of entry for %s\n",
 				efuse_map_cnt, key);
 		return -EINVAL;
 	}
@@ -2849,7 +2843,7 @@ static int probe_thermal_efuse_read(struct device_node *node,
 	efuse_data_cnt /= sizeof(__be32);
 
 	if (efuse_data_cnt != EFUSE_DATA_MAX) {
-		pr_err("Invalid number of efuse data. data cnt %d\n",
+		pr_debug("Invalid number of efuse data. data cnt %d\n",
 			efuse_data_cnt);
 		ret = -EINVAL;
 		goto read_efuse_fail;
@@ -2863,7 +2857,7 @@ static int probe_thermal_efuse_read(struct device_node *node,
 	if (efuse_data[EFUSE_ADDRESS] == 0 ||
 		efuse_data[EFUSE_SIZE] == 0 ||
 		efuse_data[EFUSE_BIT_MASK] == 0) {
-		pr_err("Invalid efuse data: address:%x len:%d bitmask%x\n",
+		pr_debug("Invalid efuse data: address:%x len:%d bitmask%x\n",
 			efuse_data[EFUSE_ADDRESS], efuse_data[EFUSE_SIZE],
 			efuse_data[EFUSE_BIT_MASK]);
 		ret = -EINVAL;
@@ -2874,7 +2868,7 @@ static int probe_thermal_efuse_read(struct device_node *node,
 						efuse_temp);
 	if (efuse_map_cnt <= 0 ||
 		efuse_map_cnt > (efuse_data[EFUSE_BIT_MASK] + 1)) {
-		pr_err("Invalid efuse-temperature-map. cnt%d\n",
+		pr_debug("Invalid efuse-temperature-map. cnt%d\n",
 			efuse_map_cnt);
 		ret = -EINVAL;
 		goto read_efuse_fail;
@@ -2882,7 +2876,7 @@ static int probe_thermal_efuse_read(struct device_node *node,
 
 	efuse_base = ioremap(efuse_data[EFUSE_ADDRESS], efuse_data[EFUSE_SIZE]);
 	if (!efuse_base) {
-		pr_err("Unable to map efuse_addr:%x with size%d\n",
+		pr_debug("Unable to map efuse_addr:%x with size%d\n",
 			efuse_data[EFUSE_ADDRESS],
 			efuse_data[EFUSE_SIZE]);
 		ret = -EINVAL;
@@ -2904,7 +2898,7 @@ static int probe_thermal_efuse_read(struct device_node *node,
 	}
 	if (i >= efuse_map_cnt) {
 		if (!default_temp) {
-			pr_err("No matching efuse value. value:%d\n",
+			pr_debug("No matching efuse value. value:%d\n",
 				thermal_efuse_data);
 			ret = -EINVAL;
 			goto read_efuse_fail;
@@ -2968,7 +2962,7 @@ static int probe_ocr(struct device_node *node, struct msm_thermal_data *data,
 	ocr_rails = kzalloc(sizeof(struct psm_rail) * ocr_rail_cnt,
 			GFP_KERNEL);
 	if (!ocr_rails) {
-		pr_err("%s: Fail to allocate memory for ocr rails\n", __func__);
+		pr_debug("%s: Fail to allocate memory for ocr rails\n", __func__);
 		ocr_rail_cnt = 0;
 		return -ENOMEM;
 	}
@@ -2996,7 +2990,7 @@ static int probe_ocr(struct device_node *node, struct msm_thermal_data *data,
 		 * our first temp reading
 		 */
 		if (ocr_set_mode_all(OPTIMUM_CURRENT_MAX))
-			pr_err("Set max optimum current failed\n");
+			pr_debug("Set max optimum current failed\n");
 	}
 
 read_ocr_fail:
@@ -3040,7 +3034,7 @@ static int probe_psm(struct device_node *node, struct msm_thermal_data *data,
 	psm_rails = kzalloc(sizeof(struct psm_rail) * psm_rails_cnt,
 			GFP_KERNEL);
 	if (!psm_rails) {
-		pr_err("Fail to allocate memory for psm rails\n");
+		pr_debug("Fail to allocate memory for psm rails\n");
 		psm_rails_cnt = 0;
 		return -ENOMEM;
 	}
@@ -3055,7 +3049,7 @@ static int probe_psm(struct device_node *node, struct msm_thermal_data *data,
 	if (psm_rails_cnt) {
 		ret = psm_reg_init(pdev);
 		if (ret) {
-			pr_err("Err regulator init. err:%d. KTM continues.\n",
+			pr_debug("Err regulator init. err:%d. KTM continues.\n",
 					ret);
 			goto read_node_fail;
 		}
@@ -3118,7 +3112,7 @@ static int probe_cc(struct device_node *node, struct msm_thermal_data *data,
 	key = "qcom,cpu-sensors";
 	cpu_cnt = of_property_count_strings(node, key);
 	if (cpu_cnt < num_possible_cpus()) {
-		pr_err("Wrong number of cpu sensors:%d\n", cpu_cnt);
+		pr_debug("Wrong number of cpu sensors:%d\n", cpu_cnt);
 		ret = -EINVAL;
 		goto hotplug_node_fail;
 	}
@@ -3167,7 +3161,7 @@ static int probe_therm_reset(struct device_node *node,
 		data->therm_reset_temp_degC, data->therm_reset_temp_degC - 10,
 		therm_reset_notify);
 	if (ret) {
-		pr_err("Therm reset data structure init failed\n");
+		pr_debug("Therm reset data structure init failed\n");
 		goto PROBE_RESET_EXIT;
 	}
 
@@ -3233,7 +3227,7 @@ static int __devinit msm_thermal_dev_probe(struct platform_device *pdev)
 	memset(&data, 0, sizeof(struct msm_thermal_data));
 	ret = msm_thermal_pre_init();
 	if (ret) {
-		pr_err("thermal pre init failed. err:%d\n", ret);
+		pr_debug("thermal pre init failed. err:%d\n", ret);
 		goto fail;
 	}
 
@@ -3296,14 +3290,14 @@ static int __devinit msm_thermal_dev_probe(struct platform_device *pdev)
 	if (psm_nodes_called) {
 		ret = msm_thermal_add_psm_nodes();
 		if (ret)
-			pr_err("%s:%d msm_thermal_add_psm_nodes err",
+			pr_debug("%s:%d msm_thermal_add_psm_nodes err",
 					__func__, __LINE__);
 		psm_nodes_called = false;
 	}
 	if (vdd_rstr_nodes_called) {
 		ret = msm_thermal_add_vdd_rstr_nodes();
 		if (ret)
-			pr_err("%s:%d msm_thermal_add_vdd_rstr_nodes err",
+			pr_debug("%s:%d msm_thermal_add_vdd_rstr_nodes err",
 					__func__, __LINE__);
 		vdd_rstr_nodes_called = false;
 	}
@@ -3327,7 +3321,7 @@ static int __devinit msm_thermal_dev_probe(struct platform_device *pdev)
 	return ret;
 fail:
 	if (ret)
-		pr_err("Failed reading node=%s, key=%s. err:%d\n",
+		pr_debug("Failed reading node=%s, key=%s. err:%d\n",
 			node->full_name, key, ret);
 
 	return ret;
