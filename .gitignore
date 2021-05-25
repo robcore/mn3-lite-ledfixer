@@ -131,3 +131,5 @@ wtflog.txt
 dolbydumpprops.txt
 arch/arm/configs/mxconfig.recent
 mxtempusb
+ramdisk_workshop/split_img/
+ramdisk_workshop/split_img/*
