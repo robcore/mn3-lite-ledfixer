@@ -12,7 +12,8 @@ OLDVERFILE="$RDIR/.oldversion"
 OLDVER="$(cat $OLDVERFILE)"
 LASTZIPFILE="$RDIR/.lastzip"
 LASTZIP="$(cat $LASTZIPFILE)"
-RAMDISKFOLDER="$RDIR/mxramdisk"
+MXRD="$RDIR/mxrd"
+RAMDISKFOLDER="$MXRD/mxramdisk"
 ZIPFOLDER="$RDIR/mxzip"
 MXCONFIG="$RDIR/arch/arm/configs/mxconfig"
 MXNEWCFG="$MXCONFIG.new"
@@ -153,11 +154,11 @@ clean_build() {
 	rm -rf "$BUILDIR" &>/dev/null
 	echo -ne "Cleaning build.....    \r"; \
 	rm "$ZIPFOLDER/boot.img" &>/dev/null
-	echo -ne "Cleaning build......   \r"; \
-	make -C "$RDIR/scripts/mkqcdtbootimg" clean &>/dev/null
-	echo -ne "Cleaning build.......  \r"; \
+#	echo -ne "Cleaning build......   \r"; \
+#	make -C "$RDIR/scripts/mkqcdtbootimg" clean &>/dev/null
+	echo -ne "Cleaning build......  \r"; \
 	rm -rf "$RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg" &>/dev/null
-	echo -ne "Cleaning build........ \r"; \
+	echo -ne "Cleaning build....... \r"; \
 	echo -ne "                       \r"; \
 	echo -ne "Cleaned                \r"; \
 	echo -e "\n"
@@ -438,7 +439,7 @@ build_single_driver() {
 build_kernel() {
 	OLDCFG="/root/mn3-oldconfigs"
 	echo "Backing up .config to $OLDCFG/config.$QUICKDATE"
-	cp "$BUILDIR/.config" "$OLDCFG/config.$QUICKDATE"
+	cp "$BUILDIR/.config" "$OLDCFG/config.$QUICKDATE" || warnandfail "Config Copy Error!"
 	#echo "Snapshot of current environment variables:"
 	#env
 	echo -n "$(date +%s)" > "$RDIR/.starttime"
@@ -447,53 +448,100 @@ build_kernel() {
 
 }
 
-build_ramdisk() {
+#build_ramdisk() {
+#
+#	echo "Building ramdisk structure..."
+#	cd "$RDIR" || warnandfail "Failed to cd to $RDIR"
+#	rm -rf "$BUILDIR/ramdisk" &>/dev/null
+#	cp -par "$RAMDISKFOLDER" "$BUILDIR/ramdisk" || warnandfail "Failed to create $BUILDIR/ramdisk!"
+#	cd "$BUILDIR/ramdisk" || warnandfail "Failed to cd to $BUILDIR/ramdisk!"
+#	mkdir -pm 755 dev proc sys system
+#	mkdir -pm 771 data
+#	if [ -f "$KDIR/ramdisk.cpio.gz" ]
+#	then
+#		rm "$KDIR/ramdisk.cpio.gz"
+#	fi
+#	echo "Building ramdisk img"
+#	find | fakeroot cpio -v -o -H newc | gzip -v -9 > "$KDIR/ramdisk.cpio.gz"
+#	[ ! -f "$KDIR/ramdisk.cpio.gz" ] && warnandfail "NO ramdisk!"
+#	cd "$RDIR" || warnandfail "Failed to cd to $RDIR"
+#
+#}
 
-	echo "Building ramdisk structure..."
-	cd "$RDIR" || warnandfail "Failed to cd to $RDIR"
-	rm -rf "$BUILDIR/ramdisk" &>/dev/null
-	cp -par "$RAMDISKFOLDER" "$BUILDIR/ramdisk" || warnandfail "Failed to create $BUILDIR/ramdisk!"
-	cd "$BUILDIR/ramdisk" || warnandfail "Failed to cd to $BUILDIR/ramdisk!"
-	mkdir -pm 755 dev proc sys system
-	mkdir -pm 771 data
-	if [ -f "$KDIR/ramdisk.cpio.gz" ]
-	then
-		rm "$KDIR/ramdisk.cpio.gz"
-	fi
-#	find | fakeroot cpio -v -H newc -o | lzop -9 > "$KDIR/ramdisk.cpio.gz"
-	echo "Building ramdisk img"
-	find | fakeroot cpio -v -o -H newc | gzip -v -9 > "$KDIR/ramdisk.cpio.gz"
-	[ ! -f "$KDIR/ramdisk.cpio.gz" ] && warnandfail "NO ramdisk!"
-	cd "$RDIR" || warnandfail "Failed to cd to $RDIR"
-
-}
+#build_boot_img_qcdt() {
+#
+#	echo "Generating boot.img..."
+#	rm -f "$ZIPFOLDER/boot.img"
+#	if [ ! -f "$RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg" ]
+#	then
+#		make -C "$RDIR/scripts/mkqcdtbootimg" || warnandfail "Failed to make dtb tool!"
+#	fi
+#
+#	$RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg --kernel "$KDIR/zImage" \
+#		--ramdisk "$KDIR/ramdisk.cpio.gz" \
+#        --dt_dir "$KDIR" \
+#		--cmdline "console=null androidboot.hardware=qcom user_debug=23 msm_rtb.filter=0x37 ehci-hcd.park=3" \
+#		--base "0x00000000" \
+#		--pagesize "2048" \
+#		--ramdisk_offset "0x02000000" \
+#		--tags_offset "0x01e00000" \
+#		--output "$ZIPFOLDER/boot.img"
+#	if [ "$?" -eq 0 ]
+#	then
+#		echo "mkqcdtbootimg appears to have succeeded in building an image"
+#	else
+#		warnandfail "mkqcdtbootimg appears to have failed in building an image!"
+#	fi
+#	[ -f "$ZIPFOLDER/boot.img" ] || warnandfail "$ZIPFOLDER/boot.img does not exist!"
+#	echo -n "SEANDROIDENFORCE" >> "$ZIPFOLDER/boot.img"
+#
+#}
+DTBTOOL="$RDIR/tools/dtbtool"
+DTCDIR="$BUILDIR/scripts/dtc"
+DTIMG="$KDIR/dt.img"
+MXDT="$MXRD/split_img/boot.img-dt"
+NEWZMG="$KDIR/zImage"
+MXZMG="$MXRD/split_img/boot.img-kernel"
 
 build_boot_img() {
 
-	echo "Generating boot.img..."
-	rm -f "$ZIPFOLDER/boot.img"
-	if [ ! -f "$RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg" ]
-	then
-		make -C "$RDIR/scripts/mkqcdtbootimg" || warnandfail "Failed to make dtb tool!"
+	[ -f "$ZIPFOLDER/boot.img" ] && rm "$ZIPFOLDER/boot.img"
+    [ -f "$MXRD/image-new.img" ] && rm "$MXRD/image-new.img"
+    [ -f "$MXRD/ramdisk-new.cpio.gz" ] && rm "$MXRD/ramdisk-new.cpio.gz"
+
+	echo "Generating $DTIMG"
+
+    "$DTBTOOL" -o "$DTIMG" -s "2048" -p "$DTCDIR" "$KDIR"
+
+    if [ ! -f "$DTIMG" ]
+    then
+		warnandfail "dtbtool failed to build $DTIMG!"
 	fi
 
-	$RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg --kernel "$KDIR/zImage" \
-		--ramdisk "$KDIR/ramdisk.cpio.gz" \
-        --dt_dir "$KDIR" \
-		--cmdline "console=null androidboot.hardware=qcom user_debug=23 msm_rtb.filter=0x37 ehci-hcd.park=3" \
-		--base "0x00000000" \
-		--pagesize "2048" \
-		--ramdisk_offset "0x02000000" \
-		--tags_offset "0x01e00000" \
-		--output "$ZIPFOLDER/boot.img"
-	if [ "$?" -eq 0 ]
-	then
-		echo "mkqcdtbootimg appears to have succeeded in building an image"
-	else
-		warnandfail "mkqcdtbootimg appears to have failed in building an image!"
-	fi
+    echo "Packing up boot.img"
+
+    [ -f "$MXDT" ] && rm "$MXDT"
+    cp "$DTIMG" "$MXDT" || warnandfail "Failed to copy $DTIMG to $MXDT!"
+    chmod 644 "$MXDT"
+
+    [ -f "$MXZMG" ] && rm "$MXZMG"
+    cp "$NEWZMG" "$MXZMG" || warnandfail "Failed to copy $NEWZMG to $MXZMG!"
+    chmod 644 "$MXZMG"   
+
+    cd "$MXRD" || warnandfail "Failed to cd into $MXRD!"
+    ./repackimg.sh --sudo
+    cd "$RDIR" || warnandfail "Failed to cd into $RDIR!"
+
+    [ -f "$MXRD/ramdisk-new.cpio.gz" ] && rm "$MXRD/ramdisk-new.cpio.gz"
+
+    if [ -f "$MXRD/image-new.img" ]
+    then
+        mv "$MXRD/image-new.img" "$ZIPFOLDER/boot.img" || warnandfail "Failed to move $MXRD/image-new.img to $ZIPFOLDER/boot.img!"
+    else
+        warnandfail "$MXRD/image-new.img nonexistant! Repack must have Failed!"
+    fi
+
 	[ -f "$ZIPFOLDER/boot.img" ] || warnandfail "$ZIPFOLDER/boot.img does not exist!"
-	echo -n "SEANDROIDENFORCE" >> "$ZIPFOLDER/boot.img"
 
 }
 
@@ -634,7 +682,6 @@ Common options:
  -m|--menuconfig     Setup an environment for and enter menuconfig
  -k|--kernel         Try the build again starting at compiling the kernel
  -o|--kernel-only    Recompile only the kernel, nothing else
--rd|--ramdisk        Try the build again starting at the ramdisk
  -t|--tests          Testing playground
 
 Extra command line options are possible, with more to be added in the future:
@@ -648,9 +695,15 @@ EOF
 
 }
 
+#package_ramdisk_and_zip() {
+#
+#	build_ramdisk && build_boot_img && create_zip
+#
+#}
+
 package_ramdisk_and_zip() {
 
-	build_ramdisk && build_boot_img && create_zip
+	build_boot_img && create_zip
 
 }
 
@@ -755,13 +808,6 @@ do
 			checkrecov
 			handle_existing
 	    	build_kernel
-	    	break
-	    	;;
-
-	     -rd|--ramdisk)
-			checkrecov
-			handle_existing
-	     	package_ramdisk_and_zip
 	    	break
 	    	;;
 
