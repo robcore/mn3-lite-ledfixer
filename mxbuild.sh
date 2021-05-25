@@ -41,6 +41,13 @@ else
     NOREBOOT="false"
 fi
 
+if [ "$1" = "-d" ] || [ "$1" = "--debug" ]
+then
+    CLEANONFAIL="no"
+else
+    CLEANONFAIL="yes"
+fi
+
 timerprint() {
 
 	local DIFFMINS
@@ -176,7 +183,10 @@ warnandfail() {
 	then
 		printf "%s\n" "$ISTRING"
 	fi
-	clean_build
+    if [ "$CLEANONFAIL" = "yes" ]
+    then
+    	clean_build
+    fi
 	exit 1
 
 }
@@ -433,7 +443,7 @@ build_kernel_config() {
 build_single_driver() {
 
 	echo "Building Single Driver..."
-	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -C "$RDIR" -S -s -j16 O="$BUILDIR/" "$1"
+	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -C "$RDIR" -S -s -j16 O="$BUILDIR" "$1"
 
 }
 
@@ -656,7 +666,7 @@ create_zip() {
 
 #CREATE_TAR()
 #{
-#	if [ $MAKE_TAR != 1 ]; then return; fi
+#	if [ $MAKE_TAR != 1 ]; then return; fi-d|--debug
 #
 #	echo "Compressing to Odin flashable tar.md5 file..."
 #	cd $RDIR/$ZIPFOLDER
