@@ -1011,6 +1011,14 @@ static int read_hpf_cutoff(unsigned short reg)
 	return local_reg_val;
 }
 
+/*
+TAIKO_A_CDC_CONN_EQ1_B1_CTL
+static const char * const iir_inp1_text[] = {
+	"ZERO", "DEC1", "DEC2", "DEC3", "DEC4", "DEC5", "DEC6", "DEC7", "DEC8",
+	"DEC9", "DEC10", "RX1", "RX2", "RX3", "RX4", "RX5", "RX6", "RX7"
+};
+*/
+
 static void write_autochopper(unsigned int enable)
 {
     if (enable) {
