@@ -21,6 +21,7 @@ aik="${BASH_SOURCE:-$0}";
 aik="$(dirname "$(readlink -f "$aik")")";
 bin="$aik/bin";
 cur="$(readlink -f "$PWD")";
+CPIO="$bin/bin/linux/x86_64/cpio"
 
 case $plat in
   macos)
@@ -39,8 +40,8 @@ case $plat in
     fi;
   ;;
   linux)
-    cpio=cpio;
-    [ "$(cpio --version | head -n1 | rev | cut -d\  -f1 | rev)" = "2.13" ] && cpiowarning=1;
+    #cpio=cpio;
+    [ "$($CPIO--version | head -n1 | rev | cut -d\  -f1 | rev)" = "2.13" ] && cpiowarning=1;
     statarg="-c %U";
   ;;
 esac;
@@ -144,7 +145,7 @@ else
     compext=.$compext;
   fi;
   cd ramdisk;
-  $sudo find . | $sudo $cpio $cpioarg -H newc -o 2>/dev/null | $repackcmd > ../ramdisk-new.cpio$compext;
+  $sudo find . | $sudo $CPIO $cpioarg -H newc -o 2>/dev/null | $repackcmd > ../ramdisk-new.cpio$compext;
   if [ ! $? -eq "0" ]; then
     abort;
     exit 1;

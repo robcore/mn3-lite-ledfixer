@@ -17,6 +17,7 @@ esac;
 aik="${BASH_SOURCE:-$0}";
 aik="$(dirname "$(readlink -f "$aik")")";
 bin="$aik/bin";
+#CPIO="$bin/bin/linux/x86_64/cpio"
 
 case $1 in
   --local) shift;;
@@ -26,7 +27,7 @@ esac;
 chmod -R 755 "$bin" "$aik"/*.sh;
 chmod 644 "$bin/magic" "$bin/androidbootimg.magic" "$bin/boot_signer.jar" "$bin/avb/"* "$bin/chromeos/"*;
 
-if [ -d ramdisk ] && [ "$(stat $statarg ramdisk | head -n 1)" = "root" -o ! "$(find ramdisk 2>&1 | cpio -o >/dev/null 2>&1; echo $?)" -eq "0" ]; then
+if [ -d ramdisk ] && [ "$(stat $statarg ramdisk | head -n 1)" = "root" -o ! "$(find ramdisk 2>&1 | $CPIO -o >/dev/null 2>&1; echo $?)" -eq "0" ]; then
   sudo=sudo;
 fi;
 

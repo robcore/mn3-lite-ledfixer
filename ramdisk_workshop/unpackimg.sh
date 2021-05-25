@@ -30,6 +30,7 @@ aik="${BASH_SOURCE:-$0}";
 aik="$(dirname "$(readlink -f "$aik")")";
 bin="$aik/bin";
 cur="$(readlink -f "$PWD")";
+CPIO="$bin/bin/linux/x86_64/cpio"
 
 case $plat in
   macos)
@@ -44,8 +45,8 @@ case $plat in
     xz() { DYLD_LIBRARY_PATH="$bin/$arch" "$bin/$arch/xz" "$@"; }
   ;;
   linux)
-    cpio=cpio;
-    [ "$(cpio --version | head -n1 | rev | cut -d\  -f1 | rev)" = "2.13" ] && cpiowarning=1;
+    #cpio=cpio;
+    [ "$($CPIO--version | head -n1 | rev | cut -d\  -f1 | rev)" = "2.13" ] && cpiowarning=1;
     statarg="-c %U";
   ;;
 esac;
@@ -85,7 +86,7 @@ echo "Supplied image: $file";
 echo " ";
 
 if [ -d split_img -o -d ramdisk ]; then
-  if [ -d ramdisk ] && [ "$(stat $statarg ramdisk | head -n 1)" = "root" -o ! "$(find ramdisk 2>&1 | cpio -o >/dev/null 2>&1; echo $?)" -eq "0" ]; then
+  if [ -d ramdisk ] && [ "$(stat $statarg ramdisk | head -n 1)" = "root" -o ! "$(find ramdisk 2>&1 | $CPIO -o >/dev/null 2>&1; echo $?)" -eq "0" ]; then
     rmsumsg=" (as root)";
   fi;
   echo "Removing old work folders and files$rmsumsg...";
@@ -353,7 +354,7 @@ else
   fi;
   $sudo chown 0:0 ramdisk 2>/dev/null;
   cd ramdisk;
-  $unpackcmd "../split_img/$file-${vendor}ramdisk.cpio$compext" | $sudo $cpio -i -d --no-absolute-filenames;
+  $unpackcmd "../split_img/$file-${vendor}ramdisk.cpio$compext" | $sudo $CPIO -i -d --no-absolute-filenames;
   if [ ! $? -eq "0" ]; then
     [ "$nosudo" ] && echo "Unpacking failed, try without --nosudo.";
     cd ..;
