@@ -154,11 +154,12 @@ clean_build() {
 	rm -rf "$BUILDIR" &>/dev/null
 	echo -ne "Cleaning build.....    \r"; \
 	rm "$ZIPFOLDER/boot.img" &>/dev/null
-#	echo -ne "Cleaning build......   \r"; \
-#	make -C "$RDIR/scripts/mkqcdtbootimg" clean &>/dev/null
-	echo -ne "Cleaning build......  \r"; \
+	echo -ne "Cleaning build......   \r"; \
+    [ -f "$MXRD/image-new.img" ] && rm "$MXRD/image-new.img"
+    [ -f "$MXRD/ramdisk-new.cpio.gz" ] && rm "$MXRD/ramdisk-new.cpio.gz"
+	echo -ne "Cleaning build.......  \r"; \
 	rm -rf "$RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg" &>/dev/null
-	echo -ne "Cleaning build....... \r"; \
+	echo -ne "Cleaning build........ \r"; \
 	echo -ne "                       \r"; \
 	echo -ne "Cleaned                \r"; \
 	echo -e "\n"
@@ -496,7 +497,7 @@ build_kernel() {
 #	echo -n "SEANDROIDENFORCE" >> "$ZIPFOLDER/boot.img"
 #
 #}
-DTBTOOL="$RDIR/tools/dtbtool"
+
 DTCDIR="$BUILDIR/scripts/dtc"
 DTIMG="$KDIR/dt.img"
 MXDT="$MXRD/split_img/boot.img-dt"
@@ -505,13 +506,15 @@ MXZMG="$MXRD/split_img/boot.img-kernel"
 
 build_boot_img() {
 
+    cd "$RDIR" || warnandfail "Failed to cd into $RDIR!"
+
 	[ -f "$ZIPFOLDER/boot.img" ] && rm "$ZIPFOLDER/boot.img"
     [ -f "$MXRD/image-new.img" ] && rm "$MXRD/image-new.img"
     [ -f "$MXRD/ramdisk-new.cpio.gz" ] && rm "$MXRD/ramdisk-new.cpio.gz"
 
 	echo "Generating $DTIMG"
 
-    "$DTBTOOL" -o "$DTIMG" -s "2048" -p "$DTCDIR" "$KDIR"
+    ./tools/dtbtool -o "$DTIMG" -s 2048 -p "$DTCDIR" "$KDIR"
 
     if [ ! -f "$DTIMG" ]
     then
