@@ -138,8 +138,10 @@ extern u8 hphr_cached_gain;
 extern u8 speaker_cached_gain;
 extern u8 iir1_cached_gain;
 extern u8 iir2_cached_gain;
+#if 0
 extern u8 iir1_inp2_cached_gain;
 extern u8 iir2_inp2_cached_gain;
+#endif //0
 #ifdef CONFIG_RAMP_VOLUME
 extern unsigned int ramp_volume;
 #endif

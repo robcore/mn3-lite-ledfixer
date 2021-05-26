@@ -558,8 +558,10 @@ u8 hphr_cached_gain;
 u8 speaker_cached_gain;
 u8 iir1_cached_gain;
 u8 iir2_cached_gain;
+#if 0
 u8 iir1_inp2_cached_gain;
 u8 iir2_inp2_cached_gain;
+#endif
 #ifdef CONFIG_RAMP_VOLUME
 unsigned int ramp_volume;
 #endif
@@ -768,8 +770,10 @@ static void update_iir_gain(void)
 	lock_sound_control(&sound_control_codec_ptr->core_res, 1);
 	regwrite(TAIKO_A_CDC_IIR1_GAIN_B1_CTL, iir1_cached_gain);
 	regwrite(TAIKO_A_CDC_IIR2_GAIN_B1_CTL, iir2_cached_gain);
+#if 0
 	regwrite(TAIKO_A_CDC_IIR1_GAIN_B2_CTL, iir1_inp2_cached_gain);
 	regwrite(TAIKO_A_CDC_IIR2_GAIN_B2_CTL, iir2_inp2_cached_gain);
+#endif //0
 	lock_sound_control(&sound_control_codec_ptr->core_res, 0);
 }
 #if 0
@@ -1012,17 +1016,40 @@ static int read_hpf_cutoff(unsigned short reg)
 }
 
 /*
-TAIKO_A_CDC_CONN_EQ1_B1_CTL
+___________________________________________________________________________
+IIR 1 Input Path:TAIKO_A_CDC_CONN_EQ1_B1_CTL
+___________________________________________________________________________
+
+static const struct soc_enum iir1_inp1_mux_enum =
+	SOC_ENUM_SINGLE(TAIKO_A_CDC_CONN_EQ1_B1_CTL, 0, 18, iir_inp1_text);
+___________________________________________________________________________
+IIR 2 Input Path:TAIKO_A_CDC_CONN_EQ2_B1_CTL
+___________________________________________________________________________
+static const struct soc_enum iir2_inp1_mux_enum =
+	SOC_ENUM_SINGLE(TAIKO_A_CDC_CONN_EQ2_B1_CTL, 0, 18, iir_inp1_text);
+___________________________________________________________________________
+SHARED:
+___________________________________________________________________________
 static const char * const iir_inp1_text[] = {
 	"ZERO", "DEC1", "DEC2", "DEC3", "DEC4", "DEC5", "DEC6", "DEC7", "DEC8",
 	"DEC9", "DEC10", "RX1", "RX2", "RX3", "RX4", "RX5", "RX6", "RX7"
 };
 */
 
+/* mxaudio hweq 
+enum {
+	HWEQ_OFF = 0,
+	HWEQ_ON = 1,
+	HWEQ_SIDETONE = 2,
+};
+
+static void setup_iir_path(void)
+{
+}
+*/
 static void write_autochopper(unsigned int enable)
 {
     if (enable) {
-    	//regwrite(TAIKO_A_RX_HPH_AUTO_CHOP, 61);
         mx_update_bits_locked(TAIKO_A_RX_HPH_AUTO_CHOP, 5, 5);
     } else {
         mx_update_bits_locked(TAIKO_A_RX_HPH_AUTO_CHOP, 5, 0);
@@ -8583,7 +8610,7 @@ static ssize_t iir1_gain_store(struct kobject *kobj,
 
 	return count;
 }
-
+#if 0
 static ssize_t iir1_inp2_gain_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf)
 {
@@ -8620,6 +8647,46 @@ static ssize_t iir1_inp2_gain_store(struct kobject *kobj,
 
 	return count;
 }
+#endif //0
+
+#if 0
+static ssize_t iir2_inp2_gain_show(struct kobject *kobj,
+		struct kobj_attribute *attr, char *buf)
+{
+	int iirval, tempval;
+
+	iirval = show_sound_value(TAIKO_A_CDC_IIR2_GAIN_B2_CTL);
+	if (iirval == -84) {
+		tempval = iir2_inp2_cached_gain;
+
+		if ((tempval > 171) && (tempval < 256))
+			tempval -= 256;
+	} else {
+		tempval = iirval;
+	}
+
+	return sprintf(buf, "%d\n", tempval);
+}
+
+static ssize_t iir2_inp2_gain_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
+	int iirinput;
+
+	sscanf(buf, "%d", &iirinput);
+
+	iirinput = clamp_val(iirinput, -84, 40);
+
+	if (iirinput < 0)
+		iir2_inp2_cached_gain = (iirinput + 256);
+	else
+		iir2_inp2_cached_gain = iirinput;
+
+	update_iir_gain();
+
+	return count;
+}
+#endif //0
 
 static ssize_t iir2_gain_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf)
@@ -8652,43 +8719,6 @@ static ssize_t iir2_gain_store(struct kobject *kobj,
 		iir2_cached_gain = (iirinput + 256);
 	else
 		iir2_cached_gain = iirinput;
-
-	update_iir_gain();
-
-	return count;
-}
-
-static ssize_t iir2_inp2_gain_show(struct kobject *kobj,
-		struct kobj_attribute *attr, char *buf)
-{
-	int iirval, tempval;
-
-	iirval = show_sound_value(TAIKO_A_CDC_IIR2_GAIN_B2_CTL);
-	if (iirval == -84) {
-		tempval = iir2_inp2_cached_gain;
-
-		if ((tempval > 171) && (tempval < 256))
-			tempval -= 256;
-	} else {
-		tempval = iirval;
-	}
-
-	return sprintf(buf, "%d\n", tempval);
-}
-
-static ssize_t iir2_inp2_gain_store(struct kobject *kobj,
-			   struct kobj_attribute *attr, const char *buf, size_t count)
-{
-	int iirinput;
-
-	sscanf(buf, "%d", &iirinput);
-
-	iirinput = clamp_val(iirinput, -84, 40);
-
-	if (iirinput < 0)
-		iir2_inp2_cached_gain = (iirinput + 256);
-	else
-		iir2_inp2_cached_gain = iirinput;
 
 	update_iir_gain();
 
@@ -9443,20 +9473,22 @@ static struct kobj_attribute iir1_gain_attribute =
 		iir1_gain_show,
 		iir1_gain_store);
 
-static struct kobj_attribute iir1_inp2_gain_attribute =
-	__ATTR(iir1_inp2_gain, 0644,
-		iir1_inp2_gain_show,
-		iir1_inp2_gain_store);
-
 static struct kobj_attribute iir2_gain_attribute =
 	__ATTR(iir2_gain, 0644,
 		iir2_gain_show,
 		iir2_gain_store);
 
+#if 0
+static struct kobj_attribute iir1_inp2_gain_attribute =
+	__ATTR(iir1_inp2_gain, 0644,
+		iir1_inp2_gain_show,
+		iir1_inp2_gain_store);
+
 static struct kobj_attribute iir2_inp2_gain_attribute =
 	__ATTR(iir2_inp2_gain, 0644,
 		iir2_inp2_gain_show,
 		iir2_inp2_gain_store);
+#endif //0
 
 static struct kobj_attribute uhqa_mode_attribute =
 	__ATTR(uhqa_mode, 0644,
@@ -9578,9 +9610,11 @@ static struct attribute *sound_control_attrs[] = {
 		&speaker_gain_attribute.attr,
 		&speaker_mute_attribute.attr,
 		&iir1_gain_attribute.attr,
-		&iir1_inp2_gain_attribute.attr,
 		&iir2_gain_attribute.attr,
+#if 0
+		&iir1_inp2_gain_attribute.attr,
 		&iir2_inp2_gain_attribute.attr,
+#endif
 		&uhqa_mode_attribute.attr,
 		&high_perf_mode_attribute.attr,
 		&interpolator_boost_attribute.attr,
