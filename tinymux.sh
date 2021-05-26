@@ -99,5 +99,5 @@ echo "___________________________________"
 echo " "
 
 [ ! -d "/root/tinymux_tests" ] && mkdir "/root/tinymux_tests"
-adb shell dmesg > /root/tinymux_tests
+adb shell dmesg > /root/tinymux_tests/dmesg.log
 echo "Finished!"
