@@ -2712,10 +2712,16 @@ int snd_soc_dapm_put_enum_double(struct snd_kcontrol *kcontrol,
 	mux = ucontrol->value.enumerated.item[0];
 	val = mux << e->shift_l;
 	mask = (bitmask - 1) << e->shift_l;
+
     if (e->reg == 0x397)
         pr_info("IIR1 Input Mux Stage 1: Mux=%u Val=%u Mask=%u\n", mux, val, mask);
     else if (e->reg == 0x39B)
         pr_info("IIR2 Input Mux Stage 1: Mux=%u Val=%u Mask=%u\n", mux, val, mask);
+    else if (e->reg == 0x380)
+        pr_info("RX1 Input Mux Stage 1: Mux=%u Val=%u Mask=%u\n", mux, val, mask);
+    else if (e->reg == 0x383)
+        pr_info("RX2 Input Mux Stage 1: Mux=%u Val=%u Mask=%u\n", mux, val, mask);
+
 	if (e->shift_l != e->shift_r) {
 		if (ucontrol->value.enumerated.item[1] > e->max - 1)
 			return -EINVAL;
@@ -2725,6 +2731,10 @@ int snd_soc_dapm_put_enum_double(struct snd_kcontrol *kcontrol,
             pr_info("IIR1 Input Mux Stage 2: Mux=%u Val=%u Mask=%u\n", mux, val, mask);
         else if (e->reg == 0x39B)
             pr_info("IIR2 Input Mux Stage 2: Mux=%u Val=%u Mask=%u\n", mux, val, mask);
+        else if (e->reg == 0x380)
+            pr_info("RX1 Input Mux Stage 2: Mux=%u Val=%u Mask=%u\n", mux, val, mask);
+        else if (e->reg == 0x383)
+            pr_info("RX2 Input Mux Stage 2: Mux=%u Val=%u Mask=%u\n", mux, val, mask);
 	}
 
 	mutex_lock_nested(&card->dapm_mutex, SND_SOC_DAPM_CLASS_PCM);
@@ -2751,6 +2761,10 @@ int snd_soc_dapm_put_enum_double(struct snd_kcontrol *kcontrol,
             pr_info("IIR1 Input Mux Updated: Mux=%u Val=%u Mask=%u\n", mux, val, mask);
         else if (e->reg == 0x39B)
             pr_info("IIR2 Input Mux Updated: Mux=%u Val=%u Mask=%u\n", mux, val, mask);
+        else if (e->reg == 0x380)
+            pr_info("RX1 Input Mux Updated: Mux=%u Val=%u Mask=%u\n", mux, val, mask);
+        else if (e->reg == 0x383)
+            pr_info("RX2 Input Mux Updated: Mux=%u Val=%u Mask=%u\n", mux, val, mask);
 	}
 
 	mutex_unlock(&card->dapm_mutex);
