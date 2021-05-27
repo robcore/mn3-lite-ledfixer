@@ -1,6 +1,6 @@
 
-/--------------------------------------------\
-  RX1 MIX1 INP1 (TAIKO_A_CDC_CONN_RX1_B1_CTL)
+/----------------------------------------------------\
+  RX1 MIX1 INP1 | TAIKO_A_CDC_CONN_RX1_B1_CTL | 0x380
 
   Connection to RX1:
   RX1 Input Mux Stage 1: Mux=5 Val=5 Mask=15
@@ -13,11 +13,11 @@
   Connection reset to 0:
   RX1 Input Mux Stage 1: Mux=0 Val=0 Mask=15
   RX1 Input Mux Updated: Mux=0 Val=0 Mask=15
-\--------------------------------------------/
+\----------------------------------------------------/
 
 
-/--------------------------------------------\
-  RX2 MIX1 INP1(TAIKO_A_CDC_CONN_RX2_B1_CTL)
+/----------------------------------------------------\
+  RX2 MIX1 INP1 | TAIKO_A_CDC_CONN_RX2_B1_CTL | 0x383
 
   Connection to RX2:
   RX2 Input Mux Stage 1: Mux=6 Val=6 Mask=15
@@ -30,11 +30,11 @@
   Connection reset to 0:
   RX2 Input Mux Stage 1: Mux=0 Val=0 Mask=15
   RX2 Input Mux Updated: Mux=0 Val=0 Mask=15
-\--------------------------------------------/
+\----------------------------------------------------/
 
 
-/--------------------------------------------\
-  IIR1 INP1 MUX(TAIKO_A_CDC_CONN_EQ1_B1_CTL)
+/----------------------------------------------------\
+  IIR1 INP1 MUX | TAIKO_A_CDC_CONN_EQ1_B1_CTL | 0x397
 
   Connection to RX1:
   IIR1 Input Mux Stage 1: Mux=11 Val=11 Mask=31
@@ -43,11 +43,11 @@
   Connection reset to 0:
   IIR1 Input Mux Stage 1: Mux=0 Val=0 Mask=31
   IIR1 Input Mux Updated: Mux=0 Val=0 Mask=31
-\--------------------------------------------/
+\----------------------------------------------------/
 
 
-/--------------------------------------------\
-  IIR2 INP1 MUX(TAIKO_A_CDC_CONN_EQ2_B1_CTL)
+/----------------------------------------------------\
+  IIR2 INP1 MUX | TAIKO_A_CDC_CONN_EQ2_B1_CTL | 0x39B
 
   Connection to RX2:
   IIR2 Input Mux Stage 1: Mux=12 Val=12 Mask=31
@@ -56,11 +56,11 @@
   Connection reset to 0:
   IIR2 Input Mux Stage 1: Mux=0 Val=0 Mask=31
   IIR2 Input Mux Updated: Mux=0 Val=0 Mask=31
-\--------------------------------------------/
+\----------------------------------------------------/
 
 
-/--------------------------------------------\
-  RX1 MIX1 INP2(TAIKO_A_CDC_CONN_RX1_B1_CTL)
+/----------------------------------------------------\
+  RX1 MIX1 INP2 | TAIKO_A_CDC_CONN_RX1_B1_CTL | 0x380
 
   Connection to IIR1:
   RX1 Input Mux Stage 1: Mux=3 Val=48 Mask=240
@@ -69,11 +69,11 @@
   Connection reset to 0:
   RX1 Input Mux Stage 1: Mux=0 Val=0 Mask=240
   RX1 Input Mux Updated: Mux=0 Val=0 Mask=240
-\--------------------------------------------/
+\----------------------------------------------------/
 
 
-/--------------------------------------------\
-  RX2 MIX1 INP2(TAIKO_A_CDC_CONN_RX2_B1_CTL)
+/----------------------------------------------------\
+  RX2 MIX1 INP2 | TAIKO_A_CDC_CONN_RX2_B1_CTL | 0x383
 
   Connection to IIR2:
   RX2 Input Mux Stage 1: Mux=4 Val=64 Mask=240
@@ -82,7 +82,7 @@
   Connection reset to 0:
   RX2 Input Mux Stage 1: Mux=0 Val=0 Mask=240
   RX2 Input Mux Updated: Mux=0 Val=0 Mask=240
-\--------------------------------------------/
+\----------------------------------------------------/
 
 
 
