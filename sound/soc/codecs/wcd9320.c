@@ -5581,9 +5581,9 @@ static int taiko_set_interpolator_rate(struct snd_soc_dai *dai,
 			    ((rx_mix_1_reg_2_val & 0x0F) == rx_mix1_inp)) {
 
                 if (j)
-                    rx_fs_reg = TAIKO_A_CDC_RX1_B5_CTL + 8 * j;
+                    rx_fs_reg = TAIKO_A_CDC_RX1_B5_CTL + (8 * j);
                 else
-                    rx_fs_reg = TAIKO_A_CDC_RX1_B5_CTL
+                    rx_fs_reg = TAIKO_A_CDC_RX1_B5_CTL;
 
 				pr_debug("%s: AIF_PB DAI(%d) connected to RX%u\n",
 					__func__, dai->id, j + 1);
