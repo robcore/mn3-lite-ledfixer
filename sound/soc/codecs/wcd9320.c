@@ -24,6 +24,7 @@
 #include <linux/mfd/wcd9xxx/wcd9xxx_registers.h>
 #include <linux/mfd/wcd9xxx/wcd9320_registers.h>
 #include <linux/mfd/wcd9xxx/pdata.h>
+#include <linux/mxaudio.h>
 #include <linux/regulator/consumer.h>
 #include <sound/pcm.h>
 #include <sound/pcm_params.h>
@@ -558,6 +559,7 @@ u8 hphr_cached_gain;
 u8 speaker_cached_gain;
 u8 iir1_cached_gain;
 u8 iir2_cached_gain;
+unsigned int mx_hw_eq = HWEQ_OFF;
 #if 0
 u8 iir1_inp2_cached_gain;
 u8 iir2_inp2_cached_gain;
@@ -606,7 +608,7 @@ static unsigned int compander_gain_boost = 0;
 static u32 sc_peak_det_timeout = 0x09;
 static u32 sc_rms_meter_div_fact = 0x0B;
 static u32 sc_rms_meter_resamp_fact = 0x28;
-static u8 hph_pa_bias = 0x55;
+static u8 hph_pa_bias = 0x7A;
 static unsigned int headphone_hdc = 0;
 static unsigned int speaker_hdc = 0;
 
@@ -615,7 +617,7 @@ static unsigned int speaker_hdc = 0;
 #define TAIKO_A_RX_HPH_BIAS_CNP__POR (0x8A)
 */
 
-static u8 compander_bias = 0x55;
+static u8 compander_bias = 0x8A;
 unsigned int anc_delay = 1;
 static unsigned int hph_autochopper = 0;
 static unsigned int chopper_bypass = 0;
@@ -1036,12 +1038,6 @@ static const char * const iir_inp1_text[] = {
 */
 
 /* mxaudio hweq 
-enum {
-	HWEQ_OFF = 0,
-	HWEQ_ON = 1,
-	HWEQ_SIDETONE = 2,
-};
-
 static void setup_iir_path(void)
 {
 }
@@ -7613,7 +7609,7 @@ static const struct wcd9xxx_reg_mask_val taiko_2_0_reg_defaults[] = {
 	TAIKO_REG_VAL(TAIKO_A_BUCK_CTRL_CCL_4, 0x51),
 	TAIKO_REG_VAL(TAIKO_A_NCP_DTEST, 0x10),
 	TAIKO_REG_VAL(TAIKO_A_RX_HPH_CHOP_CTL, 0xA4),
-	TAIKO_REG_VAL(TAIKO_A_RX_HPH_BIAS_PA, 0x55),
+	TAIKO_REG_VAL(TAIKO_A_RX_HPH_BIAS_PA, 0x7A),
 	TAIKO_REG_VAL(TAIKO_A_RX_HPH_OCP_CTL, 0x6B),
 	TAIKO_REG_VAL(TAIKO_A_RX_HPH_CNP_WG_CTL, 0xDA),
 	TAIKO_REG_VAL(TAIKO_A_RX_HPH_CNP_WG_TIME, 0x15),
@@ -9345,6 +9341,33 @@ static ssize_t anc_delay_store(struct kobject *kobj,
 	return count;
 }
 
+static ssize_t mx_hw_eq_show(struct kobject *kobj,
+		struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", mx_hw_eq);
+}
+
+static ssize_t mx_hw_eq_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
+	int uval;
+
+	sscanf(buf, "%d", &uval);
+	/* 0.85 */
+	if (uval < HWEQ_OFF)
+		uval = HWEQ_OFF;
+	if (uval > HWEQ_SIDETONE)
+		uval = HWEQ_SIDETONE;
+
+    if (hpwidget_any() ||
+        spkwidget_active())
+        return count;
+
+	mx_hw_eq = uval;
+
+	return count;
+}
+
 static struct kobj_attribute headphone_dac_enabled_attribute =
 	__ATTR(headphone_dac_enabled, 0444,
 		headphone_dac_enabled_show,
@@ -9559,6 +9582,11 @@ static struct kobj_attribute compander_bias_attribute =
 		compander_bias_show,
 		compander_bias_store);
 
+static struct kobj_attribute mx_hw_eq_attribute =
+	__ATTR(mx_hw_eq, 0644,
+		mx_hw_eq_show,
+		mx_hw_eq_store);
+
 static struct attribute *sound_control_attrs[] = {
         &headphone_dac_enabled_attribute.attr,
         &secjack_state_attribute.attr,
@@ -9603,6 +9631,7 @@ static struct attribute *sound_control_attrs[] = {
 		&rms_meter_resamp_fact_attribute.attr,
 		&hph_pa_bias_attribute.attr,
 		&compander_bias_attribute.attr,
+		&mx_hw_eq_attribute.attr,
 		NULL,
 };
 

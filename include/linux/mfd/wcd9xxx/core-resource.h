@@ -131,25 +131,7 @@ int wcd9xxx_bulk_read(struct wcd9xxx_core_resource *,
 					unsigned short, int, u8 *);
 int wcd9xxx_bulk_write(struct wcd9xxx_core_resource*,
 					 unsigned short, int, u8*);
-void lock_sound_control(struct wcd9xxx_core_resource *core_res,
-						unsigned int lockval);
-extern u8 hphl_cached_gain;
-extern u8 hphr_cached_gain;
-extern u8 speaker_cached_gain;
-extern u8 iir1_cached_gain;
-extern u8 iir2_cached_gain;
-#if 0
-extern u8 iir1_inp2_cached_gain;
-extern u8 iir2_inp2_cached_gain;
-#endif //0
-#ifdef CONFIG_RAMP_VOLUME
-extern unsigned int ramp_volume;
-#endif
 
-#if 0
-extern u8 crossleft_cached_gain; /* RX4 routed from right to left side */
-extern u8 crossright_cached_gain; /* RX3 routed from left to right side */
-#endif
 int wcd9xxx_irq_init(struct wcd9xxx_core_resource *);
 void wcd9xxx_irq_exit(struct wcd9xxx_core_resource *);
 int wcd9xxx_core_res_resume(

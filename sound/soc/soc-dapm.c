@@ -46,6 +46,7 @@
 #include <sound/pcm_params.h>
 #include <sound/soc.h>
 #include <sound/initval.h>
+#include <linux/mxaudio.h>
 
 #include <trace/events/asoc.h>
 int soc_dpcm_runtime_update(struct snd_soc_dapm_widget *);
@@ -2709,6 +2710,7 @@ int snd_soc_dapm_put_enum_double(struct snd_kcontrol *kcontrol,
 		;
 	if (ucontrol->value.enumerated.item[0] > e->max - 1)
 		return -EINVAL;
+
 	mux = ucontrol->value.enumerated.item[0];
 	val = mux << e->shift_l;
 	mask = (bitmask - 1) << e->shift_l;
