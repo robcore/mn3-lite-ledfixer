@@ -258,14 +258,6 @@ busybox cat << CTAG
             { SSpacer:{
                 height: 1
             }},
-            { SSeekBar:{
-                title:"Compander Bias",
-                max:170,
-                min:85,
-                step:1,
-                default:$(busybox cat /sys/kernel/sound_control/compander_bias),
-                action:"soundcontrol compander_bias"
-            }},
             { SLiveLabel:{
                 refresh:1000,
                 action:"soundcontrol headphone_audio_active RMS"
