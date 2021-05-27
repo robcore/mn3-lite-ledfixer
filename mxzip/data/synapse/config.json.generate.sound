@@ -309,12 +309,6 @@ busybox cat << CTAG
                 action:"soundcontrol compander_gain_boost"
             }},
             { SCheckBox:{
-                label:"Wavegen Override",
-                description:"Prevent the wave generator from switching to 20ms from 5ms when headphones are used",
-                default:$(busybox cat /sys/kernel/sound_control/wavegen_override),
-                action:"soundcontrol wavegen_override"
-            }},
-            { SCheckBox:{
                 label:"Autochopper Mode",
                 description:"Check this to force enable autochopper. If unchecked it will depend on compander gain.",
                 default:$(busybox cat /sys/kernel/sound_control/autochopper),
@@ -333,6 +327,36 @@ busybox cat << CTAG
             { SLiveLabel:{
                 refresh:1000,
                 action:"soundcontrol chopper"
+            }},
+            { SSpacer:{
+                height: 1
+            }},
+            { STitleBar:{
+                title:"Click and Pop"
+            }},
+            { SDescription:{
+                description:"Headphone Click and Pop Detection Settings"
+            }},
+            { SLiveLabel:{
+                refresh:1000,
+                action:"soundcontrol headphone_audio_active CNP"
+            }},
+            { SCheckBox:{
+                label:"Wavegen Override",
+                description:"Prevent the wave generator from switching to 20ms from 5ms when headphones are used",
+                default:$(busybox cat /sys/kernel/sound_control/wavegen_override),
+                action:"soundcontrol wavegen_override"
+            }},
+            { SSpacer:{
+                height: 1
+            }},
+            { SSeekBar:{
+                title:"CNP Bias",
+                max:170,
+                min:85,
+                step:1,
+                default:$(busybox cat /sys/kernel/sound_control/cnp_bias),
+                action:"soundcontrol cnp_bias"
             }},
             { SSpacer:{
                 height: 1

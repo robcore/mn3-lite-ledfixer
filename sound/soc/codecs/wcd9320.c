@@ -612,6 +612,12 @@ static u8 hph_pa_bias = 0x7A;
 static unsigned int headphone_hdc = 0;
 static unsigned int speaker_hdc = 0;
 
+/*
+#define TAIKO_A_RX_HPH_BIAS_CNP (0x1A8)
+#define TAIKO_A_RX_HPH_BIAS_CNP__POR (0x8A)
+*/
+
+static u8 cnp_bias = 0x55;
 unsigned int anc_delay = 1;
 static unsigned int hph_autochopper = 0;
 static unsigned int chopper_bypass = 0;
@@ -1072,6 +1078,7 @@ static void update_bias(void)
         return;
 
    	mx_update_bits(TAIKO_A_RX_HPH_BIAS_PA, 0xff, hph_pa_bias);
+    mx_update_bits(TAIKO_A_RX_HPH_BIAS_CNP, 0xff, cnp_bias);
 }
 
 static inline void update_interpolator(void)
@@ -9283,6 +9290,35 @@ static ssize_t hph_pa_bias_store(struct kobject *kobj,
 	return count;
 }
 
+static ssize_t cnp_bias_show(struct kobject *kobj,
+		struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", regread(TAIKO_A_RX_HPH_BIAS_CNP));
+}
+
+static ssize_t cnp_bias_store(struct kobject *kobj,
+			   struct kobj_attribute *attr, const char *buf, size_t count)
+{
+	int uval;
+
+	sscanf(buf, "%d", &uval);
+	/* 0.85 */
+	if (uval < 85)
+		uval = 85;
+	if (uval > 170)
+		uval = 170;
+
+    if (sec_jacked() || hpwidget_any() ||
+        spkwidget_active())
+        return count;
+
+	cnp_bias = uval;
+
+    update_bias();
+
+	return count;
+}
+
 static ssize_t anc_delay_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf)
 {
@@ -9541,6 +9577,11 @@ static struct kobj_attribute hph_pa_bias_attribute =
 		hph_pa_bias_show,
 		hph_pa_bias_store);
 
+static struct kobj_attribute cnp_bias_attribute =
+	__ATTR(cnp_bias, 0644,
+		cnp_bias_show,
+		cnp_bias_store);
+
 static struct kobj_attribute mx_hw_eq_attribute =
 	__ATTR(mx_hw_eq, 0644,
 		mx_hw_eq_show,
@@ -9589,6 +9630,7 @@ static struct attribute *sound_control_attrs[] = {
 		&rms_meter_div_fact_attribute.attr,
 		&rms_meter_resamp_fact_attribute.attr,
 		&hph_pa_bias_attribute.attr,
+		&cnp_bias_attribute.attr,
 		&mx_hw_eq_attribute.attr,
 		NULL,
 };

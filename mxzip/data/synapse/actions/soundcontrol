@@ -585,20 +585,20 @@ then
     else
         busybox cat /sys/kernel/sound_control/hph_pa_bias
     fi
-elif [ "$1" = "compander_bias" ]
+elif [ "$1" = "cnp_bias" ]
 then
-    CURVAL="$(busybox cat /sys/kernel/sound_control/compander_bias)"
+    CURVAL="$(busybox cat /sys/kernel/sound_control/cnp_bias)"
     if [ -n "$2" ]
     then
         if [ "$2" = "$CURVAL" ]
         then
-            busybox cat /sys/kernel/sound_control/compander_bias
+            busybox cat /sys/kernel/sound_control/cnp_bias
         else
-            busybox echo "$2" > /sys/kernel/sound_control/compander_bias
-            busybox cat /sys/kernel/sound_control/compander_bias
+            busybox echo "$2" > /sys/kernel/sound_control/cnp_bias
+            busybox cat /sys/kernel/sound_control/cnp_bias
         fi
     else
-        busybox cat /sys/kernel/sound_control/compander_bias
+        busybox cat /sys/kernel/sound_control/cnp_bias
     fi
 elif [ "$1" = "compander1" ]
 then
