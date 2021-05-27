@@ -2718,6 +2718,7 @@ int snd_soc_dapm_put_enum_double(struct snd_kcontrol *kcontrol,
 	if (ucontrol->value.enumerated.item[0] > e->max - 1)
 		return -EINVAL;
 
+#ifdef ITISTOMORROWANDIAMNOLONGERTIRED
     switch (mx_hw_eq) {
         case HWEQ_OFF:
             break;
@@ -2728,11 +2729,11 @@ int snd_soc_dapm_put_enum_double(struct snd_kcontrol *kcontrol,
         default:
             break;
     }
-
+#endif
 	mux = ucontrol->value.enumerated.item[0];
 	val = mux << e->shift_l;
 	mask = (bitmask - 1) << e->shift_l;
-
+/*
     if (e->reg == 0x397)
         pr_info("IIR1 Input Mux Stage 1: Mux=%u Val=%u Mask=%u\n", mux, val, mask);
     else if (e->reg == 0x39B)
@@ -2741,7 +2742,7 @@ int snd_soc_dapm_put_enum_double(struct snd_kcontrol *kcontrol,
         pr_info("RX1 Input Mux Stage 1: Mux=%u Val=%u Mask=%u\n", mux, val, mask);
     else if (e->reg == 0x383)
         pr_info("RX2 Input Mux Stage 1: Mux=%u Val=%u Mask=%u\n", mux, val, mask);
-
+*/
 	if (e->shift_l != e->shift_r) {
 		if (ucontrol->value.enumerated.item[1] > e->max - 1)
 			return -EINVAL;
