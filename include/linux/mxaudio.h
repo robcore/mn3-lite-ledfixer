@@ -14,6 +14,7 @@
 #define __MXAUDIO_H__
 
 #include <linux/types.h>
+#include <linux/mfd/wcd9xxx/core-resource.h>
 
 enum {
 	HWEQ_OFF = 0,
