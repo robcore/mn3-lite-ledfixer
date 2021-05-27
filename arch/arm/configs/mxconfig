@@ -1349,7 +1349,7 @@ CONFIG_BRIDGE_EBT_BROUTE=y
 # CONFIG_TIPC is not set
 # CONFIG_ATM is not set
 # CONFIG_L2TP is not set
-# CONFIG_STP is not set
+CONFIG_STP=y
 CONFIG_BRIDGE=y
 # CONFIG_BRIDGE_IGMP_SNOOPING is not set
 # CONFIG_NET_DSA is not set
