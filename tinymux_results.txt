@@ -1,28 +1,4 @@
 ---------------------------------------------
-IIR1 INP1 MUX connection to RX1:
-IIR1 Input Mux Stage 1: Mux=11 Val=11 Mask=31
-IIR1 Input Mux Updated: Mux=11 Val=11 Mask=31
----------------------------------------------
-
----------------------------------------------
-IIR1 INP1 MUX connection reset to 0:
-IIR1 Input Mux Stage 1: Mux=0 Val=0 Mask=31
-IIR1 Input Mux Updated: Mux=0 Val=0 Mask=31
----------------------------------------------
-
----------------------------------------------
-IIR2 INP1 MUX connection to RX2:
-IIR2 Input Mux Stage 1: Mux=12 Val=12 Mask=31
-IIR2 Input Mux Updated: Mux=12 Val=12 Mask=31
----------------------------------------------
-
----------------------------------------------
-IIR2 INP1 MUX connection reset to 0:
-IIR2 Input Mux Stage 1: Mux=0 Val=0 Mask=31
-IIR2 Input Mux Updated: Mux=0 Val=0 Mask=31
----------------------------------------------
-
----------------------------------------------
 RX1 MIX1 INP1 connection to RX1:
 RX1 Input Mux Stage 1: Mux=5 Val=5 Mask=15
 RX1 Input Mux Updated: Mux=5 Val=5 Mask=15
@@ -56,6 +32,30 @@ RX2 Input Mux Updated: Mux=4 Val=4 Mask=15
 RX2 MIX1 INP1 connection reset to 0:
 RX2 Input Mux Stage 1: Mux=0 Val=0 Mask=15
 RX2 Input Mux Updated: Mux=0 Val=0 Mask=15
+---------------------------------------------
+
+---------------------------------------------
+IIR1 INP1 MUX connection to RX1:
+IIR1 Input Mux Stage 1: Mux=11 Val=11 Mask=31
+IIR1 Input Mux Updated: Mux=11 Val=11 Mask=31
+---------------------------------------------
+
+---------------------------------------------
+IIR1 INP1 MUX connection reset to 0:
+IIR1 Input Mux Stage 1: Mux=0 Val=0 Mask=31
+IIR1 Input Mux Updated: Mux=0 Val=0 Mask=31
+---------------------------------------------
+
+---------------------------------------------
+IIR2 INP1 MUX connection to RX2:
+IIR2 Input Mux Stage 1: Mux=12 Val=12 Mask=31
+IIR2 Input Mux Updated: Mux=12 Val=12 Mask=31
+---------------------------------------------
+
+---------------------------------------------
+IIR2 INP1 MUX connection reset to 0:
+IIR2 Input Mux Stage 1: Mux=0 Val=0 Mask=31
+IIR2 Input Mux Updated: Mux=0 Val=0 Mask=31
 ---------------------------------------------
 
 ---------------------------------------------

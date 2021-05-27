@@ -5580,7 +5580,10 @@ static int taiko_set_interpolator_rate(struct snd_soc_dai *dai,
 				== rx_mix1_inp) ||
 			    ((rx_mix_1_reg_2_val & 0x0F) == rx_mix1_inp)) {
 
-				rx_fs_reg = TAIKO_A_CDC_RX1_B5_CTL + 8 * j;
+                if (j)
+                    rx_fs_reg = TAIKO_A_CDC_RX1_B5_CTL + 8 * j;
+                else
+                    rx_fs_reg = TAIKO_A_CDC_RX1_B5_CTL
 
 				pr_debug("%s: AIF_PB DAI(%d) connected to RX%u\n",
 					__func__, dai->id, j + 1);
@@ -5825,7 +5828,6 @@ static int taiko_hw_params(struct snd_pcm_substream *substream,
 					0x20, 0x00);
 				break;
 			default:
-				pr_debug("invalid format\n");
 				break;
 			}
 			snd_soc_update_bits(codec, TAIKO_A_CDC_CLK_TX_I2S_CTL,
