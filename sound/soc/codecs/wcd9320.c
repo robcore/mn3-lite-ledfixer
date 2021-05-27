@@ -619,7 +619,6 @@ static u8 compander_bias = 0x55;
 unsigned int anc_delay = 1;
 static unsigned int hph_autochopper = 0;
 static unsigned int chopper_bypass = 0;
-static unsigned int bypass_static_pa = 0;
 static unsigned int wavegen_override = 0;
 /*RMS (Root Mean Squared) Power Detector*/
 static unsigned int interpolator_boost = 0;
@@ -7887,9 +7886,6 @@ static int wcd9xxx_prepare_static_pa(struct wcd9xxx_mbhc *mbhc,
 		{TAIKO_A_RX_HPH_R_DAC_CTL, 0xff, 0xC0},
 	};
 
-	if (bypass_static_pa)
-		goto bypass;
-
 	for (i = 0; i < ARRAY_SIZE(reg_set_paon); i++) {
 		if (chopper_bypass && reg_set_paon[i].reg == TAIKO_A_RX_HPH_CHOP_CTL)
 			continue;
@@ -7911,9 +7907,6 @@ static int wcd9xxx_enable_static_pa(struct wcd9xxx_mbhc *mbhc, bool enable)
 	struct snd_soc_codec *codec = mbhc->codec;
 	const int wg_time = snd_soc_read(codec, WCD9XXX_A_RX_HPH_CNP_WG_TIME) *
 			    TAIKO_WG_TIME_FACTOR_US;
-
-	if (bypass_static_pa)
-		return 0;
 
 	snd_soc_update_bits(codec, WCD9XXX_A_RX_HPH_CNP_EN, 0x30,
 				    enable ? 0x30 : 0x0);
@@ -8457,27 +8450,6 @@ static ssize_t chopper_bypass_store(struct kobject *kobj,
 	return count;
 }
 
-static ssize_t bypass_static_pa_show(struct kobject *kobj,
-		struct kobj_attribute *attr, char *buf)
-{
-	return sprintf(buf, "%d\n", bypass_static_pa);
-}
-
-static ssize_t bypass_static_pa_store(struct kobject *kobj,
-			   struct kobj_attribute *attr, const char *buf, size_t count)
-{
-	int uval;
-
-	sscanf(buf, "%d", &uval);
-
-	if (uval < 0)
-		uval = 0;
-	if (uval > 1)
-		uval = 1;
-
-	bypass_static_pa = uval;
-	return count;
-}
 /*
 		snd_soc_update_bits(codec, TABLA_A_CDC_RX1_B6_CTL,
 				    0x02, gain_offset.half_db_gain);
@@ -9433,11 +9405,6 @@ static struct kobj_attribute chopper_bypass_attribute =
 		chopper_bypass_show,
 		chopper_bypass_store);
 
-static struct kobj_attribute bypass_static_pa_attribute =
-	__ATTR(bypass_static_pa, 0644,
-		bypass_static_pa_show,
-		bypass_static_pa_store);
-
 static struct kobj_attribute headphone_gain_attribute =
 	__ATTR(headphone_gain, 0644,
 		headphone_gain_show,
@@ -9605,7 +9572,6 @@ static struct attribute *sound_control_attrs[] = {
         &wavegen_override_attribute.attr,
 		&autochopper_attribute.attr,
 		&chopper_bypass_attribute.attr,
-		&bypass_static_pa_attribute.attr,
 		&headphone_gain_attribute.attr,
 		&headphone_mute_attribute.attr,
 		&hph_poweramp_gain_attribute.attr,
