@@ -620,7 +620,7 @@ static unsigned int speaker_hdc = 0;
 #define TAIKO_A_RX_HPH_BIAS_CNP__POR (0x8A)
 */
 
-static u8 cnp_bias = 0x55;
+static u8 cnp_bias = 0x8A;
 unsigned int anc_delay = 1;
 static unsigned int hph_autochopper = 0;
 static unsigned int chopper_bypass = 0;
