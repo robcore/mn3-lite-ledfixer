@@ -45,6 +45,21 @@ then
     else
         busybox cat /sys/kernel/sound_control/speaker_gain
     fi
+elif [ "$1" = "mx_hw_eq" ]
+then
+    CURVAL="$(busybox cat /sys/kernel/sound_control/mx_hw_eq)"
+    if [ -n "$2" ]
+    then
+        if [ "$2" = "$CURVAL" ]
+        then
+            busybox cat /sys/kernel/sound_control/mx_hw_eq
+        else
+            busybox echo "$2" > /sys/kernel/sound_control/mx_hw_eq
+            busybox cat /sys/kernel/sound_control/mx_hw_eq
+        fi
+    else
+        busybox cat /sys/kernel/sound_control/mx_hw_eq
+    fi
 elif [ "$1" = "iir1_gain" ]
 then
     IIRGAIN="$(busybox cat /sys/kernel/sound_control/iir1_gain)"
@@ -74,36 +89,6 @@ then
         fi
     else
         busybox cat /sys/kernel/sound_control/iir2_gain
-    fi
-elif [ "$1" = "iir1_inp2_gain" ]
-then
-    IIRGAIN="$(busybox cat /sys/kernel/sound_control/iir1_inp2_gain)"
-    if [ -n "$2" ]
-    then
-        if [ "$2" = "$IIRGAIN" ]
-        then
-            busybox cat /sys/kernel/sound_control/iir1_inp2_gain
-        else
-            busybox echo "$2" > /sys/kernel/sound_control/iir1_inp2_gain
-            busybox cat /sys/kernel/sound_control/iir1_inp2_gain
-        fi
-    else
-        busybox cat /sys/kernel/sound_control/iir1_inp2_gain
-    fi
-elif [ "$1" = "iir2_inp2_gain" ]
-then
-    IIRGAIN="$(busybox cat /sys/kernel/sound_control/iir2_inp2_gain)"
-    if [ -n "$2" ]
-    then
-        if [ "$2" = "$IIRGAIN" ]
-        then
-            busybox cat /sys/kernel/sound_control/iir2_inp2_gain
-        else
-            busybox echo "$2" > /sys/kernel/sound_control/iir2_inp2_gain
-            busybox cat /sys/kernel/sound_control/iir2_inp2_gain
-        fi
-    else
-        busybox cat /sys/kernel/sound_control/iir2_inp2_gain
     fi
 elif [ "$1" = "usepagain" ]
 then
@@ -629,6 +614,25 @@ then
             busybox echo "The Below Setting is Locked"
         else
             busybox echo "The Below Setting is Unlocked"
+        fi
+    fi
+elif [ "$1" = "jack_locked" ]
+then
+    CURVAL="$(busybox cat /sys/kernel/sound_control/secjack_state)"
+    if [ -n "$2" ]
+    then
+        if [ "$CURVAL" = "Unplugged" ]
+        then
+            busybox echo "$2 Setting Unlocked"
+        else
+            busybox echo "$2 Setting Locked"
+        fi
+    else
+        if [ "$CURVAL" = "Unplugged" ]
+        then
+            busybox echo "The Below Setting is Unlocked"
+        else
+            busybox echo "The Below Setting is Locked"
         fi
     fi
 elif [ "$1" = "compander_status" ]

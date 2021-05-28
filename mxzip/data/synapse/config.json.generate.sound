@@ -21,7 +21,7 @@ busybox cat << CTAG
                 description:"HEADPHONE JACK:"
             }},
             { SLiveLabel:{
-                refresh:1000,
+                refresh:100,
                 action:"soundcontrol secjack_state"
             }},
             { SSpacer:{
@@ -31,7 +31,7 @@ busybox cat << CTAG
                 description:"HEADPHONE DAC:"
             }},
             { SLiveLabel:{
-                refresh:1000,
+                refresh:100,
                 action:"soundcontrol headphone_dac_enabled"
             }},
             { SSpacer:{
@@ -41,7 +41,7 @@ busybox cat << CTAG
                 description:"HEADPHONE PA:"
             }},
             { SLiveLabel:{
-                refresh:1000,
+                refresh:100,
                 action:"soundcontrol hph_status"
             }},
             { SSpacer:{
@@ -51,14 +51,14 @@ busybox cat << CTAG
                 description:"HEADPHONE COMPANDER:"
             }},
             { SLiveLabel:{
-                refresh:1000,
+                refresh:100,
                 action:"soundcontrol compander_status"
             }},
             { STitleBar:{
                 title:"General"
             }},
             { SLiveLabel:{
-                refresh:1000,
+                refresh:100,
                 action:"soundcontrol headphone_audio_active ClassAB"
             }},
             { SCheckBox:{
@@ -143,7 +143,7 @@ busybox cat << CTAG
                 title:"Analog Gains"
             }},
             { SLiveLabel:{
-                refresh:1000,
+                refresh:100,
                 action:"soundcontrol headphone_audio_active PowerAmp"
             }},
             { SCheckBox:{
@@ -170,6 +170,10 @@ busybox cat << CTAG
                 step:1,
                 default:$(busybox cat /sys/kernel/sound_control/hph_poweramp_gain | cut -d ' ' -f 2),
                 action:"soundcontrol pagainright"
+            }},
+            { SLiveLabel:{
+                refresh:100,
+                action:"soundcontrol jack_locked HPH_Bias"
             }},
             { SSeekBar:{
                 title:"Headphone Poweramp Bias",
@@ -259,7 +263,7 @@ busybox cat << CTAG
                 height: 1
             }},
             { SLiveLabel:{
-                refresh:1000,
+                refresh:100,
                 action:"soundcontrol headphone_audio_active RMS"
             }},
             { SCheckBox:{
@@ -293,7 +297,7 @@ busybox cat << CTAG
                 action:"soundcontrol rms_meter_resamp_fact"
             }},
             { SLiveLabel:{
-                refresh:1000,
+                refresh:100,
                 action:"soundcontrol headphone_audio_active Compander"
             }},
             { SCheckBox:{
@@ -315,7 +319,7 @@ busybox cat << CTAG
                 action:"soundcontrol autochopper"
             }},
             { SLiveLabel:{
-                refresh:1000,
+                refresh:100,
                 action:"soundcontrol autochopper_raw"
             }},
             { SCheckBox:{
@@ -325,7 +329,7 @@ busybox cat << CTAG
                 action:"soundcontrol chopbypass"
             }},
             { SLiveLabel:{
-                refresh:1000,
+                refresh:100,
                 action:"soundcontrol chopper"
             }},
             { SSpacer:{
@@ -338,7 +342,7 @@ busybox cat << CTAG
                 description:"Headphone Click and Pop Detection Settings"
             }},
             { SLiveLabel:{
-                refresh:1000,
+                refresh:100,
                 action:"soundcontrol headphone_audio_active CNP"
             }},
             { SCheckBox:{
@@ -349,6 +353,10 @@ busybox cat << CTAG
             }},
             { SSpacer:{
                 height: 1
+            }},
+            { SLiveLabel:{
+                refresh:100,
+                action:"soundcontrol jack_locked CNP_Bias"
             }},
             { SSeekBar:{
                 title:"CNP Bias",
@@ -368,7 +376,7 @@ busybox cat << CTAG
                 description:"Compander Values for Debugging"
             }},
             { SLiveLabel:{
-                refresh:1000,
+                refresh:100,
                 action:"soundcontrol compander1"
             }},
         ]
