@@ -1217,13 +1217,6 @@ static int msm_cpu_pm_probe(struct platform_device *pdev)
 	if (msm_pc_debug_counters) {
 		for (i = 0; i < resource_size(res)/4; i++)
 			__raw_writel(0, msm_pc_debug_counters + i * 4);
-
-		dent = debugfs_create_file("pc_debug_counter", S_IRUGO, NULL,
-				msm_pc_debug_counters,
-				&msm_pc_debug_counters_fops);
-		if (!dent)
-			pr_err("%s: ERROR debugfs_create_file failed\n",
-					__func__);
 	} else {
 		msm_pc_debug_counters = 0;
 		msm_pc_debug_counters_phys = 0;
