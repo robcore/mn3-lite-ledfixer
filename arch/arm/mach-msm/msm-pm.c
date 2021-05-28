@@ -1073,14 +1073,16 @@ static int msm_pc_debug_counters_copy(
 	for_each_possible_cpu(cpu) {
 		data->len += scnprintf(data->buf + data->len,
 				sizeof(data->buf)-data->len,
-				"CPU%d\n", cpu);
+				"CPU%u\n", cpu);
 
 		for (j = 0; j < MSM_PC_NUM_COUNTERS; j++) {
-			stat = clamp(msm_pc_debug_counters_read_register(
-					data->reg, cpu, j), 0, UINT_MAX);
+			stat = msm_pc_debug_counters_read_register(
+					data->reg, cpu, j);
+            if (stat < 0)
+                stat = 0;
 			data->len += scnprintf(data->buf + data->len,
 					sizeof(data->buf)-data->len,
-					"\t%s : %d\n", counter_name[j],
+					"\t%s : %u\n", counter_name[j],
 					stat);
 		}
 
