@@ -357,9 +357,8 @@ endif
 
 CHECKFLAGS     := -D__linux__ -Dlinux -D__STDC__ -Dunix -D__unix__ \
 		  -Wbitwise -Wno-return-void $(CF)
-MODFLAGS	= -DMODULE
-CFLAGS_MODULE   = $(MODFLAGS)
-AFLAGS_MODULE   = $(MODFLAGS)
+CFLAGS_MODULE   =
+AFLAGS_MODULE   =
 LDFLAGS_MODULE  =
 CFLAGS_KERNEL	=
 AFLAGS_KERNEL	=
@@ -376,31 +375,36 @@ LINUXINCLUDE    := -I$(srctree)/arch/$(hdr-arch)/include \
 KBUILD_CPPFLAGS := -D__KERNEL__
 
 KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
-		   -Wno-unused-variable -Wno-maybe-uninitialized \
+		   -fno-strict-aliasing -fno-common \
 		   -Werror-implicit-function-declaration \
-		   -std=gnu89 \
-		   -Wno-unused-function -Wno-unused-label -Wno-array-bounds \
-		   -Wno-format-security -Wno-format-truncation \
-		   -Wno-misleading-indentation -Wno-int-in-bool-context \
-		   -Wno-bool-compare -Wno-tautological-compare \
-		   -fno-delete-null-pointer-checks -Wno-pointer-compare \
-		   -Wno-switch-unreachable -Wno-stringop-overflow \
-		   -fno-strict-aliasing -fno-common
+		   -Wno-format-security -Wno-misleading-indentation\
+		   -fno-delete-null-pointer-checks
+		   #-Wno-unused-variable -Wno-maybe-uninitialized \
+		   #-Werror-implicit-function-declaration \
+		   #-std=gnu89 \
+		   #-Wno-unused-function -Wno-unused-label -Wno-array-bounds \
+		   #-Wno-format-security -Wno-format-truncation \
+		   #-Wno-misleading-indentation -Wno-int-in-bool-context \
+		   #-Wno-bool-compare -Wno-tautological-compare \
+		   #-fno-delete-null-pointer-checks -Wno-pointer-compare \
+		   #-Wno-switch-unreachable -Wno-stringop-overflow \
+		   #-fno-strict-aliasing -fno-common
 		   #-fno-strict-aliasing -fno-common \
            #-fomit-frame-pointer -fno-omit-frame-pointer \
 		   #-fno-align-functions -fno-align-loops \
 KBUILD_AFLAGS_KERNEL :=
-KBUILD_CFLAGS_KERNEL := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
-		   -Wno-unused-variable -Wno-maybe-uninitialized \
-		   -Werror-implicit-function-declaration \
-		   -std=gnu89 \
-		   -Wno-unused-function -Wno-unused-label -Wno-array-bounds \
-		   -Wno-format-security -Wno-format-truncation \
-		   -Wno-misleading-indentation -Wno-int-in-bool-context \
-		   -Wno-bool-compare -Wno-tautological-compare \
-		   -fno-delete-null-pointer-checks -Wno-pointer-compare \
-		   -Wno-switch-unreachable -Wno-stringop-overflow \
-		   -fno-strict-aliasing -fno-common
+KBUILD_CFLAGS_KERNEL :=
+#KBUILD_CFLAGS_KERNEL := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
+#		   -Wno-unused-variable -Wno-maybe-uninitialized \
+#		   -Werror-implicit-function-declaration \
+#		   -std=gnu89 \
+#		   -Wno-unused-function -Wno-unused-label -Wno-array-bounds \
+#		   -Wno-format-security -Wno-format-truncation \
+#		   -Wno-misleading-indentation -Wno-int-in-bool-context \
+#		   -Wno-bool-compare -Wno-tautological-compare \
+#		   -fno-delete-null-pointer-checks -Wno-pointer-compare \
+#		   -Wno-switch-unreachable -Wno-stringop-overflow \
+#		   -fno-strict-aliasing -fno-common
 KBUILD_AFLAGS   := -D__ASSEMBLY__
 KBUILD_AFLAGS_MODULE  := -DMODULE
 KBUILD_CFLAGS_MODULE  := -DMODULE -fno-pic
@@ -596,7 +600,7 @@ endif
 
 # conserve stack if available
 # do this early so that an architecture can override it.
-KBUILD_CFLAGS   += $(call cc-option,-fconserve-stack)
+#KBUILD_CFLAGS   += $(call cc-option,-fconserve-stack)
 
 include $(srctree)/arch/$(SRCARCH)/Makefile
 
@@ -633,7 +637,8 @@ KBUILD_CFLAGS   += $(call cc-option, -fno-var-tracking-assignments)
 
 ifdef CONFIG_DEBUG_INFO
 KBUILD_CFLAGS	+= -g
-KBUILD_AFLAGS	+= -Wa,-gdwarf-2
+KBUILD_AFLAGS	+= -gdwarf-2
+#KBUILD_AFLAGS	+= -Wa,-gdwarf-2
 endif
 
 ifdef CONFIG_DEBUG_INFO_REDUCED
@@ -660,7 +665,7 @@ NOSTDINC_FLAGS += -nostdinc -isystem $(shell $(CC) -print-file-name=include)
 CHECKFLAGS     += $(NOSTDINC_FLAGS)
 
 # improve gcc optimization
-CFLAGS += $(call cc-option,-funit-at-a-time,)
+#CFLAGS += $(call cc-option,-funit-at-a-time,)
 
 # warn about C99 declaration after statement
 KBUILD_CFLAGS += $(call cc-option,-Wdeclaration-after-statement,)
