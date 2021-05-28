@@ -2708,8 +2708,9 @@ int snd_soc_dapm_put_enum_double(struct snd_kcontrol *kcontrol,
 	struct snd_soc_codec *codec = widget->codec;
 	struct snd_soc_card *card = codec->card;
 	struct soc_enum *e = (struct soc_enum *)kcontrol->private_value;
-	unsigned int val, mux, change;
-	unsigned int mask, bitmask;
+	unsigned int val, mux, mask;
+	unsigned int mxval, mxmux, mxmask;
+	unsigned int bitmask, change;
 	struct snd_soc_dapm_update update;
 	int wi;
 
@@ -2728,34 +2729,53 @@ int snd_soc_dapm_put_enum_double(struct snd_kcontrol *kcontrol,
     			return -EINVAL;
     		val |= ucontrol->value.enumerated.item[1] << e->shift_r;
     		mask |= (bitmask - 1) << e->shift_r;
+        }
     } else if (mx_hw_eq == HWEQ_ON) {
         switch (e->reg) {
-            case 0x380:
-                mux = 3;
-                val = 3;
-                mask = 15;
+            case 0x380: // TAIKO_A_CDC_CONN_RX1_B1_CTL
+                mxmux = ucontrol->value.enumerated.item[0];
+                mxval = mux << e->shift_l;
+                mxmask = (bitmask - 1) << e->shift_l;
+                if (mxmux == 0 && mxval == 0 && mxmask == 15) { // Audio Stopped
+                    mux = mxmux;
+                    val = mxval;
+                    mask = mxmask;
+                    if (e->shift_l != e->shift_r) {
+                        if (ucontrol->value.enumerated.item[1] > e->max - 1)
+                        	return -EINVAL;
+                        val |= ucontrol->value.enumerated.item[1] << e->shift_r;
+                        mask |= (bitmask - 1) << e->shift_r;
+                    }
+                } else {
+                    mux = 3;
+                    val = 3;
+                    mask = 15;
+                }
                 break;
-            case 0x383:
-                mux = 4;
-                val = 4;
-                mask = 15;
-                break;
-            case 0x397:
-                mux = 11;
-                val = 11;
-                mask = 31;
-                break;
-            case 0x39B:
-                mux = 12;
-                val = 12;
-                mask = 31;
+            case 0x383: //TAIKO_A_CDC_CONN_RX2_B1_CTL
+                mxmux = ucontrol->value.enumerated.item[0];
+                mxval = mux << e->shift_l;
+                mxmask = (bitmask - 1) << e->shift_l;
+                if (mxmux == 0 && mxval == 0 && mxmask == 15) { // Audio Stopped
+                    mux = mxmux;
+                    val = mxval;
+                    mask = mxmask;
+                    if (e->shift_l != e->shift_r) {
+                        if (ucontrol->value.enumerated.item[1] > e->max - 1)
+                        	return -EINVAL;
+                        val |= ucontrol->value.enumerated.item[1] << e->shift_r;
+                        mask |= (bitmask - 1) << e->shift_r;
+                    }
+                } else {
+                    mux = 4;
+                    val = 4;
+                    mask = 15;
+                }
                 break;
             default:
                 break;
         }
-    } else if (mx_hw_eq == HWEQ_SIDETONE) {
     }
-	}
 
 	mutex_lock_nested(&card->dapm_mutex, SND_SOC_DAPM_CLASS_PCM);
 

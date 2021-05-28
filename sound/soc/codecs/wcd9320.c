@@ -553,6 +553,9 @@ static unsigned short tx_digital_gain_reg[] = {
 	TAIKO_A_CDC_TX10_VOL_CTL_GAIN,
 };
 
+/* MX Audio */
+
+#define MX_OUTPUT_MUTE 172
 /* Shared values for core resource locking */
 u8 hphl_cached_gain;
 u8 hphr_cached_gain;
@@ -740,13 +743,13 @@ static void set_high_perf_mode(bool enable)
 	struct taiko_priv *taiko = snd_soc_codec_get_drvdata(direct_codec);
 }
 
-#define HEADPHONE_MUTE 172
+#define MX_OUTPUT_MUTE 172
 static void update_headphone_gain(void)
 {
 	if (headphone_mute) {
 		lock_sound_control(&sound_control_codec_ptr->core_res, 1);
-		regwrite(TAIKO_A_CDC_RX1_VOL_CTL_B2_CTL, HEADPHONE_MUTE);
-		regwrite(TAIKO_A_CDC_RX2_VOL_CTL_B2_CTL, HEADPHONE_MUTE);
+		regwrite(TAIKO_A_CDC_RX1_VOL_CTL_B2_CTL, MX_OUTPUT_MUTE);
+		regwrite(TAIKO_A_CDC_RX2_VOL_CTL_B2_CTL, MX_OUTPUT_MUTE);
 		lock_sound_control(&sound_control_codec_ptr->core_res, 0);
 		return;
 	}
@@ -844,12 +847,12 @@ static void write_hph_poweramp_regs(void)
 	write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_L_GAIN);
 	write_hph_poweramp_gain(WCD9XXX_A_RX_HPH_R_GAIN);
 }
-#define SPEAKER_MUTE 172
+
 static void update_speaker_gain(void)
 {
 	if (speaker_mute) {
 		lock_sound_control(&sound_control_codec_ptr->core_res, 1);
-		regwrite(TAIKO_A_CDC_RX7_VOL_CTL_B2_CTL, SPEAKER_MUTE);
+		regwrite(TAIKO_A_CDC_RX7_VOL_CTL_B2_CTL, MX_OUTPUT_MUTE);
 		lock_sound_control(&sound_control_codec_ptr->core_res, 0);
 		return;
 	}
@@ -3074,46 +3077,46 @@ static int slim_rx_mux_put(struct snd_kcontrol *kcontrol,
 	/* value need to match the Virtual port and AIF number
 	 */
 	switch (widget->value) {
-	case 0:
-		list_del_init(&core->rx_chs[port_id].list);
-	break;
-	case 1:
-		if (wcd9xxx_rx_vport_validation(port_id +
-			TAIKO_RX_PORT_START_NUMBER,
-			&taiko_p->dai[AIF1_PB].wcd9xxx_ch_list)) {
-			dev_dbg(codec->dev, "%s: RX%u is used by current requesting AIF_PB itself\n",
-				__func__, port_id + 1);
-			goto rtn;
+        case 0:
+            list_del_init(&core->rx_chs[port_id].list);
+            break;
+    	case 1:
+    		if (wcd9xxx_rx_vport_validation(port_id +
+    			TAIKO_RX_PORT_START_NUMBER,
+    			&taiko_p->dai[AIF1_PB].wcd9xxx_ch_list)) {
+    			dev_dbg(codec->dev, "%s: RX%u is used by current requesting AIF_PB itself\n",
+    				__func__, port_id + 1);
+    			goto rtn;
+    		}
+    		list_add_tail(&core->rx_chs[port_id].list,
+    			      &taiko_p->dai[AIF1_PB].wcd9xxx_ch_list);
+            break;
+    	case 2:
+    		if (wcd9xxx_rx_vport_validation(port_id +
+    			TAIKO_RX_PORT_START_NUMBER,
+    			&taiko_p->dai[AIF2_PB].wcd9xxx_ch_list)) {
+    			dev_dbg(codec->dev, "%s: RX%u is used by current requesting AIF_PB itself\n",
+    				__func__, port_id + 1);
+    			goto rtn;
+    		}
+    		list_add_tail(&core->rx_chs[port_id].list,
+    			      &taiko_p->dai[AIF2_PB].wcd9xxx_ch_list);
+            break;
+    	case 3:
+    		if (wcd9xxx_rx_vport_validation(port_id +
+    			TAIKO_RX_PORT_START_NUMBER,
+    			&taiko_p->dai[AIF3_PB].wcd9xxx_ch_list)) {
+    			dev_dbg(codec->dev, "%s: RX%u is used by current requesting AIF_PB itself\n",
+    				__func__, port_id + 1);
+    			goto rtn;
 		}
-		list_add_tail(&core->rx_chs[port_id].list,
-			      &taiko_p->dai[AIF1_PB].wcd9xxx_ch_list);
-	break;
-	case 2:
-		if (wcd9xxx_rx_vport_validation(port_id +
-			TAIKO_RX_PORT_START_NUMBER,
-			&taiko_p->dai[AIF2_PB].wcd9xxx_ch_list)) {
-			dev_dbg(codec->dev, "%s: RX%u is used by current requesting AIF_PB itself\n",
-				__func__, port_id + 1);
-			goto rtn;
-		}
-		list_add_tail(&core->rx_chs[port_id].list,
-			      &taiko_p->dai[AIF2_PB].wcd9xxx_ch_list);
-	break;
-	case 3:
-		if (wcd9xxx_rx_vport_validation(port_id +
-			TAIKO_RX_PORT_START_NUMBER,
-			&taiko_p->dai[AIF3_PB].wcd9xxx_ch_list)) {
-			dev_dbg(codec->dev, "%s: RX%u is used by current requesting AIF_PB itself\n",
-				__func__, port_id + 1);
-			goto rtn;
-		}
-		list_add_tail(&core->rx_chs[port_id].list,
-			      &taiko_p->dai[AIF3_PB].wcd9xxx_ch_list);
-	break;
-	default:
-		pr_debug("Unknown AIF %d\n", widget->value);
-		goto err;
-	}
+    		list_add_tail(&core->rx_chs[port_id].list,
+    			      &taiko_p->dai[AIF3_PB].wcd9xxx_ch_list);
+            break;
+    	default:
+    		pr_debug("Unknown AIF %d\n", widget->value);
+    		goto err;
+   	}
 rtn:
 	mutex_unlock(&codec->mutex);
 	snd_soc_dapm_mux_update_power(widget, kcontrol, 1, widget->value, e);
@@ -7168,6 +7171,11 @@ static const struct snd_soc_dapm_widget taiko_dapm_widgets[] = {
 		taiko_codec_enable_dmic, SND_SOC_DAPM_PRE_PMU |
 		SND_SOC_DAPM_POST_PMD),
 
+	SND_SOC_DAPM_MUX_E("DEC10 MUX", TAIKO_A_CDC_CLK_TX_CLK_EN_B2_CTL, 1, 0,
+		&dec10_mux, taiko_codec_enable_dec,
+		SND_SOC_DAPM_PRE_PMU | SND_SOC_DAPM_POST_PMU |
+		SND_SOC_DAPM_PRE_PMD | SND_SOC_DAPM_POST_PMD),
+
 	/* Sidetone */
 	SND_SOC_DAPM_MUX("IIR1 INP1 MUX", SND_SOC_NOPM, 0, 0, &iir1_inp1_mux),
 	SND_SOC_DAPM_MUX("IIR1 INP2 MUX", SND_SOC_NOPM, 0, 0, &iir1_inp2_mux),
@@ -7175,7 +7183,7 @@ static const struct snd_soc_dapm_widget taiko_dapm_widgets[] = {
     SND_SOC_DAPM_MUX("IIR1 INP4 MUX", SND_SOC_NOPM, 0, 0, &iir1_inp4_mux),
 	SND_SOC_DAPM_MIXER("IIR1", TAIKO_A_CDC_CLK_SD_CTL, 0, 0, NULL, 0),
 	SND_SOC_DAPM_MUX("IIR2 INP1 MUX", SND_SOC_NOPM, 0, 0, &iir2_inp1_mux),
-	SND_SOC_DAPM_MUX("IIR2 INP2 MUX", SND_SOC_NOPM, 0, 0, &iir2_inp2_mux),
+    SND_SOC_DAPM_MUX("IIR2 INP2 MUX", SND_SOC_NOPM, 0, 0, &iir2_inp2_mux),
 	SND_SOC_DAPM_MUX("IIR2 INP3 MUX", SND_SOC_NOPM, 0, 0, &iir2_inp3_mux),
 	SND_SOC_DAPM_MUX("IIR2 INP4 MUX", SND_SOC_NOPM, 0, 0, &iir2_inp4_mux),
 	SND_SOC_DAPM_MIXER("IIR2", TAIKO_A_CDC_CLK_SD_CTL, 1, 0, NULL, 0),
@@ -9273,7 +9281,7 @@ static ssize_t hph_pa_bias_store(struct kobject *kobj,
 	int uval;
 
 	sscanf(buf, "%d", &uval);
-	/* 0.85 */
+
 	if (uval < 85)
 		uval = 85;
 	if (uval > 170)
@@ -9302,7 +9310,7 @@ static ssize_t cnp_bias_store(struct kobject *kobj,
 	int uval;
 
 	sscanf(buf, "%d", &uval);
-	/* 0.85 */
+
 	if (uval < 85)
 		uval = 85;
 	if (uval > 170)
@@ -9353,11 +9361,11 @@ static ssize_t mx_hw_eq_store(struct kobject *kobj,
 	int uval;
 
 	sscanf(buf, "%d", &uval);
-	/* 0.85 */
+
 	if (uval < HWEQ_OFF)
 		uval = HWEQ_OFF;
-	if (uval > HWEQ_SIDETONE)
-		uval = HWEQ_SIDETONE;
+	if (uval > HWEQ_ON)
+		uval = HWEQ_ON;
 
     if (hpwidget_any() ||
         spkwidget_active())

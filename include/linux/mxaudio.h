@@ -19,7 +19,6 @@
 enum {
 	HWEQ_OFF = 0,
 	HWEQ_ON = 1,
-	HWEQ_SIDETONE = 2,
 };
 
 extern unsigned int mx_hw_eq;
