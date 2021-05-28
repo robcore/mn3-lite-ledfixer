@@ -46,7 +46,9 @@
 #include <sound/pcm_params.h>
 #include <sound/soc.h>
 #include <sound/initval.h>
+#if 0
 #include <linux/mxaudio.h>
+#endif
 
 #include <trace/events/asoc.h>
 int soc_dpcm_runtime_update(struct snd_soc_dapm_widget *);
