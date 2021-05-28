@@ -2709,7 +2709,7 @@ int snd_soc_dapm_put_enum_double(struct snd_kcontrol *kcontrol,
 	struct snd_soc_card *card = codec->card;
 	struct soc_enum *e = (struct soc_enum *)kcontrol->private_value;
 	unsigned int val, mux, mask;
-	unsigned int mxval, mxmux, mxmask;
+//	unsigned int mxval, mxmux, mxmask;
 	unsigned int bitmask, change;
 	struct snd_soc_dapm_update update;
 	int wi;
@@ -2719,6 +2719,18 @@ int snd_soc_dapm_put_enum_double(struct snd_kcontrol *kcontrol,
 	if (ucontrol->value.enumerated.item[0] > e->max - 1)
 		return -EINVAL;
 
+    mux = ucontrol->value.enumerated.item[0];
+    val = mux << e->shift_l;
+    mask = (bitmask - 1) << e->shift_l;
+
+   	if (e->shift_l != e->shift_r) {
+   		if (ucontrol->value.enumerated.item[1] > e->max - 1)
+   			return -EINVAL;
+   		val |= ucontrol->value.enumerated.item[1] << e->shift_r;
+  		mask |= (bitmask - 1) << e->shift_r;
+    }
+
+#if 0
     if (mx_hw_eq == HWEQ_OFF) {
     	mux = ucontrol->value.enumerated.item[0];
         val = mux << e->shift_l;
@@ -2776,7 +2788,7 @@ int snd_soc_dapm_put_enum_double(struct snd_kcontrol *kcontrol,
                 break;
         }
     }
-
+#endif
 	mutex_lock_nested(&card->dapm_mutex, SND_SOC_DAPM_CLASS_PCM);
 
 	change = snd_soc_test_bits(widget->codec, e->reg, mask, val);
@@ -2797,16 +2809,6 @@ int snd_soc_dapm_put_enum_double(struct snd_kcontrol *kcontrol,
 
 			widget->dapm->update = NULL;
 		}
-/*
-        if (e->reg == 0x397)
-            pr_info("IIR1 Input Mux Updated: Mux=%u Val=%u Mask=%u\n", mux, val, mask);
-        else if (e->reg == 0x39B)
-            pr_info("IIR2 Input Mux Updated: Mux=%u Val=%u Mask=%u\n", mux, val, mask);
-        else if (e->reg == 0x380)
-            pr_info("RX1 Input Mux Updated: Mux=%u Val=%u Mask=%u\n", mux, val, mask);
-        else if (e->reg == 0x383)
-            pr_info("RX2 Input Mux Updated: Mux=%u Val=%u Mask=%u\n", mux, val, mask);
-*/
 	}
 
 	mutex_unlock(&card->dapm_mutex);
