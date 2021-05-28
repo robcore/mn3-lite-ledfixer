@@ -743,7 +743,6 @@ static void set_high_perf_mode(bool enable)
 	struct taiko_priv *taiko = snd_soc_codec_get_drvdata(direct_codec);
 }
 
-#define MX_OUTPUT_MUTE 172
 static void update_headphone_gain(void)
 {
 	if (headphone_mute) {
