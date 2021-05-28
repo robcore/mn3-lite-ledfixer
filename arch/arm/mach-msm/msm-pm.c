@@ -1053,7 +1053,7 @@ struct msm_pc_debug_counters_buffer {
 };
 
 static inline u32 msm_pc_debug_counters_read_register(
-		void __iomem *reg, int index , int offset)
+		void __iomem *reg, unsigned int index , unsigned int offset)
 {
 	return readl_relaxed(reg + (index * 4 + offset) * 4);
 }
@@ -1067,9 +1067,8 @@ static char *counter_name[] = {
 static int msm_pc_debug_counters_copy(
 		struct msm_pc_debug_counters_buffer *data)
 {
-	int j;
 	u32 stat;
-	unsigned int cpu;
+	unsigned int cpu, j;
 
 	for_each_possible_cpu(cpu) {
 		data->len += scnprintf(data->buf + data->len,
@@ -1077,8 +1076,8 @@ static int msm_pc_debug_counters_copy(
 				"CPU%d\n", cpu);
 
 		for (j = 0; j < MSM_PC_NUM_COUNTERS; j++) {
-			stat = msm_pc_debug_counters_read_register(
-					data->reg, cpu, j);
+			stat = clamp(msm_pc_debug_counters_read_register(
+					data->reg, cpu, j), 0, UINT_MAX);
 			data->len += scnprintf(data->buf + data->len,
 					sizeof(data->buf)-data->len,
 					"\t%s : %d\n", counter_name[j],
