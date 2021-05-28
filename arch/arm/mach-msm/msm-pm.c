@@ -128,7 +128,6 @@ static remote_spinlock_t scm_handoff_lock;
 static void (*msm_pm_disable_l2_fn)(void);
 static void (*msm_pm_enable_l2_fn)(void);
 static void (*msm_pm_flush_l2_fn)(void);
-static void __iomem *msm_pc_debug_counters;
 
 /*
  * Default the l2 flush flag to OFF so the caches are flushed during power
@@ -451,19 +450,6 @@ bailout:
 	WARN_ON(ret);
 
 	return MSM_PM_STAT_RETENTION;
-}
-
-static inline void msm_pc_inc_debug_count(uint32_t cpu,
-		enum msm_pc_count_offsets offset)
-{
-	uint32_t cnt;
-
-	if (!msm_pc_debug_counters)
-		return;
-
-	cnt = readl_relaxed(msm_pc_debug_counters + cpu * 4 * MSM_PC_NUM_COUNTERS + offset * 4);
-	writel_relaxed(++cnt, msm_pc_debug_counters + cpu * 4 * MSM_PC_NUM_COUNTERS + offset * 4);
-	mb();
 }
 
 static bool msm_pm_pc_hotplug(void)
@@ -1046,114 +1032,6 @@ static void msm_pm_set_flush_fn(uint32_t pc_mode)
 	}
 }
 
-struct msm_pc_debug_counters_buffer {
-	void __iomem *reg;
-	u32 len;
-	char buf[MAX_BUF_SIZE];
-};
-
-static inline u32 msm_pc_debug_counters_read_register(
-		void __iomem *reg, int index , int offset)
-{
-	return readl_relaxed(reg + (index * 4 + offset) * 4);
-}
-
-static char *counter_name[] = {
-		"PC Entry Counter",
-		"Warmboot Entry Counter",
-		"PC Bailout Counter"
-};
-
-static int msm_pc_debug_counters_copy(
-		struct msm_pc_debug_counters_buffer *data)
-{
-	int j;
-	u32 stat;
-	unsigned int cpu;
-
-	for_each_possible_cpu(cpu) {
-		data->len += scnprintf(data->buf + data->len,
-				sizeof(data->buf)-data->len,
-				"CPU%d\n", cpu);
-
-		for (j = 0; j < MSM_PC_NUM_COUNTERS; j++) {
-			stat = msm_pc_debug_counters_read_register(
-					data->reg, cpu, j);
-			data->len += scnprintf(data->buf + data->len,
-					sizeof(data->buf)-data->len,
-					"\t%s : %d\n", counter_name[j],
-					stat);
-		}
-
-	}
-
-	return data->len;
-}
-
-static int msm_pc_debug_counters_file_read(struct file *file,
-		char __user *bufu, size_t count, loff_t *ppos)
-{
-	struct msm_pc_debug_counters_buffer *data;
-
-	data = file->private_data;
-
-	if (!data)
-		return -EINVAL;
-
-	if (!bufu || count < 0)
-		return -EINVAL;
-
-	if (!access_ok(VERIFY_WRITE, bufu, count))
-		return -EFAULT;
-
-	if (*ppos >= data->len && data->len == 0)
-		data->len = msm_pc_debug_counters_copy(data);
-
-	return simple_read_from_buffer(bufu, count, ppos,
-			data->buf, data->len);
-}
-
-static int msm_pc_debug_counters_file_open(struct inode *inode,
-		struct file *file)
-{
-	struct msm_pc_debug_counters_buffer *buf;
-	void __iomem *msm_pc_debug_counters_reg;
-
-	msm_pc_debug_counters_reg = inode->i_private;
-
-	if (!msm_pc_debug_counters_reg)
-		return -EINVAL;
-
-	file->private_data = kzalloc(
-		sizeof(struct msm_pc_debug_counters_buffer), GFP_KERNEL);
-
-	if (!file->private_data) {
-		pr_err("%s: ERROR kmalloc failed to allocate %d bytes\n",
-		__func__, sizeof(struct msm_pc_debug_counters_buffer));
-
-		return -ENOMEM;
-	}
-
-	buf = file->private_data;
-	buf->reg = msm_pc_debug_counters_reg;
-
-	return 0;
-}
-
-static int msm_pc_debug_counters_file_close(struct inode *inode,
-		struct file *file)
-{
-	kfree(file->private_data);
-	return 0;
-}
-
-static const struct file_operations msm_pc_debug_counters_fops = {
-	.open = msm_pc_debug_counters_file_open,
-	.read = msm_pc_debug_counters_file_read,
-	.release = msm_pc_debug_counters_file_close,
-	.llseek = no_llseek,
-};
-
 static int msm_pm_clk_init(struct platform_device *pdev)
 {
 	bool synced_clocks;
@@ -1209,24 +1087,6 @@ static int msm_cpu_pm_probe(struct platform_device *pdev)
 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
 	if (!res)
 		return  0;
-	msm_pc_debug_counters_phys = res->start;
-	WARN_ON(resource_size(res) < SZ_64);
-	msm_pc_debug_counters = devm_ioremap(&pdev->dev, res->start,
-					resource_size(res));
-	if (msm_pc_debug_counters) {
-		for (i = 0; i < resource_size(res)/4; i++)
-			__raw_writel(0, msm_pc_debug_counters + i * 4);
-
-		dent = debugfs_create_file("pc_debug_counter", S_IRUGO, NULL,
-				msm_pc_debug_counters,
-				&msm_pc_debug_counters_fops);
-		if (!dent)
-			pr_err("%s: ERROR debugfs_create_file failed\n",
-					__func__);
-	} else {
-		msm_pc_debug_counters = 0;
-		msm_pc_debug_counters_phys = 0;
-	}
 
 	lpm_node = of_parse_phandle(pdev->dev.of_node, "qcom,lpm-levels", 0);
 	if (!lpm_node) {
