@@ -105,7 +105,7 @@ extern int msm_show_resume_irq_mask;
 #define PERSISTENT_RAM_SIZE SZ_1M
 #define RAM_CONSOLE_SIZE (124*SZ_1K * 2)
 
-static struct persistent_ram_descriptor pram_descs[] __initdata = {
+static struct persistent_ram_descriptor pram_descs[] = {
 #ifdef CONFIG_ANDROID_RAM_CONSOLE
 {
     .name = "ram_console",
@@ -671,7 +671,7 @@ void __init msm8974_init_very_early(void)
 	msm8974_early_memory();
 }
 
-static const char *msm8974_dt_match[] __initconst = {
+static const char *msm8974_dt_match[] __initdata = {
 	"qcom,msm8974",
 	"qcom,apq8074",
 	NULL
