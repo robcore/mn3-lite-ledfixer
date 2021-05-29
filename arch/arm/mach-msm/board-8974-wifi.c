@@ -19,7 +19,7 @@
 #define WLAN_STATIC_SCAN_BUF0		5
 #define WLAN_STATIC_SCAN_BUF1		6
 #define WLAN_STATIC_DHD_INFO_BUF	7
-#define WLAN_SCAN_BUF_SIZE		(64 * 1024)
+#define WLAN_SCAN_BUF_SIZE		(128 * 1024)
 #define WLAN_DHD_INFO_BUF_SIZE	(16 * 1024)
 #define PREALLOC_WLAN_SEC_NUM		4
 #define PREALLOC_WLAN_BUF_NUM		160
@@ -570,4 +570,7 @@ int __init brcm_wlan_init(void)
 	return platform_device_register(&brcm_device_wlan);
 #endif
 }
+#if defined(CONFIG_DEFERRED_INITCALLS)
+deferred_initcall(brcm_wlan_init);
+#else
 device_initcall(brcm_wlan_init);

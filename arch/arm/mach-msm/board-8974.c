@@ -100,32 +100,31 @@ extern int msm_show_resume_irq_mask;
 #include "board-patek-keypad.c"
 #endif
 
-#define PERSISTENT_RAM_BASE 0xbff00000
+#ifdef CONFIG_ANDROID_PERSISTENT_RAM
+#define PERSISTENT_RAM_BASE 0x7FA00000
 #define PERSISTENT_RAM_SIZE SZ_1M
 #define RAM_CONSOLE_SIZE (124*SZ_1K * 2)
 
-#ifdef CONFIG_ANDROID_PERSISTENT_RAM
-static struct persistent_ram_descriptor pram_descs[] = {
+static struct persistent_ram_descriptor pram_descs[] __initdata = {
 #ifdef CONFIG_ANDROID_RAM_CONSOLE
-        {
-                .name = "ram_console",
-                .size = RAM_CONSOLE_SIZE,
-        },
-#endif
+{
+    .name = "ram_console",
+    .size = RAM_CONSOLE_SIZE,
+},
+#endif /* CONFIG_ANDROID_RAM_CONSOLE */
 };
 
 static struct persistent_ram msm8974_persistent_ram = {
-        .start = PERSISTENT_RAM_BASE,
-        .size = PERSISTENT_RAM_SIZE,
-        .num_descs = ARRAY_SIZE(pram_descs),
-        .descs = pram_descs,
+    .descs = pram_descs,
+    .num_descs = ARRAY_SIZE(pram_descs),
+    .start = PERSISTENT_RAM_BASE,
+    .size = PERSISTENT_RAM_SIZE,
 };
 
 void __init add_persistent_ram(void)
 {
     persistent_ram_early_init(&msm8974_persistent_ram);
 }
-#endif
 
 #ifdef CONFIG_ANDROID_RAM_CONSOLE
 static struct platform_device ram_console_device = {
@@ -138,6 +137,7 @@ void __init add_ramconsole_devices(void)
     platform_device_register(&ram_console_device);
 }
 #endif /* CONFIG_ANDROID_RAM_CONSOLE */
+#endif /* CONFIG_ANDROID_PERSISTENT_RAM */
 
 extern int poweroff_charging;
 
@@ -671,7 +671,7 @@ void __init msm8974_init_very_early(void)
 	msm8974_early_memory();
 }
 
-static const char *msm8974_dt_match[] __initdata = {
+static const char *msm8974_dt_match[] __initconst = {
 	"qcom,msm8974",
 	"qcom,apq8074",
 	NULL
