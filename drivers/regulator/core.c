@@ -830,9 +830,6 @@ static void print_constraints(struct regulator_dev *rdev)
 	if (constraints->valid_modes_mask & REGULATOR_MODE_STANDBY)
 		count += sprintf(buf + count, "standby");
 
-	if (!count)
-		sprintf(buf, "no parameters");
-
 	rdev_info(rdev, "%s\n", buf);
 
 	if ((constraints->min_uV != constraints->max_uV) &&
@@ -2017,10 +2014,10 @@ int regulator_set_voltage(struct regulator *regulator, int min_uV, int max_uV)
 	ret = regulator_check_voltage(rdev, &min_uV, &max_uV);
 	if (ret < 0)
 		goto out;
-	
 	/* restore original values in case of error */
 	old_min_uV = regulator->min_uV;
 	old_max_uV = regulator->max_uV;
+
 	regulator->min_uV = min_uV;
 	regulator->max_uV = max_uV;
 
@@ -2029,9 +2026,8 @@ int regulator_set_voltage(struct regulator *regulator, int min_uV, int max_uV)
 		goto out2;
 
 	ret = _regulator_do_set_voltage(rdev, min_uV, max_uV);
-	if (ret < 0)
+	if(ret < 0)
 		goto out2;
-	
 out:
 	mutex_unlock(&rdev->mutex);
 	return ret;
@@ -2146,8 +2142,6 @@ static int _regulator_get_voltage(struct regulator_dev *rdev)
 		ret = rdev->desc->ops->list_voltage(rdev, sel);
 	} else if (rdev->desc->ops->get_voltage) {
 		ret = rdev->desc->ops->get_voltage(rdev);
-	} else if (rdev->desc->ops->list_voltage) {
-		ret = rdev->desc->ops->list_voltage(rdev, 0);
 	} else {
 		return -EINVAL;
 	}
@@ -2403,9 +2397,6 @@ int regulator_set_optimum_mode(struct regulator *regulator, int uA_load)
 	 * potential real failure.
 	 */
 	ret = -EINVAL;
-
-	if (!rdev->desc->ops->set_mode)
-		goto out;
 
 	/* get output voltage */
 	output_uV = _regulator_get_voltage(rdev);
@@ -2682,7 +2673,7 @@ int regulator_bulk_disable(int num_consumers,
 			   struct regulator_bulk_data *consumers)
 {
 	int i;
-	int ret, r;
+	int ret;
 
 	for (i = num_consumers - 1; i >= 0; --i) {
 		ret = regulator_disable(consumers[i].consumer);
@@ -2694,12 +2685,8 @@ int regulator_bulk_disable(int num_consumers,
 
 err:
 	pr_err("Failed to disable %s: %d\n", consumers[i].supply, ret);
-	for (++i; i < num_consumers; ++i) {
-		r = regulator_enable(consumers[i].consumer);
-		if (r != 0)
-			pr_debug("Failed to reename %s: %d\n",
-			       consumers[i].supply, r);
-	}
+	for (++i; i < num_consumers; ++i)
+		regulator_enable(consumers[i].consumer);
 
 	return ret;
 }
@@ -2818,8 +2805,7 @@ static int add_regulator_attributes(struct regulator_dev *rdev)
 
 	/* some attributes need specific methods to be displayed */
 	if ((ops->get_voltage && ops->get_voltage(rdev) >= 0) ||
-	    (ops->get_voltage_sel && ops->get_voltage_sel(rdev) >= 0) ||
-	    (ops->list_voltage && ops->list_voltage(rdev, 0) >= 0)) {
+	    (ops->get_voltage_sel && ops->get_voltage_sel(rdev) >= 0)) {
 		status = device_create_file(dev, &dev_attr_microvolts);
 		if (status < 0)
 			return status;
@@ -3032,7 +3018,7 @@ static ssize_t reg_debug_volt_get(struct file *file, char __user *buf,
 	mutex_lock(&debug_buf_mutex);
 
 	output = snprintf(debug_buf, MAX_DEBUG_BUF_LEN-1, "%d\n", voltage);
-	rc = simple_read_from_buffer((void __user *) buf, count, ppos,
+	rc = simple_read_from_buffer((void __user *) buf, output, ppos,
 					(void *) debug_buf, output);
 
 	mutex_unlock(&debug_buf_mutex);
@@ -3508,7 +3494,7 @@ void regulator_unregister(struct regulator_dev *rdev)
 		regulator_put(rdev->supply);
 	mutex_lock(&regulator_list_mutex);
 	debugfs_remove_recursive(rdev->debugfs);
-	flush_work(&rdev->disable_work.work);
+	flush_work_sync(&rdev->disable_work.work);
 	WARN_ON(rdev->open_count);
 	unset_regulator_supplies(rdev);
 	list_del(&rdev->list);

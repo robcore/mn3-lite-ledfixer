@@ -1307,6 +1307,9 @@ regulator_turn_off:
 	return 0;
 }
 
+
+
+
 static int qpnp_torch_regulator_operate(struct qpnp_led_data *led, bool on)
 {
     int rc;
@@ -2079,7 +2082,7 @@ static void qpnp_led_turn_off(struct qpnp_led_data *led)
 static int __devinit qpnp_wled_init(struct qpnp_led_data *led)
 {
 	int rc, i;
-	u8 num_wled_strings, val = 0;
+	u8 num_wled_strings;
 
 	num_wled_strings = led->wled_cfg->num_strings;
 
@@ -2151,10 +2154,10 @@ static int __devinit qpnp_wled_init(struct qpnp_led_data *led)
 
 	/* program current sink */
 	if (led->wled_cfg->cs_out_en) {
-		for (i = 0; i < led->wled_cfg->num_strings; i++)
-			val |= 1 << i;
 		rc = qpnp_led_masked_write(led, WLED_CURR_SINK_REG(led->base),
-			WLED_CURR_SINK_MASK, (val << WLED_CURR_SINK_SHFT));
+			WLED_CURR_SINK_MASK,
+			(((1 << led->wled_cfg->num_strings) - 1)
+			<< WLED_CURR_SINK_SHFT));
 		if (rc) {
 			dev_err(&led->spmi_dev->dev,
 				"WLED curr sink reg write failed(%d)\n", rc);
@@ -3496,7 +3499,7 @@ static int __devinit qpnp_get_config_pwm(struct pwm_config_data *pwm_cfg,
 	else
 		return rc;
 
-	if (pwm_cfg->mode = PWM_MODE) {
+	if (pwm_cfg->mode != MANUAL_MODE) {
 		rc = of_property_read_u32(node, "qcom,pwm-us", &val);
 		if (!rc)
 			pwm_cfg->pwm_period_us = val;
