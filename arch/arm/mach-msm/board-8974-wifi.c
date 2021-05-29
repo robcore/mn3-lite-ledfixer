@@ -574,3 +574,4 @@ int __init brcm_wlan_init(void)
 deferred_initcall(brcm_wlan_init);
 #else
 device_initcall(brcm_wlan_init);
+#endif
