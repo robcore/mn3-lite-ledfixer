@@ -644,10 +644,7 @@ int pil_boot(struct pil_desc *desc)
 
 	down_read(&pil_pm_rwsem);
 	snprintf(fw_name, sizeof(fw_name), "%s.mdt", desc->name);
-	if ( poweroff_charging && strcmp("mba.mdt",fw_name)==0)   /* skip locating mba.mdt during poweroff charging */
-		ret = -2; 
-	else	
-		ret = request_firmware(&fw, fw_name, desc->dev);
+	ret = request_firmware(&fw, fw_name, desc->dev);
 	if (ret) {
 		pil_err(desc, "Failed to locate %s\n", fw_name);
 		goto out;
