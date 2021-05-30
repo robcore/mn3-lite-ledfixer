@@ -153,13 +153,11 @@
 	};
 
 	i2c@23 {
-		cell-index = <23>;
-		compatible = "i2c-gpio";
-		gpios = <&msmgpio 60 0 /* sda */
-		&msmgpio 61 0 /* scl */
-		>;
 		#address-cells = <1>;
 		#size-cells = <0>;
+		cell-index = <23>;
+		compatible = "i2c-gpio";
+		gpios = <&msmgpio 60 0 &msmgpio 61 0>;
 	};
 
 	i2c@f9963000 {
