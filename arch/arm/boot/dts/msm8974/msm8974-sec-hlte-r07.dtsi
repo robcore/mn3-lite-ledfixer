@@ -707,9 +707,11 @@
 	vdd-supply = <&pm8941_s3>;
 	vdd-io-supply = <&pm8941_s3>;
 
+	qcom,vdd-always-on;
 	qcom,vdd-voltage-level = <1800000 1800000>;
 	qcom,vdd-current-level = <2000 16000>;
 
+	qcom,vdd-io-always-on;
 	qcom,vdd-io-voltage-level = <1800000 1800000>;
 	qcom,vdd-io-current-level = <2000 16000>;
 
@@ -725,7 +727,7 @@
 	qcom,sup-voltages = <2950 2950>;
 
 	status-cb = <2>;
-	status = "disabled";
+	status = "ok";
 };
 
 &sdhc_3 {
