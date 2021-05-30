@@ -877,7 +877,8 @@
 
 	pm8941_iadc: iadc@3600 {
 		compatible = "qcom,qpnp-iadc";
-		reg = <0x3600 0x100>, <0x12f1 0x1>;
+		reg = <0x3600 0x100>,
+		      <0x12f1 0x1>;
 		reg-names = "iadc-base", "batt-id-trim-cnst-rds";
 		#address-cells = <1>;
 		#size-cells = <0>;
@@ -1329,6 +1330,8 @@
 		compatible = "qcom,leds-qpnp";
 		reg = <0xd300 0x100>;
 		label = "flash";
+		/*flash-boost-supply = <&pm8941_chg_boost>;*/
+		/*torch-boost-supply = <&pm8941_boost>;*/
 	};
 
 	qcom,leds@d400 {
