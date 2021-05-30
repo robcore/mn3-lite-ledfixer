@@ -541,7 +541,6 @@ build_boot_img() {
     done
 
 	echo "Generating $DTIMG"
-    scripts/dtc/dtc
 
     ./tools/skales/dtbTool -o "$DTIMG" -s 2048 -p "$DTCDIR" "$KDIR"
 
