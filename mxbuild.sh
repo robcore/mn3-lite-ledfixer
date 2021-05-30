@@ -535,9 +535,9 @@ build_boot_img() {
     for DTS_PREFIX in msm8974-sec-hlte-r05 msm8974-sec-hlte-r06 msm8974-sec-hlte-r07 msm8974-sec-hlte-r09
     do
         DTS_FILE="$RDIR/arch/arm/boot/dts/msm8974/$DTS_PREFIX.dts"
-        DTB_FILE="$KDIR/arch/arm/boot/$DTS_PREFIX.dtb"
-        echo "Creating $DTB_FILE"
-        ./scripts/dtc/dtc -p 1024 -O dtb -o $DTB_FILE $DTS_FILE || warnandfail "Failed to build $DTB_FILE!"
+        DTB_FILE="$KDIR/$DTS_PREFIX.dtb"
+        echo "Creating $DTB_FILE from $DTS_FILE"
+        $BUILDIR/scripts/dtc/dtc -p 1024 -O dtb -o $DTB_FILE $DTS_FILE || warnandfail "Failed to build $DTB_FILE!"
     done
 
 	echo "Generating $DTIMG"
