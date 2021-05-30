@@ -230,7 +230,9 @@
 #define NUM_KPDBL_LEDS			4
 #define KPDBL_MASTER_BIT_INDEX		0
 
+#if !defined(CONFIG_SEC_VIENNA_PROJECT) && !defined(CONFIG_SEC_V2_PROJECT) && !defined(CONFIG_SEC_LT03_PROJECT) && !defined(CONFIG_SEC_MONDRIAN_PROJECT) && !defined(CONFIG_SEC_K_PROJECT) && !defined(CONFIG_SEC_N2_PROJECT) && !defined(CONFIG_SEC_PICASSO_PROJECT) && !defined(CONFIG_SEC_KACTIVE_PROJECT)
 #define SAMSUNG_LED_PATTERN 1
+#endif
 
 #define SAMSUNG_TKEY_LED_BRIGHTNESS  90
 #if defined(CONFIG_SEC_AFYON_PROJECT) || defined(CONFIG_SEC_ATLANTIC_PROJECT) || defined( CONFIG_SEC_VASTA_PROJECT) || defined(CONFIG_MACH_MEGA2LTE_KTT)
@@ -295,8 +297,8 @@ enum led_mode {
 
 #ifdef SAMSUNG_LED_PATTERN
 enum rgb_led_patternRGB {
-    LED_CHARGING_PAT = 1,
-    LED_CHARGING_ERROR_PAT,
+       LED_CHARGING_PAT = 1,
+       LED_CHARGING_ERROR_PAT,
 	LED_MISSED_CALL_PAT,
 	LED_LOW_BATTERY_PAT,
 	LED_FULL_BATTERY_PAT,
@@ -1166,7 +1168,6 @@ static int qpnp_flash_regulator_operate(struct qpnp_led_data *led, bool on)
 		goto regulator_turn_off;
 
 	if (!regulator_on && !led->flash_cfg->flash_on) {
-#ifndef SAMSUNG_USE_EXTERNAL_CHARGER
 		for (i = 0; i < led->num_leds; i++) {
 			if (led_array[i].flash_cfg->flash_reg_get) {
 				if (led_array[i].flash_cfg->flash_wa_reg_get) {
@@ -1228,7 +1229,6 @@ static int qpnp_flash_regulator_operate(struct qpnp_led_data *led, bool on)
 			}
 			break;
 			}
-#endif
 	    for (i = 0; i < led->num_leds; i++) {
 #ifdef SAMSUNG_USE_EXTERNAL_CHARGER
 		qpnp_flash_reg_en(led, true);
@@ -1908,8 +1908,16 @@ static void qpnp_led_set(struct led_classdev *led_cdev,
 
 	if (value > led->cdev.max_brightness)
 		value = led->cdev.max_brightness;
-
+#if defined(CONFIG_MACH_AFYONLTE_TMO) || defined(CONFIG_MACH_AFYONLTE_CAN) || defined(CONFIG_MACH_MS01_EUR_3G) \
+	|| defined(CONFIG_MACH_AFYONLTE_MTR)
+	pr_info("[LED]%s: %s value = %d\n", __func__, led_cdev->name, value);
+	if(strncmp(led_cdev->name, "button-backlight",  16))
+		led->cdev.brightness = value;
+	else
+		led->cdev.brightness = value?SAMSUNG_TKEY_LED_BRIGHTNESS:0;
+#else
 	led->cdev.brightness = value;
+#endif
 	schedule_work(&led->work);
 }
 
