@@ -17,6 +17,13 @@ RAMDISKFOLDER="$MXRD/ramdisk"
 ZIPFOLDER="$RDIR/mxzip"
 MXCONFIG="$RDIR/arch/arm/configs/mxconfig"
 MXNEWCFG="$MXCONFIG.new"
+DTCDIR="$BUILDIR/scripts/dtc"
+DTIMG="$KDIR/dt.img"
+MXDT="$MXRD/split_img/boot.img-dt"
+NEWZMG="$KDIR/zImage"
+MXZMG="$MXRD/split_img/boot.img-kernel"
+DTS_NAMES="msm8974-sec-hlte-r"
+
 QUICKHOUR="$(date +%l | cut -d " " -f2)"
 QUICKMIN="$(date +%S)"
 QUICKAMPM="$(date +%p)"
@@ -508,12 +515,6 @@ build_kernel() {
 #
 #}
 
-DTCDIR="$BUILDIR/scripts/dtc"
-DTIMG="$KDIR/dt.img"
-MXDT="$MXRD/split_img/boot.img-dt"
-NEWZMG="$KDIR/zImage"
-MXZMG="$MXRD/split_img/boot.img-kernel"
-
 build_boot_img() {
 
     cd "$RDIR" || warnandfail "Failed to cd into $RDIR!"
@@ -522,7 +523,25 @@ build_boot_img() {
     [ -f "$MXRD/image-new.img" ] && rm "$MXRD/image-new.img"
     [ -f "$MXRD/ramdisk-new.cpio.gz" ] && rm "$MXRD/ramdisk-new.cpio.gz"
 
+    echo "Regnerating .dtb files"
+    rm "$KDIR/msm8974-sec-hlte-r05.dtb"
+    rm "$KDIR/msm8974-sec-hlte-r06.dtb"
+    rm "$KDIR/msm8974-sec-hlte-r07.dtb"
+    rm "$KDIR/msm8974-sec-hlte-r09.dtb"
+
+    local DTB_FILE
+    local DTS_FILE
+
+    for DTS_PREFIX in msm8974-sec-hlte-r05 msm8974-sec-hlte-r06 msm8974-sec-hlte-r07 msm8974-sec-hlte-r09
+    do
+        DTS_FILE="$RDIR/arch/arm/boot/dts/msm8974/$DTS_PREFIX.dts"
+        DTB_FILE="$KDIR/arch/arm/boot/$DTS_PREFIX.dtb"
+        echo "Creating $DTB_FILE"
+        ./scripts/dtc/dtc -p 1024 -O dtb -o $DTB_FILE $DTS_FILE || warnandfail "Failed to build $DTB_FILE!"
+    done
+
 	echo "Generating $DTIMG"
+    scripts/dtc/dtc
 
     ./tools/skales/dtbTool -o "$DTIMG" -s 2048 -p "$DTCDIR" "$KDIR"
 
