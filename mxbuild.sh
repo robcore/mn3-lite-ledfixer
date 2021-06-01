@@ -537,7 +537,8 @@ build_boot_img() {
         DTS_FILE="$RDIR/arch/arm/boot/dts/msm8974/$DTS_PREFIX.dts"
         DTB_FILE="$KDIR/$DTS_PREFIX.dtb"
         echo "Creating $DTB_FILE from $DTS_FILE"
-        "$BUILDIR/scripts/dtc/dtc" -i "$RDIR/arch/arm/boot/dts/msm8974" -p 2048 -O dtb -o "$DTB_FILE" "$DTS_FILE" || warnandfail "Failed to build $DTB_FILE!"
+        #"$BUILDIR/scripts/dtc/dtc" -i "$RDIR/arch/arm/boot/dts/msm8974" -p 2048 -O dtb -o "$DTB_FILE" "$DTS_FILE" || warnandfail "Failed to build $DTB_FILE!"
+        /usr/bin/dtc -i "$RDIR/arch/arm/boot/dts/msm8974" -p 2048 -O dtb -o "$DTB_FILE" "$DTS_FILE" || warnandfail "Failed to build $DTB_FILE!"
     done
 
 	echo "Generating $DTIMG"
