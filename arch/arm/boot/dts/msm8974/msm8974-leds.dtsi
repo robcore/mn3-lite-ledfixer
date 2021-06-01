@@ -16,8 +16,8 @@
 		status = "okay";
 		qcom,rgb_0 {
 			label = "rgb";
-				linux,name = "led:rgb_red";
-				qcom,mode = "lpg";
+				linux,name = "led_r";
+				qcom,mode = "pwm";
 				qcom,pwm-channel = <6>;
 				qcom,pwm-us = <1000>;
 				qcom,ramp-step-ms = <1>;
@@ -30,13 +30,13 @@
 				qcom,turn-off-delay-ms = <0>;
 				qcom,lut-flags = <0x1F>;
 				qcom,id = <3>;
-				linux,default-trigger = "none";
+				linux,default-trigger = "battery-charging";
 		};
 
 		qcom,rgb_1 {
 			label = "rgb";
-				linux,name = "led:rgb_green";
-				qcom,mode = "lpg";
+				linux,name = "led_g";
+				qcom,mode = "pwm";
 				qcom,pwm-channel = <5>;
 				qcom,pwm-us = <1000>;
 				qcom,ramp-step-ms = <1>;
@@ -49,13 +49,13 @@
 				qcom,turn-off-delay-ms = <0>;
 				qcom,lut-flags = <0x1F>;
 				qcom,id = <4>;
-				linux,default-trigger = "none";
+				linux,default-trigger = "battery-full";
 		};
 
 		qcom,rgb_2 {
 			label = "rgb";
-				linux,name = "led:rgb_blue";
-				qcom,mode = "lpg";
+				linux,name = "led_b";
+				qcom,mode = "pwm";
 				qcom,pwm-channel = <4>;
 				qcom,pwm-us = <1000>;
 				qcom,ramp-step-ms = <1>;

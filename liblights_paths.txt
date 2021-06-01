@@ -1,0 +1,28 @@
+Samsung lights Module
+Google, Inc.
+/sys/class/leds/led_r/blink
+/sys/class/leds/led_g/blink
+/sys/class/leds/led_b/blink
+/sys/class/leds/led_r/delay_off
+/sys/class/leds/led_g/delay_off
+/sys/class/leds/led_b/delay_off
+/sys/class/leds/led_r/delay_on
+/sys/class/leds/led_g/delay_on
+/sys/class/leds/led_b/delay_on
+/sys/class/leds/led_r/trigger
+/sys/class/leds/led_g/trigger
+/sys/class/leds/led_b/trigger
+/sys/class/leds/led_r/brightness
+/sys/class/leds/led_g/brightness
+/sys/class/leds/led_b/brightness
+/sys/class/sec/led/led_blink
+/sys/class/sec/led/led_pattern
+/sys/class/sec/sec_keypad/brightness
+/sys/class/leds/keyboard-backlight/brightness
+/sys/class/sec/sec_touchkey/brightness
+/sys/class/leds/button-backlight/brightness
+/sys/class/backlight/touchkey-led/brightness
+/sys/class/leds/lcd-backlight/brightness
+/sys/class/backlight/panel/brightness
+/sys/class/backlight/lcd-bl/brightness
+/sys/class/backlight/msmfb_bl0/brightness
