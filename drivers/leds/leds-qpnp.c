@@ -1994,9 +1994,9 @@ void tkey_led_enables(int level)
 	struct qpnp_led_data *led_array;
 
 	led_array = dev_get_drvdata(led_dev);
-	printk(KERN_INFO "%s: touchkey LED level : %d\n", __func__, level);
+	pr_info("%s: touchkey LED level : %d\n", __func__, level);
 	if (!led_array) {
-		printk(KERN_INFO "%s: led_array is NULL\n", __func__);
+		pr_info("%s: led_array is NULL\n", __func__);
 		return;
 	}
 	if (level == 1) {
@@ -3859,7 +3859,8 @@ static int __devinit qpnp_get_config_mpp(struct qpnp_led_data *led,
 #ifdef SAMSUNG_LED_PATTERN
 /* Pattern Start*/
 static void samsung_led_set(struct qpnp_led_data *info,
-                                                enum led_brightness value) {
+                                                enum led_brightness value)
+{
     int rc;
 
     info->cdev.brightness = value;
@@ -3885,7 +3886,9 @@ static void samsung_led_set(struct qpnp_led_data *info,
 
 }
 
-static void led_pat_on(struct qpnp_led_data *info, struct patt_registry *patt_register,int brightness) {
+static void led_pat_on(struct qpnp_led_data *info, struct patt_registry *patt_register,
+                       int brightness)
+{
     struct patt_config *patt_led;
     unsigned int cnt,i;
     int ret;
@@ -3987,15 +3990,15 @@ static ssize_t led_r_store(struct device *dev, struct device_attribute *devattr,
         int ret,i;
         long brightness = 0;
          struct patt_registry *pat_reg = NULL;
-        printk(KERN_INFO "led_r_store called\n");
+        pr_info("led_r_store called\n");
         info = dev_get_drvdata(dev);
         ret = kstrtol(buf, 10, &brightness);
         if (ret || ret < 0) {
-            printk(KERN_INFO "[LED] Led_r cant set brightness \n");
+            pr_info("[LED] Led_r cant set brightness \n");
             return count;
         }
         if (brightness < 0 || brightness > LED_FULL) {
-            printk(KERN_INFO "[LED] Led_r brightness is out of range(0-255)\n");
+            pr_info("[LED] Led_r brightness is out of range(0-255)\n");
             return count;
         }
         for (i = 0; i < RGB_MAX -1; i++)
@@ -4025,15 +4028,15 @@ static ssize_t led_g_store(struct device *dev, struct device_attribute *devattr,
         int ret,i;
         long brightness = 0;
         struct patt_registry *pat_reg = NULL;
-        printk(KERN_INFO "led_g_store called\n");
+        pr_info("led_g_store called\n");
         info = dev_get_drvdata(dev);
         ret = kstrtol(buf, 10, &brightness);
         if (ret || ret < 0) {
-            printk(KERN_INFO "[LED] Led_g cant set brightness \n");
+            pr_info("[LED] Led_g cant set brightness \n");
             return count;
         }
         if (brightness < 0 || brightness > LED_FULL) {
-            printk(KERN_INFO "[LED] Led_g brightness is out of range(0-255)\n");
+            pr_info("[LED] Led_g brightness is out of range(0-255)\n");
             return count;
         }
         for (i = 0; i < RGB_MAX - 1; i++)
@@ -4064,15 +4067,15 @@ static ssize_t led_b_store(struct device *dev, struct device_attribute *devattr,
         long brightness = 0;
         struct patt_registry *pat_reg = NULL;
 
-        printk(KERN_INFO "led_b_store called\n");
+        pr_info("led_b_store called\n");
         info = dev_get_drvdata(dev);
         ret = kstrtol(buf, 10, &brightness);
         if (ret || ret < 0) {
-            printk(KERN_INFO "[LED] Led_b cant set brightness \n");
+            pr_info("[LED] Led_b cant set brightness \n");
             return count;
         }
         if (brightness < 0 || brightness > LED_FULL) {
-            printk(KERN_INFO "[LED] Led_b brightness is out of range(0-255)\n");
+            pr_info("[LED] Led_b brightness is out of range(0-255)\n");
             return count;
         }
         for (i = 0; i < RGB_MAX - 1; i++)
@@ -4131,9 +4134,9 @@ static ssize_t led_blink_store(struct device *dev, struct device_attribute *deva
 	u8 val = 0;
         int i,j;
 
-        printk(KERN_INFO "led_blink_store called\n");
+        pr_info("led_blink_store called\n");
 	if (size < 7) {
-		printk(KERN_DEBUG "led_blink: Invlid input\n");
+		pr_debug("led_blink: Invlid input\n");
 		return size;
 	}
 	if (buf[8] == ' ') { /*case of RGB delay_on delay_off*/
@@ -4216,13 +4219,12 @@ static ssize_t led_lowpower_store(struct device *dev,
         low_powermode = (buf[0] == '1')?1:0;
         return count;
 }
-static DEVICE_ATTR(led_pattern, S_IRUGO | S_IWUSR | S_IWGRP, show_patt,
-								store_patt);
-static DEVICE_ATTR(led_r, S_IRUGO | S_IWUSR | S_IWGRP, led_r_show,led_r_store );
-static DEVICE_ATTR(led_g, S_IRUGO | S_IWUSR | S_IWGRP, led_g_show,led_g_store );
-static DEVICE_ATTR(led_b, S_IRUGO | S_IWUSR | S_IWGRP, led_b_show,led_b_store );
-static DEVICE_ATTR(led_blink, S_IRUGO | S_IWUSR | S_IWGRP, NULL, led_blink_store );
-static DEVICE_ATTR(led_lowpower, S_IRUGO | S_IWUSR | S_IWGRP, led_lowpower_show, led_lowpower_store );
+static DEVICE_ATTR(led_pattern, 0644, show_patt, store_patt);
+static DEVICE_ATTR(led_r, 0644, led_r_show, led_r_store );
+static DEVICE_ATTR(led_g, 0644, led_g_show, led_g_store );
+static DEVICE_ATTR(led_b, 0644, led_b_show, led_b_store );
+static DEVICE_ATTR(led_blink, 0644, NULL, led_blink_store );
+static DEVICE_ATTR(led_lowpower, 0644, led_lowpower_show, led_lowpower_store );
 static struct attribute *sec_led_attributes[] = {
 	&dev_attr_led_pattern.attr,
 	&dev_attr_led_r.attr,
