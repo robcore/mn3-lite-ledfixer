@@ -3956,7 +3956,7 @@ static ssize_t store_patt(struct device *dev, struct device_attribute *devattr,
              samsung_led_set(&info[i], LED_OFF);
         
         if (cnt == LED_POWERING_ON_PAT) {
-            info[RGB_GREEN].rgb_cfg->enable = RGB_LED_ENABLE_GREEN
+            info[RGB_GREEN].rgb_cfg->enable = RGB_LED_ENABLE_GREEN;
             info[RGB_BLUE].rgb_cfg->enable =  RGB_LED_ENABLE_BLUE;
             pr_info("Green Enable =%x \n", info[RGB_GREEN].rgb_cfg->enable);
             pr_info("Blue Enable =%x \n", info[RGB_BLUE].rgb_cfg->enable);
