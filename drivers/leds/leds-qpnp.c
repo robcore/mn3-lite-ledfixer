@@ -3741,7 +3741,7 @@ static int __devinit qpnp_get_config_rgb(struct qpnp_led_data *led,
         pr_info("Registering Blue RGB Led\n");
 	} else
 		return -EINVAL;
-    }
+
 	rc = of_property_read_string(node, "qcom,mode", &mode);
 	if (!rc) {
 		led_mode = qpnp_led_get_mode(mode);
