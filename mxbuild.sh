@@ -558,7 +558,7 @@ build_boot_img() {
 
     [ -f "$MXZMG" ] && rm "$MXZMG"
     cp "$NEWZMG" "$MXZMG" || warnandfail "Failed to copy $NEWZMG to $MXZMG!"
-    chmod 644 "$MXZMG"   
+    chmod 644 "$MXZMG"
 
     cd "$MXRD" || warnandfail "Failed to cd into $MXRD!"
     ./repackimg.sh --sudo
