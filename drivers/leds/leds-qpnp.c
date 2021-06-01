@@ -3998,8 +3998,8 @@ static ssize_t led_r_store(struct device *dev, struct device_attribute *devattr,
             printk(KERN_INFO "[LED] Led_r brightness is out of range(0-255)\n");
             return count;
         }
-        for (i = 0; i < RGB_MAX; i++)
-            samsung_led_set(&info[i],LED_OFF);
+        for (i = 0; i < RGB_MAX -1; i++)
+            samsung_led_set(&info[i], LED_OFF);
         mutex_lock(&leds_mutex_lock);
         info[RGB_RED].rgb_cfg->enable = RGB_LED_ENABLE_RED;
         pat_reg = &led_rgb[RGB_RED];
@@ -4036,7 +4036,7 @@ static ssize_t led_g_store(struct device *dev, struct device_attribute *devattr,
             printk(KERN_INFO "[LED] Led_g brightness is out of range(0-255)\n");
             return count;
         }
-        for (i = 0; i < RGB_MAX; i++)
+        for (i = 0; i < RGB_MAX - 1; i++)
             samsung_led_set(&info[i],LED_OFF);
 	mutex_lock(&leds_mutex_lock);
         info[RGB_GREEN].rgb_cfg->enable = RGB_LED_ENABLE_GREEN;
@@ -4075,7 +4075,7 @@ static ssize_t led_b_store(struct device *dev, struct device_attribute *devattr,
             printk(KERN_INFO "[LED] Led_b brightness is out of range(0-255)\n");
             return count;
         }
-        for (i = 0; i < RGB_MAX; i++)
+        for (i = 0; i < RGB_MAX - 1; i++)
             samsung_led_set(&info[i],LED_OFF);
 	mutex_lock(&leds_mutex_lock);
         info[RGB_BLUE].rgb_cfg->enable = RGB_LED_ENABLE_BLUE;
@@ -4176,7 +4176,7 @@ static ssize_t led_blink_store(struct device *dev, struct device_attribute *deva
 		brightness_b = hex_to_dec(buf[8], buf[9]);
 	}
 
-	for (cnt = 0; cnt < RGB_MAX; cnt++)
+	for (cnt = 0; cnt < RGB_MAX - 1; cnt++)
 		samsung_led_set(&info[cnt],0);
 	mutex_lock(&leds_mutex_lock);
 	pat_reg = &led_blink_patt[0];
