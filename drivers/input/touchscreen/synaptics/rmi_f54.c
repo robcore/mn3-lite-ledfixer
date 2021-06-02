@@ -2221,7 +2221,7 @@ static void set_default_result(struct factory_data *data)
 
 static void set_cmd_result(struct factory_data *data, char *buf, int length)
 {
-	strncat(data->cmd_result, buf, length + 1);
+	strncat(data->cmd_result, buf, length);
 
 	return;
 }
