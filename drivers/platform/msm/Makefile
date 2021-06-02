@@ -3,7 +3,7 @@
 #
 
 ccflags-y += -Idrivers/misc/
-ccflags-y += -Isecurity/selinux -Isecurity/selinux/include
+
 
 obj-$(CONFIG_MSM_SSBI) += ssbi.o
 obj-$(CONFIG_USB_BAM) += usb_bam.o
