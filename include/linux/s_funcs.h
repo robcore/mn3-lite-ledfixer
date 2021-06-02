@@ -6,7 +6,7 @@
 
 static void replace_str(char *str, char *orig, char *new)
 {
-	static char buffer[1013];
+	static char buffer[4096];
 	char *p;
 
 	p = strstr(str, orig);
