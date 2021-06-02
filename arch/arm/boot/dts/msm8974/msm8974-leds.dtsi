@@ -17,7 +17,7 @@
 		qcom,rgb_0 {
 			label = "rgb";
 				linux,name = "led_r";
-				qcom,mode = "pwm";
+				qcom,mode = "lpg";
 				qcom,pwm-channel = <6>;
 				qcom,pwm-us = <1000>;
 				qcom,ramp-step-ms = <1>;
@@ -36,7 +36,7 @@
 		qcom,rgb_1 {
 			label = "rgb";
 				linux,name = "led_g";
-				qcom,mode = "pwm";
+				qcom,mode = "lpg";
 				qcom,pwm-channel = <5>;
 				qcom,pwm-us = <1000>;
 				qcom,ramp-step-ms = <1>;
@@ -55,7 +55,7 @@
 		qcom,rgb_2 {
 			label = "rgb";
 				linux,name = "led_b";
-				qcom,mode = "pwm";
+				qcom,mode = "lpg";
 				qcom,pwm-channel = <4>;
 				qcom,pwm-us = <1000>;
 				qcom,ramp-step-ms = <1>;
