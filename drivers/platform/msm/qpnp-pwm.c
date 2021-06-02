@@ -1262,8 +1262,8 @@ struct pwm_device *pwm_request(int pwm_id, const char *lable)
 	chip = radix_tree_lookup(&lpg_dev_tree, pwm_id);
 
 	if (!chip) {
-		pr_err("Could not find PWM Device for the\n");
-		pr_err("input pwm channel %d\n", pwm_id);
+		pr_err("Could not find PWM Device for the\n \
+                input pwm channel %d\n", pwm_id);
 		return ERR_PTR(-EINVAL);
 	}
 
@@ -1272,8 +1272,8 @@ struct pwm_device *pwm_request(int pwm_id, const char *lable)
 	pwm = &chip->pwm_dev;
 
 	if (pwm->pwm_config.in_use) {
-		pr_err("PWM device associated with the");
-		pr_err("input pwm id: %d is in use by %s",
+		pr_err("PWM device associated with the \n \
+                input pwm id: %d is in use by %s",
 			pwm_id, pwm->pwm_config.lable);
 		pwm = ERR_PTR(-EBUSY);
 	} else {
