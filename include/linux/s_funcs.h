@@ -6,12 +6,11 @@
 
 static void replace_str(char *str, char *orig, char *new)
 {
-	static char buffer[4096];
+	static char buffer[1013];
 	char *p;
 
-	if (strstr(str, orig) != NULL)
-		p = strstr(str, orig);
-	else
+	p = strstr(str, orig);
+    if (p == NULL || !p)
 		return;
 
 	strncpy(buffer, str, p-str);
