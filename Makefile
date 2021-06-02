@@ -378,7 +378,7 @@ KBUILD_CPPFLAGS := -D__KERNEL__
 KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -Wno-unused-variable -Wno-maybe-uninitialized \
 		   -Werror-implicit-function-declaration \
-		   -std=gnu89 -fno-unsafe-math-optimizations \
+		   -fno-unsafe-math-optimizations \
 		   -Wno-unused-function -Wno-unused-label -Wno-array-bounds \
 		   -Wno-format-security -Wno-format-truncation \
 		   -Wno-misleading-indentation -Wno-int-in-bool-context \
@@ -386,6 +386,7 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fno-delete-null-pointer-checks -Wno-pointer-compare \
 		   -Wno-switch-unreachable -Wno-stringop-overflow \
 		   -fno-strict-aliasing -fno-common
+		   #-std=gnu89
 		   #-fno-strict-aliasing -fno-common \
            #-fomit-frame-pointer -fno-omit-frame-pointer \
 		   #-fno-align-functions -fno-align-loops \
@@ -393,7 +394,7 @@ KBUILD_AFLAGS_KERNEL :=
 KBUILD_CFLAGS_KERNEL := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -Wno-unused-variable -Wno-maybe-uninitialized \
 		   -Werror-implicit-function-declaration \
-		   -std=gnu89 -fno-unsafe-math-optimizations \
+		   -fno-unsafe-math-optimizations \
 		   -Wno-unused-function -Wno-unused-label -Wno-array-bounds \
 		   -Wno-format-security -Wno-format-truncation \
 		   -Wno-misleading-indentation -Wno-int-in-bool-context \
@@ -666,7 +667,7 @@ CFLAGS += $(call cc-option,-funit-at-a-time,)
 KBUILD_CFLAGS += $(call cc-option,-Wdeclaration-after-statement,)
 
 # disable pointer signed / unsigned warnings in gcc 4.0
-KBUILD_CFLAGS += $(call cc-disable-warning, pointer-sign)
+#KBUILD_CFLAGS += $(call cc-disable-warning, pointer-sign)
 
 # disable invalid "can't wrap" optimizations for signed / pointers
 KBUILD_CFLAGS	+= $(call cc-option,-fno-strict-overflow)
