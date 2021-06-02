@@ -387,7 +387,7 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -Wno-switch-unreachable -Wno-stringop-overflow \
 		   -fno-strict-aliasing -fno-common -std=gnu89 \
 		   -Wno-stringop-truncation -Wno-sizeof-pointer-memaccess \
-		   -Wno-restrict
+		   -Wno-restrict -Wno-format-overflow
 
 		   #-fno-strict-aliasing -fno-common \
            #-fomit-frame-pointer -fno-omit-frame-pointer \
@@ -405,7 +405,7 @@ KBUILD_CFLAGS_KERNEL := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -Wno-switch-unreachable -Wno-stringop-overflow \
 		   -fno-strict-aliasing -fno-common -std=gnu89 \
 		   -Wno-stringop-truncation -Wno-sizeof-pointer-memaccess \
-		   -Wno-restrict
+		   -Wno-restrict -Wno-format-overflow
 
 KBUILD_AFLAGS   := -D__ASSEMBLY__
 KBUILD_AFLAGS_MODULE  := -DMODULE
