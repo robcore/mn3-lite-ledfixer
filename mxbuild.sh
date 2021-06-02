@@ -469,7 +469,7 @@ build_kernel() {
 	#env
 	echo -n "$(date +%s)" > "$RDIR/.starttime"
 	echo "Starting build..."
-	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -S -s -j16 -C "$RDIR" O="$BUILDIR" | tee -a "$LOGDIR/$QUICKDATE.Mark$(cat $RDIR/.oldversion).log" \
+	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -S -s -j16 -C "$RDIR" O="$BUILDIR" 2>&1 | tee -a "$LOGDIR/$QUICKDATE.Mark$(cat $RDIR/.oldversion).log" \
                                                                                     || warnandfail "Kernel Build failed!"
 
 }
