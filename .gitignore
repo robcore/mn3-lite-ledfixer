@@ -135,3 +135,5 @@ mxrd/split_img/
 mxrd/split_img/*
 mxrd/split_img.orig
 mxrd/split_img.orig/*
+buildlogs
+buildlogs/*

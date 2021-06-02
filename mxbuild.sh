@@ -7,6 +7,7 @@ env KCONFIG_NOTIMESTAMP=true &>/dev/null
 
 RDIR="/root/mn3lite"
 BUILDIR="$RDIR/build"
+LOGDIR="$RDIR/buildlogs"
 KDIR="$BUILDIR/arch/arm/boot"
 OLDVERFILE="$RDIR/.oldversion"
 OLDVER="$(cat $OLDVERFILE)"
@@ -28,8 +29,9 @@ QUICKHOUR="$(date +%l | cut -d " " -f2)"
 QUICKMIN="$(date +%S)"
 QUICKAMPM="$(date +%p)"
 QUICKDMY="$(date +%d-%m-%Y)"
-QUICKTIME="$QUICKHOUR:$QUICKMIN-${QUICKAMPM}"
-QUICKDATE="$QUICKDMY-$QUICKTIME"
+QUICKYMD="$(date +%Y-%m-%d)"
+QUICKTIME="$QUICKHOUR_$QUICKMIN-${QUICKAMPM}"
+QUICKDATE="$QUICKYMD-$QUICKTIME"
 #CORECOUNT="$(grep processor /proc/cpuinfo | wc -l)"
 #TOOLCHAIN="/opt/toolchains/arm-cortex_a15-linux-gnueabihf_5.3/bin/arm-cortex_a15-linux-gnueabihf-"
 #TOOLCHAIN="/opt/toolchains/gcc-linaro-7.5.0-2019.12-x86_64_arm-linux-gnueabihf/bin/arm-linux-gnueabihf-"
@@ -53,6 +55,11 @@ then
     CLEANONFAIL="no"
 else
     CLEANONFAIL="yes"
+fi
+
+if [ ! -d "$RDIR/buildlogs" ]
+then
+    mkdir "$RDIR/buildlogs"
 fi
 
 timerprint() {
@@ -462,7 +469,8 @@ build_kernel() {
 	#env
 	echo -n "$(date +%s)" > "$RDIR/.starttime"
 	echo "Starting build..."
-	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -S -s -j16 -C "$RDIR" O="$BUILDIR" || warnandfail "Kernel Build failed!"
+	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -S -s -j16 -C "$RDIR" O="$BUILDIR" | tee -a "$LOGDIR/$QUICKDATE.Mark$(cat $RDIR/.oldversion).log" \
+                                                                                    || warnandfail "Kernel Build failed!"
 
 }
 
