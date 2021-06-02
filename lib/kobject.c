@@ -47,11 +47,13 @@ static int populate_dir(struct kobject *kobj)
 static int create_dir(struct kobject *kobj)
 {
 	int error = 0;
-	error = sysfs_create_dir(kobj);
-	if (!error) {
-		error = populate_dir(kobj);
-		if (error)
-			sysfs_remove_dir(kobj);
+	if (kobject_name(kobj)) {
+		error = sysfs_create_dir(kobj);
+		if (!error) {
+			error = populate_dir(kobj);
+			if (error)
+				sysfs_remove_dir(kobj);
+		}
 	}
 	return error;
 }
@@ -110,7 +112,7 @@ char *kobject_get_path(struct kobject *kobj, gfp_t gfp_mask)
 	path = kzalloc(len, gfp_mask);
 	if (!path)
 		return NULL;
-	fill_kobj_path(kobj, path, len + 1);
+	fill_kobj_path(kobj, path, len);
 
 	return path;
 }
@@ -529,7 +531,7 @@ struct kobject *kobject_get(struct kobject *kobj)
 	return kobj;
 }
 
-static struct kobject * __must_check kobject_get_unless_zero(struct kobject *kobj)
+static struct kobject *kobject_get_unless_zero(struct kobject *kobj)
 {
 	if (!kref_get_unless_zero(&kobj->kref))
 		kobj = NULL;
@@ -639,7 +641,7 @@ struct kobject *kobject_create(void)
 /**
  * kobject_create_and_add - create a struct kobject dynamically and register it with sysfs
  *
- * @name: the name for the kobject
+ * @name: the name for the kset
  * @parent: the parent kobject of this kobject, if any.
  *
  * This function creates a kobject structure dynamically and registers it
