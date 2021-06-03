@@ -1084,10 +1084,12 @@ static int __init smd_pkt_init(void)
 	}
 
 	INIT_DELAYED_WORK(&loopback_work, loopback_probe_worker);
-
+#ifdef CONFIG_MSM_IPC_LOGGING
 	smd_pkt_ilctxt = ipc_log_context_create(SMD_PKT_IPC_LOG_PAGE_CNT,
 						"smd_pkt", 0);
-
+    if (!smd_pkt_ilctxt)
+        pr_debug("Whateverthefuck\n");
+#endif
 	D_STATUS("SMD Packet Port Driver Initialized.\n");
 	return 0;
 
