@@ -245,8 +245,8 @@ CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
 
 HOSTCC       = gcc
 HOSTCXX      = g++
-HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fomit-frame-pointer
-HOSTCXXFLAGS = -O2
+HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -O3 -fomit-frame-pointer
+HOSTCXXFLAGS = -O3
 
 # Decide whether to build built-in, modular, or both.
 # Normally, just do built-in.
@@ -387,7 +387,9 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -Wno-switch-unreachable -Wno-stringop-overflow \
 		   -fno-strict-aliasing -fno-common -std=gnu89 \
 		   -Wno-stringop-truncation -Wno-sizeof-pointer-memaccess \
-		   -Wno-restrict -Wno-format-overflow
+		   -Wno-restrict -Wno-format-overflow \
+		   -mfpu=neon-vfpv4 -mcpu=cortex-a15 -mtune=cortex-a15 \
+		   -Wno-sequence-point
 
 		   #-fno-strict-aliasing -fno-common \
            #-fomit-frame-pointer -fno-omit-frame-pointer \
@@ -405,7 +407,9 @@ KBUILD_CFLAGS_KERNEL := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -Wno-switch-unreachable -Wno-stringop-overflow \
 		   -fno-strict-aliasing -fno-common -std=gnu89 \
 		   -Wno-stringop-truncation -Wno-sizeof-pointer-memaccess \
-		   -Wno-restrict -Wno-format-overflow
+		   -Wno-restrict -Wno-format-overflow \
+		   -mfpu=neon-vfpv4 -mcpu=cortex-a15 -mtune=cortex-a15 \
+		   -Wno-sequence-point
 
 KBUILD_AFLAGS   := -D__ASSEMBLY__
 KBUILD_AFLAGS_MODULE  := -DMODULE
