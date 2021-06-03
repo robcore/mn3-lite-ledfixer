@@ -546,7 +546,8 @@ build_boot_img() {
         DTS_FILE="$RDIR/arch/arm/boot/dts/msm8974/$DTS_PREFIX.dts"
         DTB_FILE="$KDIR/$DTS_PREFIX.dtb"
         echo "Creating $DTB_FILE from $DTS_FILE"
-        "$BUILDIR/scripts/dtc/dtc" -i "$RDIR/arch/arm/boot/dts/msm8974/" -O dtb -o "$DTB_FILE" "$DTS_FILE" || warnandfail "Failed to build $DTB_FILE!"
+        "$BUILDIR/scripts/dtc/dtc" -i "$RDIR/arch/arm/boot/dts/msm8974/" -p 1024 -O dtb -o "$DTB_FILE" "$DTS_FILE" 2>&1 | \
+                   tee -a "$LOGDIR/$QUICKDATE.Mark$(cat $RDIR/.oldversion).log" || warnandfail "Failed to build $DTB_FILE!"
         #"$BUILDIR/scripts/dtc/dtc" -i "$RDIR/arch/arm/boot/dts/msm8974/" -p 1024 -O dtb -o "$DTB_FILE" "$DTS_FILE" || warnandfail "Failed to build $DTB_FILE!"
         #/usr/bin/dtc -i "$RDIR/arch/arm/boot/dts/msm8974" -A -H both -p 1024 -O dtb -o "$DTB_FILE" "$DTS_FILE" || warnandfail "Failed to build $DTB_FILE!"
         #/usr/bin/dtc -i "$RDIR/arch/arm/boot/dts/msm8974" -p 1024 -O dtb -o "$DTB_FILE" "$DTS_FILE" || warnandfail "Failed to build $DTB_FILE!"
@@ -554,7 +555,8 @@ build_boot_img() {
 
 	echo "Generating $DTIMG"
 
-    ./tools/skales/dtbTool -o "$DTIMG" -s 1024 -p "$DTCDIR" "$KDIR"
+    ./tools/skales/dtbTool -v -o "$DTIMG" -s 1024 -p "$DTCDIR" "$KDIR" 2>&1 | \
+                   tee -a "$LOGDIR/$QUICKDATE.Mark$(cat $RDIR/.oldversion).log" || warnandfail "dtbTool failed to build $DTIMG!"
 
     if [ ! -f "$DTIMG" ]
     then
