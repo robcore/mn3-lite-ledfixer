@@ -764,7 +764,7 @@ usage: ./mxbuild.sh [OPTION]
 Common options:
  -a|--all            Do a complete build (starting at the beginning)
  -anr|--allnoreboot  Do a complete build (starting at the beginning), do not reboot
- -d|--debug          Same as --all but skips final cleanup
+ -d|--debug          Similiar to --all but no img, zip or cleanup. Not for production.
  -r|--rebuildme      Same as --all but defaults to rebuilding previous version
  -b|--bsd            Build single driver (path/to/folder/ | path/to/file.o)
  -c|--clean          Remove everything this build script has done
@@ -852,7 +852,6 @@ do
 	    	;;
 
 	     -d|--debug)
-			checkrecov
 			handle_existing
 			build_debug
 			break
