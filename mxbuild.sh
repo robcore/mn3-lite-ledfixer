@@ -65,6 +65,21 @@ then
     mkdir "$RDIR/buildlogs"
 fi
 
+stop_build_timer() {
+
+    echo "Stopping MXBuild Timer."
+    [ -f "$ENDFILE" ] && rm "$ENDFILE"
+    printf "%s" "$(date +%s)" > "$ENDFILE"
+
+}
+
+start_build_timer() {
+
+    echo "Starting MXBuild Timer."
+    [ -f "$STARTFILE" ] && rm "$STARTFILE"
+    printf "%s" "$(date +%s)" > "$STARTFILE"
+}
+
 timerprint() {
 
 	local DIFFMINS
@@ -72,6 +87,12 @@ timerprint() {
 	local ENDTIME
     local STARTTIME
 	local DIFFTIME
+
+    if [ ! -f "$ENDFILE" ]
+    then
+        echo "Looks like you forgot to start the timer. I will do it for you."
+        start_build_timer
+    fi
 
 	ENDTIME="$(cat $ENDFILE)"
     STARTTIME="$(cat $STARTFILE)"
@@ -320,21 +341,6 @@ test_funcs() {
 
 }
 
-set_end_time() {
-
-    echo "Stopping MXbuild Timer."
-    [ -f "$ENDFILE" ] && rm "$ENDFILE"
-    printf "%s" "$(date +%s)" > "$ENDFILE"
-
-}
-
-set_start_time() {
-
-    echo "Starting MXbuild Timer."
-    [ -f "$STARTFILE" ] && rm "$STARTFILE"
-    printf "%s" "$(date +%s)" > "$STARTFILE"
-}
-
 checkrecov() {
 	lsusb > "$RDIR/mxtempusb"
 	if grep -q '04e8:6860' mxtempusb;
@@ -489,7 +495,7 @@ build_kernel() {
 	cp "$BUILDIR/.config" "$OLDCFG/config.$QUICKDATE" || warnandfail "Config Copy Error!"
 	#echo "Snapshot of current environment variables:"
 	#env
-	set_start_time
+	start_build_timer
 	echo "Starting build..."
 	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -S -s -j16 -C "$RDIR" O="$BUILDIR" 2>&1 | tee -a "$LOGDIR/$QUICKDATE.Mark$(cat $RDIR/.oldversion).log" \
                                                                                     || warnandfail "Kernel Build failed!"
@@ -503,12 +509,12 @@ build_kernel_debug() {
 	cp "$BUILDIR/.config" "$OLDCFG/config.$QUICKDATE" || warnandfail "Config Copy Error!"
 	#echo "Snapshot of current environment variables:"
 	#env
-	set_start_time
+	start_build_timer
 	echo "Starting build..."
 	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -S -s -j16 -C "$RDIR" O="$BUILDIR" 2>&1 | tee -a "$LOGDIR/$QUICKDATE.Mark$(cat $RDIR/.oldversion).log" \
                                                                                     || warnandfail "Kernel Build failed!"
-    set_end_time
-
+    stop_build_timer
+    timerprint
 }
 
 #build_ramdisk() {
@@ -652,7 +658,7 @@ create_zip() {
 	echo "Kernel $MX_KERNEL_VERSION.zip finished"
 	echo "Filepath: "
 	echo "$RDIR/$MX_KERNEL_VERSION.zip"
-    set_end_time
+    stop_build_timer
 
 	if [ -s "$RDIR/$MX_KERNEL_VERSION.zip" ]
 	then
@@ -797,13 +803,6 @@ build_kernel_and_package() {
 
 }
 
-build_kernel_debug() {
-
-    build_kernel
-    echo "Finished"
-
-}
-
 build_all() {
 
 	clean_build && build_kernel_config && build_kernel_and_package && clean_build
@@ -812,7 +811,7 @@ build_all() {
 
 build_debug() {
 
-	clean_build && build_kernel_config && build_kernel_and_package
+	clean_build && build_kernel_config && build_kernel_debug
 
 }
 
