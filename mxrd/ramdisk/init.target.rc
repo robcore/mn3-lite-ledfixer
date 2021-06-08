@@ -143,15 +143,15 @@ service qrngd /system/bin/qrngd -f
     user root
     group root
 
-service qrngp /system/bin/qrngp
-    class main
-    user root
-    group root
-    oneshot
-    disabled
+#service qrngp /system/bin/qrngp
+#    class main
+#    user root
+#    group root
+#    oneshot
+#    disabled
 
-on property:sys.boot_completed=1
-    start qrngp
+#on property:sys.boot_completed=1
+#    start qrngp
 
 service qseecomd /system/bin/qseecomd
    class core
@@ -274,7 +274,7 @@ service imsdatadaemon /system/bin/imsdatadaemon
     disabled
 
 service wcnss-service /system/bin/wcnss_service
-    class main
+    class late_start
     user system
     group system wifi radio
     oneshot
@@ -304,15 +304,15 @@ service imscmservice /system/bin/imscmservice
 #    user system
 #    group drmrpc
 
-service pfm /system/bin/pfm
-    class late_start
-    user system
-    group system drmrpc mount
+#service pfm /system/bin/pfm
+#    class late_start
+#    user system
+#    group system drmrpc mount
 
-service ml_daemon /system/bin/ml_daemon
-    class core
-    user root
-    group root
+#service ml_daemon /system/bin/ml_daemon
+#    class core
+#    user root
+#    group root
 # SecEDS
 
 service TvoutService_C /system/bin/bintvoutservice
