@@ -13,6 +13,8 @@ OLDVERFILE="$RDIR/.oldversion"
 OLDVER="$(cat $OLDVERFILE)"
 LASTZIPFILE="$RDIR/.lastzip"
 LASTZIP="$(cat $LASTZIPFILE)"
+ENDFILE="$RDIR/.endtime"
+STARTFILE="$RDIR/.starttime"
 MXRD="$RDIR/mxrd"
 RAMDISKFOLDER="$MXRD/ramdisk"
 ZIPFOLDER="$RDIR/mxzip"
@@ -67,36 +69,39 @@ timerprint() {
 
 	local DIFFMINS
 	local DIFFSECS
+	local ENDTIME
+    local STARTTIME
+	local DIFFTIME
 
-	DIFFMINS=$(bc <<< "(${1}%3600)/60")
-	DIFFSECS=$(bc <<< "${1}%60")
-	printf "%s" "Build completed in: "
-	printf "%d" "$DIFFMINS"
-	if [ "$DIFFMINS" = "1" ]
-	then
-		printf "%s" " Minute and "
-	else
-		printf "%s" " Minutes and "
-	fi
-	printf "%d" "$DIFFSECS"
-	if [ "$DIFFSECS" = "1" ]
-	then
-		printf "%s\n" " Second."
-	else
-		printf "%s\n" " Seconds."
-	fi
-	rm $RDIR/.starttime &> /dev/null
-	rm $RDIR/.endtime &> /dev/null
-	printf "%s" "Finished!"
-
-}
-
-timerdiff() {
-
-	printf "%s" "$(date +%s)" > "$RDIR/.endtime"
-	ENDTIME="$(cat $RDIR/.endtime)"
-    STARTTIME="$(cat $RDIR/.starttime)"
+	ENDTIME="$(cat $ENDFILE)"
+    STARTTIME="$(cat $STARTFILE)"
 	DIFFTIME=$(( ENDTIME - STARTTIME ))
+
+    if [ -z "$DIFFTIME" ]
+    then
+        printf "%s\n" "MXBUILD Completed!"
+    else
+    	DIFFMINS=$(bc <<< "(${DIFFTIME}%3600)/60")
+    	DIFFSECS=$(bc <<< "${DIFFTIME}%60")
+    	printf "%s" "Build completed in: "
+    	printf "%d" "$DIFFMINS"
+    	if [ "$DIFFMINS" = "1" ]
+    	then
+    		printf "%s" " Minute and "
+    	else
+    		printf "%s" " Minutes and "
+    	fi
+    	printf "%d" "$DIFFSECS"
+    	if [ "$DIFFSECS" = "1" ]
+    	then
+    		printf "%s\n" " Second."
+    	else
+    		printf "%s\n" " Seconds."
+    	fi
+    	rm $STARTFILE &> /dev/null
+    	rm $ENDFILE &> /dev/null
+    	printf "%s\n" "MXBUILD is Finished!"
+    fi
 
 }
 
@@ -117,8 +122,8 @@ cleanupfail() {
 takeouttrash() {
 
     rm "$RDIR/localversion" &> /dev/null
-	rm "$RDIR/.starttime" &> /dev/null
-	rm "$RDIR/.endtime" &> /dev/null
+	rm "$STARTFILE" &> /dev/null
+	rm "$ENDFILE" &> /dev/null
 	rm "$RDIR/mxtempusb" &> /dev/null
 
 	find . -type f \( -iname \*.rej \
@@ -315,6 +320,21 @@ test_funcs() {
 
 }
 
+set_end_time() {
+
+    echo "Stopping MXbuild Timer."
+    [ -f "$ENDFILE" ] && rm "$ENDFILE"
+    printf "%s" "$(date +%s)" > "$ENDFILE"
+
+}
+
+set_start_time() {
+
+    echo "Starting MXbuild Timer."
+    [ -f "$STARTFILE" ] && rm "$STARTFILE"
+    printf "%s" "$(date +%s)" > "$STARTFILE"
+}
+
 checkrecov() {
 	lsusb > "$RDIR/mxtempusb"
 	if grep -q '04e8:6860' mxtempusb;
@@ -463,15 +483,31 @@ build_single_driver() {
 }
 
 build_kernel() {
+
 	OLDCFG="/root/mn3-oldconfigs"
 	echo "Backing up .config to $OLDCFG/config.$QUICKDATE"
 	cp "$BUILDIR/.config" "$OLDCFG/config.$QUICKDATE" || warnandfail "Config Copy Error!"
 	#echo "Snapshot of current environment variables:"
 	#env
-	echo -n "$(date +%s)" > "$RDIR/.starttime"
+	set_start_time
 	echo "Starting build..."
 	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -S -s -j16 -C "$RDIR" O="$BUILDIR" 2>&1 | tee -a "$LOGDIR/$QUICKDATE.Mark$(cat $RDIR/.oldversion).log" \
                                                                                     || warnandfail "Kernel Build failed!"
+
+}
+
+build_kernel_debug() {
+
+	OLDCFG="/root/mn3-oldconfigs"
+	echo "Backing up .config to $OLDCFG/config.$QUICKDATE"
+	cp "$BUILDIR/.config" "$OLDCFG/config.$QUICKDATE" || warnandfail "Config Copy Error!"
+	#echo "Snapshot of current environment variables:"
+	#env
+	set_start_time
+	echo "Starting build..."
+	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -S -s -j16 -C "$RDIR" O="$BUILDIR" 2>&1 | tee -a "$LOGDIR/$QUICKDATE.Mark$(cat $RDIR/.oldversion).log" \
+                                                                                    || warnandfail "Kernel Build failed!"
+    set_end_time
 
 }
 
@@ -612,10 +648,12 @@ create_zip() {
 	then
 		warnandfail "$RDIR/$MX_KERNEL_VERSION.zip does not exist!"
 	fi
+
 	echo "Kernel $MX_KERNEL_VERSION.zip finished"
 	echo "Filepath: "
 	echo "$RDIR/$MX_KERNEL_VERSION.zip"
-	timerdiff
+    set_end_time
+
 	if [ -s "$RDIR/$MX_KERNEL_VERSION.zip" ]
 	then
 		echo -n "$MX_KERNEL_VERSION.zip" > "$RDIR/.lastzip"
@@ -694,7 +732,7 @@ create_zip() {
 	fi
 	adb kill-server || echo "Failed to kill ADB server!"
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR"
-	timerprint "$DIFFTIME"
+	timerprint
 }
 
 #CREATE_TAR()
@@ -756,6 +794,13 @@ package_ramdisk_and_zip() {
 build_kernel_and_package() {
 
 	build_kernel && package_ramdisk_and_zip
+
+}
+
+build_kernel_debug() {
+
+    build_kernel
+    echo "Finished"
 
 }
 
