@@ -67,8 +67,6 @@ on fs
      chown system system /persdata/absolute
      chmod 0750 /persdata/absolute
 
-# TODO: replace it with device's DEXPREOPT_BOOT_JARS
-
 # service for TZPR provisioning version check app
 service scranton_RD /system/bin/scranton_RD
     class main

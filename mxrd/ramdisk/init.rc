@@ -17,7 +17,7 @@ on early-init
     write /proc/1/oom_score_adj -1000
 
     # Apply strict SELinux checking of PROT_EXEC on mmap/mprotect calls.
-    write /sys/fs/selinux/checkreqprot 0
+    write /sys/fs/selinux/checkreqprot 1
 
     # Set the security context for the init process.
     # This should occur before anything else (e.g. ueventd) is started.
@@ -231,6 +231,7 @@ on post-fs
     chmod 0770 /cache
 
     # This may have been created by the recovery system with odd permissions
+	mkdir /cache/recovery 0770
     chown system cache /cache/recovery
     chmod 0770 /cache/recovery
 
@@ -1022,6 +1023,7 @@ service healthd /sbin/healthd
     class core
     critical
     seclabel u:r:healthd:s0
+	group root system
 
 service lpm /system/bin/lpm
     class charger
@@ -1138,11 +1140,11 @@ service netd /system/bin/netd
     socket mdns stream 0660 root system
     socket fwmarkd stream 0660 root inet
 
-service debuggerd /system/bin/debuggerd
-    class main
-
-service debuggerd64 /system/bin/debuggerd64
-    class main
+#service debuggerd /system/bin/debuggerd
+#    class main
+#
+#service debuggerd64 /system/bin/debuggerd64
+#    class main
 
 # icd
 service icd /system/bin/icd
@@ -1245,7 +1247,7 @@ service powersnd /system/bin/samsungpowersoundplay
     oneshot
 
 service bootanim /system/bin/bootanimation
-    class main
+    class core
     user graphics
     group graphics system
     disabled
@@ -1398,7 +1400,7 @@ on property:sys.qseecomd.enable=true
 # ccm
   service ccm /system/bin/tlc_server
   user system
-  group system 
+  group system
   disabled
 
 # tui
@@ -1414,11 +1416,12 @@ on property:persist.security.tlc.tui=1
   setprop persist.security.tlc.tui 0
 
 on property:sys.boot_completed=1
-    write /sys/block/mmcblk0/queue/scheduler cfq
+    write /sys/block/mmcblk0/queue/scheduler row
 
 # Call Post-init script
 service mxinit /system/bin/sh /sbin/mx.sh
     class late_start
 	user root
     group root shell
+	seclabel u:r:init:s0
     oneshot
