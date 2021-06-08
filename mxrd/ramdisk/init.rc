@@ -16,52 +16,51 @@ on early-init
     # Set init and its forked children's oom_adj.
     write /proc/1/oom_score_adj -1000
 
+    # Apply strict SELinux checking of PROT_EXEC on mmap/mprotect calls.
+    write /sys/fs/selinux/checkreqprot 0
+
     # Set the security context for the init process.
     # This should occur before anything else (e.g. ueventd) is started.
     setcon u:r:init:s0
-
-    # Apply strict SELinux checking of PROT_EXEC on mmap/mprotect calls.
-    write /sys/fs/selinux/checkreqprot 1
 
     # Set the security context of /adb_keys if present.
     restorecon /adb_keys
 
     start ueventd
 
-    # create mountpoints
+# create mountpoints
     mkdir /mnt 0775 root system
 
 on init
-    sysclktz 0
-
-    loglevel 3
-
     ffu
+sysclktz 0
 
-    # SEC_SELINUX
-    # for audit message
+loglevel 3
+
+# SEC_SELINUX
+# for audit message
     chown system system /proc/avc_msg
     chmod 0660 /proc/avc_msg
 
-    # Vibetonz
+# Vibetonz
     export VIBE_PIPE_PATH /dev/pipes
     mkdir /dev/pipes 0771 vibe vibe
     restorecon /dev/pipes
 
-    # Backward compatibility
+# Backward compatibility
     symlink /system/etc /etc
     symlink /sys/kernel/debug /d
 
-    # Right now vendor lives on the same filesystem as system,
-    # but someday that may change.
+# Right now vendor lives on the same filesystem as system,
+# but someday that may change.
     symlink /system/vendor /vendor
 
-    # Create cgroup mount point for cpu accounting
+# Create cgroup mount point for cpu accounting
     mkdir /acct
     mount cgroup none /acct cpuacct
     mkdir /acct/uid
 
-    # Create cgroup mount point for memory
+# Create cgroup mount point for memory
     mount tmpfs none /sys/fs/cgroup mode=0750,uid=0,gid=1000
     mkdir /sys/fs/cgroup/memory 0750 root system
     mount cgroup none /sys/fs/cgroup/memory memory
@@ -138,7 +137,7 @@ on init
     # set fwmark on accepted sockets
     write /proc/sys/net/ipv4/tcp_fwmark_accept 1
 
-    # Create cgroup mount points for process groups
+# Create cgroup mount points for process groups
     mkdir /dev/cpuctl
     mount cgroup none /dev/cpuctl cpu
     chown system system /dev/cpuctl
@@ -163,25 +162,24 @@ on init
     write /dev/cpuctl/apps/bg_non_interactive/cpu.rt_runtime_us 700000
     write /dev/cpuctl/apps/bg_non_interactive/cpu.rt_period_us 1000000
 
-    # qtaguid will limit access to specific data based on group memberships.
-    #   net_bw_acct grants impersonation of socket owners.
-    #   net_bw_stats grants access to other apps' detailed tagged-socket stats.
+# qtaguid will limit access to specific data based on group memberships.
+#   net_bw_acct grants impersonation of socket owners.
+#   net_bw_stats grants access to other apps' detailed tagged-socket stats.
     chown root net_bw_acct /proc/net/xt_qtaguid/ctrl
     chown root net_bw_stats /proc/net/xt_qtaguid/stats
 
-    # Allow everybody to read the xt_qtaguid resource tracking misc dev.
-    # This is needed by any process that uses socket tagging.
+# Allow everybody to read the xt_qtaguid resource tracking misc dev.
+# This is needed by any process that uses socket tagging.
     chmod 0644 /dev/xt_qtaguid
 
-    # Create location for fs_mgr to store abbreviated output from filesystem
-    # checker programs.
+# Create location for fs_mgr to store abbreviated output from filesystem
+# checker programs.
     mkdir /dev/fscklogs 0770 root system
 
-    # pstore/ramoops previous console log
+# pstore/ramoops previous console log
     mount pstore pstore /sys/fs/pstore
     chown system log /sys/fs/pstore/console-ramoops
     chmod 0440 /sys/fs/pstore/console-ramoops
-
 # To sync between sdcard installd
     setprop installd.sdcard_manipulate_done 0
 
@@ -207,6 +205,7 @@ on late-init
     trigger early-fs
     trigger fs
     trigger post-fs
+    trigger post-fs-data
 
     # Load properties from /system/ + /factory after fs mount. Place
     # this in another action so that the load will be scheduled after the prior
@@ -214,7 +213,7 @@ on late-init
     trigger load_all_props_action
 	# Now we can mount /data. File encryption requires keymaster to decrypt
 	# /data, which in turn can only be loaded when system properties are present
-    trigger post-fs-data
+
 	trigger load_persist_props_action
 
     # Remove a file to wake up anything waiting for firmware.
@@ -222,7 +221,6 @@ on late-init
 
     trigger early-boot
     trigger boot
-
 
 on post-fs
     # once everything is setup, no need to modify /
@@ -235,6 +233,8 @@ on post-fs
     # We chown/chmod /cache again so because mount is run as root + defaults
     chown system cache /cache
     chmod 0770 /cache
+    # We restorecon /cache in case the cache partition has been reset.
+    restorecon_recursive /cache
 
     # This may have been created by the recovery system with odd permissions
 	mkdir /cache/recovery 0770
@@ -276,6 +276,7 @@ on post-fs-data
     # We restorecon /data in case the userdata partition has been reset.
     restorecon /data
     restorecon_msc
+    restorecon /data/lost+found
 
     # Avoid predictable entropy pool. Carry over entropy from previous boot.
     copy /data/system/entropy.dat /dev/urandom
@@ -299,7 +300,6 @@ on post-fs-data
     # create basic filesystem structure
     mkdir /data/misc 01771 system misc
     mkdir /data/misc/adb 02750 system shell
-    # SEC_SELINUX
     mkdir /data/misc/audit 02775 audit system
     mkdir /data/misc/bluedroid 0770 bluetooth net_bt_stack
     mkdir /data/misc/bluedroiddump 0770 system system
@@ -313,6 +313,8 @@ on post-fs-data
     mkdir /data/misc/vpn 0770 system vpn
     mkdir /data/misc/shared_relro 0771 shared_relro shared_relro
     mkdir /data/misc/systemkeys 0700 system system
+    mkdir /data/misc/jack 0770 jack system
+    # give system access to wpa_supplicant.conf for backup and restore
     mkdir /data/misc/wifi 0770 wifi wifi
     mkdir /data/misc/wifi/sockets 0770 wifi wifi
     mkdir /data/misc/wifi/wpa_supplicant 0770 wifi wifi
@@ -320,7 +322,6 @@ on post-fs-data
     mkdir /data/misc/ethernet 0770 system system
     mkdir /data/misc/dhcp 0770 dhcp dhcp
     mkdir /data/misc/user 0771 root root
-    mkdir /data/misc/jack 0770 jack system
     # give system access to wpa_supplicant.conf for backup and restore
     chmod 0660 /data/misc/wifi/wpa_supplicant.conf
     chown system wifi /data/misc/wifi/wpa_supplicant.conf
@@ -356,9 +357,11 @@ on post-fs-data
     mkdir /data/app-lib 0771 system system
     mkdir /data/app 0771 system system
     mkdir /data/property 0700 root root
+    mkdir /data/system 0775 system system
+    mkdir /data/system/container 0700 system system
+    restorecon_recursive /data/system
 
-    # SA, System SW, SAMSUNG
-    # create log directory
+    # SA, System SW, SAMSUNG create log directory
     mkdir /data/log 0775 system log
     chown system log /data/log
     mkdir /data/anr 0775 system system
@@ -415,6 +418,7 @@ on post-fs-data
 
     restorecon -R /efs
     restorecon -R /carrier
+    restorecon_recursive /efs
 # ]
 
 # DRK permission
@@ -428,17 +432,17 @@ on post-fs-data
     # symlink to bugreport storage location
     symlink /data/data/com.android.shell/files/bugreports /data/bugreports
 
+    # Separate location for storing security policy files on data
+    mkdir /data/security 0700 system system
+
+    # Reload policy from /data/security if present.
+    setprop selinux.reload_policy 1
+
     # If there is no fs-post-data action in the init.<device>.rc file, you
     # must uncomment this line, otherwise encrypted filesystems
     # won't work.
     # Set indication (checked by vold) that we have finished this action
     #setprop vold.post_fs_data_done 1
-
-
-# Separate location for storing security policy files on data
-#start SEC_PRODUCT_FEATURE_COMMON_SUPPORT_SE_FOR_ANDROID
-    mkdir /data/security 0700 system system
-#end SEC_PRODUCT_FEATURE_COMMON_SUPPORT_SE_FOR_ANDROID
 
 # Permissions for svc led
     chown system system /sys/class/sec/led/led_r
@@ -478,21 +482,21 @@ on boot
     chown system radio /sys/class/sec/switch/adc
     chown system radio /sys/class/sec/switch/otg_test
 
-    # Vibetonz
+# Vibetonz
     chmod 0660 /dev/tspdrv
     chown vibe vibe /dev/tspdrv
 
-    # basic network init
+# basic network init
     ifup lo
     hostname localhost
     domainname localdomain
 
-    # set RLIMIT_NICE to allow priorities from 19 to -20
+# set RLIMIT_NICE to allow priorities from 19 to -20
     setrlimit 13 40 40
 
-    # Memory management.  Basic kernel parameters, and allow the high
-    # level system server to be able to adjust the kernel OOM driver
-    # parameters to match how it is managing things.
+# Memory management.  Basic kernel parameters, and allow the high
+# level system server to be able to adjust the kernel OOM driver
+# parameters to match how it is managing things.
     write /proc/sys/vm/overcommit_memory 1
     write /proc/sys/vm/min_free_order_shift 4
     chown root system /sys/module/lowmemorykiller/parameters/adj
@@ -536,6 +540,10 @@ on boot
     chmod 664  /sys/class/kgsl/kgsl-3d0/min_pwrlevel
     chown radio system /sys/class/kgsl/kgsl-3d0/gpu_available_frequencies
     chmod 664  /sys/class/kgsl/kgsl-3d0/gpu_available_frequencies
+
+# for VR Performance
+    chown system system /sys/class/kgsl/kgsl-3d0/dispatch/inflight
+    chmod 0664  /sys/class/kgsl/kgsl-3d0/dispatch/inflight
 
     chown system system /sys/devices/system/cpu/cpufreq/interactive/timer_rate
     chmod 0660 /sys/devices/system/cpu/cpufreq/interactive/timer_rate
@@ -592,21 +600,6 @@ on boot
 
 # Permission for a RPMB checking thru IMEI
     chown system radio /sys/kernel/debug/tzdbg/log
-
-    # Define TCP buffer sizes for various networks
-    #   ReadMin, ReadInitial, ReadMax, WriteMin, WriteInitial, WriteMax,
-    setprop net.tcp.buffersize.default  4096,87380,110208,4096,16384,110208
-    setprop net.tcp.buffersize.wifi     524288,1048576,4525824,524288,1048576,4525824
-    setprop net.tcp.buffersize.ethernet 524288,1048576,3145728,524288,1048576,2097152
-    setprop net.tcp.buffersize.lte      524288,1048576,2560000,524288,1048576,2560000
-    setprop net.tcp.buffersize.umts     58254,349525,1048576,58254,349525,1048576
-    setprop net.tcp.buffersize.hspa     40778,244668,734003,16777,100663,301990
-    setprop net.tcp.buffersize.hsupa    40778,244668,734003,16777,100663,301990
-    setprop net.tcp.buffersize.hsdpa    61167,367002,1101005,8738,52429,262114
-    setprop net.tcp.buffersize.hspap    122334,734003,2202010,32040,192239,576717
-    setprop net.tcp.buffersize.edge     4093,26280,70800,4096,16384,70800
-    setprop net.tcp.buffersize.gprs     4092,8760,48000,4096,8760,48000
-    setprop net.tcp.buffersize.evdo     4094,87380,262144,4096,16384,262144
 
 # Permissions for InputDevices.
     chown system radio /sys/class/sec/tsp/cmd
@@ -913,10 +906,12 @@ on boot
 # Permissions for gpio_keys
     chown system radio /sys/class/sec/sec_key/hall_irq_ctrl
 
-    # Define default initial receive window size in segments.
+# Define default initial receive window size in segments.
     setprop net.tcp.default_init_rwnd 60
-
-	setprop net.tcp.buffersize.wifi	524288,1048576,2560000,524288,1048576,2560000
+# Assign TCP buffer thresholds to be ceiling value of technology maximums
+# Increased technology maximums should be reflected here.
+    write /proc/sys/net/core/rmem_max  1048576
+    write /proc/sys/net/core/wmem_max  2097152
 
     write /sys/block/mmcblk0/queue/scheduler noop
     copy /system/etc/battery_charging_temp.data /sys/class/power_supply/battery/batt_temp_table
@@ -1123,17 +1118,15 @@ service servicemanager /system/bin/servicemanager
     onrestart restart media
     onrestart restart surfaceflinger
     onrestart restart drm
-    onrestart restart keystore
     onrestart restart sensorhubservice
     onrestart restart TvoutService_C
+    onrestart restart keystore
 
 service vold /system/bin/vold
     class core
     socket vold stream 0660 root mount
     ioprio be 2
-## Samsung ODE
     socket dir_enc_report stream 0660 root mount
-## Samsung ODE
 
 service epmd /system/bin/epmd
     class main
@@ -1148,11 +1141,8 @@ service netd /system/bin/netd
     socket mdns stream 0660 root system
     socket fwmarkd stream 0660 root inet
 
-#service debuggerd /system/bin/debuggerd
-#    class main
-#
-#service debuggerd64 /system/bin/debuggerd64
-#    class main
+service debuggerd /system/bin/debuggerd
+    class main
 
 # icd
 service icd /system/bin/icd
@@ -1200,6 +1190,7 @@ service surfaceflinger /system/bin/surfaceflinger
     user system
     group graphics drmrpc
     onrestart restart zygote
+    onrestart restart loc_launcher
 
 service SIDESYNC_service /system/bin/ss_conn_daemon
     class main
@@ -1220,18 +1211,8 @@ service drm /system/bin/drmserver
 service media /system/bin/mediaserver
     class main
     user media
-    group system audio camera inet net_bt net_bt_admin net_raw net_bw_acct drmrpc sdcard_r shell mediadrm qcom_diag media_rw radio lgt_gid
+    group system audio camera inet net_bt net_bt_admin net_raw net_bw_acct drmrpc sdcard_r shell mediadrm qcom_diag lgt_gid media_rw radio
     ioprio rt 4
-
-service apaservice /system/bin/apaservice
-    class main
-    user jack
-    group system inet sdcard_rw sdcard_r media_rw shell
-
-service jackservice /system/bin/jackservice
-    class main
-    user jack
-    group system audio inet shell
 
 # One shot invocation to deal with encrypted volume.
 service defaultcrypto /system/bin/vdc --wait cryptfs mountdefaultencrypted
@@ -1246,6 +1227,16 @@ service encrypt /system/bin/vdc --wait cryptfs enablecrypto inplace default
     oneshot
     # vold will set vold.decrypt to trigger_restart_framework (default
     # encryption)
+
+service apaservice /system/bin/apaservice
+    class main
+    user jack
+    group system inet sdcard_rw sdcard_r media_rw shell
+
+service jackservice /system/bin/jackservice
+    class main
+    user jack
+    group system audio inet shell
 
 service powersnd /system/bin/samsungpowersoundplay
     class main
@@ -1319,7 +1310,6 @@ service bugreport /system/bin/dumpstate -d -p -B \
     disabled
     oneshot
     keycodes 114 115 116
-
 
 service mdnsd /system/bin/mdnsd
     class main
