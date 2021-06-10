@@ -563,10 +563,6 @@ u8 speaker_cached_gain;
 u8 iir1_cached_gain;
 u8 iir2_cached_gain;
 unsigned int mx_hw_eq = HWEQ_OFF;
-#if 0
-u8 iir1_inp2_cached_gain;
-u8 iir2_inp2_cached_gain;
-#endif
 #ifdef CONFIG_RAMP_VOLUME
 unsigned int ramp_volume;
 #endif
@@ -770,13 +766,10 @@ static void update_iir_gain(void)
 {
 	if (!hpwidget())
 		return;
+
 	lock_sound_control(&sound_control_codec_ptr->core_res, 1);
 	regwrite(TAIKO_A_CDC_IIR1_GAIN_B1_CTL, iir1_cached_gain);
 	regwrite(TAIKO_A_CDC_IIR2_GAIN_B1_CTL, iir2_cached_gain);
-#if 0
-	regwrite(TAIKO_A_CDC_IIR1_GAIN_B2_CTL, iir1_inp2_cached_gain);
-	regwrite(TAIKO_A_CDC_IIR2_GAIN_B2_CTL, iir2_inp2_cached_gain);
-#endif //0
 	lock_sound_control(&sound_control_codec_ptr->core_res, 0);
 }
 #if 0
@@ -9614,10 +9607,6 @@ static struct attribute *sound_control_attrs[] = {
 		&speaker_mute_attribute.attr,
 		&iir1_gain_attribute.attr,
 		&iir2_gain_attribute.attr,
-#if 0
-		&iir1_inp2_gain_attribute.attr,
-		&iir2_inp2_gain_attribute.attr,
-#endif
 		&uhqa_mode_attribute.attr,
 		&high_perf_mode_attribute.attr,
 		&interpolator_boost_attribute.attr,

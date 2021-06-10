@@ -160,10 +160,10 @@ static bool sound_control_reserved(unsigned short reg)
 		case 0x2BF:
 		case 0x2E7:
         case 0x340:
-        case 0x341:
         case 0x350:
-        case 0x351:
 #if 0
+        case 0x341:
+        case 0x351:
         case 0x2CF:
         case 0x2C7:
 #endif
@@ -182,7 +182,7 @@ static int wcd9xxx_write(struct wcd9xxx *wcd9xxx, unsigned short reg,
 	if (bytes <= 0)
 		return -EINVAL;
 
-	if (!sound_control_override && sound_control_reserved(reg))
+	if (sound_control_reserved(reg) && !sound_control_override)
 		return 0;
 
 	return wcd9xxx->write_dev(wcd9xxx, reg, bytes, src, interface_reg);
