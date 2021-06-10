@@ -144,6 +144,11 @@ service qrngd /system/bin/qrngd -f
    class main
    user root
    group root
+   oneshot
+   disabled
+
+on property:sys.boot_completed=1
+    start qrngd
 
 service qseecomd /system/bin/qseecomd
    class core
@@ -230,6 +235,9 @@ service usf-post-boot /system/bin/sh /system/etc/usf_post_boot.sh
     disabled
     oneshot
 
+on property:init.svc.bootanim=stopped
+    start usf-post-boot
+
 service mcStarter /system/bin/mcStarter tbase300
     class core
     user root
@@ -249,9 +257,6 @@ on property:sys.qseecomd.enable=true
 on property:sys.mobicore.loaded=true
     start run-mobicore
 
-on property:init.svc.bootanim=stopped
-    start usf-post-boot
-
 service imsqmidaemon /system/bin/imsqmidaemon
     class main
     user system
@@ -266,7 +271,7 @@ service imsdatadaemon /system/bin/imsdatadaemon
     disabled
 
 service wcnss-service /system/bin/wcnss_service
-    class late_start
+    class main
     user system
     group system wifi radio
     oneshot
