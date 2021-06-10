@@ -124,29 +124,16 @@ extern u8 hphr_cached_gain;
 extern u8 speaker_cached_gain;
 extern u8 iir1_cached_gain; /*0x340*/
 extern u8 iir2_cached_gain; /*0x350*/
-#if 0
-extern u8 iir1_inp2_cached_gain; /*0x341*/
-extern u8 iir2_inp2_cached_gain; /*0x351*/
-#endif //0
 #ifdef CONFIG_RAMP_VOLUME
 extern unsigned int ramp_volume;
-#endif
-
-#if 0
-extern u8 crossleft_cached_gain; /* RX4 routed from right to left side Port: RX4 -> 0x2CF */
-extern u8 crossright_cached_gain; /* RX3 routed from left to right side Port: RX3 -> 0x2C7*/
 #endif
 
 static unsigned int sound_control_override = 0;
 void lock_sound_control(struct wcd9xxx_core_resource *core_res,
 						unsigned int lockval)
 {
-	struct wcd9xxx *wcd9xxx = (struct wcd9xxx *) core_res->parent;
-/*	if (unlikely(lockval < 0))
-		lockval = 0;
-	if (unlikely(lockval > 1))
-		lockval = 1;
-*/
+	struct wcd9xxx *wcd9xxx = (struct wcd9xxx *)core_res->parent;
+
 	mutex_lock(&wcd9xxx->io_lock);
 	sound_control_override = lockval;
 	mutex_unlock(&wcd9xxx->io_lock);
@@ -155,23 +142,22 @@ EXPORT_SYMBOL(lock_sound_control);
 
 static bool sound_control_reserved(unsigned short reg)
 {
+    bool is_reserved = false;
+
 	switch (reg) {
 		case 0x2B7:
 		case 0x2BF:
 		case 0x2E7:
         case 0x340:
         case 0x350:
-#if 0
-        case 0x341:
-        case 0x351:
-        case 0x2CF:
-        case 0x2C7:
-#endif
-			return true;
+			is_reserved = true;
+            break;
 		default:
+            is_reserved = false;
 			break;
 	}
-	return false;
+
+	return is_reserved;
 }
 
 static int wcd9xxx_write(struct wcd9xxx *wcd9xxx, unsigned short reg,
