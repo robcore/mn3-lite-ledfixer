@@ -1,10 +1,3 @@
-menuconfig LEDS_GPIO_REGISTER
-	bool "LED GPIO Support"
-	help
-	  This option provides the function gpio_led_register_device.
-	  As this function is used by arch code it must not be compiled as a
-	  module.
-
 menuconfig NEW_LEDS
 	bool "LED Support"
 	help
@@ -15,6 +8,13 @@ menuconfig NEW_LEDS
 	  via the input system.
 
 if NEW_LEDS
+
+config LEDS_GPIO_REGISTER
+	bool "LED GPIO Support"
+	help
+	  This option provides the function gpio_led_register_device.
+	  As this function is used by arch code it must not be compiled as a
+	  module.
 
 config LEDS_CLASS
 	tristate "LED Class Support"

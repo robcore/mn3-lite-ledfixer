@@ -224,7 +224,7 @@ config REGULATOR_MAX77826
 	  The Max77826 handles LDO and BUCK control.
 
 config REGULATOR_MAX77803
-	tristate "Maxim 777803 regulator"
+	tristate "Maxim 77803 regulator"
 	depends on MFD_MAX77803
 	help
 	   This driver provides support for the voltage regulators of the
