@@ -1911,7 +1911,7 @@ static void qpnp_led_set(struct led_classdev *led_cdev,
 	if (strncmp(led_cdev->name, "button-backlight",  16))
 		led->cdev.brightness = value;
 	else
-		led->cdev.brightness = value?SAMSUNG_TKEY_LED_BRIGHTNESS:0;
+		led->cdev.brightness = value ? SAMSUNG_TKEY_LED_BRIGHTNESS:0;
 #else
 	led->cdev.brightness = value;
 #endif
