@@ -292,7 +292,7 @@ void __init parse_early_options(char *cmdline);
 /* Don't use these in modules, but some people do... */
 #define early_initcall(fn)		module_init(fn)
 #define core_initcall(fn)		module_init(fn)
-#define postcore_initcall(fn)		module_init(fn)
+#define postcore_initcall(fn)	module_init(fn)
 #define arch_initcall(fn)		module_init(fn)
 #define subsys_initcall(fn)		module_init(fn)
 #define fs_initcall(fn)			module_init(fn)

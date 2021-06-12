@@ -3999,7 +3999,7 @@ static ssize_t led_r_store(struct device *dev, struct device_attribute *devattr,
             pr_info("[LED] Led_r brightness is out of range(0-255)\n");
             return count;
         }
-        for (i = 0; i < RGB_MAX -1; i++)
+        for (i = 0; i < RGB_MAX; i++)
             samsung_led_set(&info[i], LED_OFF);
         mutex_lock(&leds_mutex_lock);
         info[RGB_RED].rgb_cfg->enable = RGB_LED_ENABLE_RED;
@@ -4131,6 +4131,7 @@ static ssize_t led_blink_store(struct device *dev, struct device_attribute *deva
 	unsigned int cnt = 0;
 	u8 val = 0;
     int i,j;
+
 	if (size < 7)
 		return size;
 
@@ -4626,8 +4627,6 @@ static struct of_device_id spmi_match_table[] = {
 	{ .compatible = "qcom,leds-qpnp",},
 	{ },
 };
-#else
-#define spmi_match_table NULL
 #endif
 
 static struct spmi_driver qpnp_leds_driver = {
