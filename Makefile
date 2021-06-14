@@ -12,7 +12,7 @@ NAME = Saber-toothed Squirrel
 
 # Do not use make's built-in rules and variables
 # (this increases performance and avoids hard-to-debug behaviour);
-MAKEFLAGS += -rR
+MAKEFLAGS += -rR --no-print-directory
 
 # Avoid funny character set dependencies
 unexport LC_ALL
@@ -75,7 +75,7 @@ endif
 # Use 'make C=1' to enable checking of only re-compiled files.
 # Use 'make C=2' to enable checking of *all* source files, regardless
 # of whether they are re-compiled or not.
-#
+# --no-print-directory
 # See the file "Documentation/sparse.txt" for more details, including
 # where to get the "sparse" utility.
 
