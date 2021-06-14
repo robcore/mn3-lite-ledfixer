@@ -87,7 +87,7 @@ static void *emergency_dload_mode_addr;
 
 /* Download mode master kill-switch */
 static int dload_set(const char *val, struct kernel_param *kp);
-static int download_mode = 1;
+static int download_mode = 0;
 module_param_call(download_mode, dload_set, param_get_int,
 			&download_mode, 0644);
 static int panic_prep_restart(struct notifier_block *this,
@@ -154,10 +154,10 @@ static int dload_set(const char *val, struct kernel_param *kp)
 		return ret;
 
 	/* If download_mode is not zero or one, ignore. */
-	if (download_mode >> 1) {
-		download_mode = old_val;
-		return -EINVAL;
-	}
+	if (download_mode < 0)
+        download_mode = 0;
+    if (download_mode > 1)
+        download_mode = 1;
 
 	set_dload_mode(download_mode);
 
@@ -511,7 +511,7 @@ static int __init msm_restart_init(void)
 #endif
 	emergency_dload_mode_addr = MSM_IMEM_BASE +
 		EMERGENCY_DLOAD_MODE_ADDR;
-	set_dload_mode(download_mode);
+	set_dload_mode(0);
 #endif
 	msm_tmr0_base = msm_timer_get_timer0_base();
 #ifndef CONFIG_SEC_DEBUG
