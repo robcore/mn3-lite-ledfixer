@@ -18,7 +18,7 @@
 			qcom,rgb_0 {
 				label = "rgb";
 				linux,name = "led:rgb_red";
-				qcom,mode = "pwm";
+				qcom,mode = "lpg";
 				qcom,pwm-channel = <6>;
 				qcom,pwm-us = <1000>;
 				qcom,ramp-step-ms = <1>;
@@ -26,20 +26,18 @@
 				qcom,pause-hi = <0>;
 				qcom,start-idx = <1>;
 				qcom,duty-pcts = [00 64];
-				qcom,max-current = <12>;
+				qcom,max-current = <4>;
 				qcom,default-state = "off";
 				qcom,turn-off-delay-ms = <0>;
 				qcom,lut-flags = <0x1F>;
 				qcom,id = <3>;
-				qcom,use-blink;
-				status = "ok";
-				linux,default-trigger =	"none";
+				linux,default-trigger = "none";
 			};
 
 			qcom,rgb_1 {
 				label = "rgb";
 				linux,name = "led:rgb_green";
-				qcom,mode = "pwm";
+				qcom,mode = "lpg";
 				qcom,pwm-channel = <5>;
 				qcom,pwm-us = <1000>;
 				qcom,ramp-step-ms = <1>;
@@ -47,20 +45,18 @@
 				qcom,pause-hi = <0>;
 				qcom,start-idx = <3>;
 				qcom,duty-pcts = [00 64];
-				qcom,max-current = <12>;
+				qcom,max-current = <4>;
 				qcom,default-state = "off";
 				qcom,turn-off-delay-ms = <0>;
 				qcom,lut-flags = <0x1F>;
 				qcom,id = <4>;
-				qcom,use-blink;
-				status = "ok";
 				linux,default-trigger = "none";
 			};
 
 			qcom,rgb_2 {
 				label = "rgb";
 				linux,name = "led:rgb_blue";
-				qcom,mode = "pwm";
+				qcom,mode = "lpg";
 				qcom,pwm-channel = <4>;
 				qcom,pwm-us = <1000>;
 				qcom,ramp-step-ms = <1>;
@@ -68,14 +64,12 @@
 				qcom,pause-hi = <0>;
 				qcom,start-idx = <5>;
 				qcom,duty-pcts = [00 64];
-				qcom,max-current = <12>;
+				qcom,max-current = <4>;
 				qcom,default-state = "off";
 				qcom,turn-off-delay-ms = <0>;
 				qcom,lut-flags = <0x1F>;
 				qcom,id = <5>;
-				qcom,use-blink;
-				status = "ok";
-				linux,default-trigger =	"none";
+				linux,default-trigger = "none";
 			};
 		};
 
@@ -153,8 +147,7 @@
 		};
 
 		qcom,leds@e200 {
-			status = "okay";
-		};
+			status = "disabled"; //this is disabled for 8974 because of prevent tool
 
 		qcom,kpdbl1 {
 			label = "kpdbl";
@@ -209,4 +202,4 @@
 		};
 	};
 };
-
+};
