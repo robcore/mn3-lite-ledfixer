@@ -353,6 +353,7 @@ checkrecov() {
 		if [ "$RECREBOOT" = "y" ]
 		then
 			echo "Rebooting into TWRP Recovery"
+            adb shell sync
 			adb reboot recovery
 		fi
 	fi
