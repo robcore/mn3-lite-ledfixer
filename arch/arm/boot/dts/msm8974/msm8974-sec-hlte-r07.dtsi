@@ -77,11 +77,11 @@
 	};
 
 	i2c@19 {
-		#address-cells = <1>;
-		#size-cells = <0>;
 		cell-index = <19>;
 		compatible = "i2c-gpio";
-		gpios = <&msmgpio 88 0>;
+		gpios = <&msmgpio 87 0>, <&msmgpio 88 0>;
+		#address-cells = <1>;
+		#size-cells = <0>;
 
 		sec-fuelgauge@36 {
 			compatible = "sec-fuelgauge,i2c";
@@ -106,11 +106,11 @@
 	};
 
 	i2c@21 {
-		#address-cells = <1>;
-		#size-cells = <0>;
 		cell-index = <21>;
 		compatible = "i2c-gpio";
 		gpios = <&msmgpio 95 0>, <&msmgpio 96 0>;
+		#address-cells = <1>;
+		#size-cells = <0>;
 
 		cypress_touchkey@20 {
 			compatible = "cypress,cypress-tkey";
@@ -129,7 +129,7 @@
 	};
 
 	i2c@22 {
-		#address-cells = <0>;
+		#address-cells = <1>;
 		#size-cells = <0>;
 		cell-index = <22>;
 		compatible = "i2c-gpio";
@@ -151,7 +151,7 @@
 	};
 
 	i2c@23 {
-		#address-cells = <0>;
+		#address-cells = <1>;
 		#size-cells = <0>;
 		cell-index = <23>;
 		compatible = "i2c-gpio";
@@ -362,8 +362,8 @@
 	/* BLSP#7 */
 	 i2c@f9963000 {
 		actuator1: qcom,actuator@36 {
-		#address-cells = <0>;
-		#size-cells = <0>;
+		#address-cells = <1>;
+		#size-cells = <1>;
 		compatible = "qcom,actuator";
 		cell-index = <1>;
 		reg = <0x36>;
