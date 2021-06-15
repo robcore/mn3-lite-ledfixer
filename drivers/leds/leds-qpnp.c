@@ -245,73 +245,73 @@
  */
 enum qpnp_leds {
 	QPNP_ID_WLED = 0,
-	QPNP_ID_FLASH1_LED0,
-	QPNP_ID_FLASH1_LED1,
-	QPNP_ID_RGB_RED,
-	QPNP_ID_RGB_GREEN,
-	QPNP_ID_RGB_BLUE,
-	QPNP_ID_LED_MPP,
-	QPNP_ID_KPDBL,
-	QPNP_ID_MAX,
+	QPNP_ID_FLASH1_LED0 = 1,
+	QPNP_ID_FLASH1_LED1 = 2,
+	QPNP_ID_RGB_RED = 3,
+	QPNP_ID_RGB_GREEN = 4,
+	QPNP_ID_RGB_BLUE = 5,
+	QPNP_ID_LED_MPP = 6,
+	QPNP_ID_KPDBL = 7,
+	QPNP_ID_MAX = 8,
 };
 
 /* current boost limit */
 enum wled_current_boost_limit {
-	WLED_CURR_LIMIT_105mA,
-	WLED_CURR_LIMIT_385mA,
-	WLED_CURR_LIMIT_525mA,
-	WLED_CURR_LIMIT_805mA,
-	WLED_CURR_LIMIT_980mA,
-	WLED_CURR_LIMIT_1260mA,
-	WLED_CURR_LIMIT_1400mA,
-	WLED_CURR_LIMIT_1680mA,
+	WLED_CURR_LIMIT_105mA = 0,
+	WLED_CURR_LIMIT_385mA = 1,
+	WLED_CURR_LIMIT_525mA = 2,
+	WLED_CURR_LIMIT_805mA = 3,
+	WLED_CURR_LIMIT_980mA = 4,
+	WLED_CURR_LIMIT_1260mA = 5,
+	WLED_CURR_LIMIT_1400mA = 6,
+	WLED_CURR_LIMIT_1680mA = 7,
 };
 
 /* over voltage protection threshold */
 enum wled_ovp_threshold {
-	WLED_OVP_35V,
-	WLED_OVP_32V,
-	WLED_OVP_29V,
-	WLED_OVP_27V,
+	WLED_OVP_35V = 0,
+	WLED_OVP_32V = 1,
+	WLED_OVP_29V = 2,
+	WLED_OVP_27V = 3,
 };
 
 enum flash_headroom {
 	HEADROOM_250mV = 0,
-	HEADROOM_300mV,
-	HEADROOM_400mV,
-	HEADROOM_500mV,
+	HEADROOM_300mV = 1,
+	HEADROOM_400mV = 2,
+	HEADROOM_500mV = 3,
 };
 
 enum flash_startup_dly {
 	DELAY_10us = 0,
-	DELAY_32us,
-	DELAY_64us,
-	DELAY_128us,
+	DELAY_32us = 1,
+	DELAY_64us = 2,
+	DELAY_128us = 3,
 };
 
 enum led_mode {
 	PWM_MODE = 0,
-	LPG_MODE,
-	MANUAL_MODE,
+	LPG_MODE = 1,
+	MANUAL_MODE = 2,
 };
 
 #ifdef SAMSUNG_LED_PATTERN
 enum rgb_led_patternRGB {
-       LED_CHARGING_PAT = 1,
-       LED_CHARGING_ERROR_PAT,
-	LED_MISSED_CALL_PAT,
-	LED_LOW_BATTERY_PAT,
-	LED_FULL_BATTERY_PAT,
-	LED_POWERING_ON_PAT,
-	LED_PATTERN_MAX,
+    LED_CHARGING_PAT = 1,
+    LED_CHARGING_ERROR_PAT = 2,
+	LED_MISSED_CALL_PAT = 3,
+	LED_LOW_BATTERY_PAT = 4,
+	LED_FULL_BATTERY_PAT = 5,
+	LED_POWERING_ON_PAT = 6,
+	LED_PATTERN_MAX = 7,
 };
 #endif
 
-enum RGB_LEDS{
-        RGB_RED,
-        RGB_GREEN,
-        RGB_BLUE,
-        RGB_MAX
+enum RGB_LEDS {
+        RGB_RED = 0,
+        RGB_GREEN = 1,
+        RGB_BLUE = 2,
+        RGB_MAX = 3,
 };
 
 static u8 wled_debug_regs[] = {
@@ -4026,7 +4026,7 @@ static void led_pat_on(struct qpnp_led_data *info, struct patt_registry *patt_re
                 }
     }
 
-    for(cnt = 0;cnt < patt_register->len; cnt++){
+    for (cnt = 0; cnt < patt_register->len; cnt++) {
         patt_led = &(patt_register->patt[cnt]);
         led_num = patt_led->id - 3;
         samsung_led_set(&info[led_num], brightness);
@@ -4035,40 +4035,44 @@ static void led_pat_on(struct qpnp_led_data *info, struct patt_registry *patt_re
 
 static ssize_t store_patt(struct device *dev, struct device_attribute *devattr,
                           const char *buf, size_t count) {
-        struct qpnp_led_data *info;
-        struct patt_registry *pat_reg = NULL;
-        int cnt,i;
+    struct qpnp_led_data *info;
+    struct patt_registry *pat_reg = NULL;
+    int cnt = 0,i = 0;
 
-        info = dev_get_drvdata(dev);
-        if(buf[0] == '0'){
-            on_patt = 0;
-            for(cnt = 0; cnt < RGB_MAX; cnt++)
-                samsung_led_set(&info[cnt],0);
-            return count;
-        }
-        cnt= buf[0]-'0';
-        for(i = 0; i < RGB_MAX; i++)
-             samsung_led_set(&info[i],LED_OFF);
-	if(cnt == LED_POWERING_ON_PAT){
-            info[RGB_GREEN].rgb_cfg->enable = RGB_LED_ENABLE_GREEN | RGB_LED_ENABLE_BLUE;
-            info[RGB_BLUE].rgb_cfg->enable =    RGB_LED_ENABLE_GREEN | RGB_LED_ENABLE_BLUE;
-            printk(KERN_INFO "Green Enable =%x \n", info[RGB_GREEN].rgb_cfg->enable);
-            printk(KERN_INFO "Blue Enable =%x \n", info[RGB_BLUE].rgb_cfg->enable);
-        }
-	else {
-		info[RGB_RED].rgb_cfg->enable = RGB_LED_ENABLE_RED;
-		info[RGB_GREEN].rgb_cfg->enable = RGB_LED_ENABLE_GREEN;
-		info[RGB_BLUE].rgb_cfg->enable = RGB_LED_ENABLE_BLUE;
-	}
-        if(cnt < LED_PATTERN_MAX){
-            mutex_lock(&leds_mutex_lock);
-            on_patt = cnt; //saving pattern number
-            pat_reg = &led_patterns[cnt-1];
-            printk(KERN_INFO "store_patt: Pattern %d will swtiched on\n",cnt);
-            led_pat_on(info, pat_reg,LED_FULL);
-            mutex_unlock(&leds_mutex_lock);
-        }
+    info = dev_get_drvdata(dev);
+    if (buf[0] == '0') {
+        on_patt = 0;
+        for (cnt = 0; cnt < RGB_MAX; cnt++)
+            samsung_led_set(&info[cnt],0);
         return count;
+    }
+
+    cnt= buf[0]-'0';
+
+    for (i = 0; i < RGB_MAX; i++)
+        samsung_led_set(&info[i],LED_OFF);
+
+	if (cnt == LED_POWERING_ON_PAT) {
+        info[RGB_GREEN].rgb_cfg->enable = RGB_LED_ENABLE_GREEN | RGB_LED_ENABLE_BLUE;
+        info[RGB_BLUE].rgb_cfg->enable =    RGB_LED_ENABLE_GREEN | RGB_LED_ENABLE_BLUE;
+        printk(KERN_INFO "Green Enable =%x \n", info[RGB_GREEN].rgb_cfg->enable);
+        printk(KERN_INFO "Blue Enable =%x \n", info[RGB_BLUE].rgb_cfg->enable);
+    } else {
+        info[RGB_RED].rgb_cfg->enable = RGB_LED_ENABLE_RED;
+        info[RGB_GREEN].rgb_cfg->enable = RGB_LED_ENABLE_GREEN;
+        info[RGB_BLUE].rgb_cfg->enable = RGB_LED_ENABLE_BLUE;
+	}
+
+    if (cnt < LED_PATTERN_MAX) {
+        mutex_lock(&leds_mutex_lock);
+        on_patt = cnt; //saving pattern number
+        pat_reg = &led_patterns[cnt-1];
+        printk(KERN_INFO "store_patt: Pattern %d will swtiched on\n",cnt);
+        led_pat_on(info, pat_reg,LED_FULL);
+        mutex_unlock(&leds_mutex_lock);
+    }
+
+    return count;
 }
 
 static ssize_t show_patt(struct device *dev,
@@ -4740,7 +4744,7 @@ static int __init qpnp_led_init(void)
 {
 	return spmi_driver_register(&qpnp_leds_driver);
 }
-late_initcall(qpnp_led_init);
+module_init(qpnp_led_init);
 
 
 static void __exit qpnp_led_exit(void)
