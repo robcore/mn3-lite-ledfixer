@@ -4193,6 +4193,7 @@ static ssize_t led_b_show(struct device *dev,
 	led_array = dev_get_drvdata(dev);
         return snprintf(buf, 4, "%d\n", led_array[RGB_BLUE].cdev.brightness );
 }
+
 static unsigned int hex_to_dec(char c1, char c2)
 {
 	unsigned int ret_val = 0;
