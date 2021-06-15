@@ -129,7 +129,7 @@
 	};
 
 	i2c@22 {
-		#address-cells = <1>;
+		#address-cells = <0>;
 		#size-cells = <0>;
 		cell-index = <22>;
 		compatible = "i2c-gpio";
