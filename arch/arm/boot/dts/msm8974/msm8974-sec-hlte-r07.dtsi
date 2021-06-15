@@ -77,13 +77,11 @@
 	};
 
 	i2c@19 {
-		cell-index = <19>;
-		compatible = "i2c-gpio";
-		gpios = <&msmgpio 87 0 /* sda */
-				&msmgpio 88 0 /* scl */
-		>;
 		#address-cells = <1>;
 		#size-cells = <0>;
+		cell-index = <19>;
+		compatible = "i2c-gpio";
+		gpios = <&msmgpio 88 0>;
 
 		sec-fuelgauge@36 {
 			compatible = "sec-fuelgauge,i2c";
@@ -108,13 +106,11 @@
 	};
 
 	i2c@21 {
-		cell-index = <21>;
-		compatible = "i2c-gpio";
-		gpios = <&msmgpio 95 0 /* sda */
-		&msmgpio 96 0 /* scl */
-		>;
 		#address-cells = <1>;
 		#size-cells = <0>;
+		cell-index = <21>;
+		compatible = "i2c-gpio";
+		gpios = <&msmgpio 95 0>, <&msmgpio 96 0>;
 
 		cypress_touchkey@20 {
 			compatible = "cypress,cypress-tkey";
@@ -123,8 +119,8 @@
 			interrupts = <29 0>;
 			vdd_led-supply = <&pm8941_l13>;
 			vcc_en-supply = <&pm8941_lvs3>;
-			cypress,scl-gpio = <&msmgpio 96 0x00>;
 			cypress,sda-gpio = <&msmgpio 95 0x00>;
+			cypress,scl-gpio = <&msmgpio 96 0x00>;
 			cypress,irq-gpio = <&pm8941_gpios 29 0x1>;
 			cypress,touchkey_id-gpio = <&msmgpio 101 0x00>;
 			cypress,tkey-keycodes = <139 158>;
@@ -155,11 +151,11 @@
 	};
 
 	i2c@23 {
-		#address-cells = <1>;
+		#address-cells = <0>;
 		#size-cells = <0>;
 		cell-index = <23>;
 		compatible = "i2c-gpio";
-		gpios = <&msmgpio 60 0 &msmgpio 61 0>;
+		gpios = <&msmgpio 60 0>, <&msmgpio 61 0>;
 
 	};
 
@@ -366,13 +362,12 @@
 	/* BLSP#7 */
 	 i2c@f9963000 {
 		actuator1: qcom,actuator@36 {
-		#address-cells = <1>;
-		#size-cells = <1>;
+		#address-cells = <0>;
+		#size-cells = <0>;
 		compatible = "qcom,actuator";
 		cell-index = <1>;
 		reg = <0x36>;
-			gpios = <&msmgpio 43 0>,
-				<&msmgpio 44 0>;
+			gpios = <&msmgpio 43 0>, <&msmgpio 44 0>;
 			qcom,gpio-req-tbl-num = <0 1>;
 			qcom,gpio-req-tbl-flags = <1 1>;
 			qcom,gpio-req-tbl-label = "I2C_DATA0",
@@ -578,6 +573,65 @@
 };
 
 &pm8941_lsid1 {
+	qcom,leds@d000 {
+		status = "okay";
+		qcom,rgb_0 {
+			label = "rgb";
+			linux,name = "led:rgb_red";
+			qcom,mode = "lpg";
+			qcom,pwm-channel = <6>;
+			qcom,pwm-us = <1000>;
+			qcom,ramp-step-ms = <1>;
+			qcom,pause-lo = <0>;
+			qcom,pause-hi = <0>;
+			qcom,start-idx = <1>;
+			qcom,duty-pcts = [00 64];
+			qcom,max-current = <4>;
+			qcom,default-state = "off";
+			qcom,turn-off-delay-ms = <0>;
+			qcom,lut-flags = <0x1F>;
+			qcom,id = <3>;
+			linux,default-trigger = "none";
+		};
+
+		qcom,rgb_1 {
+			label = "rgb";
+			linux,name = "led:rgb_green";
+			qcom,mode = "lpg";
+			qcom,pwm-channel = <5>;
+			qcom,pwm-us = <1000>;
+			qcom,ramp-step-ms = <1>;
+			qcom,pause-lo = <0>;
+			qcom,pause-hi = <0>;
+			qcom,start-idx = <3>;
+			qcom,duty-pcts = [00 64];
+			qcom,max-current = <4>;
+			qcom,default-state = "off";
+			qcom,turn-off-delay-ms = <0>;
+			qcom,lut-flags = <0x1F>;
+			qcom,id = <4>;
+			linux,default-trigger = "none";
+		};
+
+		qcom,rgb_2 {
+			label = "rgb";
+			linux,name = "led:rgb_blue";
+			qcom,mode = "lpg";
+			qcom,pwm-channel = <4>;
+			qcom,pwm-us = <1000>;
+			qcom,ramp-step-ms = <1>;
+			qcom,pause-lo = <0>;
+			qcom,pause-hi = <0>;
+			qcom,start-idx = <5>;
+			qcom,duty-pcts = [00 64];
+			qcom,max-current = <4>;
+			qcom,default-state = "off";
+			qcom,turn-off-delay-ms = <0>;
+			qcom,lut-flags = <0x1F>;
+			qcom,id = <5>;
+			linux,default-trigger = "none";
+		};
+	};
 	qcom,leds@d800 {
 		status = "okay";
 		qcom,wled_0 {
