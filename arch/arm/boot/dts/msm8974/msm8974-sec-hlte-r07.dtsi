@@ -133,7 +133,7 @@
 		#size-cells = <0>;
 		cell-index = <22>;
 		compatible = "i2c-gpio";
-		gpios = <&msmgpio 109 0 &msmgpio 108 0>;
+		gpios = <&msmgpio 109 0>, <&msmgpio 108 0>;
 
 		barcode_emul_ice4@19 {
 			compatible = "barcode_hlte,barcode_emul_hlte";
