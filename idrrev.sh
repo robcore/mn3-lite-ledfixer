@@ -19,21 +19,18 @@ myppr() {
     fi
 }
 
-myppr /root/mn3lite/patches/0050-fix-i2c-core.patch
-myppr /root/mn3lite/patches/0049-fix-from-removal-of-MAX_IDR_MASK.patch
-myppr /root/mn3lite/patches/0048-rename-MAX_LEVEL-to-MAX_IDR_LEVEL.patch
-myppr /root/mn3lite/patches/0047-idr-deprecate-idr_pre_get-and-idr_get_new-_above.patch
-myppr /root/mn3lite/patches/0046-dox.patch
-myppr /root/mn3lite/patches/0045-idr-implement-lookup-hint.patch
-myppr /root/mn3lite/patches/0044-idr-add-idr_layer-prefix.patch
-myppr /root/mn3lite/patches/0043-idr-remove-length-restriction-from-idr_layer-bitmap.patch
-myppr /root/mn3lite/patches/0042-idr-remove-MAX_IDR_MASK-and-move-left-MAX_IDR_-into-.patch
-myppr /root/mn3lite/patches/0039-idr-fix-top-layer-handling.patch
-myppr /root/mn3lite/patches/0038-idr-implement-idr_preload-_end-and.patch
-myppr /root/mn3lite/patches/0037-idr-refactor-idr_get_new_above.patch
-myppr /root/mn3lite/patches/0036-idr-remove-_idr_rc_to_errno-hack.patch
-myppr /root/mn3lite/patches/0035-idr-relocate-idr_for_each_entry-and-reorganize.patch
-myppr /root/mn3lite/patches/0034-idr-deprecate-idr_remove_all.patch
-myppr /root/mn3lite/patches/0033-idr-make-idr_destroy-imply-idr_remove_all.patch
+myppr /root/mn3lite/patches/0020-remove-MAX_ID_MASK-from-spmi.patch
+myppr /root/mn3lite/patches/0019-remove-MAX_ID_MASK-or-whatever-from-slimbus.patch
+myppr /root/mn3lite/patches/0018-idr-implement-lookup-hint.patch
+myppr /root/mn3lite/patches/0017-idr-add-idr_layer-prefix.patch
+myppr /root/mn3lite/patches/0016-idr-make-idr_layer-larger.patch
+myppr /root/mn3lite/patches/0015-idr-remove-length-restriction-from-idr_layer-bitmap.patch
+myppr /root/mn3lite/patches/0014-idr-remove-MAX_IDR_MASK-and-move-left-MAX_IDR_.patch
+myppr /root/mn3lite/patches/0013-idr-fix-top-layer-handling.patch
+myppr /root/mn3lite/patches/0012-idr-implement-idr_preload-_end-and-idr_alloc.patch
+myppr /root/mn3lite/patches/0011-idr-refactor-idr_get_new_above.patch
+myppr /root/mn3lite/patches/0010-idr-remove-_idr_rc_to_errno-hack.patch
+myppr /root/mn3lite/patches/0009-idr-relocate-idr_for_each_entry-and-reorganize.patch
+myppr /root/mn3lite/patches/0008-idr-cosmetic-updates-to-struct-initializer-def.patch
 
 echo "$0 is complete!"
