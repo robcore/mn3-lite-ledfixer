@@ -19,10 +19,9 @@ myppr() {
     fi
 }
 
-myppr /root/mn3lite/patches/0007-locking-Various-static-lock-initializer-fixes.patch
-myppr /root/mn3lite/patches/0006-idr-deprecate-idr_remove_all.patch
-myppr /root/mn3lite/patches/0005-idr-make-idr_destroy-imply-idr_remove_all.patch
-myppr /root/mn3lite/patches/0004-idr-fix-a-subtle-bug-in-idr_get_next.patch
-myppr /root/mn3lite/patches/0003-idr-rename-MAX_LEVEL-to-MAX_IDR_LEVEL.patch
+myppr /root/mn3lite/patches/0010-wait-nevermind.patch
+myppr /root/mn3lite/patches/0009-idr-rename-MAX_LEVEL-to-MAX_IDR_LEVEL.patch
+myppr /root/mn3lite/patches/0008-revert-to-real-stock-3.4.patch
+myppr /root/mn3lite/patches/0006-return-idr-to-stock-3.4.patch
 
 echo "$0 is complete!"
