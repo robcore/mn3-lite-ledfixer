@@ -38,15 +38,15 @@
 #define IDR_SIZE (1 << IDR_BITS)
 #define IDR_MASK ((1 << IDR_BITS)-1)
 
-#define MAX_IDR_SHIFT (sizeof(int)*8 - 1)
-#define MAX_IDR_BIT (1U << MAX_IDR_SHIFT)
-#define MAX_IDR_MASK (MAX_IDR_BIT - 1)
+#define MAX_ID_SHIFT (sizeof(int)*8 - 1)
+#define MAX_ID_BIT (1U << MAX_ID_SHIFT)
+#define MAX_ID_MASK (MAX_ID_BIT - 1)
 
 /* Leave the possibility of an incomplete final layer */
-#define MAX_IDR_LEVEL ((MAX_IDR_SHIFT + IDR_BITS - 1) / IDR_BITS)
+#define MAX_LEVEL (MAX_ID_SHIFT + IDR_BITS - 1) / IDR_BITS
 
 /* Number of id_layer structs to leave in free list */
-#define MAX_IDR_FREE (MAX_IDR_LEVEL * 2)
+#define IDR_FREE_MAX MAX_LEVEL + MAX_LEVEL
 
 struct idr_layer {
 	unsigned long		 bitmap; /* A zero bit means "space here" */
@@ -110,22 +110,10 @@ int idr_for_each(struct idr *idp,
 void *idr_get_next(struct idr *idp, int *nextid);
 void *idr_replace(struct idr *idp, void *ptr, int id);
 void idr_remove(struct idr *idp, int id);
+void idr_remove_all(struct idr *idp);
 void idr_destroy(struct idr *idp);
 void idr_init(struct idr *idp);
 
-void __idr_remove_all(struct idr *idp);	/* don't use */
-
-/**
- * idr_remove_all - remove all ids from the given idr tree
- * @idp: idr handle
- *
- * If you're trying to destroy @idp, calling idr_destroy() is enough.
- * This is going away.  Don't use.
- */
-static inline void __deprecated idr_remove_all(struct idr *idp)
-{
-	__idr_remove_all(idp);
-}
 
 /*
  * IDA - IDR based id allocator, use when translation from id to
@@ -148,7 +136,7 @@ struct ida {
 	struct ida_bitmap	*free_bitmap;
 };
 
-#define IDA_INIT(name)		{ .idr = IDR_INIT((name).idr), .free_bitmap = NULL, }
+#define IDA_INIT(name)		{ .idr = IDR_INIT(name), .free_bitmap = NULL, }
 #define DEFINE_IDA(name)	struct ida name = IDA_INIT(name)
 
 int ida_pre_get(struct ida *ida, gfp_t gfp_mask);
