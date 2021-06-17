@@ -129,7 +129,7 @@ static void venus_hfi_sim_modify_cmd_packet(u8 *packet)
 	u8 i;
 
 	if (!packet) {
-		dprintk(VIDC_ERR, "Invalid Param");
+		dprintk(VIDC_ERR, "Invalid Param\n");
 		return;
 	}
 
@@ -221,7 +221,7 @@ static int venus_hfi_write_queue(void *info, u8 *packet, u32 *rx_req_is_set)
 	u32 *write_ptr;
 
 	if (!info || !packet || !rx_req_is_set) {
-		dprintk(VIDC_ERR, "Invalid Params");
+		dprintk(VIDC_ERR, "Invalid Params\n");
 		return -EINVAL;
 	}
 
@@ -234,7 +234,7 @@ static int venus_hfi_write_queue(void *info, u8 *packet, u32 *rx_req_is_set)
 	queue = (struct hfi_queue_header *) qinfo->q_hdr;
 
 	if (!queue) {
-		dprintk(VIDC_ERR, "queue not present");
+		dprintk(VIDC_ERR, "queue not present\n");
 		return -ENOENT;
 	}
 
@@ -246,10 +246,10 @@ static int venus_hfi_write_queue(void *info, u8 *packet, u32 *rx_req_is_set)
 	}
 
 	packet_size_in_words = (*(u32 *)packet) >> 2;
-	dprintk(VIDC_DBG, "Packet_size in words: %d", packet_size_in_words);
+	dprintk(VIDC_DBG, "Packet_size in words: %d\n", packet_size_in_words);
 
 	if (packet_size_in_words == 0) {
-		dprintk(VIDC_ERR, "Zero packet size");
+		dprintk(VIDC_ERR, "Zero packet size\n");
 		return -ENODATA;
 	}
 
@@ -261,7 +261,7 @@ static int venus_hfi_write_queue(void *info, u8 *packet, u32 *rx_req_is_set)
 	dprintk(VIDC_DBG, "Empty_space: %d", empty_space);
 	if (empty_space <= packet_size_in_words) {
 		queue->qhdr_tx_req =  1;
-		dprintk(VIDC_ERR, "Insufficient size (%d) to write (%d)",
+		dprintk(VIDC_ERR, "Insufficient size (%d) to write (%d)\n",
 					  empty_space, packet_size_in_words);
 		return -ENOTEMPTY;
 	}
@@ -271,7 +271,7 @@ static int venus_hfi_write_queue(void *info, u8 *packet, u32 *rx_req_is_set)
 	new_write_idx = (queue->qhdr_write_idx + packet_size_in_words);
 	write_ptr = (u32 *)((qinfo->q_array.align_virtual_addr) +
 		(queue->qhdr_write_idx << 2));
-	dprintk(VIDC_DBG, "Write Ptr: %d", (u32) write_ptr);
+	dprintk(VIDC_DBG, "Write Ptr: %d\n", (u32) write_ptr);
 	if (new_write_idx < queue->qhdr_q_size) {
 		memcpy(write_ptr, packet, packet_size_in_words << 2);
 	} else {
@@ -290,7 +290,6 @@ static int venus_hfi_write_queue(void *info, u8 *packet, u32 *rx_req_is_set)
 	/*Memory barrier to make sure write index is updated before an
 	 * interupt is raised on venus.*/
 	mb();
-	dprintk(VIDC_DBG, "Out : ");
 	return 0;
 }
 
@@ -300,7 +299,6 @@ static void venus_hfi_hal_sim_modify_msg_packet(u8 *packet)
 	struct hal_session *sess;
 
 	if (!packet) {
-		dprintk(VIDC_ERR, "Invalid Param: ");
 		return;
 	}
 
@@ -1410,6 +1408,7 @@ static int venus_hfi_power_enable(void *dev)
 		return -EINVAL;
 	}
 
+	mutex_lock(&device->write_lock);
 	mutex_lock(&device->clk_pwr_lock);
 	if (!device->power_enabled) {
 		rc = venus_hfi_power_on(device);
@@ -1424,6 +1423,7 @@ static int venus_hfi_power_enable(void *dev)
 
 fail_power_on:
 	mutex_unlock(&device->clk_pwr_lock);
+	mutex_unlock(&device->write_lock);
 	return rc;
 }
 
@@ -2024,6 +2024,7 @@ static int venus_hfi_core_release(void *device)
 		return -ENODEV;
 	}
 	if (dev->hal_client) {
+		cancel_delayed_work_sync(&venus_hfi_pm_work);
 		mutex_lock(&dev->clk_pwr_lock);
 		rc = venus_hfi_clk_gating_off(device);
 		if (rc) {
