@@ -426,7 +426,7 @@ again:
 	else if (unlikely(err))
 		return err;
 
-	*id = *id & MAX_IDR_MASK;
+	*id = max(*id + 1, 0);;
 	return 0;
 }
 
