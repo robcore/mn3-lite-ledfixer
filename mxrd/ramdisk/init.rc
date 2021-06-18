@@ -32,10 +32,11 @@ on early-init
     mkdir /mnt 0775 root system
 
 on init
-	ffu
 	sysclktz 0
 
 	loglevel 3
+
+	ffu
 
 	# SEC_SELINUX
 	# for audit message
@@ -885,6 +886,7 @@ on boot
     chown system radio /sys/class/sec/sec_barcode_emul/barcode_ver_check
 
 # Permissions for Charging
+    chown media sdcard_rw /sys/class/power_supply/battery/store_mode
     chown system radio /sys/class/power_supply/battery/batt_reset_soc
     chown system radio /sys/class/power_supply/battery/update
     chown system radio /sys/class/power_supply/battery/factory_mode
@@ -1262,7 +1264,7 @@ service powersnd /system/bin/samsungpowersoundplay
     oneshot
 
 service bootanim /system/bin/bootanimation
-    class core
+    class main
     user graphics
     group graphics system
     disabled
