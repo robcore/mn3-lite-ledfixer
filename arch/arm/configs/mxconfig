@@ -4076,7 +4076,7 @@ CONFIG_FUSE_FS=y
 #
 # Caches
 #
-# CONFIG_FSCACHE is not set
+CONFIG_FSCACHE=y
 
 #
 # CD-ROM/DVD Filesystems
