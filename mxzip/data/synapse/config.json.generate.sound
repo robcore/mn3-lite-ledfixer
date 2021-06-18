@@ -288,6 +288,10 @@ busybox cat << CTAG
                 default:$(busybox cat /sys/kernel/sound_control/rms_meter_div_fact),
                 action:"soundcontrol rms_meter_div_fact"
             }},
+            { SLiveLabel:{
+                refresh:1000,
+                action:"utils rmsdiv"
+            }},
             { SSeekBar:{
                 title:"RMS Meter Resample Factor",
                 max:255,
