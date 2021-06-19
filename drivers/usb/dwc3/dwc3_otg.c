@@ -533,7 +533,7 @@ static void dwc3_ext_event_notify(struct usb_otg *otg,
 		if (!init) {
 			init = true;
 			if (!work_busy(&dotg->sm_work.work))
-				schedule_delayed_work(dotg->sm_work, 0);
+				schedule_delayed_work(&dotg->sm_work, 0);
 
 			complete(&dotg->dwc3_xcvr_vbus_init);
 			dev_dbg(phy->dev, "XCVR: BSV init complete\n");
