@@ -19,9 +19,12 @@ myppr() {
     fi
 }
 
-myppr /root/mn3lite/patches/0010-wait-nevermind.patch
-myppr /root/mn3lite/patches/0009-idr-rename-MAX_LEVEL-to-MAX_IDR_LEVEL.patch
-myppr /root/mn3lite/patches/0008-revert-to-real-stock-3.4.patch
-myppr /root/mn3lite/patches/0006-return-idr-to-stock-3.4.patch
-
+myppr /root/mn3lite/patches/0020-workqueue-use-mutex-for-global_cwq-manager-exclusion.patch
+myppr /root/mn3lite/patches/0019-workqueue-ROGUE-workers-are-UNBOUND-workers.patch
+myppr /root/mn3lite/patches/0018-workqueue-drop-CPU_DYING-notifier-operation.patch
+myppr /root/mn3lite/patches/0017-workqueue-reimplement-WQ_HIGHPRI.patch
+myppr /root/mn3lite/patches/0016-workqueue-introduce-NR_WORKER_POOLS-and.patch
+myppr /root/mn3lite/patches/0015-workqueue-separate-out-worker_pool-flags.patch
+myppr /root/mn3lite/patches/0014-workqueue-use-pool-instead-of-gcwq-or-cpu.patch
+myppr /root/mn3lite/patches/0013-workqueue-factor-out-worker_pool-from-global_cwq.patch
 echo "$0 is complete!"
