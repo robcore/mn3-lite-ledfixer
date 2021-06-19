@@ -297,10 +297,6 @@ enum {
  * system_long_wq is similar to system_wq but may host long running
  * works.  Queue flushing might take relatively long.
  *
- * system_nrt_wq is non-reentrant and guarantees that any given work
- * item is never executed in parallel by multiple CPUs.  Queue
- * flushing might take relatively long.
- *
  * system_unbound_wq is unbound workqueue.  Workers are not bound to
  * any specific CPU, not concurrency managed, and all queued works are
  * executed immediately as long as max_active limit is not reached and
@@ -308,16 +304,25 @@ enum {
  *
  * system_freezable_wq is equivalent to system_wq except that it's
  * freezable.
- *
- * system_nrt_freezable_wq is equivalent to system_nrt_wq except that
- * it's freezable.
  */
 extern struct workqueue_struct *system_wq;
 extern struct workqueue_struct *system_long_wq;
-extern struct workqueue_struct *system_nrt_wq;
 extern struct workqueue_struct *system_unbound_wq;
 extern struct workqueue_struct *system_freezable_wq;
-extern struct workqueue_struct *system_nrt_freezable_wq;
+
+static inline struct workqueue_struct *__system_nrt_wq(void)
+{
+	return system_wq;
+}
+
+static inline struct workqueue_struct *__system_nrt_freezable_wq(void)
+{
+	return system_freezable_wq;
+}
+
+/* equivlalent to system_wq and system_freezable_wq, deprecated */
+#define system_nrt_wq			__system_nrt_wq()
+#define system_nrt_freezable_wq		__system_nrt_freezable_wq()
 
 extern struct workqueue_struct *
 __alloc_workqueue_key(const char *fmt, unsigned int flags, int max_active,
@@ -412,11 +417,9 @@ extern int keventd_up(void);
 int execute_in_process_context(work_func_t fn, struct execute_work *);
 
 extern bool flush_work(struct work_struct *work);
-extern bool flush_work_sync(struct work_struct *work);
 extern bool cancel_work_sync(struct work_struct *work);
 
 extern bool flush_delayed_work(struct delayed_work *dwork);
-extern bool flush_delayed_work_sync(struct delayed_work *work);
 extern bool cancel_delayed_work_sync(struct delayed_work *dwork);
 
 extern void workqueue_set_max_active(struct workqueue_struct *wq,
@@ -454,6 +457,18 @@ static inline bool __cancel_delayed_work(struct delayed_work *work)
 	if (ret)
 		work_clear_pending(&work->work);
 	return ret;
+}
+
+/* used to be different but now identical to flush_work(), deprecated */
+static inline bool __deprecated flush_work_sync(struct work_struct *work)
+{
+	return flush_work(work);
+}
+
+/* used to be different but now identical to flush_delayed_work(), deprecated */
+static inline bool __deprecated flush_delayed_work_sync(struct delayed_work *dwork)
+{
+	return flush_delayed_work(dwork);
 }
 
 #ifndef CONFIG_SMP
