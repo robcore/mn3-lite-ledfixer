@@ -193,7 +193,7 @@ void sec_otg_set_dock_state(int enable)
 			clear_bit(B_SESS_VLD, &motg->inputs);
 		}
 		/* use use non-reentrant wq, so that we don't run sm_work on multiple cpus */
-		queue_work(system_nrt_wq, &motg->sm_work);
+		schedule_work(&motg->sm_work);
 
 	} else {
 		pr_info("DOCK : detached\n");
@@ -226,7 +226,7 @@ void sec_otg_set_id_state(int id)
 			motg->sm_work_pending = true;
 		else
 		/* use use non-reentrant wq, so that we don't run sm_work on multiple cpus */
-			queue_work(system_nrt_wq, &motg->sm_work);
+			schedule_work(&motg->sm_work);
 	}
 }
 EXPORT_SYMBOL(sec_otg_set_id_state);
@@ -249,7 +249,7 @@ void msm_otg_set_smartdock_state(bool online)
 	if (atomic_read(&motg->pm_suspended))
 		motg->sm_work_pending = true;
 	else
-		queue_work(system_nrt_wq, &motg->sm_work);
+		schedule_work(&motg->sm_work);
 }
 EXPORT_SYMBOL_GPL(msm_otg_set_smartdock_state);
 
