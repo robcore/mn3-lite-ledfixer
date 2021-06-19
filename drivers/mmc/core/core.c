@@ -3058,7 +3058,7 @@ static void mmc_clk_scaling(struct mmc_host *host, bool from_wq)
 			 * work, so delay atleast one timer tick to release
 			 * host and re-claim while scaling down the clocks.
 			 */
-			schedule_delayed_work(host->clk_scaling.work, 1);
+			schedule_delayed_work(&host->clk_scaling.work, 1);
 			goto no_reset_stats;
 		}
 	}
