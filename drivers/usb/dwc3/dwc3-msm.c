@@ -1108,7 +1108,7 @@ void msm_dwc3_restart_usb_session(struct usb_gadget *gadget)
 		return;
 
 	dev_dbg(mdwc->dev, "%s\n", __func__);
-	schedule_delayed_work(&mdwc->restart_usb_work);
+	schedule_work(&mdwc->restart_usb_work);
 }
 EXPORT_SYMBOL(msm_dwc3_restart_usb_session);
 
@@ -2407,7 +2407,7 @@ static int dwc3_msm_power_set_property_usb(struct power_supply *psy,
 			 * charging CDP complaince test fails if delay > 120ms.
 			 */
 			dev_info(mdwc->dev, "%s: queue_delayed_work mdwc->resume_work\n", __func__);
-			schedule_delayed_work(mdwc->resume_work, 12);
+			schedule_delayed_work(&mdwc->resume_work, 12);
 
 			if (!init)
 				init = true;
@@ -3123,7 +3123,7 @@ static int __devinit dwc3_msm_probe(struct platform_device *pdev)
 				mdwc->id_state =
 					!!irq_read_line(mdwc->pmic_id_irq);
 				if (mdwc->id_state == DWC3_ID_GROUND)
-					schedule_work(mdwc->id_work);
+					schedule_work(&mdwc->id_work);
 				local_irq_restore(flags);
 				enable_irq_wake(mdwc->pmic_id_irq);
 			}
