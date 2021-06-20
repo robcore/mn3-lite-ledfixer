@@ -3962,24 +3962,13 @@ static void samsung_led_set(struct qpnp_led_data *info, enum led_brightness valu
     info->cdev.brightness = value;
     switch (info->id) {
         case QPNP_ID_RGB_RED:
-            rc = qpnp_led_set(info, value);
-            if (rc < 0)
-                pr_err("[LEDS]RGB RED: set brightness failed (%d)\n", rc);
-            break;
         case QPNP_ID_RGB_GREEN:
-            rc = qpnp_led_set(info, value);
-            if (rc < 0)
-                pr_err("[LEDS]RGB GREEN: set brightness failed (%d)\n", rc);
-            break;
         case QPNP_ID_RGB_BLUE:
-            rc = qpnp_led_set(info, value);
-            if (rc < 0)
-                pr_err("[LEDS]RGB BLUE: set brightness failed (%d)\n", rc);
+            qpnp_led_set(&info->cdev, info->cdev.brightness);
             break;
         default:
             break;
     }
-
 }
 
 static void led_pat_on(struct qpnp_led_data *info, struct patt_registry *patt_register,
