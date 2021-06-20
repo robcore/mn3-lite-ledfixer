@@ -375,7 +375,7 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -pipe \
 		   -Wno-switch-unreachable -Wno-stringop-overflow \
 		   -fno-strict-aliasing -fno-common -std=gnu89 \
 		   -Wno-stringop-truncation -Wno-sizeof-pointer-memaccess \
-		   -Wno-restrict -Wno-format-overflow \
+		   -Wno-restrict -Wno-format-overflow -fno-aggressive-loop-optimizations \
 		   -mfpu=neon-vfpv4 -mcpu=cortex-a15 -mtune=cortex-a15 \
 		   -Wno-sequence-point
 
@@ -395,7 +395,7 @@ KBUILD_CFLAGS_KERNEL := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -Wno-switch-unreachable -Wno-stringop-overflow \
 		   -fno-strict-aliasing -fno-common -std=gnu89 \
 		   -Wno-stringop-truncation -Wno-sizeof-pointer-memaccess \
-		   -Wno-restrict -Wno-format-overflow \
+		   -Wno-restrict -Wno-format-overflow -fno-aggressive-loop-optimizations \
 		   -mfpu=neon-vfpv4 -mcpu=cortex-a15 -mtune=cortex-a15 \
 		   -Wno-sequence-point
 

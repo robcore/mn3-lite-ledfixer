@@ -561,7 +561,7 @@ static struct device *led_dev;
 #define CURRENT_DIVIDER 12
 int low_powermode = 0;
 int on_patt = 0;
-struct mutex    leds_mutex_lock;
+struct mutex leds_mutex_lock;
 struct patt_config blue[] = {
 	{
 		.id = QPNP_ID_RGB_BLUE,
@@ -572,6 +572,7 @@ struct patt_config blue[] = {
 		.lo_pause = 0,
 		.hi_pause = 0,
 	},
+    {},
 };
 
 struct patt_config green[] = {
@@ -584,6 +585,7 @@ struct patt_config green[] = {
 		.lo_pause = 0,
 		.hi_pause = 0,
 	},
+    {},
 };
 
 struct patt_config red[] = {
@@ -596,6 +598,7 @@ struct patt_config red[] = {
 		.lo_pause = 0,
 		.hi_pause = 0,
 	},
+    {},
 };
 
 
@@ -624,6 +627,7 @@ struct patt_config powering_on[] = {
                 .lo_pause = 200,
                 .hi_pause = 200,
         },
+    {},
 };
 
 struct patt_config charging_error[] = {
@@ -637,6 +641,7 @@ struct patt_config charging_error[] = {
                 .lo_pause = 500,
                 .hi_pause = 500,
         },
+    {},
 };
 
 struct patt_config battery_full[] = {
@@ -651,6 +656,7 @@ struct patt_config battery_full[] = {
 		.lo_pause = 0,
 		.hi_pause = 0,
 	},
+    {},
 };
 
 struct patt_config low_battery[] = {
@@ -664,6 +670,7 @@ struct patt_config low_battery[] = {
 		.lo_pause = 5000,
 		.hi_pause = 500,
 	},
+    {},
 };
 
 struct patt_config missed_call_noti[] = {
@@ -677,6 +684,7 @@ struct patt_config missed_call_noti[] = {
 		.lo_pause = 5000,
 		.hi_pause = 500,
 	},
+    {},
 };
 
 struct patt_config charging[] = {
@@ -691,6 +699,7 @@ struct patt_config charging[] = {
 		.lo_pause = 0,
 		.hi_pause = 0,
 	},
+    {},
 };
 
 struct patt_config blink[] = {
@@ -720,7 +729,8 @@ struct patt_config blink[] = {
                 .pwm_period_us = 1000,
                 .lo_pause = 0,
                 .hi_pause = 0,
-        }
+        },
+    {},
 };
 
 
@@ -734,22 +744,22 @@ static struct patt_registry led_patterns[] = {
                charging_error,
                 ARRAY_SIZE(charging_error),
         },
-	{
-		missed_call_noti,
-		ARRAY_SIZE(missed_call_noti),
-	},
-	{
-		low_battery,
-		ARRAY_SIZE(low_battery),
-	},
-	{
-		battery_full,
-		ARRAY_SIZE(battery_full),
-	},
-	{
-		powering_on,
-		ARRAY_SIZE(powering_on),
-	},
+        {
+            	missed_call_noti,
+            	ARRAY_SIZE(missed_call_noti),
+        },
+        {
+               	low_battery,
+                ARRAY_SIZE(low_battery),
+        },
+        {
+            	battery_full,
+            	ARRAY_SIZE(battery_full),
+        },
+        {
+            	powering_on,
+            	ARRAY_SIZE(powering_on),
+        },
 };
 static struct patt_registry led_rgb[] = {
         {
@@ -4026,13 +4036,13 @@ static ssize_t store_patt(struct device *dev, struct device_attribute *devattr,
                           const char *buf, size_t count) {
     struct qpnp_led_data *info;
     struct patt_registry *pat_reg = NULL;
-    int cnt = 0,i = 0;
+    unsigned int cnt = 0,i = 0;
 
     info = dev_get_drvdata(dev);
     if (buf[0] == '0') {
         on_patt = 0;
         for (cnt = 0; cnt < RGB_MAX; cnt++)
-            samsung_led_set(&info[cnt],0);
+            samsung_led_set(&info[cnt], 0);
         return count;
     }
 
@@ -4042,10 +4052,10 @@ static ssize_t store_patt(struct device *dev, struct device_attribute *devattr,
         samsung_led_set(&info[i],LED_OFF);
 
 	if (cnt == LED_POWERING_ON_PAT) {
-        info[RGB_GREEN].rgb_cfg->enable = RGB_LED_ENABLE_GREEN | RGB_LED_ENABLE_BLUE;
-        info[RGB_BLUE].rgb_cfg->enable =    RGB_LED_ENABLE_GREEN | RGB_LED_ENABLE_BLUE;
-        printk(KERN_INFO "Green Enable =%x \n", info[RGB_GREEN].rgb_cfg->enable);
-        printk(KERN_INFO "Blue Enable =%x \n", info[RGB_BLUE].rgb_cfg->enable);
+        info[RGB_GREEN].rgb_cfg->enable = RGB_LED_ENABLE_GREEN;
+        info[RGB_BLUE].rgb_cfg->enable = RGB_LED_ENABLE_BLUE;
+        pr_info("Green Enable =%x \n", info[RGB_GREEN].rgb_cfg->enable);
+        pr_info("Blue Enable =%x \n", info[RGB_BLUE].rgb_cfg->enable);
     } else {
         info[RGB_RED].rgb_cfg->enable = RGB_LED_ENABLE_RED;
         info[RGB_GREEN].rgb_cfg->enable = RGB_LED_ENABLE_GREEN;
@@ -4056,7 +4066,7 @@ static ssize_t store_patt(struct device *dev, struct device_attribute *devattr,
         mutex_lock(&leds_mutex_lock);
         on_patt = cnt; //saving pattern number
         pat_reg = &led_patterns[cnt-1];
-        printk(KERN_INFO "store_patt: Pattern %d will swtiched on\n",cnt);
+        pr_info("store_patt: Pattern %d swtiched on\n",cnt);
         led_pat_on(info, pat_reg, LED_FULL);
         mutex_unlock(&leds_mutex_lock);
     }
@@ -4338,7 +4348,8 @@ static int __devinit qpnp_leds_probe(struct spmi_device *spmi)
 	struct qpnp_led_data *led, *led_array;
 	struct resource *led_resource;
 	struct device_node *node, *temp;
-	int rc, i, num_leds = 0, parsed_leds = 0;
+	int rc, i;
+    unsigned int num_leds = 0, parsed_leds = 0;
 	const char *led_label;
 	bool regulator_probe = false;
 
