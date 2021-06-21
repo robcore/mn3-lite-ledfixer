@@ -367,7 +367,7 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -pipe \
 		   -Wno-unused-variable -Wno-maybe-uninitialized \
 		   -Werror-implicit-function-declaration \
 		   -fno-unsafe-math-optimizations \
-		   -ftree-loop-vectorizefree-loop-vectorize -floop-nest-optimize \
+		   -ftree-loop-vectorize -floop-nest-optimize \
 		   -Wno-unused-function -Wno-unused-label -Wno-array-bounds \
 		   -Wno-format-security -Wno-format-truncation \
 		   -Wno-misleading-indentation -Wno-int-in-bool-context \
