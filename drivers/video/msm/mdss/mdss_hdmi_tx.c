@@ -2744,7 +2744,7 @@ static int hdmi_tx_power_on(struct mdss_panel_data *panel_data)
 	}
 
 	/* If a power down is already underway, wait for it to finish */
-	flush_work(&hdmi_ctrl->power_off_work);
+	flush_work_sync(&hdmi_ctrl->power_off_work);
 
 	if (hdmi_ctrl->pdata.primary) {
 		timeout = wait_for_completion_timeout(
@@ -2834,7 +2834,7 @@ static void hdmi_tx_hpd_off(struct hdmi_tx_ctrl *hdmi_ctrl)
 	}
 
 	/* finish the ongoing hpd work if any */
-	flush_work(&hdmi_ctrl->hpd_int_work);
+	flush_work_sync(&hdmi_ctrl->hpd_int_work);
 
 	/* Turn off HPD interrupts */
 	DSS_REG_W(io, HDMI_HPD_INT_CTRL, 0);
@@ -2939,7 +2939,7 @@ static int hdmi_tx_sysfs_enable_hpd(struct hdmi_tx_ctrl *hdmi_ctrl, int on)
 		rc = hdmi_tx_hpd_on(hdmi_ctrl);
 	} else {
 		/* If power down is already underway, wait for it to finish */
-		flush_work(&hdmi_ctrl->power_off_work);
+		flush_work_sync(&hdmi_ctrl->power_off_work);
 
 		if (!hdmi_ctrl->panel_power_on)
 			hdmi_tx_hpd_off(hdmi_ctrl);
@@ -3346,7 +3346,7 @@ static int hdmi_tx_panel_event_handler(struct mdss_panel_data *panel_data,
 		 * because of function sync problem.
 		 * If power down is already underway, wait for it to finish.
 		 */
-		flush_work(&hdmi_ctrl->power_off_work);
+		flush_work_sync(&hdmi_ctrl->power_off_work);
 #endif
 		hdmi_ctrl->timing_gen_on = false;
 		break;

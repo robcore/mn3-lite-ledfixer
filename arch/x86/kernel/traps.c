@@ -37,6 +37,10 @@
 #include <linux/eisa.h>
 #endif
 
+#ifdef CONFIG_MCA
+#include <linux/mca.h>
+#endif
+
 #if defined(CONFIG_EDAC)
 #include <linux/edac.h>
 #endif
