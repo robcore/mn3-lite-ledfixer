@@ -74,10 +74,13 @@ struct timekeeper {
 	struct timespec total_sleep_time;
 	/* The raw monotonic time for the CLOCK_MONOTONIC_RAW posix clock. */
 	struct timespec raw_time;
+
 	/* Offset clock monotonic -> clock realtime */
 	ktime_t offs_real;
+
 	/* Offset clock monotonic -> clock boottime */
 	ktime_t offs_boot;
+
 	/* Seqlock for all timekeeper values */
 	seqlock_t lock;
 };
@@ -269,6 +272,7 @@ void getnstimeofday(struct timespec *ts)
 
 	timespec_add_ns(ts, nsecs);
 }
+
 EXPORT_SYMBOL(getnstimeofday);
 
 ktime_t ktime_get(void)
@@ -385,8 +389,8 @@ void do_gettimeofday(struct timeval *tv)
 	tv->tv_sec = now.tv_sec;
 	tv->tv_usec = now.tv_nsec/1000;
 }
-EXPORT_SYMBOL(do_gettimeofday);
 
+EXPORT_SYMBOL(do_gettimeofday);
 /**
  * do_settimeofday - Sets the time of day
  * @tv:		pointer to the timespec variable containing the new time
@@ -420,6 +424,7 @@ int do_settimeofday(const struct timespec *tv)
 
 	return 0;
 }
+
 EXPORT_SYMBOL(do_settimeofday);
 
 
@@ -570,7 +575,6 @@ u64 timekeeping_max_deferment(void)
 {
 	unsigned long seq;
 	u64 ret;
-
 	do {
 		seq = read_seqbegin(&timekeeper.lock);
 

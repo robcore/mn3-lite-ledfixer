@@ -27,7 +27,6 @@
 #include <linux/profile.h>
 
 #include <asm/io.h>
-#include <asm/irq_regs.h>
 #include <asm/timer.h>
 
 #define	TICK_SIZE (tick_nsec / 1000)

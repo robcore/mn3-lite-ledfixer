@@ -201,10 +201,12 @@ void __init time_init_deferred(void)
 		resource = rtos_timer_device.resource;
 
 	/*  ioremap here means this has to run later, after paging init  */
-	rtos_timer = ioremap(resource->start, resource_size(resource));
+	rtos_timer = ioremap(resource->start, resource->end
+		- resource->start + 1);
 
 	if (!rtos_timer) {
-		release_mem_region(resource->start, resource_size(resource));
+		release_mem_region(resource->start, resource->end
+			- resource->start + 1);
 	}
 	clocksource_register_khz(&hexagon_clocksource, pcycle_freq_mhz * 1000);
 
