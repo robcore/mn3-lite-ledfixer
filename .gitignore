@@ -137,3 +137,4 @@ mxrd/split_img.orig
 mxrd/split_img.orig/*
 buildlogs
 buildlogs/*
+wppdtmplink.txt
