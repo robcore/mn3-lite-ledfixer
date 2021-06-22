@@ -27,6 +27,11 @@
 #include <linux/pinctrl/consumer.h>
 #include <linux/pinctrl/pinctrl.h>
 #include <linux/pinctrl/machine.h>
+
+#ifdef CONFIG_GPIOLIB
+#include <asm-generic/gpio.h>
+#endif
+
 #include "core.h"
 #include "devicetree.h"
 #include "pinmux.h"
