@@ -576,10 +576,10 @@ build_boot_img() {
     [ -f "$MXRD/ramdisk-new.cpio.gz" ] && rm "$MXRD/ramdisk-new.cpio.gz"
 
     echo "Regnerating .dtb files"
-    rm "$KDIR/msm8974-sec-hlte-r05.dtb"
-    rm "$KDIR/msm8974-sec-hlte-r06.dtb"
-    rm "$KDIR/msm8974-sec-hlte-r07.dtb"
-    rm "$KDIR/msm8974-sec-hlte-r09.dtb"
+    rm "$KDIR/msm8974-sec-hlte-r05.dtb" &> /dev/null
+    rm "$KDIR/msm8974-sec-hlte-r06.dtb" &> /dev/null
+    rm "$KDIR/msm8974-sec-hlte-r07.dtb" &> /dev/null
+    rm "$KDIR/msm8974-sec-hlte-r09.dtb" &> /dev/null
 
     local DTB_FILE
     local DTS_FILE
