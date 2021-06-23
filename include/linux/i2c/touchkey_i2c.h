@@ -29,7 +29,9 @@ extern int poweroff_charging;
 #endif
 
 #include <linux/input.h>
+#ifdef CONFIG_HAS_EARLYSUSPEND
 #include <linux/earlysuspend.h>
+#endif
 #include <linux/mutex.h>
 #include <linux/wakelock.h>
 

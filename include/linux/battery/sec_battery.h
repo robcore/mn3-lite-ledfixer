@@ -114,7 +114,7 @@ struct sec_battery_info {
 	unsigned int check_adc_count;
 	unsigned int check_adc_value;
 
-	/* health change check*/
+	/* health change check */
 	bool health_change;
 	/* time check */
 	unsigned long charging_start_time;
