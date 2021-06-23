@@ -222,8 +222,8 @@
 
 # Assign TCP buffer thresholds to be ceiling value of technology maximums
 # Increased technology maximums should be reflected here.
-#    echo 2097152 > /proc/sys/net/core/rmem_max
-#    echo 2097152 > /proc/sys/net/core/wmem_max
+    echo 2097152 > /proc/sys/net/core/rmem_max
+    echo 2097152 > /proc/sys/net/core/wmem_max
 
 # Set the property to indicate type of virtual display to 0
 # 0 indicates that virtual display is not a Wifi display and that the
