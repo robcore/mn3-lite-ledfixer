@@ -1143,7 +1143,7 @@
 
 	};
 
-	msm-bimc@0xfc380000 {
+	msm-bimc@fc380000 {
 		compatible = "msm-bus-fabric";
 		reg = <0xfc380000 0x0006A000>;
 		cell-id = <0>;
