@@ -209,7 +209,7 @@
            SEC_BATTERY_FULL_CONDITION_VCELL */
         battery,full_condition_type = <13>;
         battery,full_condition_soc = <97>;
-        battery,full_condition_vcell = <4250>;
+        battery,full_condition_vcell = <4300>;
 
         battery,recharge_check_count = <1>;
         battery,recharge_condition_type = <4>; /* SEC_BATTERY_RECHARGE_CONDITION_VCELL */
@@ -312,7 +312,7 @@
             synaptics,tsp-coords = <1079 1919>;
             synaptics,i2c-pull-up = <1>;
             synaptics,tsp-project = "H";
-            synaptics,tsp-extra_config = <0 0 0 0>;/* <"pwrctrl", "N", "N", "N"> */
+            synaptics,tsp-extra_config = <0 0 0 0>; /* <"pwrctrl", "N", "N", "N"> */
         };
     };
 
@@ -370,8 +370,7 @@
             gpios = <&msmgpio 43 0>, <&msmgpio 44 0>;
             qcom,gpio-req-tbl-num = <0 1>;
             qcom,gpio-req-tbl-flags = <1 1>;
-            qcom,gpio-req-tbl-label = "I2C_DATA0",
-                          "I2C_CLK0";
+            qcom,gpio-req-tbl-label = "I2C_DATA0", "I2C_CLK0";
         };
     };
 
@@ -577,7 +576,7 @@
         status = "okay";
         qcom,rgb_0 {
             label = "rgb";
-            linux,name = "led:rgb_red";
+            linux,name = "red";
             qcom,max-current = <4>;
             qcom,id = <3>;
             linux,default-trigger = "none";
@@ -597,7 +596,7 @@
 
         qcom,rgb_1 {
             label = "rgb";
-            linux,name = "led:rgb_green";
+            linux,name = "green";
             qcom,max-current = <4>;
             qcom,id = <4>;
             linux,default-trigger = "none";
@@ -617,7 +616,7 @@
 
         qcom,rgb_2 {
             label = "rgb";
-            linux,name = "led:rgb_blue";
+            linux,name = "blue";
             qcom,max-current = <4>;
             qcom,id = <5>;
             linux,default-trigger = "none";
