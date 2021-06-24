@@ -356,7 +356,6 @@ static inline void verify_tx_queue_is_empty(const char *func)
 				pr_err("%s: tx pool not empty\n", func);
 			reported = 1;
 		}
-			&info->list_node, info->ts_sec, info->ts_nsec);
 		if (!in_global_reset)
 			pr_err("%s: node=%p ts=%u.%09lu\n", __func__,
 			&info->list_node, info->ts_sec, info->ts_nsec);
