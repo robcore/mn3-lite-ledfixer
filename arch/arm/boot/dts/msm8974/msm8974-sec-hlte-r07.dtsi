@@ -209,7 +209,7 @@
            SEC_BATTERY_FULL_CONDITION_VCELL */
         battery,full_condition_type = <13>;
         battery,full_condition_soc = <97>;
-        battery,full_condition_vcell = <4300>;
+        battery,full_condition_vcell = <4250>;
 
         battery,recharge_check_count = <1>;
         battery,recharge_condition_type = <4>; /* SEC_BATTERY_RECHARGE_CONDITION_VCELL */
@@ -572,87 +572,25 @@
 };
 
 &pm8941_lsid1 {
-    qcom,leds@d000 {
-        status = "okay";
-        qcom,rgb_0 {
-            label = "rgb";
-            linux,name = "red";
-            qcom,max-current = <4>;
-            qcom,id = <3>;
-            linux,default-trigger = "none";
-            qcom,default-state = "off";
-            qcom,turn-off-delay-ms = <0>;
-            qcom,mode = "lpg";
-            qcom,pwm-channel = <6>;
-            qcom,pwm-us = <1000>;
-            qcom,ramp-step-ms = <1>;
-            qcom,pause-lo = <0>;
-            qcom,pause-hi = <0>;
-            qcom,start-idx = <1>;
-            qcom,duty-pcts = [00 64];
-            qcom,lut-flags = <0x1F>;
-            qcom,use-blink;
-        };
-
-        qcom,rgb_1 {
-            label = "rgb";
-            linux,name = "green";
-            qcom,max-current = <4>;
-            qcom,id = <4>;
-            linux,default-trigger = "none";
-            qcom,default-state = "off";
-            qcom,turn-off-delay-ms = <0>;
-            qcom,mode = "lpg";
-            qcom,pwm-channel = <5>;
-            qcom,pwm-us = <1000>;
-            qcom,ramp-step-ms = <1>;
-            qcom,pause-lo = <0>;
-            qcom,pause-hi = <0>;
-            qcom,start-idx = <3>;
-            qcom,duty-pcts = [00 64];
-            qcom,lut-flags = <0x1F>;
-            qcom,use-blink;
-        };
-
-        qcom,rgb_2 {
-            label = "rgb";
-            linux,name = "blue";
-            qcom,max-current = <4>;
-            qcom,id = <5>;
-            linux,default-trigger = "none";
-            qcom,default-state = "off";
-            qcom,turn-off-delay-ms = <0>;
-            qcom,mode = "lpg";
-            qcom,pwm-channel = <4>;
-            qcom,pwm-us = <1000>;
-            qcom,ramp-step-ms = <1>;
-            qcom,pause-lo = <0>;
-            qcom,pause-hi = <0>;
-            qcom,start-idx = <5>;
-            qcom,duty-pcts = [00 64];
-            qcom,lut-flags = <0x1F>;
-            qcom,use-blink;
-        };
-    };
-    qcom,leds@d800 {
-        status = "okay";
-        qcom,wled_0 {
-            label = "wled";
-            linux,name = "wled:backlight";
-            linux,default-trigger = "bkl-trigger";
-            qcom,cs-out-en;
-            qcom,op-fdbck = <1>;
-            qcom,default-state = "off";
-            qcom,max-current = <25>;
-            qcom,ctrl-delay-us = <0>;
-            qcom,boost-curr-lim = <5>;
-            qcom,cp-sel = <0>;
-            qcom,switch-freq = <11>;
-            qcom,ovp-val = <2>;
-            qcom,num-strings = <3>;
-            qcom,id = <0>;
-        };
-    };
+	qcom,leds@d800 {
+		status = "okay";
+		qcom,wled_0 {
+			label = "wled";
+			linux,name = "wled:backlight";
+			linux,default-trigger = "bkl-trigger";
+			qcom,cs-out-en;
+			qcom,op-fdbck = <1>;
+			qcom,default-state = "off";
+			qcom,max-current = <25>;
+			qcom,ctrl-delay-us = <0>;
+			qcom,boost-curr-lim = <5>;
+			qcom,cp-sel = <0>;
+			qcom,switch-freq = <11>;
+			qcom,ovp-val = <2>;
+			qcom,num-strings = <3>;
+			qcom,id = <0>;
+		};
+	};
 
     qcom,leds@d900 {
         status = "disabled";
