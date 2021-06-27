@@ -1909,7 +1909,7 @@ static int __devinit qpnp_pwm_probe(struct spmi_device *spmi)
 
 	chip = kzalloc(sizeof *chip, GFP_KERNEL);
 	if (chip == NULL) {
-		pr_err("kzalloc() failed.\n");
+		pr_err("qpnp_pwm_probe: kzalloc() failed.\n");
 		return -ENOMEM;
 	}
 
@@ -1933,7 +1933,7 @@ static int __devinit qpnp_pwm_probe(struct spmi_device *spmi)
 
 	if (chip->revision < QPNP_LPG_REVISION_0 ||
 		chip->revision > QPNP_LPG_REVISION_1) {
-		pr_err("Unknown LPG revision detected, rev:%d\n",
+		pr_err("qpnp_pwm_probe: Unknown LPG revision detected, rev:%d\n",
 						chip->revision);
 		rc = -EINVAL;
 		goto failed_insert;
@@ -1982,12 +1982,12 @@ static int __devexit qpnp_pwm_remove(struct spmi_device *spmi)
 
 static struct of_device_id spmi_match_table[] = {
 	{ .compatible = QPNP_LPG_DRIVER_NAME, },
-	{}
+	{ },
 };
 
 static const struct spmi_device_id qpnp_lpg_id[] = {
 	{ QPNP_LPG_DRIVER_NAME, 0 },
-	{ }
+	{ },
 };
 MODULE_DEVICE_TABLE(spmi, qpnp_lpg_id);
 
