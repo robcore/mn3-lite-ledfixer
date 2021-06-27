@@ -14,7 +14,7 @@
 &pm8941_lsid1 {
 	qcom,leds@d000 {
 		status = "okay";
-		qcom,rgb_0 {
+		qcom,rgb {
 			label = "rgb";
 				linux,name = "led:rgb_red";
 				qcom,mode = "lpg";
@@ -32,8 +32,11 @@
 				qcom,id = <3>;
 				linux,default-trigger = "none";
 		};
+	};
 
-		qcom,rgb_1 {
+	qcom,leds@d100 {
+		status = "okay";
+		qcom,rgb {
 			label = "rgb";
 				linux,name = "led:rgb_green";
 				qcom,mode = "lpg";
@@ -51,8 +54,11 @@
 				qcom,id = <4>;
 				linux,default-trigger = "none";
 		};
+	};
 
-		qcom,rgb_2 {
+	qcom,leds@d200 {
+		status = "okay";
+		qcom,rgb {
 			label = "rgb";
 				linux,name = "led:rgb_blue";
 				qcom,mode = "lpg";
@@ -70,14 +76,6 @@
 				qcom,id = <5>;
 				linux,default-trigger = "none";
 		};
-	};
-
-	qcom,leds@d100 {
-		status = "disabled";
-	};
-
-	qcom,leds@d200 {
-		status = "disabled";
 	};
 
 	qcom,leds@d300 {
