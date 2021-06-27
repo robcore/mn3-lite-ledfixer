@@ -63,7 +63,7 @@
     mdss_mdp: qcom,mdss_mdp@fd900000 {
         qcom,mdss-pref-prim-intf = "dsi";
         mdss_fb0: qcom,mdss_fb_primary {
-        qcom,memblock-reserve = <0x03200000 0x00F00000>;
+            qcom,memblock-reserve = <0x03200000 0x00F00000>;
             qcom,memory-alt-reservation-size = <0x1F40000>;     /* Framebuffer reservation only for LPM or recovery boot mode */
         };
     };
@@ -572,25 +572,25 @@
 };
 
 &pm8941_lsid1 {
-	qcom,leds@d800 {
-		status = "okay";
-		qcom,wled_0 {
-			label = "wled";
-			linux,name = "wled:backlight";
-			linux,default-trigger = "bkl-trigger";
-			qcom,cs-out-en;
-			qcom,op-fdbck = <1>;
-			qcom,default-state = "off";
-			qcom,max-current = <25>;
-			qcom,ctrl-delay-us = <0>;
-			qcom,boost-curr-lim = <5>;
-			qcom,cp-sel = <0>;
-			qcom,switch-freq = <11>;
-			qcom,ovp-val = <2>;
-			qcom,num-strings = <3>;
-			qcom,id = <0>;
-		};
-	};
+    qcom,leds@d800 {
+        status = "okay";
+        qcom,wled_0 {
+            label = "wled";
+            linux,name = "wled:backlight";
+            linux,default-trigger = "bkl-trigger";
+            qcom,cs-out-en;
+            qcom,op-fdbck = <1>;
+            qcom,default-state = "off";
+            qcom,max-current = <25>;
+            qcom,ctrl-delay-us = <0>;
+            qcom,boost-curr-lim = <5>;
+            qcom,cp-sel = <0>;
+            qcom,switch-freq = <11>;
+            qcom,ovp-val = <2>;
+            qcom,num-strings = <3>;
+            qcom,id = <0>;
+        };
+    };
 
     qcom,leds@d900 {
         status = "disabled";
