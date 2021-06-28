@@ -277,7 +277,7 @@ enum wled_ovp_threshold {
 
 enum flash_headroom {
 	HEADROOM_250mV = 0,
-	HEADROOM_300mV,spmi_ext_register_readl
+	HEADROOM_300mV,
 	HEADROOM_400mV,
 	HEADROOM_500mV,
 };
