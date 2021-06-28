@@ -24,6 +24,7 @@ DTCDIR="$BUILDIR/scripts/dtc"
 DTIMG="$KDIR/dt.img"
 MXDT="$MXRD/split_img/boot.img-dt"
 NEWZMG="$KDIR/zImage"
+FZMG="$KDIR/zImage-fixup"
 MXZMG="$MXRD/split_img/boot.img-kernel"
 DTS_NAMES="msm8974-sec-hlte-r"
 
@@ -626,8 +627,13 @@ build_boot_img() {
     cp "$DTIMG" "$MXDT" || warnandfail "Failed to copy $DTIMG to $MXDT!"
     chmod 644 "$MXDT"
 
+	FIXUP="/root/skales/atag-fix/fixup"
+	${CROSS_COMPILE}gcc -c $FIXUP.S -o $FIXUP.o && \
+	${CROSS_COMPILE}objcopy -O binary $FIXUP.o $FIXUP.bin && \
+	cat $FIXUP.bin "$NEWZMG" > "$FZMG" || warnandfail "Can't build fixup"
+
     [ -f "$MXZMG" ] && rm "$MXZMG"
-    cp "$NEWZMG" "$MXZMG" || warnandfail "Failed to copy $NEWZMG to $MXZMG!"
+    cp "$FZMG" "$MXZMG" || warnandfail "Failed to copy $NEWZMG to $MXZMG!"
     chmod 644 "$MXZMG"
 
     cd "$MXRD" || warnandfail "Failed to cd into $MXRD!"
