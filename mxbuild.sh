@@ -632,7 +632,7 @@ build_boot_img() {
 	cat "$FIXUP.bin" "$NEWZMG" > "$FZMG" || warnandfail "Can't build fixup"
 
     [ -f "$MXZMG" ] && rm "$MXZMG"
-    cp "$FZMG" "$MXZMG" || warnandfail "Failed to copy $MXZMG to $MXZMG!"
+    cp "$FZMG" "$MXZMG" || warnandfail "Failed to copy $FZMG to $MXZMG!"
     chmod 644 "$MXZMG"
 
     cd "$MXRD" || warnandfail "Failed to cd into $MXRD!"
