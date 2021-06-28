@@ -628,9 +628,9 @@ build_boot_img() {
     chmod 644 "$MXDT"
 
 	FIXUP="/root/skales/atag-fix/fixup"
-	${CROSS_COMPILE}gcc -c $FIXUP.S -o $FIXUP.o && \
-	${CROSS_COMPILE}objcopy -O binary $FIXUP.o $FIXUP.bin && \
-	cat $FIXUP.bin "$NEWZMG" > "$FZMG" || warnandfail "Can't build fixup"
+	${CROSS_COMPILE}gcc -c "$FIXUP.S" -o "$FIXUP.o" && \
+	${CROSS_COMPILE}objcopy -O binary "$FIXUP.o" "$FIXUP.bin" && \
+	cat "$FIXUP.bin" "$NEWZMG" > "$FZMG" || warnandfail "Can't build fixup"
 
     [ -f "$MXZMG" ] && rm "$MXZMG"
     cp "$FZMG" "$MXZMG" || warnandfail "Failed to copy $NEWZMG to $MXZMG!"
