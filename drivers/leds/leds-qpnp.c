@@ -331,7 +331,7 @@ static u8 flash_debug_regs[] = {
 	0x4f, 0x46, 0x47,
 };
 
-static u8 rgb_pwm_debug_regs[] = {spmi_ext_register_readl
+static u8 rgb_pwm_debug_regs[] = {
 	0x45, 0x46, 0x47,
 };
 
