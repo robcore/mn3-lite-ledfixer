@@ -60,11 +60,10 @@ enum mdss_id_state {
 };
 int get_lcd_attached(void);
 
-#if defined(CONFIG_SEC_KS01_PROJECT) || defined(CONFIG_SEC_ATLANTIC_PROJECT)
+
 #ifdef CONFIG_FB_MSM_CAMERA_CSC
 u8 pre_csc_update = 0xFF;
 #endif
-#endif // CONFIG_SEC_KS01_PROJECT || CONFIG_SEC_ATLANTIC_PROJECT
 
 #define MEM_PROTECT_SD_CTRL 0xF
 
@@ -2013,7 +2012,7 @@ static void mdss_mdp_overlay_handle_vsync(struct mdss_mdp_ctl *ctl,
 	}
 
 	pr_debug("vsync on fb%d play_cnt=%d\n", mfd->index, ctl->play_cnt);
-#if defined(CONFIG_SEC_KS01_PROJECT) || defined(CONFIG_SEC_ATLANTIC_PROJECT)
+#if defined(CONFIG_SEC_KS01_PROJECT) ||defined(CONFIG_SEC_ATLANTIC_PROJECT)
 #ifdef CONFIG_FB_MSM_CAMERA_CSC
 	if (csc_update != prev_csc_update) {
 		struct mdss_mdp_pipe *pipe, *next;
