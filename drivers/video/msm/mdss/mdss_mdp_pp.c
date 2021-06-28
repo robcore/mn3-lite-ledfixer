@@ -21,6 +21,7 @@
 #include <linux/delay.h>
 #include <mach/msm_bus.h>
 #include <mach/msm_bus_board.h>
+#include <linux/module.h>
 #ifdef CONFIG_FB_MSM_CAMERA_CSC
 struct mdp_csc_cfg mdp_csc_convert_wideband = {
 	0,
@@ -535,6 +536,9 @@ int mdss_mdp_csc_setup_data(u32 block, u32 blk_idx, u32 tbl_idx,
 	return ret;
 }
 
+static unsigned int csc_cfg_override = 0;
+module_param(port, uint, 644);
+
 int mdss_mdp_csc_setup(u32 block, u32 blk_idx, u32 tbl_idx, u32 csc_type)
 {
 	struct mdp_csc_cfg *data;
@@ -548,16 +552,23 @@ int mdss_mdp_csc_setup(u32 block, u32 blk_idx, u32 tbl_idx, u32 csc_type)
 		 block, blk_idx, tbl_idx);
 
 #ifdef CONFIG_FB_MSM_CAMERA_CSC
-	if (csc_type == MDSS_MDP_CSC_YUV2RGB && !csc_update) 
-	{
-		data = &mdp_csc_convert_wideband;
-		pr_debug("will do mdp_csc_convert_wideband\n");
-	}
-	else
-	{
-		data = &mdp_csc_convert[csc_type];
-		pr_debug("will do mdp_csc_convert(narrow band)\n");
-	}
+    if (csc_cfg_override) {
+    	if (csc_type == MDSS_MDP_CSC_YUV2RGB && csc_cfg_override) {
+        	data = &mdp_csc_convert_wideband;
+        	pr_debug("will do mdp_csc_convert_wideband\n");
+        } else {
+    		data = &mdp_csc_convert[csc_type];
+        	pr_debug("will do mdp_csc_convert(narrow band)\n");
+        }
+    } else {
+    	if (csc_type == MDSS_MDP_CSC_YUV2RGB && !csc_update) {
+        	data = &mdp_csc_convert_wideband;
+        	pr_debug("will do mdp_csc_convert_wideband\n");
+        } else {
+    		data = &mdp_csc_convert[csc_type];
+        	pr_debug("will do mdp_csc_convert(narrow band)\n");
+        }
+    }
 #else
 	data = &mdp_csc_convert[csc_type];
 #endif	
