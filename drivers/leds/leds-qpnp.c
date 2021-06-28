@@ -821,6 +821,29 @@ static int qpnp_led_masked_write(struct qpnp_led_data *led, u16 addr, u8 mask, u
 	return rc;
 }
 
+static int qpnp_led_masked_write_rgb(struct qpnp_led_data *led, u16 addr, u8 mask, u8 val)
+{
+	int rc;
+	u8 reg;
+
+	rc = spmi_ext_register_readl(led->spmi_dev->ctrl, led->spmi_dev->sid,
+		addr, &reg, 8);
+	if (rc) {
+		dev_err(&led->spmi_dev->dev,
+			"Unable to read from addr=%x, rc(%d)\n", addr, rc);
+	}
+
+	reg &= ~mask;
+	reg |= val;
+
+	rc = spmi_ext_register_writel(led->spmi_dev->ctrl, led->spmi_dev->sid,
+		addr, &reg, 8);
+	if (rc)
+		dev_err(&led->spmi_dev->dev,
+			"Unable to write to addr=%x, rc(%d)\n", addr, rc);
+	return rc;
+}
+
 static void qpnp_dump_regs(struct qpnp_led_data *led, u8 regs[], u8 array_size)
 {
 	int i;
@@ -1861,7 +1884,7 @@ static int qpnp_rgb_set(struct qpnp_led_data *led)
 				return rc;
 			}
 		}
-		rc = qpnp_led_masked_write(led,
+		rc = qpnp_led_masked_write_rgb(led,
 			RGB_LED_EN_CTL(led->base),
 			led->rgb_cfg->enable, led->rgb_cfg->enable);
 		if (rc) {
@@ -1879,7 +1902,7 @@ static int qpnp_rgb_set(struct qpnp_led_data *led)
 		led->rgb_cfg->pwm_cfg->mode =
 			led->rgb_cfg->pwm_cfg->default_mode;
 		pwm_disable(led->rgb_cfg->pwm_cfg->pwm_dev);
-		rc = qpnp_led_masked_write(led,
+		rc = qpnp_led_masked_write_rgb(led,
 			RGB_LED_EN_CTL(led->base),
 			led->rgb_cfg->enable, RGB_LED_DISABLE);
 		if (rc) {
@@ -3081,7 +3104,7 @@ static int __devinit qpnp_rgb_init(struct qpnp_led_data *led)
 {
 	int rc;
 
-	rc = qpnp_led_masked_write(led, RGB_LED_SRC_SEL(led->base),
+	rc = qpnp_led_masked_write_rgb(led, RGB_LED_SRC_SEL(led->base),
 		RGB_LED_SRC_MASK, RGB_LED_SOURCE_VPH_PWR);
 	if (rc) {
 		dev_err(&led->spmi_dev->dev,
@@ -3097,7 +3120,7 @@ static int __devinit qpnp_rgb_init(struct qpnp_led_data *led)
 		return rc;
 	}
 	/* Initialize led for use in auto trickle charging mode */
-	rc = qpnp_led_masked_write(led, RGB_LED_ATC_CTL(led->base),
+	rc = qpnp_led_masked_write_rgb(led, RGB_LED_ATC_CTL(led->base),
 		led->rgb_cfg->enable, led->rgb_cfg->enable);
 
 	return 0;
