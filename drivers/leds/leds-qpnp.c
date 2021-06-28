@@ -3102,14 +3102,14 @@ static int __devinit qpnp_kpdbl_init(struct qpnp_led_data *led)
 
 static int __devinit qpnp_rgb_init(struct qpnp_led_data *led)
 {
-	int rc;
+	int rc = 0;
 
 	rc = qpnp_led_masked_write_rgb(led, RGB_LED_SRC_SEL(led->base),
 		RGB_LED_SRC_MASK, RGB_LED_SOURCE_VPH_PWR);
 	if (rc) {
 		dev_err(&led->spmi_dev->dev,
 			"Failed to write led source select register\n");
-		return rc;
+		goto finishline;
 	}
 
 	rc = qpnp_pwm_init(led->rgb_cfg->pwm_cfg, led->spmi_dev,
@@ -3117,13 +3117,20 @@ static int __devinit qpnp_rgb_init(struct qpnp_led_data *led)
 	if (rc) {
 		dev_err(&led->spmi_dev->dev,
 			"Failed to initialize pwm\n");
-		return rc;
+		goto finishline;
 	}
 	/* Initialize led for use in auto trickle charging mode */
 	rc = qpnp_led_masked_write_rgb(led, RGB_LED_ATC_CTL(led->base),
 		led->rgb_cfg->enable, led->rgb_cfg->enable);
 
-	return 0;
+	if (rc) {
+		dev_err(&led->spmi_dev->dev,
+			"Failed to initialize led auto-trickle\n");
+		goto finishline;
+	}
+
+finishline:
+	return rc;
 }
 
 static int __devinit qpnp_mpp_init(struct qpnp_led_data *led)
