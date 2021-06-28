@@ -606,8 +606,6 @@ build_boot_img() {
         echo "Creating $DTB_FILE from $DTS_FILE"
         "$BUILDIR/scripts/dtc/dtc" -i "$RDIR/arch/arm/boot/dts/msm8974/" -p 1024 -O dtb -o "$DTB_FILE" "$DTS_FILE" 2>&1 | \
                    tee -a "$LOGDIR/$QUICKDATE.Mark$(cat $RDIR/.oldversion).log" || warnandfail "Failed to build $DTB_FILE!"
-        #"$BUILDIR/scripts/dtc/dtc" -i "$RDIR/arch/arm/boot/dts/msm8974/" -p 1024 -O dtb -o "$DTB_FILE" "$DTS_FILE" || warnandfail "Failed to build $DTB_FILE!"
-        #/usr/bin/dtc -i "$RDIR/arch/arm/boot/dts/msm8974" -A -H both -p 1024 -O dtb -o "$DTB_FILE" "$DTS_FILE" || warnandfail "Failed to build $DTB_FILE!"
         #/usr/bin/dtc -i "$RDIR/arch/arm/boot/dts/msm8974/" -p 1024 -O dtb -o "$DTB_FILE" "$DTS_FILE" 2>&1 | \
                    #tee -a "$LOGDIR/$QUICKDATE.Mark$(cat $RDIR/.oldversion).log" || warnandfail "Failed to build $DTB_FILE!"
     done
