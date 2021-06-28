@@ -151,42 +151,42 @@
 #define TORCH_DURATION_12s 0x0A
 #define FLASH_CLAMP_200mA		0x0F
 
-#define FLASH_TORCH_MASK 0x03
-#define FLASH_LED_TORCH_ENABLE 0x00
-#define FLASH_LED_TORCH_DISABLE 0x03
-#define FLASH_UNLOCK_SECURE 0xA5
-#define FLASH_SECURE_MASK 0xFF
+#define FLASH_TORCH_MASK		0x03
+#define FLASH_LED_TORCH_ENABLE		0x00
+#define FLASH_LED_TORCH_DISABLE		0x03
+#define FLASH_UNLOCK_SECURE		0xA5
+#define FLASH_SECURE_MASK		0xFF
 
-#define FLASH_SUBTYPE_DUAL 0x01
-#define FLASH_SUBTYPE_SINGLE 0x02
+#define FLASH_SUBTYPE_DUAL		0x01
+#define FLASH_SUBTYPE_SINGLE		0x02
 
-#define FLASH_RAMP_UP_DELAY_US 1000
-#define FLASH_RAMP_DN_DELAY_US 2160
+#define FLASH_RAMP_UP_DELAY_US		1000
+#define FLASH_RAMP_DN_DELAY_US		2160
 
-#define LED_TRIGGER_DEFAULT "none"
+#define LED_TRIGGER_DEFAULT		"none"
 
-#define RGB_LED_SRC_SEL(base) (base + 0x45)
-#define RGB_LED_EN_CTL(base) (base + 0x46)
-#define RGB_LED_ATC_CTL(base) (base + 0x47)
+#define RGB_LED_SRC_SEL(base)		(base + 0x45)
+#define RGB_LED_EN_CTL(base)		(base + 0x46)
+#define RGB_LED_ATC_CTL(base)		(base + 0x47)
 
-#define RGB_MAX_LEVEL LED_FULL
-#define RGB_MAX_LEVEL_N2_MENU 120
-#define RGB_MAX_LEVEL_N2_BACK 125
-#define RGB_MAX_LEVEL_N1 110
-#define RGB_MAX_LEVEL_V1 75
-#define RGB_LED_ENABLE_RED 128
-#define RGB_LED_ENABLE_GREEN 64
-#define RGB_LED_ENABLE_BLUE	32
-#define RGB_LED_SOURCE_VPH_PWR 0x01
-#define RGB_LED_ENABLE_MASK 0xE0
-#define RGB_LED_SRC_MASK 0x03
-#define QPNP_LED_PWM_FLAGS (PM_PWM_LUT_LOOP | PM_PWM_LUT_RAMP_UP)
-#define QPNP_LUT_RAMP_STEP_DEFAULT 255
-#define	PWM_LUT_MAX_SIZE 63
-#define	PWM_GPLED_LUT_MAX_SIZE 31
-#define RGB_LED_DISABLE 0
+#define RGB_MAX_LEVEL			LED_FULL
+#define RGB_MAX_LEVEL_N2_MENU		120
+#define RGB_MAX_LEVEL_N2_BACK		125
+#define RGB_MAX_LEVEL_N1		110
+#define RGB_MAX_LEVEL_V1		75
+#define RGB_LED_ENABLE_RED		0x80
+#define RGB_LED_ENABLE_GREEN		0x40
+#define RGB_LED_ENABLE_BLUE		0x20
+#define RGB_LED_SOURCE_VPH_PWR		0x01
+#define RGB_LED_ENABLE_MASK		0xE0
+#define RGB_LED_SRC_MASK		0x03
+#define QPNP_LED_PWM_FLAGS	(PM_PWM_LUT_LOOP | PM_PWM_LUT_RAMP_UP)
+#define QPNP_LUT_RAMP_STEP_DEFAULT	255
+#define	PWM_LUT_MAX_SIZE		63
+#define	PWM_GPLED_LUT_MAX_SIZE		31
+#define RGB_LED_DISABLE			0x00
 
-#define MPP_MAX_LEVEL LED_FULL
+#define MPP_MAX_LEVEL			LED_FULL
 #define LED_MPP_MODE_CTRL(base)		(base + 0x40)
 #define LED_MPP_VIN_CTRL(base)		(base + 0x41)
 #define LED_MPP_EN_CTRL(base)		(base + 0x46)
@@ -821,44 +821,21 @@ static int qpnp_led_masked_write(struct qpnp_led_data *led, u16 addr, u8 mask, u
 	return rc;
 }
 
-static int qpnp_led_masked_write_rgb(struct qpnp_led_data *led, u16 addr, u8 mask, u8 val)
-{
-	int rc;
-	u8 reg;
-
-	rc = spmi_ext_register_readl(led->spmi_dev->ctrl, led->spmi_dev->sid,
-		addr, &reg, 8);
-	if (rc) {
-		dev_err(&led->spmi_dev->dev,
-			"Unable to read from addr=%x, rc(%d)\n", addr, rc);
-	}
-
-	reg &= ~mask;
-	reg |= val;
-
-	rc = spmi_ext_register_writel(led->spmi_dev->ctrl, led->spmi_dev->sid,
-		addr, &reg, 8);
-	if (rc)
-		dev_err(&led->spmi_dev->dev,
-			"Unable to write to addr=%x, rc(%d)\n", addr, rc);
-	return rc;
-}
-
 static void qpnp_dump_regs(struct qpnp_led_data *led, u8 regs[], u8 array_size)
 {
 	int i;
 	u8 val;
 
-	pr_info("===== %s LED register dump start =====\n", led->cdev.name);
+	pr_debug("===== %s LED register dump start =====\n", led->cdev.name);
 	for (i = 0; i < array_size; i++) {
 		spmi_ext_register_readl(led->spmi_dev->ctrl,
 				led->spmi_dev->sid,
 				led->base + regs[i],
 				&val, sizeof(val));
-		pr_info("%s: 0x%x = 0x%x\n", led->cdev.name,
+		pr_debug("%s: 0x%x = 0x%x\n", led->cdev.name,
 				led->base + regs[i], val);
 	}
-	pr_info("===== %s LED register dump end =====\n", led->cdev.name);
+	pr_debug("===== %s LED register dump end =====\n", led->cdev.name);
 }
 #ifdef SAMSUNG_USE_EXTERNAL_CHARGER
 #define USB_SUSPEND_BIT	BIT(0)
@@ -1884,7 +1861,7 @@ static int qpnp_rgb_set(struct qpnp_led_data *led)
 				return rc;
 			}
 		}
-		rc = qpnp_led_masked_write_rgb(led,
+		rc = qpnp_led_masked_write(led,
 			RGB_LED_EN_CTL(led->base),
 			led->rgb_cfg->enable, led->rgb_cfg->enable);
 		if (rc) {
@@ -1902,7 +1879,7 @@ static int qpnp_rgb_set(struct qpnp_led_data *led)
 		led->rgb_cfg->pwm_cfg->mode =
 			led->rgb_cfg->pwm_cfg->default_mode;
 		pwm_disable(led->rgb_cfg->pwm_cfg->pwm_dev);
-		rc = qpnp_led_masked_write_rgb(led,
+		rc = qpnp_led_masked_write(led,
 			RGB_LED_EN_CTL(led->base),
 			led->rgb_cfg->enable, RGB_LED_DISABLE);
 		if (rc) {
@@ -3102,14 +3079,14 @@ static int __devinit qpnp_kpdbl_init(struct qpnp_led_data *led)
 
 static int __devinit qpnp_rgb_init(struct qpnp_led_data *led)
 {
-	int rc = 0;
+	int rc;
 
-	rc = qpnp_led_masked_write_rgb(led, RGB_LED_SRC_SEL(led->base),
+	rc = qpnp_led_masked_write(led, RGB_LED_SRC_SEL(led->base),
 		RGB_LED_SRC_MASK, RGB_LED_SOURCE_VPH_PWR);
 	if (rc) {
 		dev_err(&led->spmi_dev->dev,
 			"Failed to write led source select register\n");
-		goto finishline;
+		return rc;
 	}
 
 	rc = qpnp_pwm_init(led->rgb_cfg->pwm_cfg, led->spmi_dev,
@@ -3117,20 +3094,13 @@ static int __devinit qpnp_rgb_init(struct qpnp_led_data *led)
 	if (rc) {
 		dev_err(&led->spmi_dev->dev,
 			"Failed to initialize pwm\n");
-		goto finishline;
+		return rc;
 	}
 	/* Initialize led for use in auto trickle charging mode */
-	rc = qpnp_led_masked_write_rgb(led, RGB_LED_ATC_CTL(led->base),
+	rc = qpnp_led_masked_write(led, RGB_LED_ATC_CTL(led->base),
 		led->rgb_cfg->enable, led->rgb_cfg->enable);
 
-	if (rc) {
-		dev_err(&led->spmi_dev->dev,
-			"Failed to initialize led auto-trickle\n");
-		goto finishline;
-	}
-
-finishline:
-	return rc;
+	return 0;
 }
 
 static int __devinit qpnp_mpp_init(struct qpnp_led_data *led)
