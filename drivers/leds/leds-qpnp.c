@@ -151,42 +151,42 @@
 #define TORCH_DURATION_12s 0x0A
 #define FLASH_CLAMP_200mA		0x0F
 
-#define FLASH_TORCH_MASK		0x03
-#define FLASH_LED_TORCH_ENABLE		0x00
-#define FLASH_LED_TORCH_DISABLE		0x03
-#define FLASH_UNLOCK_SECURE		0xA5
-#define FLASH_SECURE_MASK		0xFF
+#define FLASH_TORCH_MASK 0x03
+#define FLASH_LED_TORCH_ENABLE 0x00
+#define FLASH_LED_TORCH_DISABLE 0x03
+#define FLASH_UNLOCK_SECURE 0xA5
+#define FLASH_SECURE_MASK 0xFF
 
-#define FLASH_SUBTYPE_DUAL		0x01
-#define FLASH_SUBTYPE_SINGLE		0x02
+#define FLASH_SUBTYPE_DUAL 0x01
+#define FLASH_SUBTYPE_SINGLE 0x02
 
-#define FLASH_RAMP_UP_DELAY_US		1000
-#define FLASH_RAMP_DN_DELAY_US		2160
+#define FLASH_RAMP_UP_DELAY_US 1000
+#define FLASH_RAMP_DN_DELAY_US 2160
 
-#define LED_TRIGGER_DEFAULT		"none"
+#define LED_TRIGGER_DEFAULT "none"
 
-#define RGB_LED_SRC_SEL(base)		(base + 0x45)
-#define RGB_LED_EN_CTL(base)		(base + 0x46)
-#define RGB_LED_ATC_CTL(base)		(base + 0x47)
+#define RGB_LED_SRC_SEL(base) (base + 0x45)
+#define RGB_LED_EN_CTL(base) (base + 0x46)
+#define RGB_LED_ATC_CTL(base) (base + 0x47)
 
-#define RGB_MAX_LEVEL			LED_FULL
-#define RGB_MAX_LEVEL_N2_MENU		120
-#define RGB_MAX_LEVEL_N2_BACK		125
-#define RGB_MAX_LEVEL_N1		110
-#define RGB_MAX_LEVEL_V1		75
-#define RGB_LED_ENABLE_RED		0x80
-#define RGB_LED_ENABLE_GREEN		0x40
-#define RGB_LED_ENABLE_BLUE		0x20
-#define RGB_LED_SOURCE_VPH_PWR		0x01
-#define RGB_LED_ENABLE_MASK		0xE0
-#define RGB_LED_SRC_MASK		0x03
-#define QPNP_LED_PWM_FLAGS	(PM_PWM_LUT_LOOP | PM_PWM_LUT_RAMP_UP)
-#define QPNP_LUT_RAMP_STEP_DEFAULT	255
-#define	PWM_LUT_MAX_SIZE		63
-#define	PWM_GPLED_LUT_MAX_SIZE		31
-#define RGB_LED_DISABLE			0x00
+#define RGB_MAX_LEVEL LED_FULL
+#define RGB_MAX_LEVEL_N2_MENU 120
+#define RGB_MAX_LEVEL_N2_BACK 125
+#define RGB_MAX_LEVEL_N1 110
+#define RGB_MAX_LEVEL_V1 75
+#define RGB_LED_ENABLE_RED 128
+#define RGB_LED_ENABLE_GREEN 64
+#define RGB_LED_ENABLE_BLUE	32
+#define RGB_LED_SOURCE_VPH_PWR 0x01
+#define RGB_LED_ENABLE_MASK 0xE0
+#define RGB_LED_SRC_MASK 0x03
+#define QPNP_LED_PWM_FLAGS (PM_PWM_LUT_LOOP | PM_PWM_LUT_RAMP_UP)
+#define QPNP_LUT_RAMP_STEP_DEFAULT 255
+#define	PWM_LUT_MAX_SIZE 63
+#define	PWM_GPLED_LUT_MAX_SIZE 31
+#define RGB_LED_DISABLE 0
 
-#define MPP_MAX_LEVEL			LED_FULL
+#define MPP_MAX_LEVEL LED_FULL
 #define LED_MPP_MODE_CTRL(base)		(base + 0x40)
 #define LED_MPP_VIN_CTRL(base)		(base + 0x41)
 #define LED_MPP_EN_CTRL(base)		(base + 0x46)
@@ -277,7 +277,7 @@ enum wled_ovp_threshold {
 
 enum flash_headroom {
 	HEADROOM_250mV = 0,
-	HEADROOM_300mV,
+	HEADROOM_300mV,spmi_ext_register_readl
 	HEADROOM_400mV,
 	HEADROOM_500mV,
 };
@@ -331,7 +331,7 @@ static u8 flash_debug_regs[] = {
 	0x4f, 0x46, 0x47,
 };
 
-static u8 rgb_pwm_debug_regs[] = {
+static u8 rgb_pwm_debug_regs[] = {spmi_ext_register_readl
 	0x45, 0x46, 0x47,
 };
 
@@ -826,16 +826,16 @@ static void qpnp_dump_regs(struct qpnp_led_data *led, u8 regs[], u8 array_size)
 	int i;
 	u8 val;
 
-	pr_debug("===== %s LED register dump start =====\n", led->cdev.name);
+	pr_info("===== %s LED register dump start =====\n", led->cdev.name);
 	for (i = 0; i < array_size; i++) {
 		spmi_ext_register_readl(led->spmi_dev->ctrl,
 				led->spmi_dev->sid,
 				led->base + regs[i],
 				&val, sizeof(val));
-		pr_debug("%s: 0x%x = 0x%x\n", led->cdev.name,
+		pr_info("%s: 0x%x = 0x%x\n", led->cdev.name,
 				led->base + regs[i], val);
 	}
-	pr_debug("===== %s LED register dump end =====\n", led->cdev.name);
+	pr_info("===== %s LED register dump end =====\n", led->cdev.name);
 }
 #ifdef SAMSUNG_USE_EXTERNAL_CHARGER
 #define USB_SUSPEND_BIT	BIT(0)
