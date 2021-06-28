@@ -450,7 +450,7 @@ build_new_config() {
 	mkdir -p "$BUILDIR" || warnandfail "Failed to make $BUILDIR directory!"
 	cat "$RDIR/arch/arm/configs/msm8974_sec_hlte_tmo_defconfig" "$RDIR/arch/arm/configs/msm8974_sec_defconfig" "$RDIR/arch/arm/configs/selinux_defconfig" > "$RDIR/arch/arm/configs/mxconfig"
 	cp "$MXCONFIG" "$BUILDIR/.config" || warnandfail "Config Copy Error!"
-	make V=2 ARCH="arm" SUBARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -C "$RDIR" O="$BUILDIR" menuconfig
+	make ARCH="arm" SUBARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -C "$RDIR" O="$BUILDIR" menuconfig
 
 }
 
@@ -460,7 +460,7 @@ build_menuconfig() {
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
 	mkdir -p "$BUILDIR" || warnandfail "Failed to make $BUILDIR directory!"
 	cp "$MXCONFIG" "$BUILDIR/.config" || warnandfail "Config Copy Error!"
-	make V=2 ARCH="arm" SUBARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -C "$RDIR" O="$BUILDIR" menuconfig
+	make ARCH="arm" SUBARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -C "$RDIR" O="$BUILDIR" menuconfig
 
 }
 
@@ -470,7 +470,7 @@ build_single_config() {
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
 	mkdir -p "$BUILDIR" || warnandfail "Failed to make $BUILDIR directory!"
 	cp "$MXCONFIG" "$BUILDIR/.config" || warnandfail "Config Copy Error!"
-	make V=2 ARCH="arm" SUBARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -C "$RDIR" O="$BUILDIR" oldconfig || warnandfail "make oldconfig Failed!"
+	make ARCH="arm" SUBARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -C "$RDIR" O="$BUILDIR" oldconfig || warnandfail "make oldconfig Failed!"
 
 }
 
@@ -480,7 +480,7 @@ build_kernel_config() {
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
 	mkdir -p "$BUILDIR" || warnandfail "Failed to make $BUILDIR directory!"
 	cp "$MXCONFIG" "$BUILDIR/.config" || warnandfail "Config Copy Error!"
-	make V=2 ARCH="arm" SUBARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -C "$RDIR" O="$BUILDIR" oldconfig || warnandfail "make oldconfig Failed!"
+	make ARCH="arm" SUBARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -C "$RDIR" O="$BUILDIR" oldconfig || warnandfail "make oldconfig Failed!"
 	getmxrecent
 
 }
@@ -488,7 +488,7 @@ build_kernel_config() {
 build_single_driver() {
 
 	echo "Building Single Driver..."
-	make V=2 -Wa ARCH="arm" SUBARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -C "$RDIR" -S -s -j16 O="$BUILDIR" "$1"
+	make -Wa ARCH="arm" SUBARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -C "$RDIR" -S -s -j16 O="$BUILDIR" "$1"
 
 }
 
@@ -501,7 +501,7 @@ build_kernel() {
 	#env
 	start_build_timer
 	echo "Starting build..."
-	make V=2 ARCH="arm" SUBARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -S -s -j16 -C "$RDIR" O="$BUILDIR" 2>&1 | tee -a "$LOGDIR/$QUICKDATE.Mark$(cat $RDIR/.oldversion).log" \
+	make ARCH="arm" SUBARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -S -s -j16 -C "$RDIR" O="$BUILDIR" 2>&1 | tee -a "$LOGDIR/$QUICKDATE.Mark$(cat $RDIR/.oldversion).log" \
                                                                                     || warnandfail "Kernel Build failed!"
 
 }
@@ -515,7 +515,7 @@ build_kernel_debug() {
 	#env
 	start_build_timer
 	echo "Starting build..."
-	make V=2 ARCH="arm" SUBARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -S -s -j16 -C "$RDIR" O="$BUILDIR" 2>&1 | tee -a "$LOGDIR/$QUICKDATE.Mark$(cat $RDIR/.oldversion).log" \
+	make ARCH="arm" SUBARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -S -s -j16 -C "$RDIR" O="$BUILDIR" 2>&1 | tee -a "$LOGDIR/$QUICKDATE.Mark$(cat $RDIR/.oldversion).log" \
                                                                                     || warnandfail "Kernel Build failed!"
     stop_build_timer
     timerprint
