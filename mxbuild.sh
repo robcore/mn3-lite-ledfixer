@@ -450,7 +450,7 @@ build_new_config() {
 	mkdir -p "$BUILDIR" || warnandfail "Failed to make $BUILDIR directory!"
 	cat "$RDIR/arch/arm/configs/msm8974_sec_hlte_tmo_defconfig" "$RDIR/arch/arm/configs/msm8974_sec_defconfig" "$RDIR/arch/arm/configs/selinux_defconfig" > "$RDIR/arch/arm/configs/mxconfig"
 	cp "$MXCONFIG" "$BUILDIR/.config" || warnandfail "Config Copy Error!"
-	make ARCH="arm" SUBARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -C "$RDIR" O="$BUILDIR" menuconfig
+	make V=2 ARCH="arm" SUBARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -C "$RDIR" O="$BUILDIR" menuconfig
 
 }
 
@@ -460,7 +460,7 @@ build_menuconfig() {
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
 	mkdir -p "$BUILDIR" || warnandfail "Failed to make $BUILDIR directory!"
 	cp "$MXCONFIG" "$BUILDIR/.config" || warnandfail "Config Copy Error!"
-	make ARCH="arm" SUBARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -C "$RDIR" O="$BUILDIR" menuconfig
+	make V=2 ARCH="arm" SUBARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -C "$RDIR" O="$BUILDIR" menuconfig
 
 }
 
@@ -470,7 +470,7 @@ build_single_config() {
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
 	mkdir -p "$BUILDIR" || warnandfail "Failed to make $BUILDIR directory!"
 	cp "$MXCONFIG" "$BUILDIR/.config" || warnandfail "Config Copy Error!"
-	make ARCH="arm" SUBARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -C "$RDIR" O="$BUILDIR" oldconfig || warnandfail "make oldconfig Failed!"
+	make V=2 ARCH="arm" SUBARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -C "$RDIR" O="$BUILDIR" oldconfig || warnandfail "make oldconfig Failed!"
 
 }
 
@@ -480,7 +480,7 @@ build_kernel_config() {
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
 	mkdir -p "$BUILDIR" || warnandfail "Failed to make $BUILDIR directory!"
 	cp "$MXCONFIG" "$BUILDIR/.config" || warnandfail "Config Copy Error!"
-	make ARCH="arm" SUBARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -C "$RDIR" O="$BUILDIR" oldconfig || warnandfail "make oldconfig Failed!"
+	make V=2 ARCH="arm" SUBARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -C "$RDIR" O="$BUILDIR" oldconfig || warnandfail "make oldconfig Failed!"
 	getmxrecent
 
 }
@@ -488,7 +488,7 @@ build_kernel_config() {
 build_single_driver() {
 
 	echo "Building Single Driver..."
-	make -Wa ARCH="arm" SUBARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -C "$RDIR" -S -s -j16 O="$BUILDIR" "$1"
+	make V=2 -Wa ARCH="arm" SUBARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -C "$RDIR" -S -s -j16 O="$BUILDIR" "$1"
 
 }
 
@@ -501,7 +501,7 @@ build_kernel() {
 	#env
 	start_build_timer
 	echo "Starting build..."
-	make ARCH="arm" SUBARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -S -s -j16 -C "$RDIR" O="$BUILDIR" 2>&1 | tee -a "$LOGDIR/$QUICKDATE.Mark$(cat $RDIR/.oldversion).log" \
+	make V=2 ARCH="arm" SUBARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -S -s -j16 -C "$RDIR" O="$BUILDIR" 2>&1 | tee -a "$LOGDIR/$QUICKDATE.Mark$(cat $RDIR/.oldversion).log" \
                                                                                     || warnandfail "Kernel Build failed!"
 
 }
@@ -515,7 +515,7 @@ build_kernel_debug() {
 	#env
 	start_build_timer
 	echo "Starting build..."
-	make ARCH="arm" SUBARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -S -s -j16 -C "$RDIR" O="$BUILDIR" 2>&1 | tee -a "$LOGDIR/$QUICKDATE.Mark$(cat $RDIR/.oldversion).log" \
+	make V=2 ARCH="arm" SUBARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -S -s -j16 -C "$RDIR" O="$BUILDIR" 2>&1 | tee -a "$LOGDIR/$QUICKDATE.Mark$(cat $RDIR/.oldversion).log" \
                                                                                     || warnandfail "Kernel Build failed!"
     stop_build_timer
     timerprint
@@ -604,12 +604,12 @@ build_boot_img() {
         DTS_FILE="$RDIR/arch/arm/boot/dts/msm8974/$DTS_PREFIX.dts"
         DTB_FILE="$KDIR/$DTS_PREFIX.dtb"
         echo "Creating $DTB_FILE from $DTS_FILE"
-        #"$BUILDIR/scripts/dtc/dtc" -i "$RDIR/arch/arm/boot/dts/msm8974/" -p 1024 -O dtb -o "$DTB_FILE" "$DTS_FILE" 2>&1 | \
-        #           tee -a "$LOGDIR/$QUICKDATE.Mark$(cat $RDIR/.oldversion).log" || warnandfail "Failed to build $DTB_FILE!"
-        #"$BUILDIR/scripts/dtc/dtc" -i "$RDIR/arch/arm/boot/dts/msm8974/" -p 1024 -O dtb -o "$DTB_FILE" "$DTS_FILE" || warnandfail "Failed to build $DTB_FILE!"
-        /usr/bin/dtc -i "$RDIR/arch/arm/boot/dts/msm8974" -A -H both -p 1024 -O dtb -o "$DTB_FILE" "$DTS_FILE" || warnandfail "Failed to build $DTB_FILE!"
-        /usr/bin/dtc -i "$RDIR/arch/arm/boot/dts/msm8974/" -p 1024 -O dtb -o "$DTB_FILE" "$DTS_FILE" 2>&1 | \
+        "$BUILDIR/scripts/dtc/dtc" -i "$RDIR/arch/arm/boot/dts/msm8974/" -p 1024 -O dtb -o "$DTB_FILE" "$DTS_FILE" 2>&1 | \
                    tee -a "$LOGDIR/$QUICKDATE.Mark$(cat $RDIR/.oldversion).log" || warnandfail "Failed to build $DTB_FILE!"
+        #"$BUILDIR/scripts/dtc/dtc" -i "$RDIR/arch/arm/boot/dts/msm8974/" -p 1024 -O dtb -o "$DTB_FILE" "$DTS_FILE" || warnandfail "Failed to build $DTB_FILE!"
+        #/usr/bin/dtc -i "$RDIR/arch/arm/boot/dts/msm8974" -A -H both -p 1024 -O dtb -o "$DTB_FILE" "$DTS_FILE" || warnandfail "Failed to build $DTB_FILE!"
+        #/usr/bin/dtc -i "$RDIR/arch/arm/boot/dts/msm8974/" -p 1024 -O dtb -o "$DTB_FILE" "$DTS_FILE" 2>&1 | \
+                   #tee -a "$LOGDIR/$QUICKDATE.Mark$(cat $RDIR/.oldversion).log" || warnandfail "Failed to build $DTB_FILE!"
     done
 
 	echo "Generating $DTIMG"
