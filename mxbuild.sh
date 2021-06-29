@@ -19,9 +19,9 @@ warnandfailearly() {
 
 }
 
-if [ ! -d "/home/rob/mx_toolchains" ]
+if [ ! -d "/root/mx_toolchains" ]
 then
-    warnandfailearly "/home/rob/mx_toolchains folder does not exist!"
+    warnandfailearly "/root/mx_toolchains folder does not exist!"
 fi
 
 RDIR="/root/mn3lite"
@@ -47,7 +47,7 @@ FZMG="$NEWZMG-fixup"
 MXZMG="$MXRD/split_img/boot.img-kernel"
 DTBTOOL="$RDIR/tools/dtbTool"
 MKBOOTIMG="/usr/bin/mkbootimg"
-OLDCFG="/home/rob/mn3-oldconfigs"
+OLDCFG="/root/mn3-oldconfigs"
 
 QUICKHOUR="$(date +%l | cut -d " " -f2)"
 QUICKMIN="$(date +%S)"
