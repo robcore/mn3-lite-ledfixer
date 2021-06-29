@@ -39,7 +39,7 @@ RAMDISKFOLDER="$MXRD/ramdisk"
 ZIPFOLDER="$RDIR/mxzip"
 MXCONFIG="$RDIR/arch/arm/configs/mxconfig"
 MXNEWCFG="$MXCONFIG.new"
-DTCDIR="$BUILDIR/scripts/dtc"
+DTCPATH="$BUILDIR/scripts/dtc/dtc"
 DTIMG="$KDIR/dt.img"
 MXDT="$MXRD/split_img/boot.img-dt"
 NEWZMG="$KDIR/zImage"
@@ -608,7 +608,7 @@ build_boot_img() {
 
 	echo "Generating $DTIMG"
 
-    ./tools/skales/dtbTool -v -o "$DTIMG" -s 2048 -p "$DTCDIR" "$KDIR" 2>&1 | \
+    ./tools/skales/dtbTool -v -o "$DTIMG" -s 2048 -p "$DTCPATH" "$KDIR" 2>&1 | \
                    tee -a "$LOGDIR/$QUICKDATE.Mark$(cat $RDIR/.oldversion).log" || warnandfail "dtbTool failed to build $DTIMG!"
 
     if [ ! -f "$DTIMG" ]
