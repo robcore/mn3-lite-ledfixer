@@ -531,7 +531,7 @@ static int __devinit msm_gpio_probe(struct platform_device *pdev)
 	msm_gpio.enabled_irqs = devm_kzalloc(&pdev->dev, sizeof(unsigned long)
 					* BITS_TO_LONGS(ngpio), GFP_KERNEL);
 	if (!msm_gpio.enabled_irqs) {
-		dev_err(&pdev->dev, "%s failed to allocated enabled_irqs bitmap\n"
+		dev_err(&pdev->dev, "%s failed to allocate enabled_irqs bitmap\n"
 				, __func__);
 		return -ENOMEM;
 	}

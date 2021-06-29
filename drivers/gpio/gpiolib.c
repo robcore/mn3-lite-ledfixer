@@ -95,7 +95,7 @@ static inline void desc_set_label(struct gpio_desc *d, const char *label)
  * only "legal" in the sense that (old) code using it won't break yet,
  * but instead only triggers a WARN() stack dump.
  */
-static int gpio_ensure_requested(struct gpio_desc *desc, unsigned offset)
+static int gpio_ensure_requested(struct gpio_desc *desc, unsigned int offset)
 {
 	const struct gpio_chip *chip = desc->chip;
 	const int gpio = chip->base + offset;
@@ -270,8 +270,8 @@ static ssize_t gpio_value_show(struct device *dev,
 		struct device_attribute *attr, char *buf)
 {
 	const struct gpio_desc	*desc = dev_get_drvdata(dev);
-	unsigned		gpio = desc - gpio_desc;
-	ssize_t			status;
+	unsigned int gpio = desc - gpio_desc;
+    ssize_t status;
 
 	mutex_lock(&sysfs_lock);
 
@@ -295,8 +295,8 @@ static ssize_t gpio_value_store(struct device *dev,
 		struct device_attribute *attr, const char *buf, size_t size)
 {
 	const struct gpio_desc	*desc = dev_get_drvdata(dev);
-	unsigned		gpio = desc - gpio_desc;
-	ssize_t			status;
+	unsigned int gpio = desc - gpio_desc;
+	ssize_t	status;
 
 	mutex_lock(&sysfs_lock);
 
@@ -372,15 +372,10 @@ static int gpio_setup_irq(struct gpio_desc *desc, struct device *dev,
 			goto err_out;
 		}
 
-		do {
-			ret = -ENOMEM;
-			if (idr_pre_get(&dirent_idr, GFP_KERNEL))
-				ret = idr_get_new_above(&dirent_idr, value_sd,
-							1, &id);
-		} while (ret == -EAGAIN);
-
-		if (ret)
+		ret = idr_alloc(&dirent_idr, value_sd, 1, 0, GFP_KERNEL);
+		if (ret < 0)
 			goto free_sd;
+		id = ret;
 
 		desc->flags &= GPIO_FLAGS_MASK;
 		desc->flags |= (unsigned long)id << ID_SHIFT;
