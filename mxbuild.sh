@@ -39,8 +39,7 @@ RAMDISKFOLDER="$MXRD/ramdisk"
 ZIPFOLDER="$RDIR/mxzip"
 MXCONFIG="$RDIR/arch/arm/configs/mxconfig"
 MXNEWCFG="$MXCONFIG.new"
-#DTCPATH="$BUILDIR/scripts/dtc/dtc"
-DTCBIN="/usr/bin/dtc"
+DTCPATH="$BUILDIR/scripts/dtc/dtc"
 DTIMG="$KDIR/dt.img"
 MXDT="$MXRD/split_img/boot.img-dt"
 NEWZMG="$KDIR/zImage"
@@ -598,25 +597,18 @@ build_boot_img() {
     local DTB_FILE
     local DTS_FILE
 
-#    for DTS_PREFIX in msm8974-sec-hlte-r05 msm8974-sec-hlte-r06 msm8974-sec-hlte-r07 msm8974-sec-hlte-r09
-#    do
-#        DTS_FILE="$RDIR/arch/arm/boot/dts/msm8974/$DTS_PREFIX.dts"
-#        DTB_FILE="$KDIR/$DTS_PREFIX.dtb"
-#        echo "Creating $DTB_FILE from $DTS_FILE"
-#        "$BUILDIR/scripts/dtc/dtc" -i "$RDIR/arch/arm/boot/dts/msm8974/" -p 2048 -O dtb -o "$DTB_FILE" "$DTS_FILE" 2>&1 | \
-#                   tee -a "$LOGDIR/$QUICKDATE.Mark$(cat $RDIR/.oldversion).log" || warnandfail "Failed to build $DTB_FILE!"
-#    done
-
-    DTS_PREFIX="msm8974-sec-hlte-r07"
-    DTS_FILE="$RDIR/arch/arm/boot/dts/msm8974/$DTS_PREFIX.dts"
-    DTB_FILE="$KDIR/$DTS_PREFIX.dtb"
-    echo "Creating $DTB_FILE from $DTS_FILE"
-    "$DTCBIN" -i "$RDIR/arch/arm/boot/dts/msm8974/" -p 2048 -O dtb -o "$DTB_FILE" "$DTS_FILE" 2>&1 | \
-            tee -a "$LOGDIR/$QUICKDATE.Mark$(cat $RDIR/.oldversion).log" || warnandfail "Failed to build $DTB_FILE!"
+    for DTS_PREFIX in msm8974-sec-hlte-r05 msm8974-sec-hlte-r06 msm8974-sec-hlte-r07 msm8974-sec-hlte-r09
+    do
+        DTS_FILE="$RDIR/arch/arm/boot/dts/msm8974/$DTS_PREFIX.dts"
+        DTB_FILE="$KDIR/$DTS_PREFIX.dtb"
+        echo "Creating $DTB_FILE from $DTS_FILE"
+        "$BUILDIR/scripts/dtc/dtc" -i "$RDIR/arch/arm/boot/dts/msm8974/" -p 2048 -O dtb -o "$DTB_FILE" "$DTS_FILE" 2>&1 | \
+                   tee -a "$LOGDIR/$QUICKDATE.Mark$(cat $RDIR/.oldversion).log" || warnandfail "Failed to build $DTB_FILE!"
+    done
 
 	echo "Generating $DTIMG"
 
-    ./tools/skales/dtbTool -v -o "$DTIMG" -s 2048 -p "$DTCBIN" "$KDIR" 2>&1 | \
+    ./tools/skales/dtbTool -v -o "$DTIMG" -s 2048 -p "$DTCPATH" "$KDIR" 2>&1 | \
                    tee -a "$LOGDIR/$QUICKDATE.Mark$(cat $RDIR/.oldversion).log" || warnandfail "dtbTool failed to build $DTIMG!"
 
     if [ ! -f "$DTIMG" ]

@@ -1514,7 +1514,7 @@ CONFIG_OF=y
 #
 # Device Tree and Open Firmware support
 #
-# CONFIG_PROC_DEVICETREE is not set
+CONFIG_PROC_DEVICETREE=y
 # CONFIG_OF_SELFTEST is not set
 CONFIG_OF_FLATTREE=y
 CONFIG_OF_EARLY_FLATTREE=y
@@ -2181,8 +2181,8 @@ CONFIG_SPI_MASTER=y
 # SPI Master Controller Drivers
 #
 # CONFIG_SPI_ALTERA is not set
-CONFIG_SPI_BITBANG=y
-CONFIG_SPI_GPIO=y
+# CONFIG_SPI_BITBANG is not set
+# CONFIG_SPI_GPIO is not set
 # CONFIG_SPI_OC_TINY is not set
 # CONFIG_SPI_PXA2XX_PCI is not set
 # CONFIG_SPI_XILINX is not set
@@ -2218,24 +2218,15 @@ CONFIG_SLIMBUS_MSM_NGD=y
 #
 # Enable Device Drivers -> PPS to see the PTP clock options.
 #
-CONFIG_PINCTRL=y
-
-#
-# Pin controllers
-#
-CONFIG_PINMUX=y
-CONFIG_PINCONF=y
-# CONFIG_DEBUG_PINCTRL is not set
 CONFIG_ARCH_REQUIRE_GPIOLIB=y
 CONFIG_GPIOLIB=y
 # CONFIG_DEBUG_GPIO is not set
 CONFIG_GPIO_SYSFS=y
-CONFIG_GPIO_GENERIC=y
 
 #
 # Memory mapped GPIO drivers:
 #
-CONFIG_GPIO_GENERIC_PLATFORM=y
+# CONFIG_GPIO_GENERIC_PLATFORM is not set
 # CONFIG_GPIO_MSM_V1 is not set
 # CONFIG_GPIO_MSM_V2 is not set
 CONFIG_GPIO_MSM_V3=y

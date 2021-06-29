@@ -2,8 +2,8 @@
 # PINCTRL infrastructure and drivers
 #
 
-menuconfig PINCTRL
-	bool "Pin controllers"
+config PINCTRL
+	bool
 
 if PINCTRL
 
