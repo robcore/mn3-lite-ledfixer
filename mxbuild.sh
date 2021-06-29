@@ -5,6 +5,25 @@ export USE_CCACHE="1"
 export CCACHE_NLEVELS="8"
 #env KCONFIG_NOTIMESTAMP=true &>/dev/null
 
+warnandfailearly() {
+
+	echo -n "MX ERROR on Line ${BASH_LINENO[0]}"
+	echo "!!!"
+	local ISTRING
+	ISTRING="$1"
+	if [ -n "$ISTRING" ]
+	then
+		printf "%s\n" "$ISTRING"
+	fi
+	exit 1
+
+}
+
+if [ ! -d "/home/rob/mx_toolchains" ]
+then
+    warnandfailearly "/home/rob/mx_toolchains folder does not exist!"
+fi
+
 RDIR="/root/mn3lite"
 BUILDIR="$RDIR/build"
 LOGDIR="$RDIR/buildlogs"
@@ -24,8 +43,10 @@ DTCDIR="$BUILDIR/scripts/dtc"
 DTIMG="$KDIR/dt.img"
 MXDT="$MXRD/split_img/boot.img-dt"
 NEWZMG="$KDIR/zImage"
-FZMG="$KDIR/zImage-fixup"
+FZMG="$NEWZMG-fixup"
 MXZMG="$MXRD/split_img/boot.img-kernel"
+DTBTOOL="$RDIR/tools/dtbTool"
+MKBOOTIMG="/usr/bin/mkbootimg"
 OLDCFG="/home/rob/mn3-oldconfigs"
 
 QUICKHOUR="$(date +%l | cut -d " " -f2)"
@@ -134,20 +155,6 @@ timerprint() {
 
 }
 
-cleanupfail() {
-
-	echo -n "MX ERROR on Line ${BASH_LINENO[0]}"
-	echo "!!!"
-	local ISTRING
-	ISTRING="$1"
-	if [ -n "$ISTRING" ]
-	then
-		printf "%s\n" "$ISTRING"
-	fi
-	exit 1
-
-}
-
 takeouttrash() {
 
     rm "$RDIR/localversion" &> /dev/null
@@ -186,7 +193,7 @@ getmxrecent() {
 
 clean_build() {
 
-	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
+	cd "$RDIR" || warnandfailearly "Failed to cd to $RDIR!"
 	getmxrecent
 	if [ "$1" = "standalone" ]
 	then
