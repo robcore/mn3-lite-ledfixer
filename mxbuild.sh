@@ -3,7 +3,7 @@
 export CCACHE_DIR="$HOME/.ccache"
 export USE_CCACHE="1"
 export CCACHE_NLEVELS="8"
-env KCONFIG_NOTIMESTAMP=true &>/dev/null
+#env KCONFIG_NOTIMESTAMP=true &>/dev/null
 
 RDIR="/root/mn3lite"
 BUILDIR="$RDIR/build"
@@ -26,7 +26,7 @@ MXDT="$MXRD/split_img/boot.img-dt"
 NEWZMG="$KDIR/zImage"
 FZMG="$KDIR/zImage-fixup"
 MXZMG="$MXRD/split_img/boot.img-kernel"
-DTS_NAMES="msm8974-sec-hlte-r"
+OLDCFG="/home/rob/mn3-oldconfigs"
 
 QUICKHOUR="$(date +%l | cut -d " " -f2)"
 QUICKMIN="$(date +%S)"
@@ -66,6 +66,11 @@ fi
 if [ ! -d "$RDIR/buildlogs" ]
 then
     mkdir "$RDIR/buildlogs"
+fi
+
+if [ ! -d "$OLDCFG" ]
+then
+    mkdir -p "$OLDCFG"
 fi
 
 stop_build_timer() {
@@ -209,7 +214,7 @@ clean_build() {
     [ -f "$MXRD/image-new.img" ] && rm "$MXRD/image-new.img"
     [ -f "$MXRD/ramdisk-new.cpio.gz" ] && rm "$MXRD/ramdisk-new.cpio.gz"
 	echo -ne "Cleaning build.......  \r"; \
-	rm -rf "$RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg" &>/dev/null
+#	rm -rf "$RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg" &>/dev/null
 	echo -ne "Cleaning build........ \r"; \
 	echo -ne "                       \r"; \
 	echo -ne "Cleaned                \r"; \
@@ -494,7 +499,6 @@ build_single_driver() {
 
 build_kernel() {
 
-	OLDCFG="/root/mn3-oldconfigs"
 	echo "Backing up .config to $OLDCFG/config.$QUICKDATE"
 	cp "$BUILDIR/.config" "$OLDCFG/config.$QUICKDATE" || warnandfail "Config Copy Error!"
 	#echo "Snapshot of current environment variables:"
@@ -508,7 +512,6 @@ build_kernel() {
 
 build_kernel_debug() {
 
-	OLDCFG="/root/mn3-oldconfigs"
 	echo "Backing up .config to $OLDCFG/config.$QUICKDATE"
 	cp "$BUILDIR/.config" "$OLDCFG/config.$QUICKDATE" || warnandfail "Config Copy Error!"
 	#echo "Snapshot of current environment variables:"
@@ -587,32 +590,18 @@ build_boot_img() {
     local DTB_FILE
     local DTS_FILE
 
-###EXPERIMENTAL###
-#
-#    local DTS_PREFIX
-#    DTS_PREFIX="msm8974-sec-hlte-r07"
-#    DTS_FILE="$RDIR/arch/arm/boot/dts/msm8974/$DTS_PREFIX.dts"
-#    DTB_FILE="$KDIR/$DTS_PREFIX.dtb"
-#    echo "Creating $DTB_FILE from $DTS_FILE"
-#    "$BUILDIR/scripts/dtc/dtc" -i "$RDIR/arch/arm/boot/dts/msm8974/" -p 1024 -O dtb -o "$DTB_FILE" "$DTS_FILE" 2>&1 | \
-#               tee -a "$LOGDIR/$QUICKDATE.Mark$(cat $RDIR/.oldversion).log" || warnandfail "Failed to build $DTB_FILE!"
-#
-###EXPERIMENTAL###
-
     for DTS_PREFIX in msm8974-sec-hlte-r05 msm8974-sec-hlte-r06 msm8974-sec-hlte-r07 msm8974-sec-hlte-r09
     do
         DTS_FILE="$RDIR/arch/arm/boot/dts/msm8974/$DTS_PREFIX.dts"
         DTB_FILE="$KDIR/$DTS_PREFIX.dtb"
         echo "Creating $DTB_FILE from $DTS_FILE"
-        "$BUILDIR/scripts/dtc/dtc" -i "$RDIR/arch/arm/boot/dts/msm8974/" -p 1024 -O dtb -o "$DTB_FILE" "$DTS_FILE" 2>&1 | \
+        "$BUILDIR/scripts/dtc/dtc" -i "$RDIR/arch/arm/boot/dts/msm8974/" -p 2048 -O dtb -o "$DTB_FILE" "$DTS_FILE" 2>&1 | \
                    tee -a "$LOGDIR/$QUICKDATE.Mark$(cat $RDIR/.oldversion).log" || warnandfail "Failed to build $DTB_FILE!"
-        #/usr/bin/dtc -i "$RDIR/arch/arm/boot/dts/msm8974/" -p 1024 -O dtb -o "$DTB_FILE" "$DTS_FILE" 2>&1 | \
-                   #tee -a "$LOGDIR/$QUICKDATE.Mark$(cat $RDIR/.oldversion).log" || warnandfail "Failed to build $DTB_FILE!"
     done
 
 	echo "Generating $DTIMG"
 
-    ./tools/skales/dtbTool -v -o "$DTIMG" -s 1024 -p "$DTCDIR" "$KDIR" 2>&1 | \
+    ./tools/skales/dtbTool -v -o "$DTIMG" -s 2048 -p "$DTCDIR" "$KDIR" 2>&1 | \
                    tee -a "$LOGDIR/$QUICKDATE.Mark$(cat $RDIR/.oldversion).log" || warnandfail "dtbTool failed to build $DTIMG!"
 
     if [ ! -f "$DTIMG" ]
@@ -735,6 +724,7 @@ create_zip() {
                 if [ "$NOREBOOT" = "false" ]
                 then
     				echo "Rebooting Device"
+                    adb shell sync
         			adb reboot
                 else
                     echo "Skipping Reboot due to command line option!"
@@ -744,14 +734,14 @@ create_zip() {
 			fi
 		else
 			echo "Device not Connected.  Skipping adb transfer."
-			echo "Uploading $MX_KERNEL_VERSION.zip to Google Drive Instead."
-			/bin/bash /root/google-drive-upload/upload.sh "$RDIR/$MX_KERNEL_VERSION.zip"
-			if [ "$?" -eq "0" ]
-			then
-				echo "$RDIR/$MX_KERNEL_VERSION.zip upload SUCCESS!"
-			else
-				echo "$RDIR/$MX_KERNEL_VERSION.zip upload FAILED!"
-			fi
+			#echo "Uploading $MX_KERNEL_VERSION.zip to Google Drive Instead."
+			#/bin/bash /root/google-drive-upload/upload.sh "$RDIR/$MX_KERNEL_VERSION.zip"
+			#if [ "$?" -eq "0" ]
+			#then
+			#	echo "$RDIR/$MX_KERNEL_VERSION.zip upload SUCCESS!"
+			#else
+			#	echo "$RDIR/$MX_KERNEL_VERSION.zip upload FAILED!"
+			#fi
 		fi
 	else
 		warnandfail "$RDIR/$MX_KERNEL_VERSION.zip is 0 bytes, something is wrong!"
@@ -932,3 +922,4 @@ do
 	esac
 	shift # past argument or value
 done
+

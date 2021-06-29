@@ -1,0 +1,32 @@
+#!/system/bin/sh
+
+export PATH=$PATH:/data/synapse/actions
+
+gencfg() {
+
+    if [ ! -f "/data/synapse/config.json" ]
+    then
+        . /data/synapse/config.json.generate > /data/synapse/config.json
+    fi
+
+}
+
+if [ "$1" = "config" ]
+then
+    gencfg
+    cat /data/synapse/config.json
+elif [ "$1" = "configpath" ]
+then
+	gencfg
+    echo '/data/synapse/config.json'
+elif [ "$1" = "actionpath" ]
+then
+    echo '/data/synapse/actions'
+elif [ "$1" = "reset" ]
+then
+    if [ ! -f "/data/synapse/config.json" ]
+    then
+	    rm /data/synapse/config.json
+	fi
+    gencfg
+fi
