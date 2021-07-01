@@ -367,6 +367,7 @@ struct pwm_config_data {
 	int	*old_duty_pcts;
 	u8	mode;
 	u8	default_mode;
+	bool	pwm_enabled;
 	bool use_blink;
 	bool blinking;
 };
