@@ -169,15 +169,15 @@
 #define RGB_LED_EN_CTL(base)		(base + 0x46)
 #define RGB_LED_ATC_CTL(base)		(base + 0x47)
 
-#define RGB_MAX_LEVEL			LED_FULL
+#define RGB_MAX_LEVEL 255
 #define RGB_MAX_LEVEL_N2_MENU		120
 #define RGB_MAX_LEVEL_N2_BACK		125
 #define RGB_MAX_LEVEL_N1		110
 #define RGB_MAX_LEVEL_V1		75
 #define RGB_LED_ENABLE_RED		0x80
-#define RGB_LED_ENABLE_GREEN		0x40
+#define RGB_LED_ENABLE_GREEN	0x40
 #define RGB_LED_ENABLE_BLUE		0x20
-#define RGB_LED_SOURCE_VPH_PWR		0x01
+#define RGB_LED_SOURCE_VPH_PWR	0x01
 #define RGB_LED_ENABLE_MASK		0xE0
 #define RGB_LED_SRC_MASK		0x03
 #define QPNP_LED_PWM_FLAGS	(PM_PWM_LUT_LOOP | PM_PWM_LUT_RAMP_UP)
@@ -235,9 +235,7 @@
 #define NUM_KPDBL_LEDS			4
 #define KPDBL_MASTER_BIT_INDEX		0
 
-#if !defined(CONFIG_SEC_VIENNA_PROJECT) && !defined(CONFIG_SEC_V2_PROJECT) && !defined(CONFIG_SEC_LT03_PROJECT) && !defined(CONFIG_SEC_MONDRIAN_PROJECT) && !defined(CONFIG_SEC_K_PROJECT) && !defined(CONFIG_SEC_N2_PROJECT) && !defined(CONFIG_SEC_PICASSO_PROJECT) && !defined(CONFIG_SEC_KACTIVE_PROJECT)
 #define SAMSUNG_LED_PATTERN 1
-#endif
 
 #define SAMSUNG_TKEY_LED_BRIGHTNESS  90
 #if defined(CONFIG_SEC_AFYON_PROJECT) || defined(CONFIG_SEC_ATLANTIC_PROJECT) || defined( CONFIG_SEC_VASTA_PROJECT) || defined(CONFIG_MACH_MEGA2LTE_KTT)
@@ -1991,16 +1989,8 @@ static void qpnp_led_set(struct led_classdev *led_cdev,
 
 	if (value > led->cdev.max_brightness)
 		value = led->cdev.max_brightness;
-#if defined(CONFIG_MACH_AFYONLTE_TMO) || defined(CONFIG_MACH_AFYONLTE_CAN) || defined(CONFIG_MACH_MS01_EUR_3G) \
-	|| defined(CONFIG_MACH_AFYONLTE_MTR)
-	pr_info("[LED]%s: %s value = %d\n", __func__, led_cdev->name, value);
-	if(strncmp(led_cdev->name, "button-backlight",  16))
-		led->cdev.brightness = value;
-	else
-		led->cdev.brightness = value?SAMSUNG_TKEY_LED_BRIGHTNESS:0;
-#else
+
 	led->cdev.brightness = value;
-#endif
 	schedule_work(&led->work);
 }
 
@@ -2074,23 +2064,12 @@ void tkey_led_enables(int level)
 	led_array = dev_get_drvdata(led_dev);
 	printk(KERN_INFO "%s: touchkey LED level : %d\n", __func__, level);
 	if (!led_array) {
-		printk(KERN_INFO "%s: led_array is NULL\n", __func__);
+		pr_err("%s: led_array is NULL\n", __func__);
 		return;
 	}
 	if (level == 1) {
-#if defined(CONFIG_SEC_LT03_PROJECT)
-		brightness_menu = RGB_MAX_LEVEL_N1;
-		brightness_back = RGB_MAX_LEVEL_N1;
-#elif defined(CONFIG_SEC_PICASSO_PROJECT)
-		brightness_menu = RGB_MAX_LEVEL_N2_MENU;
-		brightness_back = RGB_MAX_LEVEL_N2_BACK;
-#elif defined(CONFIG_SEC_VIENNA_PROJECT)
-		brightness_menu = RGB_MAX_LEVEL_V1;
-		brightness_back = RGB_MAX_LEVEL_V1;
-#else
 		brightness_menu = RGB_MAX_LEVEL;
 		brightness_back = RGB_MAX_LEVEL;
-#endif
 	}
 	else if (level == 0) {
 		brightness_menu = LED_OFF;
@@ -4121,8 +4100,8 @@ static ssize_t store_patt(struct device *dev, struct device_attribute *devattr,
         for(i = 0; i < RGB_MAX; i++)
              samsung_led_set(&info[i],LED_OFF);
 	if(cnt == LED_POWERING_ON_PAT){
-            info[RGB_GREEN].rgb_cfg->enable = RGB_LED_ENABLE_GREEN | RGB_LED_ENABLE_BLUE;
-            info[RGB_BLUE].rgb_cfg->enable =    RGB_LED_ENABLE_GREEN | RGB_LED_ENABLE_BLUE;
+            info[RGB_GREEN].rgb_cfg->enable = RGB_LED_ENABLE_GREEN;
+            info[RGB_BLUE].rgb_cfg->enable = RGB_LED_ENABLE_BLUE;
             printk(KERN_INFO "Green Enable =%x \n", info[RGB_GREEN].rgb_cfg->enable);
             printk(KERN_INFO "Blue Enable =%x \n", info[RGB_BLUE].rgb_cfg->enable);
         }
@@ -4792,7 +4771,7 @@ static int __devexit qpnp_leds_remove(struct spmi_device *spmi)
 }
 
 #ifdef CONFIG_OF
-static struct of_device_id spmi_match_table[] = {
+static const struct of_device_id spmi_match_table[] = {
 	{ .compatible = "qcom,leds-qpnp",},
 	{ },
 };

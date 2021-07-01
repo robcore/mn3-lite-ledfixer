@@ -23,8 +23,9 @@
 				qcom,ramp-step-ms = <1>;
 				qcom,pause-lo = <0>;
 				qcom,pause-hi = <0>;
-				qcom,start-idx = <1>;
-				qcom,duty-pcts = [00 64];
+				qcom,start-idx = <0>;
+				qcom,duty-pcts = [00 19 32 4B 64
+					 64 4B 32 19 00];
 				qcom,max-current = <4>;
 				qcom,default-state = "off";
 				qcom,turn-off-delay-ms = <0>;
@@ -42,8 +43,9 @@
 				qcom,ramp-step-ms = <1>;
 				qcom,pause-lo = <0>;
 				qcom,pause-hi = <0>;
-				qcom,start-idx = <3>;
-				qcom,duty-pcts = [00 64];
+				qcom,start-idx = <0>;
+				qcom,duty-pcts = [00 19 32 4B 64
+					 64 4B 32 19 00];
 				qcom,max-current = <4>;
 				qcom,default-state = "off";
 				qcom,turn-off-delay-ms = <0>;
@@ -61,8 +63,9 @@
 				qcom,ramp-step-ms = <1>;
 				qcom,pause-lo = <0>;
 				qcom,pause-hi = <0>;
-				qcom,start-idx = <5>;
-				qcom,duty-pcts = [00 64];
+				qcom,start-idx = <0>;
+				qcom,duty-pcts = [00 19 32 4B 64
+					 64 4B 32 19 00];
 				qcom,max-current = <4>;
 				qcom,default-state = "off";
 				qcom,turn-off-delay-ms = <0>;
