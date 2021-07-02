@@ -596,16 +596,14 @@ build_boot_img() {
 
     local DTB_FILE
     local DTS_FILE
-    local DTS_PREFIX
-#    for DTS_PREFIX in msm8974-sec-hlte-r05 msm8974-sec-hlte-r06 msm8974-sec-hlte-r07 msm8974-sec-hlte-r09
-#    do
-        DTS_PREFIX="msm8974-sec-hlte-r07"
+    for DTS_PREFIX in msm8974-sec-hlte-r05 msm8974-sec-hlte-r06 msm8974-sec-hlte-r07 msm8974-sec-hlte-r09
+    do
         DTS_FILE="$RDIR/arch/arm/boot/dts/msm8974/$DTS_PREFIX.dts"
         DTB_FILE="$KDIR/$DTS_PREFIX.dtb"
         echo "Creating $DTB_FILE from $DTS_FILE"
         "$BUILDIR/scripts/dtc/dtc" -i "$RDIR/arch/arm/boot/dts/msm8974" -p 1024 -O dtb -o "$DTB_FILE" "$DTS_FILE" 2>&1 | \
                    tee -a "$LOGDIR/$QUICKDATE.Mark$(cat $RDIR/.oldversion).log" || warnandfail "Failed to build $DTB_FILE!"
-#    done
+    done
 
 	echo "Generating $DTIMG"
 
@@ -623,13 +621,13 @@ build_boot_img() {
     cp "$DTIMG" "$MXDT" || warnandfail "Failed to copy $DTIMG to $MXDT!"
     chmod 644 "$MXDT"
 
-	FIXUP="/root/skales/atag-fix/fixup"
-	${CROSS_COMPILE}gcc -c "$FIXUP.S" -o "$FIXUP.o" && \
-	${CROSS_COMPILE}objcopy -O binary "$FIXUP.o" "$FIXUP.bin" && \
-	cat "$FIXUP.bin" "$NEWZMG" > "$FZMG" || warnandfail "Can't build fixup"
+#	FIXUP="/root/skales/atag-fix/fixup"
+#	${CROSS_COMPILE}gcc -c "$FIXUP.S" -o "$FIXUP.o" && \
+#	${CROSS_COMPILE}objcopy -O binary "$FIXUP.o" "$FIXUP.bin" && \
+#	cat "$FIXUP.bin" "$NEWZMG" > "$FZMG" || warnandfail "Can't build fixup"
 
     [ -f "$MXZMG" ] && rm "$MXZMG"
-    cp "$FZMG" "$MXZMG" || warnandfail "Failed to copy $FZMG to $MXZMG!"
+    cp "$NEWZMG" "$MXZMG" || warnandfail "Failed to copy $NEWZMG to $MXZMG!"
     chmod 644 "$MXZMG"
 
     cd "$MXRD" || warnandfail "Failed to cd into $MXRD!"
