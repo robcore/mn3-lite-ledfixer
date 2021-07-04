@@ -69,12 +69,24 @@ export ARCH="arm"
 export SUBARCH="arm"
 export CROSS_COMPILE="$TOOLCHAIN"
 
-if [ "$2" = "noreboot" ] || [ "$1" = "-anr" ] || [ "$1" = "--allnoreboot" ]
+if [ "$1" != "-b" ] && [ "$1" != "--bsd" ] && [ "$1" != "-c" ] && [ "$1" != "--clean" ]
 then
-    NOREBOOT="true"
-    echo "Script will not reboot after recovery install!"
-else
-    NOREBOOT="false"
+    if [ "$2" = "noreboot" ] || [ "$1" = "-anr" ] || [ "$1" = "--allnoreboot" ]
+    then
+        NOREBOOT="true"
+        echo "Script will not reboot after recovery install!"
+    else
+        NOREBOOT="false"
+    fi
+
+    if [ "$2" = "reboot" ] || [ "$1" = "-ar" ] || [ "$1" = "--allreboot" ]
+    then
+        AUTOREBOOT="true"
+        echo "AUTOREBOOT option has been selected."
+        echo "Script will automatically reboot into recovery!"
+    else
+        AUTOREBOOT="false"
+    fi
 fi
 
 if [ "$1" = "-d" ] || [ "$1" = "--debug" ]
@@ -363,14 +375,21 @@ checkrecov() {
 		echo "Ensuring System is ready for operations"
 		adb "wait-for-device";
 		echo "System is Ready"
-		echo -n "Reboot into Recovery? [y|n]: "
-		read -r RECREBOOT
-		if [ "$RECREBOOT" = "y" ]
-		then
-			echo "Rebooting into TWRP Recovery"
+        if [ "$AUTOREBOOT" = "true" ]
+        then
+			echo "Automatically Rebooting into TWRP Recovery"
             adb shell sync
 			adb reboot recovery
-		fi
+        else
+    		echo -n "Reboot into Recovery? [y|n]: "
+    		read -r RECREBOOT
+    		if [ "$RECREBOOT" = "y" ]
+    		then
+    			echo "Rebooting into TWRP Recovery"
+                adb shell sync
+    			adb reboot recovery
+    		fi
+        fi
 	fi
 	rm $RDIR/mxtempusb &> /dev/null
 }
@@ -779,6 +798,7 @@ Script written by jcadduono, frequentc & robcore
 usage: ./mxbuild.sh [OPTION]
 Common options:
  -a|--all            Do a complete build (starting at the beginning)
+ -ar|--allreboot     Do a complete build (starting at the beginning), reboot automatically
  -anr|--allnoreboot  Do a complete build (starting at the beginning), do not reboot
  -d|--debug          Similiar to --all but no img, zip or cleanup. Not for production.
  -r|--rebuildme      Same as --all but defaults to rebuilding previous version
@@ -795,6 +815,8 @@ Currently, it is just the one.
 Appending "noreboot" as the second option will keep the device from rebooting.
 Or, just use the -anr option that is the same as -a to build all,
 but skips the reboot.
+Conversely, appending "reboot" or using -ar will instruct the script to reboot
+automatically.
 EOF
 
 	exit 1
@@ -861,6 +883,13 @@ do
 	    	;;
 
 	     -anr|--allnoreboot)
+			checkrecov
+			handle_existing
+			build_all
+			break
+	    	;;
+
+	     -ar|--allreboot)
 			checkrecov
 			handle_existing
 			build_all
