@@ -352,7 +352,7 @@ MODFLAGS	= -DMODULE -fno-pic -mfpu=neon-vfpv4
 CFLAGS_MODULE   = $(MODFLAGS)
 AFLAGS_MODULE   = $(MODFLAGS)
 LDFLAGS_MODULE  =
-CFLAGS_KERNEL	= -mfpu=neon-vfpv4
+CFLAGS_KERNEL	= -mtune=cortex-a15 -mfpu=neon-vfpv4 -fgcse-las -fpredictive-commoning
 AFLAGS_KERNEL	=
 CFLAGS_GCOV	= -fprofile-arcs -ftest-coverage
 
