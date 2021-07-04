@@ -259,11 +259,11 @@ warnandfail() {
 
 }
 
-_quote() {
-
-	echo $1 | sed 's/[]\/()$*.^|[]/\\&/g'
-
-}
+#_quote() {
+#
+#	echo $1 | sed 's/[]\/()$*.^|[]/\\&/g'
+#
+#}
 
 # This function looks for a string, and inserts a specified string after it inside a given file
 # $1: the line to locate, $2: the line to insert, $3: Config file where to insert
