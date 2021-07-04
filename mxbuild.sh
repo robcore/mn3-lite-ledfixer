@@ -683,7 +683,7 @@ create_zip() {
 	#		cp -pa "$MXMODS" "$ZIPFOLDER/system/lib/modules/" || warnandfail "Failed to copy new modules to zip!"
 	#	fi
 	#done
-	zip -r -9 - * > "$RDIR/$MX_KERNEL_VERSION.zip"
+	zip -r -9 -y - * > "$RDIR/$MX_KERNEL_VERSION.zip"
 	if [ ! -f "$RDIR/$MX_KERNEL_VERSION.zip" ]
 	then
 		warnandfail "$RDIR/$MX_KERNEL_VERSION.zip does not exist!"
