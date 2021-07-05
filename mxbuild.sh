@@ -603,11 +603,16 @@ build_boot_img() {
 
     cd "$RDIR" || warnandfail "Failed to cd into $RDIR!"
 
+    if [ ! -f "$NEWZMG" ]
+    then
+        warnandfail "build_boot_img called with no zImage!"
+    fi
+
 	[ -f "$ZIPFOLDER/boot.img" ] && rm "$ZIPFOLDER/boot.img"
     [ -f "$MXRD/image-new.img" ] && rm "$MXRD/image-new.img"
     [ -f "$MXRD/ramdisk-new.cpio.gz" ] && rm "$MXRD/ramdisk-new.cpio.gz"
 
-    echo "Regnerating .dtb files"
+    echo "Regenerating .dtb files"
     rm "$KDIR/msm8974-sec-hlte-r05.dtb" &> /dev/null
     rm "$KDIR/msm8974-sec-hlte-r06.dtb" &> /dev/null
     rm "$KDIR/msm8974-sec-hlte-r07.dtb" &> /dev/null
