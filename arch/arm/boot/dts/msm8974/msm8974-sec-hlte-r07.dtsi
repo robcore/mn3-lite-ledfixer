@@ -30,8 +30,8 @@
 
     samsung,vibrator {
         compatible = "vibrator";
-        samsung,pmic_vib_pwm = <&msmgpio 27 0>;
-        samsung,pmic_vib_pwm_jpn = <&msmgpio 59 0>;
+        samsung,pmic_vib_pwm = <&msmgpio 27 0x00>;
+        samsung,pmic_vib_pwm_jpn = <&msmgpio 59 0x00>;
         samsung,vib_model = <1>;
         samsung,pmic_vib_en = <0>;
         samsung,pmic_haptic_pwr_en = <0>;
@@ -79,7 +79,7 @@
     i2c@19 {
         cell-index = <19>;
         compatible = "i2c-gpio";
-        gpios = <&msmgpio 87 0>, <&msmgpio 88 0>;
+        gpios = <&msmgpio 87 0x00>, <&msmgpio 88 0x00>;
         #address-cells = <1>;
         #size-cells = <0>;
 
@@ -108,7 +108,7 @@
     i2c@21 {
         cell-index = <21>;
         compatible = "i2c-gpio";
-        gpios = <&msmgpio 95 0>, <&msmgpio 96 0>;
+        gpios = <&msmgpio 95 0x00>, <&msmgpio 96 0x00>;
         #address-cells = <1>;
         #size-cells = <0>;
 
@@ -133,7 +133,7 @@
         #size-cells = <0>;
         cell-index = <22>;
         compatible = "i2c-gpio";
-        gpios = <&msmgpio 109 0>, <&msmgpio 108 0>;
+        gpios = <&msmgpio 109 0x00>, <&msmgpio 108 0x00>;
 
         barcode_emul_ice4@19 {
             compatible = "barcode_hlte,barcode_emul_hlte";
@@ -155,7 +155,7 @@
         #size-cells = <0>;
         cell-index = <23>;
         compatible = "i2c-gpio";
-        gpios = <&msmgpio 60 0>, <&msmgpio 61 0>;
+        gpios = <&msmgpio 60 0x00>, <&msmgpio 61 0x00>;
 
     };
 
@@ -295,8 +295,8 @@
 
     /* BLSP#2 */
     i2c@f9924000 {
-        qcom,scl-gpio = <&msmgpio 7 0>;
-        qcom,sda-gpio = <&msmgpio 6 0>;
+        qcom,scl-gpio = <&msmgpio 7 0x00>;
+        qcom,sda-gpio = <&msmgpio 6 0x00>;
         status = "okay";
 
         synaptics_rmi4_i2c@20 {
@@ -336,8 +336,8 @@
 
     /* BLSP#6 */
     i2c@f9928000 {
-        qcom,scl-gpio = <&msmgpio 30 0>;
-        qcom,sda-gpio = <&msmgpio 29 0>;
+        qcom,scl-gpio = <&msmgpio 30 0x00>;
+        qcom,sda-gpio = <&msmgpio 29 0x00>;
         status = "okay";
 
         wacom_g5sp_i2c@56 {
@@ -367,7 +367,7 @@
         compatible = "qcom,actuator";
         cell-index = <1>;
         reg = <0x36>;
-            gpios = <&msmgpio 43 0>, <&msmgpio 44 0>;
+            gpios = <&msmgpio 43 0x00>, <&msmgpio 44 0x00>;
             qcom,gpio-req-tbl-num = <0 1>;
             qcom,gpio-req-tbl-flags = <1 1>;
             qcom,gpio-req-tbl-label = "I2C_DATA0", "I2C_CLK0";
@@ -385,7 +385,7 @@
 
     /* BLSP#10 */
     i2c@f9966000 {
-        status = "okay";
+        status = "ok";
         bcm2079x-i2c@77 {
             compatible = "bcm2079x-i2c";
             reg = <0x77>;
@@ -426,10 +426,10 @@
         interrupts = <0 105 0>;
         spi-max-frequency = <4800000>;
         spi-cpha;
-        qcom,gpio-mosi = <&msmgpio 81 0>;
-        qcom,gpio-miso = <&msmgpio 82 0>;
-        qcom,gpio-clk  = <&msmgpio 84 0>;
-        qcom,gpio-cs0  = <&msmgpio 83 0>;
+        qcom,gpio-mosi = <&msmgpio 81 0x00>;
+        qcom,gpio-miso = <&msmgpio 82 0x00>;
+        qcom,gpio-clk  = <&msmgpio 84 0x00>;
+        qcom,gpio-cs0  = <&msmgpio 83 0x00>;
         qcom,master-id = <84>;
         STM32F@0 {
             compatible = "ssp,STM32F";
@@ -529,7 +529,7 @@
         interrupt-map-mask = <0xffffffff>;
         interrupt-map = <0 &intc 0 136 0
             1 &intc 0 148 0
-            2 &msmgpio 144 0x8>;
+            2 &msmgpio 144 0x08>;
         interrupt-names = "core_irq", "async_irq", "wakeup";
         HSIC_VDDCX-supply = <&pm8841_s2>;
         HSIC_GDSC-supply = <&gdsc_usb_hsic>;
@@ -643,7 +643,7 @@
     interrupt-map = <0 &intc 0 125 0
                     1 &intc 0 220 0>;
     interrupt-names = "core_irq", "bam_irq";
-    //cd-gpios = <&msmgpio 62 0x1>;
+    //cd-gpios = <&msmgpio 62 0x01>;
     wp-gpios = <&pm8941_gpios 29 0x01>;
 
     vdd-supply = <&pm8941_s3>;
@@ -697,7 +697,7 @@
     interrupt-map = <0 &intc 0 125 0
             1 &intc 0 221 0>;
     interrupt-names = "hc_irq", "pwr_irq";
-    //cd-gpios = <&msmgpio 62 0x1>;
+    //cd-gpios = <&msmgpio 62 0x01>;
 
     vdd-supply = <&pm8941_s3>;
     vdd-io-supply = <&pm8941_s3>;
@@ -731,7 +731,7 @@
     interrupt-map-mask = <0xffffffff>;
     interrupt-map = <0 &intc 0 127 0
             1 &intc 0 224 0
-            2 &msmgpio 62 0x3>;
+            2 &msmgpio 62 0x03>;
     interrupt-names = "hc_irq", "pwr_irq", "status_irq";
 
     vdd-supply = <&pm8941_l21>;
@@ -742,7 +742,7 @@
     qcom,vdd-io-current-level = <6 22000>;
     qcom,sup-voltages = <2950 2950>;
 
-    cd-gpios = <&msmgpio 62 0x1>;
+    cd-gpios = <&msmgpio 62 0x01>;
     wp-gpios = <&pm8941_gpios 29 0x01>;
 
     status = "ok";
@@ -1142,47 +1142,47 @@
 
 /* CoreSight */
 &tpiu {
-    qcom,seta-gpios = <&msmgpio 31 0>,
-              <&msmgpio 32 0>,
-              <&msmgpio 33 0>,
-              <&msmgpio 34 0>,
-              <&msmgpio 35 0>,
-              <&msmgpio 36 0>,
-              <&msmgpio 37 0>,
-              <&msmgpio 38 0>,
-              <&msmgpio 39 0>,
-              <&msmgpio 40 0>,
-              <&msmgpio 41 0>,
-              <&msmgpio 42 0>,
-              <&msmgpio 43 0>,
-              <&msmgpio 44 0>,
-              <&msmgpio 45 0>,
-              <&msmgpio 46 0>,
-              <&msmgpio 47 0>,
-              <&msmgpio 48 0>;
+    qcom,seta-gpios = <&msmgpio 31 0x00>,
+              <&msmgpio 32 0x00>,
+              <&msmgpio 33 0x00>,
+              <&msmgpio 34 0x00>,
+              <&msmgpio 35 0x00>,
+              <&msmgpio 36 0x00>,
+              <&msmgpio 37 0x00>,
+              <&msmgpio 38 0x00>,
+              <&msmgpio 39 0x00>,
+              <&msmgpio 40 0x00>,
+              <&msmgpio 41 0x00>,
+              <&msmgpio 42 0x00>,
+              <&msmgpio 43 0x00>,
+              <&msmgpio 44 0x00>,
+              <&msmgpio 45 0x00>,
+              <&msmgpio 46 0x00>,
+              <&msmgpio 47 0x00>,
+              <&msmgpio 48 0x00>>;
     qcom,seta-gpios-func = <4 4 4 3 4 4 4 3 4 3 5 5 5 5 4 4 5 5>;
     qcom,seta-gpios-drv =  <7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7>;
     qcom,seta-gpios-pull = <0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0>;
     qcom,seta-gpios-dir =  <2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2>;
 
-    qcom,setb-gpios = <&msmgpio 15 0>,
-              <&msmgpio 16 0>,
-              <&msmgpio 17 0>,
-              <&msmgpio 18 0>,
-              <&msmgpio 19 0>,
-              <&msmgpio 20 0>,
-              <&msmgpio 21 0>,
-              <&msmgpio 22 0>,
-              <&msmgpio 23 0>,
-              <&msmgpio 24 0>,
-              <&msmgpio 25 0>,
-              <&msmgpio 26 0>,
-              <&msmgpio 27 0>,
-              <&msmgpio 28 0>,
-              <&msmgpio 89 0>,
-              <&msmgpio 90 0>,
-              <&msmgpio 91 0>,
-              <&msmgpio 92 0>;
+    qcom,setb-gpios = <&msmgpio 15 0x00>,
+              <&msmgpio 16 0x00>,
+              <&msmgpio 17 0x00>,
+              <&msmgpio 18 0x00>,
+              <&msmgpio 19 0x00>,
+              <&msmgpio 20 0x00>,
+              <&msmgpio 21 0x00>,
+              <&msmgpio 22 0x00>,
+              <&msmgpio 23 0x00>,
+              <&msmgpio 24 0x00>,
+              <&msmgpio 25 0x00>,
+              <&msmgpio 26 0x00>,
+              <&msmgpio 27 0x00>,
+              <&msmgpio 28 0x00>,
+              <&msmgpio 89 0x00>,
+              <&msmgpio 90 0x00>,
+              <&msmgpio 91 0x00>,
+              <&msmgpio 92 0x00>;
     qcom,setb-gpios-func = <2 2 2 2 5 5 5 5 6 6 6 7 7 5 2 3 3 3>;
     qcom,setb-gpios-drv =  <7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7>;
     qcom,setb-gpios-pull = <0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0>;
@@ -1195,7 +1195,7 @@
 
 &slim_msm {
     taiko_codec {
-        qcom,cdc-reset-gpio = <&msmgpio 78 0>;
+        qcom,cdc-reset-gpio = <&msmgpio 78 0x00>;
         qcom,cdc-micbias1-ext-cap;
         qcom,cdc-micbias2-ext-cap;
         qcom,cdc-micbias3-ext-cap;
@@ -1216,8 +1216,8 @@
         elemental-addr = [00 01 02 00 BE 02];
 
         es325-ldo-gpio = <&pm8941_gpios 11 0x00>;
-        es325-reset-gpio = <&msmgpio 94 0>;
-        es325-wakeup-gpio = <&msmgpio 85 0>;
+        es325-reset-gpio = <&msmgpio 94 0x00>;
+        es325-wakeup-gpio = <&msmgpio 85 0x00>;
 
         es325-mclk-clk = <&pm8941_clkdiv1>;
         es325-mclk-clk-freq = <9600000>;
