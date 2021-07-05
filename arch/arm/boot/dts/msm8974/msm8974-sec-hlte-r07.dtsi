@@ -86,7 +86,7 @@
         sec-fuelgauge@36 {
             compatible = "sec-fuelgauge,i2c";
             reg = <0x36>;
-            fuelgauge,fuel_int = <&pm8941_gpios 26 0x1>;
+            fuelgauge,fuel_int = <&pm8941_gpios 26 0x01>;
             fuelgauge,bat_int = <&pm8941_mpps 8 0>;
 
             fuelgauge,capacity_max = <1000>;
@@ -121,7 +121,7 @@
             vcc_en-supply = <&pm8941_lvs3>;
             cypress,scl-gpio = <&msmgpio 96 0x00>;
             cypress,sda-gpio = <&msmgpio 95 0x00>;
-            cypress,irq-gpio = <&pm8941_gpios 29 0x1>;
+            cypress,irq-gpio = <&pm8941_gpios 29 0x01>;
             cypress,touchkey_id-gpio = <&msmgpio 101 0x00>;
             cypress,tkey-keycodes = <139 158>;
             cypress,i2c-pull-up = <1>;
@@ -255,7 +255,7 @@
 
         home_key {
             label = "home_key";
-            gpios = <&pm8941_gpios 3 0x1>;
+            gpios = <&pm8941_gpios 3 0x01>;
             linux,input-type = <1>;
             linux,code = <172>;
             gpio-key,wakeup;
@@ -264,7 +264,7 @@
 
         vol_down {
             label = "volume_down";
-            gpios = <&pm8941_gpios 2 0x1>;
+            gpios = <&pm8941_gpios 2 0x01>;
             linux,input-type = <1>;
             linux,code = <114>;
             debounce-interval = <15>;
@@ -272,7 +272,7 @@
 
         vol_up {
             label = "volume_up";
-            gpios = <&pm8941_gpios 5 0x1>;
+            gpios = <&pm8941_gpios 5 0x01>;
             linux,input-type = <1>;
             linux,code = <115>;
             debounce-interval = <15>;
@@ -280,7 +280,7 @@
 
         hall_flip {
             label = "hall_flip";
-            gpios = <&pm8941_gpios 36 0>;
+            gpios = <&pm8941_gpios 36 0x00>;
             linux,input-type = <1>;
             linux,code = <0x15>;
             gpio-key,wakeup;
@@ -307,8 +307,8 @@
             vcc_en-supply = <&pm8941_l10>;
             synaptics,supply-num = <1>;        /* the number of regulators */
             synaptics,supply-name = "8941_l10";    /* the name of regulators, in power-on order */
-            synaptics,external_ldo = <&pm8941_gpios 9 0x1>;
-            synaptics,irq-gpio = <&pm8941_gpios 30 0x1>;
+            synaptics,external_ldo = <&pm8941_gpios 9 0x01>;
+            synaptics,irq-gpio = <&pm8941_gpios 30 0x01>;
             synaptics,tsp-coords = <1079 1919>;
             synaptics,i2c-pull-up = <1>;
             synaptics,tsp-project = "H";
@@ -345,11 +345,11 @@
             reg = <0x56>;
             interrupt-parent = <&msmgpio>;
             interrupts = <144 0>;
-            vdd_en-gpio = <&pm8941_gpios 35 0x1>;
+            vdd_en-gpio = <&pm8941_gpios 35 0x01>;
             wacom,reset_n-gpio = <&msmgpio 79 0x00>;
             wacom,pen_fwe1-gpio = <&msmgpio 80 0x00>;
             wacom,pen_pdct-gpio = <&msmgpio 145 0x00>;
-            wacom,sense-gpio = <&pm8941_gpios 20 0x1>;
+            wacom,sense-gpio = <&pm8941_gpios 20 0x01>;
             wacom,irq-gpio = <&msmgpio 144 0x00>;
             wacom,panel-coords = <1 0 0 12576 0 7074 1 0 1023>;
             wacom,i2c-pull-up = <1>;
@@ -392,7 +392,7 @@
             interrupt-parent = <&msmgpio>;
             interrupts = <59 0>;
             bcm2079x-i2c,irq-gpio = <&msmgpio 59 0x00>;
-            bcm2079x-i2c,en-gpio = <&pm8941_gpios 13 0x1>;
+            bcm2079x-i2c,en-gpio = <&pm8941_gpios 13 0x01>;
             bcm2079x-i2c,wake-gpio = <&msmgpio 63 0x00>;
             bcm2079x-i2c,ap-rev = <5>;
         };
@@ -402,7 +402,7 @@
             interrupt-parent = <&msmgpio>;
             interrupts = <59 0>;
             pn547,irq-gpio = <&msmgpio 59 0x00>;
-            pn547,ven-gpio = <&pm8941_gpios 13 0x1>;
+            pn547,ven-gpio = <&pm8941_gpios 13 0x01>;
             pn547,firm-gpio = <&msmgpio 63 0x00>;
         };
     };
@@ -454,7 +454,7 @@
     sound {
         qcom,model = "msm8974-taiko-cdp-snd-card";
         qcom,hdmi-audio-rx;
-        qcom,micbias-en-msm-gpio = <&pm8941_gpios 33 0>;
+        qcom,micbias-en-msm-gpio = <&pm8941_gpios 33 0x00>;
 
         qcom,audio-routing =
             "RX_BIAS", "MCLK",
@@ -493,10 +493,10 @@
     earjack {
         compatible = "sec_jack";
         qcom,earjack-read-vadc = <&pm8941_vadc>;
-        qcom,earjack-detect-gpio = <&pm8941_gpios 22 0>;
-        qcom,earjack-micbias-gpio = <&pm8941_gpios 34 0>;
-        qcom,earjack-sendend-gpio = <&msmgpio 77 0>;
-        qcom,earjack-fsa_en-gpio = <&pm8941_gpios 11 1>;
+        qcom,earjack-detect-gpio = <&pm8941_gpios 22 0x00>;
+        qcom,earjack-micbias-gpio = <&pm8941_gpios 34 0x00>;
+        qcom,earjack-sendend-gpio = <&msmgpio 77 0x00>;
+        qcom,earjack-fsa_en-gpio = <&pm8941_gpios 11 0x01>;
         qcom,send-end-active-high;
 
         det-zones-list = <&det_zones 3 10000 10 0>,
@@ -512,7 +512,7 @@
     usb2_otg_sw: regulator-tpd4s214 {
         compatible = "regulator-fixed";
         regulator-name = "usb2_otg_sw";
-        gpio = <&pm8941_gpios 18 0>;
+        gpio = <&pm8941_gpios 18 0x00>;
         parent-supply = <&pm8941_boost>;
         startup-delay-us = <17000>;
         enable-active-high;
@@ -644,7 +644,7 @@
                     1 &intc 0 220 0>;
     interrupt-names = "core_irq", "bam_irq";
     //cd-gpios = <&msmgpio 62 0x1>;
-    wp-gpios = <&pm8941_gpios 29 0x1>;
+    wp-gpios = <&pm8941_gpios 29 0x01>;
 
     vdd-supply = <&pm8941_s3>;
     vdd-io-supply = <&pm8941_s3>;
@@ -743,7 +743,7 @@
     qcom,sup-voltages = <2950 2950>;
 
     cd-gpios = <&msmgpio 62 0x1>;
-    wp-gpios = <&pm8941_gpios 29 0x1>;
+    wp-gpios = <&pm8941_gpios 29 0x01>;
 
     status = "ok";
 };
@@ -1215,7 +1215,7 @@
         compatible = "es325-gen";
         elemental-addr = [00 01 02 00 BE 02];
 
-        es325-ldo-gpio = <&pm8941_gpios 11 0>;
+        es325-ldo-gpio = <&pm8941_gpios 11 0x00>;
         es325-reset-gpio = <&msmgpio 94 0>;
         es325-wakeup-gpio = <&msmgpio 85 0>;
 
