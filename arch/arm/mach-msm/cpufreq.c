@@ -667,6 +667,7 @@ static int __init msm_cpufreq_probe(struct platform_device *pdev)
 
 	if (!cpu_clk[0])
 		return -ENODEV;
+
 	hotplug_ready = true;
 
 	ret = cpufreq_parse_dt(dev);
