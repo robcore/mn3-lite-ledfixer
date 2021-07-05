@@ -834,6 +834,7 @@ before entering sleep as some other process is changing it*/
 		expander_print_all();
 #endif
 	}
+#endif
 
 	return 0;
 }
