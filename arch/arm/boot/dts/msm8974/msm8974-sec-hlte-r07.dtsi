@@ -640,8 +640,7 @@
     interrupts = <0 1>;
     #interrupt-cells = <1>;
     interrupt-map-mask = <0xffffffff>;
-    interrupt-map = <0 &intc 0 125 0
-                    1 &intc 0 220 0>;
+    interrupt-map = <0 &intc 0 125 0 1 &intc 0 220 0>;
     interrupt-names = "core_irq", "bam_irq";
     //cd-gpios = <&msmgpio 62 0x01>;
     wp-gpios = <&pm8941_gpios 29 0x01>;
