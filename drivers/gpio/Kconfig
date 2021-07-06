@@ -226,6 +226,12 @@ config GPIO_MC5587
 	help
 	  GPIO driver for MC5587 I2C-based GPIO expander.
 
+config GPIO_PCAL6416A
+	bool "PCAL6416A GPIO expander"
+	depends on I2C
+	help
+	  GPIO driver for PCAL6416A I2C-based GPIO expander.
+
 config GPIO_MC5587_IRQ
 	bool "Interrupt controller support for MC5587"
 	depends on GPIO_MC5587=y

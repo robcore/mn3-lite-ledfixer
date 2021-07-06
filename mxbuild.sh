@@ -3,26 +3,7 @@
 export CCACHE_DIR="$HOME/.ccache"
 export USE_CCACHE="1"
 export CCACHE_NLEVELS="8"
-#env KCONFIG_NOTIMESTAMP=true &>/dev/null
-
-warnandfailearly() {
-
-	echo -n "MX ERROR on Line ${BASH_LINENO[0]}"
-	echo "!!!"
-	local ISTRING
-	ISTRING="$1"
-	if [ -n "$ISTRING" ]
-	then
-		printf "%s\n" "$ISTRING"
-	fi
-	exit 1
-
-}
-
-if [ ! -d "/root/mx_toolchains" ]
-then
-    warnandfailearly "/root/mx_toolchains folder does not exist!"
-fi
+env KCONFIG_NOTIMESTAMP=true &>/dev/null
 
 RDIR="/root/mn3lite"
 BUILDIR="$RDIR/build"
@@ -39,22 +20,20 @@ RAMDISKFOLDER="$MXRD/ramdisk"
 ZIPFOLDER="$RDIR/mxzip"
 MXCONFIG="$RDIR/arch/arm/configs/mxconfig"
 MXNEWCFG="$MXCONFIG.new"
-DTCPATH="$BUILDIR/scripts/dtc"
+DTCDIR="$BUILDIR/scripts/dtc"
 DTIMG="$KDIR/dt.img"
 MXDT="$MXRD/split_img/boot.img-dt"
 NEWZMG="$KDIR/zImage"
-FZMG="$NEWZMG-fixup"
+FZMG="$KDIR/zImage-fixup"
 MXZMG="$MXRD/split_img/boot.img-kernel"
-DTBTOOL="$RDIR/tools/dtbTool"
-MKBOOTIMG="/usr/bin/mkbootimg"
-OLDCFG="/root/mn3-oldconfigs"
+DTS_NAMES="msm8974-sec-hlte-r"
 
 QUICKHOUR="$(date +%l | cut -d " " -f2)"
 QUICKMIN="$(date +%S)"
 QUICKAMPM="$(date +%p)"
-#QUICKDMY="$(date +%d-%m-%Y)"
+QUICKDMY="$(date +%d-%m-%Y)"
 QUICKYMD="$(date +%Y-%m-%d)"
-QUICKTIME="$QUICKHOUR-$QUICKMIN-$QUICKAMPM"
+QUICKTIME="$QUICKHOUR_$QUICKMIN-${QUICKAMPM}"
 QUICKDATE="$QUICKYMD-$QUICKTIME"
 #CORECOUNT="$(grep processor /proc/cpuinfo | wc -l)"
 #TOOLCHAIN="/root/mx_toolchains/arm-cortex_a15-linux-gnueabihf_5.3/bin/arm-cortex_a15-linux-gnueabihf-"
@@ -69,24 +48,12 @@ export ARCH="arm"
 export SUBARCH="arm"
 export CROSS_COMPILE="$TOOLCHAIN"
 
-if [ "$1" != "-b" ] && [ "$1" != "--bsd" ] && [ "$1" != "-c" ] && [ "$1" != "--clean" ]
+if [ "$2" = "noreboot" ] || [ "$1" = "-anr" ] || [ "$1" = "--allnoreboot" ]
 then
-    if [ "$2" = "noreboot" ] || [ "$1" = "-anr" ] || [ "$1" = "--allnoreboot" ]
-    then
-        NOREBOOT="true"
-        echo "Script will not reboot after recovery install!"
-    else
-        NOREBOOT="false"
-    fi
-
-    if [ "$2" = "reboot" ] || [ "$1" = "-ar" ] || [ "$1" = "--allreboot" ]
-    then
-        AUTOREBOOT="true"
-        echo "AUTOREBOOT option has been selected."
-        echo "Script will automatically reboot into recovery!"
-    else
-        AUTOREBOOT="false"
-    fi
+    NOREBOOT="true"
+    echo "Script will not reboot after recovery install!"
+else
+    NOREBOOT="false"
 fi
 
 if [ "$1" = "-d" ] || [ "$1" = "--debug" ]
@@ -99,11 +66,6 @@ fi
 if [ ! -d "$RDIR/buildlogs" ]
 then
     mkdir "$RDIR/buildlogs"
-fi
-
-if [ ! -d "$OLDCFG" ]
-then
-    mkdir -p "$OLDCFG"
 fi
 
 stop_build_timer() {
@@ -167,6 +129,20 @@ timerprint() {
 
 }
 
+cleanupfail() {
+
+	echo -n "MX ERROR on Line ${BASH_LINENO[0]}"
+	echo "!!!"
+	local ISTRING
+	ISTRING="$1"
+	if [ -n "$ISTRING" ]
+	then
+		printf "%s\n" "$ISTRING"
+	fi
+	exit 1
+
+}
+
 takeouttrash() {
 
     rm "$RDIR/localversion" &> /dev/null
@@ -205,7 +181,7 @@ getmxrecent() {
 
 clean_build() {
 
-	cd "$RDIR" || warnandfailearly "Failed to cd to $RDIR!"
+	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
 	getmxrecent
 	if [ "$1" = "standalone" ]
 	then
@@ -233,7 +209,7 @@ clean_build() {
     [ -f "$MXRD/image-new.img" ] && rm "$MXRD/image-new.img"
     [ -f "$MXRD/ramdisk-new.cpio.gz" ] && rm "$MXRD/ramdisk-new.cpio.gz"
 	echo -ne "Cleaning build.......  \r"; \
-#	rm -rf "$RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg" &>/dev/null
+	rm -rf "$RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg" &>/dev/null
 	echo -ne "Cleaning build........ \r"; \
 	echo -ne "                       \r"; \
 	echo -ne "Cleaned                \r"; \
@@ -259,53 +235,53 @@ warnandfail() {
 
 }
 
-#_quote() {
-#
-#	echo $1 | sed 's/[]\/()$*.^|[]/\\&/g'
-#
-#}
+_quote() {
+
+	echo $1 | sed 's/[]\/()$*.^|[]/\\&/g'
+
+}
 
 # This function looks for a string, and inserts a specified string after it inside a given file
 # $1: the line to locate, $2: the line to insert, $3: Config file where to insert
-#pc_insert() {
-#
-#	local PATTERN;
-#	local CONTENT;
-#	PATTERN=$(_quote "$1")
-#	CONTENT=$(_quote "$2")
-#	sed -i "/$PATTERN/a$CONTENT" $3
-#
-#}
+pc_insert() {
+
+	local PATTERN;
+	local CONTENT;
+	PATTERN=$(_quote "$1")
+	CONTENT=$(_quote "$2")
+	sed -i "/$PATTERN/a$CONTENT" $3
+
+}
 
 # This function looks for a string, and replace it with a different string inside a given file
 # $1: the line to locate, $2: the line to replace with, $3: Config file where to insert
-#pc_replace() {
-#
-#	local PATTERN;
-#	local CONTENT;
-#	PATTERN=$(_quote "$1")
-#	CONTENT=$(_quote "$2")
-#	sed -i "s/$PATTERN/$CONTENT/" $3
-#
-#}
+pc_replace() {
+
+	local PATTERN;
+	local CONTENT;
+	PATTERN=$(_quote "$1")
+	CONTENT=$(_quote "$2")
+	sed -i "s/$PATTERN/$CONTENT/" $3
+
+}
 
 # This function will append a given string at the end of a given file
 # $1 The line to append at the end, $2: Config file where to append
-#pc_append() {
-#
-#	echo "$1" >> $2
-#
-#}
+pc_append() {
+
+	echo "$1" >> $2
+
+}
 
 # This function will delete a line containing a given string inside a given file
 # $1 The line to locate, $2: Config file where to delete
-#pc_delete() {
-#
-#	local PATTERN;
-#	PATTERN=$(_quote "$1")
-#	sed -i "/$PATTERN/d" $2
-#
-#}
+pc_delete() {
+
+	local PATTERN;
+	PATTERN=$(_quote "$1")
+	sed -i "/$PATTERN/d" $2
+
+}
 
 if [ "$1" != "-nc" ] && [ "$1" != "--newconfig" ]
 then
@@ -375,21 +351,14 @@ checkrecov() {
 		echo "Ensuring System is ready for operations"
 		adb "wait-for-device";
 		echo "System is Ready"
-        if [ "$AUTOREBOOT" = "true" ]
-        then
-			echo "Automatically Rebooting into TWRP Recovery"
+		echo -n "Reboot into Recovery? [y|n]: "
+		read -r RECREBOOT
+		if [ "$RECREBOOT" = "y" ]
+		then
+			echo "Rebooting into TWRP Recovery"
             adb shell sync
 			adb reboot recovery
-        else
-    		echo -n "Reboot into Recovery? [y|n]: "
-    		read -r RECREBOOT
-    		if [ "$RECREBOOT" = "y" ]
-    		then
-    			echo "Rebooting into TWRP Recovery"
-                adb shell sync
-    			adb reboot recovery
-    		fi
-        fi
+		fi
 	fi
 	rm $RDIR/mxtempusb &> /dev/null
 }
@@ -525,6 +494,7 @@ build_single_driver() {
 
 build_kernel() {
 
+	OLDCFG="/root/mn3-oldconfigs"
 	echo "Backing up .config to $OLDCFG/config.$QUICKDATE"
 	cp "$BUILDIR/.config" "$OLDCFG/config.$QUICKDATE" || warnandfail "Config Copy Error!"
 	#echo "Snapshot of current environment variables:"
@@ -538,6 +508,7 @@ build_kernel() {
 
 build_kernel_debug() {
 
+	OLDCFG="/root/mn3-oldconfigs"
 	echo "Backing up .config to $OLDCFG/config.$QUICKDATE"
 	cp "$BUILDIR/.config" "$OLDCFG/config.$QUICKDATE" || warnandfail "Config Copy Error!"
 	#echo "Snapshot of current environment variables:"
@@ -603,16 +574,11 @@ build_boot_img() {
 
     cd "$RDIR" || warnandfail "Failed to cd into $RDIR!"
 
-    if [ ! -f "$NEWZMG" ]
-    then
-        warnandfail "build_boot_img called with no zImage!"
-    fi
-
 	[ -f "$ZIPFOLDER/boot.img" ] && rm "$ZIPFOLDER/boot.img"
     [ -f "$MXRD/image-new.img" ] && rm "$MXRD/image-new.img"
     [ -f "$MXRD/ramdisk-new.cpio.gz" ] && rm "$MXRD/ramdisk-new.cpio.gz"
 
-    echo "Regenerating .dtb files"
+    echo "Regnerating .dtb files"
     rm "$KDIR/msm8974-sec-hlte-r05.dtb" &> /dev/null
     rm "$KDIR/msm8974-sec-hlte-r06.dtb" &> /dev/null
     rm "$KDIR/msm8974-sec-hlte-r07.dtb" &> /dev/null
@@ -620,18 +586,33 @@ build_boot_img() {
 
     local DTB_FILE
     local DTS_FILE
+
+###EXPERIMENTAL###
+#
+#    local DTS_PREFIX
+#    DTS_PREFIX="msm8974-sec-hlte-r07"
+#    DTS_FILE="$RDIR/arch/arm/boot/dts/msm8974/$DTS_PREFIX.dts"
+#    DTB_FILE="$KDIR/$DTS_PREFIX.dtb"
+#    echo "Creating $DTB_FILE from $DTS_FILE"
+#    "$BUILDIR/scripts/dtc/dtc" -i "$RDIR/arch/arm/boot/dts/msm8974/" -p 1024 -O dtb -o "$DTB_FILE" "$DTS_FILE" 2>&1 | \
+#               tee -a "$LOGDIR/$QUICKDATE.Mark$(cat $RDIR/.oldversion).log" || warnandfail "Failed to build $DTB_FILE!"
+#
+###EXPERIMENTAL###
+
     for DTS_PREFIX in msm8974-sec-hlte-r05 msm8974-sec-hlte-r06 msm8974-sec-hlte-r07 msm8974-sec-hlte-r09
     do
         DTS_FILE="$RDIR/arch/arm/boot/dts/msm8974/$DTS_PREFIX.dts"
         DTB_FILE="$KDIR/$DTS_PREFIX.dtb"
         echo "Creating $DTB_FILE from $DTS_FILE"
-        "$BUILDIR/scripts/dtc/dtc" -i "$RDIR/arch/arm/boot/dts/msm8974" -p 1024 -O dtb -o "$DTB_FILE" "$DTS_FILE" 2>&1 | \
+        "$BUILDIR/scripts/dtc/dtc" -i "$RDIR/arch/arm/boot/dts/msm8974/" -p 1024 -O dtb -o "$DTB_FILE" "$DTS_FILE" 2>&1 | \
                    tee -a "$LOGDIR/$QUICKDATE.Mark$(cat $RDIR/.oldversion).log" || warnandfail "Failed to build $DTB_FILE!"
+        #/usr/bin/dtc -i "$RDIR/arch/arm/boot/dts/msm8974/" -p 1024 -O dtb -o "$DTB_FILE" "$DTS_FILE" 2>&1 | \
+                   #tee -a "$LOGDIR/$QUICKDATE.Mark$(cat $RDIR/.oldversion).log" || warnandfail "Failed to build $DTB_FILE!"
     done
 
 	echo "Generating $DTIMG"
 
-    ./tools/skales/dtbTool -v -o "$DTIMG" -s 2048 -p "$DTCPATH" "$KDIR" 2>&1 | \
+    ./tools/skales/dtbTool -v -o "$DTIMG" -s 1024 -p "$DTCDIR" "$KDIR" 2>&1 | \
                    tee -a "$LOGDIR/$QUICKDATE.Mark$(cat $RDIR/.oldversion).log" || warnandfail "dtbTool failed to build $DTIMG!"
 
     if [ ! -f "$DTIMG" ]
@@ -645,13 +626,13 @@ build_boot_img() {
     cp "$DTIMG" "$MXDT" || warnandfail "Failed to copy $DTIMG to $MXDT!"
     chmod 644 "$MXDT"
 
-#	FIXUP="/root/skales/atag-fix/fixup"
-#	${CROSS_COMPILE}gcc -c "$FIXUP.S" -o "$FIXUP.o" && \
-#	${CROSS_COMPILE}objcopy -O binary "$FIXUP.o" "$FIXUP.bin" && \
-#	cat "$FIXUP.bin" "$NEWZMG" > "$FZMG" || warnandfail "Can't build fixup"
+	FIXUP="/root/skales/atag-fix/fixup"
+	${CROSS_COMPILE}gcc -c "$FIXUP.S" -o "$FIXUP.o" && \
+	${CROSS_COMPILE}objcopy -O binary "$FIXUP.o" "$FIXUP.bin" && \
+	cat "$FIXUP.bin" "$NEWZMG" > "$FZMG" || warnandfail "Can't build fixup"
 
     [ -f "$MXZMG" ] && rm "$MXZMG"
-    cp "$NEWZMG" "$MXZMG" || warnandfail "Failed to copy $NEWZMG to $MXZMG!"
+    cp "$FZMG" "$MXZMG" || warnandfail "Failed to copy $FZMG to $MXZMG!"
     chmod 644 "$MXZMG"
 
     cd "$MXRD" || warnandfail "Failed to cd into $MXRD!"
@@ -688,7 +669,7 @@ create_zip() {
 	#		cp -pa "$MXMODS" "$ZIPFOLDER/system/lib/modules/" || warnandfail "Failed to copy new modules to zip!"
 	#	fi
 	#done
-	zip -r -9 -y - * > "$RDIR/$MX_KERNEL_VERSION.zip"
+	zip -r -9 - * > "$RDIR/$MX_KERNEL_VERSION.zip"
 	if [ ! -f "$RDIR/$MX_KERNEL_VERSION.zip" ]
 	then
 		warnandfail "$RDIR/$MX_KERNEL_VERSION.zip does not exist!"
@@ -754,7 +735,6 @@ create_zip() {
                 if [ "$NOREBOOT" = "false" ]
                 then
     				echo "Rebooting Device"
-                    adb shell sync
         			adb reboot
                 else
                     echo "Skipping Reboot due to command line option!"
@@ -764,14 +744,14 @@ create_zip() {
 			fi
 		else
 			echo "Device not Connected.  Skipping adb transfer."
-			#echo "Uploading $MX_KERNEL_VERSION.zip to Google Drive Instead."
-			#/bin/bash /root/google-drive-upload/upload.sh "$RDIR/$MX_KERNEL_VERSION.zip"
-			#if [ "$?" -eq "0" ]
-			#then
-			#	echo "$RDIR/$MX_KERNEL_VERSION.zip upload SUCCESS!"
-			#else
-			#	echo "$RDIR/$MX_KERNEL_VERSION.zip upload FAILED!"
-			#fi
+			echo "Uploading $MX_KERNEL_VERSION.zip to Google Drive Instead."
+			/bin/bash /root/google-drive-upload/upload.sh "$RDIR/$MX_KERNEL_VERSION.zip"
+			if [ "$?" -eq "0" ]
+			then
+				echo "$RDIR/$MX_KERNEL_VERSION.zip upload SUCCESS!"
+			else
+				echo "$RDIR/$MX_KERNEL_VERSION.zip upload FAILED!"
+			fi
 		fi
 	else
 		warnandfail "$RDIR/$MX_KERNEL_VERSION.zip is 0 bytes, something is wrong!"
@@ -803,7 +783,6 @@ Script written by jcadduono, frequentc & robcore
 usage: ./mxbuild.sh [OPTION]
 Common options:
  -a|--all            Do a complete build (starting at the beginning)
- -ar|--allreboot     Do a complete build (starting at the beginning), reboot automatically
  -anr|--allnoreboot  Do a complete build (starting at the beginning), do not reboot
  -d|--debug          Similiar to --all but no img, zip or cleanup. Not for production.
  -r|--rebuildme      Same as --all but defaults to rebuilding previous version
@@ -820,8 +799,6 @@ Currently, it is just the one.
 Appending "noreboot" as the second option will keep the device from rebooting.
 Or, just use the -anr option that is the same as -a to build all,
 but skips the reboot.
-Conversely, appending "reboot" or using -ar will instruct the script to reboot
-automatically.
 EOF
 
 	exit 1
@@ -894,13 +871,6 @@ do
 			break
 	    	;;
 
-	     -ar|--allreboot)
-			checkrecov
-			handle_existing
-			build_all
-			break
-	    	;;
-
 	     -d|--debug)
 			handle_existing
 			build_debug
@@ -962,4 +932,3 @@ do
 	esac
 	shift # past argument or value
 done
-

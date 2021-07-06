@@ -175,9 +175,9 @@ static void pcm_afe_callback(uint32_t opcode,
 static uint32_t getbuffersize(uint32_t samplerate)
 {
 	if (samplerate == 8000)
-		return 3840;
+		return 480 << 3;
 	else if (samplerate == 16000)
-		return 7680;
+		return 480 << 4;
 	else if (samplerate == 48000)
 		return 23040;
 	return 0;

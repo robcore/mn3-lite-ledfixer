@@ -101,12 +101,12 @@ extern int msm_show_resume_irq_mask;
 #endif
 
 #ifdef CONFIG_ANDROID_PERSISTENT_RAM
-#ifdef CONFIG_ANDROID_RAM_CONSOLE
 #define PERSISTENT_RAM_BASE 0x7FA00000
 #define PERSISTENT_RAM_SIZE SZ_1M
-#define RAM_CONSOLE_SIZE (124 * SZ_1K * 2)
+#define RAM_CONSOLE_SIZE (124*SZ_1K * 2)
 
 static struct persistent_ram_descriptor pram_descs[] = {
+#ifdef CONFIG_ANDROID_RAM_CONSOLE
 {
     .name = "ram_console",
     .size = RAM_CONSOLE_SIZE,
@@ -550,7 +550,10 @@ void __init msm8974_add_drivers(void)
 	rpm_regulator_smd_driver_init();
 	msm_spm_device_init();
 	krait_power_init();
-	msm_clock_init(&msm8974_clock_init_data);
+	if (of_board_is_rumi())
+		msm_clock_init(&msm8974_rumi_clock_init_data);
+	else
+		msm_clock_init(&msm8974_clock_init_data);
 	tsens_tm_init_driver();
 	msm_thermal_device_init();
 }
@@ -627,7 +630,7 @@ void __init msm8974_init(void)
 	msm_8974_init_gpiomux();
 	regulator_has_full_constraints();
 #ifdef CONFIG_ANDROID_RAM_CONSOLE
-    add_ramconsole_devices();
+        add_ramconsole_devices();
 #endif
 	board_dt_populate(adata);
 	msm8974_add_drivers();

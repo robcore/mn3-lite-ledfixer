@@ -276,7 +276,7 @@ static int __devexit gdsc_remove(struct platform_device *pdev)
 
 static struct of_device_id gdsc_match_table[] = {
 	{ .compatible = "qcom,gdsc" },
-	{},
+	{}
 };
 
 static struct platform_driver gdsc_driver __refdata = {

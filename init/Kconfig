@@ -967,6 +967,7 @@ config PANIC_TIMEOUT
 menuconfig EXPERT
 	bool "Configure standard kernel features (expert users)"
 	# Unhide debug options, to make the on-by-default options visible
+	select DEBUG_KERNEL
 	help
 	  This option allows certain base kernel options and settings
           to be disabled or tweaked. This is for specialized
@@ -1158,6 +1159,7 @@ config AIO_SSD_ONLY
 	  WILL be resulting in bad storage performance.
 
 	  If you've got ONLY SSDs, say Y. If unsure, say N.
+
 
 config PCI_QUIRKS
 	default y
