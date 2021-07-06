@@ -1,5 +1,3 @@
-/root/mn3-lite-ledfixer/patches/2000-some-help-for-trying-this-on-ubuntu.patch
-/root/mn3-lite-ledfixer/patches/1999-import-old-dtbtool-and-mkbootimg.patch
 /root/mn3-lite-ledfixer/patches/1998-ummm-dont-do-it-for-now.patch
 /root/mn3-lite-ledfixer/patches/1997-add-a-module-param-to-override-mdss_fb-csc_cfg-wideb.patch
 /root/mn3-lite-ledfixer/patches/1996-verbosity-is-useless.patch
