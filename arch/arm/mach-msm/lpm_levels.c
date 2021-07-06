@@ -139,7 +139,7 @@ module_param_named(sleep_time_override,
 	msm_pm_sleep_time_override, int, S_IRUGO | S_IWUSR | S_IWGRP);
 
 static int msm_pm_sleep_sec_debug;
-module_param_named(secdebug,
+module_param_named(sleep_debug,
 	msm_pm_sleep_sec_debug, int, S_IRUGO | S_IWUSR | S_IWGRP);
 
 static int num_powered_cores;
@@ -826,13 +826,12 @@ before entering sleep as some other process is changing it*/
 	gpio_dvs_check_sleepgpio();
 #endif
 
-//#ifdef CONFIG_SEC_PM_DEBUG
-#if 0
+#ifdef CONFIG_SEC_PM_DEBUG
 	if (msm_pm_sleep_sec_debug) {
-		//msm_gpio_print_enabled();
+		msm_gpio_print_enabled();
 		//qpnp_debug_suspend_show();
 #ifdef CONFIG_GPIO_PCAL6416A
-		//expander_print_all();
+		expander_print_all();
 #endif
 	}
 #endif

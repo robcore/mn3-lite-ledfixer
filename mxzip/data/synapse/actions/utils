@@ -36,4 +36,19 @@ elif [ "$1" = "rmsdiv" ]
 then
     RDIV="$(busybox cat /sys/kernel/sound_control/rms_meter_div_fact)"
     echo $(( $RDIV * 16 ))
+elif [ "$1" = "ksm" ]
+then
+    KSMVAL="$(busybox cat /sys/kernel/mm/ksm/run)"
+    if [ -n "$2" ]
+    then
+        if [ "$2" = "$KSMVAL" ]
+        then
+            busybox cat /sys/kernel/mm/ksm/run
+        else
+            busybox echo "$2" > /sys/kernel/mm/ksm/run
+            busybox cat /sys/kernel/mm/ksm/run
+        fi
+    else
+        busybox cat /sys/kernel/mm/ksm/run
+    fi
 fi

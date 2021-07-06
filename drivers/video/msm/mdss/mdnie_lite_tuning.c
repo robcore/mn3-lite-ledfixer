@@ -177,9 +177,9 @@ static char white_rgb_buf[MDNIE_TUNE_FIRST_SIZE] = {0,};
 #endif
 
 static struct dsi_cmd_desc mdni_tune_cmd[] = {
-	{{DTYPE_DCS_LWRITE, 1, 0, 0, 0,
+	{{DTYPE_DCS_LWRITE, 0, 0, 0, 0,
 		sizeof(level1_key)}, level1_key},
-	{{DTYPE_DCS_LWRITE, 1, 0, 0, 0,
+	{{DTYPE_DCS_LWRITE, 0, 0, 0, 0,
 		sizeof(level2_key)}, level2_key},
 
 	{{DTYPE_DCS_LWRITE, 1, 0, 0, 0,

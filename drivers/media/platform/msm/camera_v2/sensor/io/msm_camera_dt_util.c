@@ -1134,8 +1134,7 @@ int msm_camera_power_up(struct msm_camera_power_ctrl_t *ctrl,
 
 	if (ctrl->gpio_conf->cam_gpiomux_conf_tbl != NULL) {
 		pr_err("%s:%d mux install\n", __func__, __LINE__);
-		msm_gpiomux_install(
-			(struct msm_gpiomux_config *)
+		msm_gpiomux_install((struct msm_gpiomux_config *)
 			ctrl->gpio_conf->cam_gpiomux_conf_tbl,
 			ctrl->gpio_conf->cam_gpiomux_conf_tbl_size);
 	}

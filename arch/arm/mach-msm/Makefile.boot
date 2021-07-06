@@ -232,11 +232,17 @@ else
 	dtb-$(CONFIG_SEC_CHAGALL_PROJECT)	+= msm8974-sec-chagall-r03.dtb
 endif
 endif
+ifeq ($(CONFIG_SEC_LOCALE_JPN),y)
+	dtb-$(CONFIG_SEC_KLIMT_PROJECT)	+= msm8974-sec-klimtjpn-r03.dtb
+	dtb-$(CONFIG_SEC_KLIMT_PROJECT)	+= msm8974-sec-klimtjpn-r04.dtb
+	dtb-$(CONFIG_SEC_KLIMT_PROJECT)	+= msm8974-sec-klimtjpn-r05.dtb
+else
 	dtb-$(CONFIG_SEC_KLIMT_PROJECT)	+= msm8974-sec-klimt-r00.dtb
 	dtb-$(CONFIG_SEC_KLIMT_PROJECT)	+= msm8974-sec-klimt-r01.dtb
 	dtb-$(CONFIG_SEC_KLIMT_PROJECT)	+= msm8974-sec-klimt-r02.dtb
 	dtb-$(CONFIG_SEC_KLIMT_PROJECT)	+= msm8974-sec-klimt-r03.dtb
-	dtb-$(CONFIG_SEC_V2_PROJECT)	+= msm8974-sec-v2lte-r00.dtb
+endif
+#	dtb-$(CONFIG_SEC_V2_PROJECT)	+= msm8974-sec-v2lte-r00.dtb
 	dtb-$(CONFIG_SEC_V2_PROJECT)	+= msm8974-sec-v2lte-r01.dtb
 	dtb-$(CONFIG_SEC_V2_PROJECT)	+= msm8974-sec-v2lte-r02.dtb
 ifeq ($(CONFIG_SEC_F_PROJECT),y)
@@ -506,21 +512,21 @@ else ifeq ($(CONFIG_MACH_T10_WIFI_OPEN),y)
 endif
 
 # FSM9XXX
-   zreladdr-$(CONFIG_ARCH_FSM9XXX)	:= 0x10008000
+zreladdr-$(CONFIG_ARCH_FSM9XXX)	:= 0x10008000
 params_phys-$(CONFIG_ARCH_FSM9XXX)	:= 0x10000100
 initrd_phys-$(CONFIG_ARCH_FSM9XXX)	:= 0x12000000
 
 # FSM9900
-   zreladdr-$(CONFIG_ARCH_FSM9900)	:= 0x00008000
-        dtb-$(CONFIG_ARCH_FSM9900)	:= fsm9900-rumi.dtb
-        dtb-$(CONFIG_ARCH_FSM9900)	:= fsm9900-sim.dtb
+zreladdr-$(CONFIG_ARCH_FSM9900)	:= 0x00008000
+dtb-$(CONFIG_ARCH_FSM9900)	:= fsm9900-rumi.dtb
+dtb-$(CONFIG_ARCH_FSM9900)	:= fsm9900-sim.dtb
 
 # MPQ8092
-   zreladdr-$(CONFIG_ARCH_MPQ8092)	:= 0x00008000
+zreladdr-$(CONFIG_ARCH_MPQ8092)	:= 0x00008000
 
 # MSM8610
-   zreladdr-$(CONFIG_ARCH_MSM8610)	:= 0x00008000
-   ifeq ($(CONFIG_SEC_HEAT_PROJECT),y)
+zreladdr-$(CONFIG_ARCH_MSM8610)	:= 0x00008000
+ifeq ($(CONFIG_SEC_HEAT_PROJECT),y)
 	ifeq ($(CONFIG_MACH_HEAT_DYN),y)
 		dtb-$(CONFIG_SEC_HEAT_PROJECT)	+= msm8610-sec-heat-dyn-r00.dtb
 	else

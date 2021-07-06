@@ -185,7 +185,6 @@
 						80 80 80 80 80 80 80 00
 						00 00
 					29 01 00 00 00 00 02 F7 03		/* Gamma, LTPS(AID) update */
-					29 01 00 00 00 00 02 F7 00		/* Gamma, LTPS(AID) update */
 				];
 
 			samsung,panel-gamma-hbm-cmds-list = [
@@ -201,9 +200,8 @@
 					29 01 00 00 00 00 05 B2 00 06 00 06 			/* AID 0% */
 					29 01 00 00 00 00 03 b6 88 00 					/* ELVSS  */
 					29 01 00 00 00 00 07 B5 03 99 27 1F 45 0A		/* ACL control */
-					29 01 00 00 00 00 02 55 02	   					/* ACL 40%(02h) */
+				    29 01 00 00 72 00 02 55 00                      /* ACL 0%(00h) */
 					29 01 00 00 00 00 02 F7 03 						/* Gamma, LTPS(AID) update */
-					29 01 00 00 00 00 02 F7 00						/* Gamma, LTPS(AID) update */
 				];
 
 			samsung,panel-etc-hbm-evt0-second-cmds = [
@@ -211,43 +209,39 @@
 					29 01 00 00 00 00 07 B5 03 99 27 1F 45 0A		/* ACL control */
 					29 01 00 00 00 00 12 B6 88 0A 00 00 00 00 00 03 55 54 20 00 06 66 6C 0C 00    /* HBM ELVSS Setting */
 					29 01 00 00 00 00 03 BC 20 38					/* RE Condition Setting for EVT0 */
-					29 01 00 00 00 00 02 55 42	   					/* RE(low) & ACL 40% */
+					29 01 00 00 72 00 02 55 00                      /* ACL 0%(00h) */
 					29 01 00 00 00 00 02 F7 03 						/* Gamma, LTPS(AID) update */
-					29 01 00 00 00 00 02 F7 00						/* Gamma, LTPS(AID) update */
 				];
 
 			samsung,panel-etc-hbm-evt1-cmds = [
 					29 01 00 00 00 00 05 B2 00 06 00 06 			/* AID 0% */
 					29 01 00 00 00 00 07 B5 03 99 27 1F 45 0A		/* ACL control */
 					29 01 00 00 00 00 12 B6 88 0A 00 00 00 00 00 03 55 54 20 00 06 66 6C 0C 00    /* HBM ELVSS Setting */
-					29 01 00 00 00 00 02 55 42	   					/* RE(low) & ACL 40% */
+					29 01 00 00 72 00 02 55 00                      /* ACL 0%(00h) */
 					29 01 00 00 00 00 02 F7 03 						/* Gamma, LTPS(AID) update */
-					29 01 00 00 00 00 02 F7 00						/* Gamma, LTPS(AID) update */
 				];
 
 			samsung,panel-etc-hbm-evt1-second-cmds = [
 					29 01 00 00 00 00 05 B2 00 0C 00 0C 			/* AID 0% */
 					29 01 00 00 00 00 12 B6 88 0A 00 00 00 00 00 03 55 54 20 00 06 66 6C 0C 00    /* HBM ELVSS Setting */
 					29 01 00 00 00 00 07 B5 03 99 27 1F 45 0A		/* ACL control */
-					29 01 00 00 00 00 02 55 42	   					/* RE(low) & ACL */
+					29 01 00 00 72 00 02 55 00                      /* ACL 0%(00h) */
 					29 01 00 00 00 00 02 F7 03 						/* Gamma, LTPS(AID) update */
-					29 01 00 00 00 00 02 F7 00						/* Gamma, LTPS(AID) update */
 				];
 
 			samsung,panel-etc-hbm-evt1-revI-cmds = [
 					29 01 00 00 00 00 05 B2 00 08 00 08 			/* AID 0% */
 					29 01 00 00 00 00 12 B6 88 0A 00 00 00 00 00 03 55 54 20 00 06 66 6C 0C 00    /* HBM ELVSS Setting */
 					29 01 00 00 00 00 07 B5 03 99 27 1F 45 0A		/* ACL control */
-					29 01 00 00 00 00 02 55 42	   					/* RE(low) & ACL */
+					29 01 00 00 72 00 02 55 00                      /* ACL 0%(00h) */
 					29 01 00 00 00 00 02 F7 03 						/* Gamma, LTPS(AID) update */
-					29 01 00 00 00 00 02 F7 00						/* Gamma, LTPS(AID) update */
 				];
 
 			samsung,panel-etc-hbm-evt1-revJ-cmds = [
 					29 01 00 00 00 00 05 B2 00 06 00 06 			/* AID 0% */
 					29 01 00 00 00 00 12 B6 88 0A 00 00 00 00 00 03 55 54 20 00 06 66 6C 0C 00    /* HBM ELVSS Setting */
 					29 01 00 00 00 00 07 B5 03 99 27 1F 45 0A		/* ACL control */
-					29 01 00 00 00 00 02 55 42	   					/* RE(low) & ACL */
+					29 01 00 00 72 00 02 55 00                      /* ACL 0%(00h) */
 					29 01 00 00 00 00 02 F7 03 						/* Gamma, LTPS(AID) update */
 				];
 
@@ -384,10 +378,10 @@
 					29 01 00 00 00 00 07 B5 03 99 27 1F 45 0A]; /* ACL Condition */
 
 			samsung,panel-acl-cmds-list = [
-					29 01 00 00 00 00 02 55 00
-					29 01 00 00 00 00 02 55 01
-					29 01 00 00 00 00 02 55 02 /* ACL 25% */
-					29 01 00 00 00 00 02 55 03];
+					29 01 00 00 72 00 02 55 00
+					29 01 00 00 72 00 02 55 00
+					29 01 00 00 72 00 02 55 00
+					29 01 00 00 72 00 02 55 00];
 
 			/* bl_level , Index in acl command list */
 			samsung,panel-acl-map-table =  <

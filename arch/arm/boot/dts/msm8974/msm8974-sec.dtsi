@@ -72,7 +72,7 @@
 	memory {
 		secure_mem: secure_region {
 			linux,contiguous-region;
-			reg = <0 0xB200000>;
+			reg = <0 0xA500000>;
 			label = "secure_mem";
 		};
 
@@ -154,10 +154,8 @@
 
 		frame@f9021000 {
 			frame-number = <0>;
-			interrupts = <0 8 0x4>,
-				     <0 7 0x4>;
-			reg = <0xf9021000 0x1000>,
-                  <0xf9022000 0x1000>;
+			interrupts = <0 8 0x4>, <0 7 0x4>;
+			reg = <0xf9021000 0x1000>, <0xf9022000 0x1000>;
 		};
 
 		frame@f9023000 {

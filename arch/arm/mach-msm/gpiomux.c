@@ -70,10 +70,9 @@ enum {
 	GPIO_OUT_BIT = 1
 };
 
-#define GPIO_IN_OUT(gpio)        (MSM_TLMM_BASE + 0x1004 + (0x10 * (gpio)))
+#define GPIO_IN_OUT(gpio) (MSM_TLMM_BASE + 0x1004 + (0x10 * (gpio)))
 
-#define GET_RESULT_GPIO(a, b, c)	\
-	((a<<4 & 0xF0) | (b<<1 & 0xE) | (c & 0x1))
+#define GET_RESULT_GPIO(a, b, c) ((a<<4 & 0xF0) | (b<<1 & 0xE) | (c & 0x1))
 
 /****************************************************************/
 /* Pre-defined variables. (DO NOT CHANGE THIS!!) */
