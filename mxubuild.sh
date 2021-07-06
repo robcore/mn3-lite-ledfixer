@@ -3,28 +3,9 @@
 export CCACHE_DIR="$HOME/.ccache"
 export USE_CCACHE="1"
 export CCACHE_NLEVELS="8"
-#env KCONFIG_NOTIMESTAMP=true &>/dev/null
+env KCONFIG_NOTIMESTAMP=true &>/dev/null
 
-warnandfailearly() {
-
-	echo -n "MX ERROR on Line ${BASH_LINENO[0]}"
-	echo "!!!"
-	local ISTRING
-	ISTRING="$1"
-	if [ -n "$ISTRING" ]
-	then
-		printf "%s\n" "$ISTRING"
-	fi
-	exit 1
-
-}
-
-if [ ! -d "/home/rob/mx_toolchains" ]
-then
-    warnandfailearly "/home/rob/mx_toolchains folder does not exist!"
-fi
-
-RDIR="/home/rob/mn3lite"
+RDIR="/root/mn3lite"
 BUILDIR="$RDIR/build"
 LOGDIR="$RDIR/buildlogs"
 KDIR="$BUILDIR/arch/arm/boot"
@@ -42,11 +23,10 @@ DTCDIR="$BUILDIR/scripts/dtc"
 DTIMG="$KDIR/dt.img"
 MXDT="$MXRD/split_img/boot.img-dt"
 NEWZMG="$KDIR/zImage"
-FZMG="$NEWZMG-fixup"
+FZMG="$KDIR/zImage-fixup"
 MXZMG="$MXRD/split_img/boot.img-kernel"
 DTBTOOL="$RDIR/tools/dtbTool"
 MKBOOTIMG="/usr/bin/mkbootimg"
-OLDCFG="/home/rob/mn3-oldconfigs"
 
 QUICKHOUR="$(date +%l | cut -d " " -f2)"
 QUICKMIN="$(date +%S)"
@@ -56,15 +36,14 @@ QUICKYMD="$(date +%Y-%m-%d)"
 QUICKTIME="$QUICKHOUR_$QUICKMIN-${QUICKAMPM}"
 QUICKDATE="$QUICKYMD-$QUICKTIME"
 #CORECOUNT="$(grep processor /proc/cpuinfo | wc -l)"
-#TOOLCHAIN="/home/rob/mx_toolchains/arm-cortex_a15-linux-gnueabihf_5.3/bin/arm-cortex_a15-linux-gnueabihf-"
-#TOOLCHAIN="/home/rob/mx_toolchains/gcc-linaro-7.5.0-2019.12-x86_64_arm-linux-gnueabihf/bin/arm-linux-gnueabihf-"
-#TOOLCHAIN="/home/rob/mx_toolchains/arm-cortex_a15-linux-gnueabihf-linaro_4.9.4-2015.06/bin/arm-cortex_a15-linux-gnueabihf-"
-#TOOLCHAIN="/home/rob/mx_toolchains/gcc-linaro-4.9.4-2017.01-x86_64_arm-linux-gnueabi/bin/arm-linux-gnueabi-"
-#TOOLCHAIN="/home/rob/mx_toolchains/gcc-linaro-6.5.0-2018.12-x86_64_arm-linux-gnueabihf/bin/arm-linux-gnueabihf-"
-#TOOLCHAIN="/home/rob/mx_toolchains/gcc-arm-9.2-2019.12-x86_64-arm-none-linux-gnueabihf/bin/arm-none-linux-gnueabihf-"
-#TOOLCHAIN="/home/rob/mx_toolchains/gcc-arm-8.2-2019.01-x86_64-arm-linux-gnueabihf/bin/arm-linux-gnueabihf-"
-
-TOOLCHAIN="/home/rob/mx_toolchains/arm-cortex_a15-linux-gnueabihf-linaro_4.9.4-2015.06/bin/arm-cortex_a15-linux-gnueabihf-"
+#TOOLCHAIN="/root/mx_toolchains/arm-cortex_a15-linux-gnueabihf_5.3/bin/arm-cortex_a15-linux-gnueabihf-"
+#TOOLCHAIN="/root/mx_toolchains/gcc-linaro-7.5.0-2019.12-x86_64_arm-linux-gnueabihf/bin/arm-linux-gnueabihf-"
+#TOOLCHAIN="/root/mx_toolchains/arm-cortex_a15-linux-gnueabihf-linaro_4.9.4-2015.06/bin/arm-cortex_a15-linux-gnueabihf-"
+#TOOLCHAIN="/root/mx_toolchains/gcc-linaro-4.9.4-2017.01-x86_64_arm-linux-gnueabi/bin/arm-linux-gnueabi-"
+#TOOLCHAIN="/root/mx_toolchains/gcc-linaro-6.5.0-2018.12-x86_64_arm-linux-gnueabihf/bin/arm-linux-gnueabihf-"
+#TOOLCHAIN="/root/mx_toolchains/gcc-arm-9.2-2019.12-x86_64-arm-none-linux-gnueabihf/bin/arm-none-linux-gnueabihf-"
+#TOOLCHAIN="/root/mx_toolchains/gcc-arm-8.2-2019.01-x86_64-arm-linux-gnueabihf/bin/arm-linux-gnueabihf-"
+TOOLCHAIN="/root/mx_toolchains/arm-cortex_a15-linux-gnueabihf-linaro_4.9.4-2015.06/bin/arm-cortex_a15-linux-gnueabihf-"
 export ARCH="arm"
 export SUBARCH="arm"
 export CROSS_COMPILE="$TOOLCHAIN"
@@ -87,11 +66,6 @@ fi
 if [ ! -d "$RDIR/buildlogs" ]
 then
     mkdir "$RDIR/buildlogs"
-fi
-
-if [ ! -d "$OLDCFG" ]
-then
-    mkdir -p "$OLDCFG"
 fi
 
 stop_build_timer() {
@@ -155,6 +129,20 @@ timerprint() {
 
 }
 
+cleanupfail() {
+
+	echo -n "MX ERROR on Line ${BASH_LINENO[0]}"
+	echo "!!!"
+	local ISTRING
+	ISTRING="$1"
+	if [ -n "$ISTRING" ]
+	then
+		printf "%s\n" "$ISTRING"
+	fi
+	exit 1
+
+}
+
 takeouttrash() {
 
     rm "$RDIR/localversion" &> /dev/null
@@ -193,7 +181,7 @@ getmxrecent() {
 
 clean_build() {
 
-	cd "$RDIR" || warnandfailearly "Failed to cd to $RDIR!"
+	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
 	getmxrecent
 	if [ "$1" = "standalone" ]
 	then
@@ -219,7 +207,7 @@ clean_build() {
 	rm "$ZIPFOLDER/boot.img" &>/dev/null
 	echo -ne "Cleaning build......   \r"; \
 #    [ -f "$MXRD/image-new.img" ] && rm "$MXRD/image-new.img"
-    [ -f "$KDIR/ramdisk.cpio.gz" ] && rm "$KDIR/ramdisk.cpio.gz"
+#    [ -f "$MXRD/ramdisk-new.cpio.gz" ] && rm "$MXRD/ramdisk-new.cpio.gz"
 	echo -ne "Cleaning build.......  \r"; \
 #	rm -rf "$RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg" &>/dev/null
 	echo -ne "Cleaning build........ \r"; \
@@ -506,6 +494,7 @@ build_single_driver() {
 
 build_kernel() {
 
+	OLDCFG="/root/mn3-oldconfigs"
 	echo "Backing up .config to $OLDCFG/config.$QUICKDATE"
 	cp "$BUILDIR/.config" "$OLDCFG/config.$QUICKDATE" || warnandfail "Config Copy Error!"
 	#echo "Snapshot of current environment variables:"
@@ -519,6 +508,7 @@ build_kernel() {
 
 build_kernel_debug() {
 
+	OLDCFG="/root/mn3-oldconfigs"
 	echo "Backing up .config to $OLDCFG/config.$QUICKDATE"
 	cp "$BUILDIR/.config" "$OLDCFG/config.$QUICKDATE" || warnandfail "Config Copy Error!"
 	#echo "Snapshot of current environment variables:"
@@ -551,28 +541,35 @@ build_ramdisk() {
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR"
 
 }
+#tools/dtbtool/dtbtool -s 2048 -o arch/arm/boot/dt.img -p scripts/dtc/ arch/arm/boot/
+#gcc -w -s -pipe -O2 -Itools/libmincrypt -o tools/mkbootimg/mkbootimg tools/libmincrypt/*.c tools/mkbootimg/mkbootimg.c
+#tools/mkbootimg/mkbootimg --kernel $KDIR/arch/arm/boot/zImage --dt $KDIR/arch/arm/boot/dt.img --ramdisk $RAMFS_TMP.cpio.lzo --cmdline 'console=null androidboot.hardware=qcom user_debug=23 msm_rtb.filter=0x37 ehci-hcd.park=3 enforcing=0' --base 0x00000000 --pagesize 2048 --kernel_offset 0x00008000 --ramdisk_offset 0x02000000 --tags_offset 0x01e00000 --second_offset 0x00f00000 -o $KDIR/boot.img
+#echo -n "SEANDROIDENFORCE" >> boot.img
 
 build_boot_img() {
 
 	echo "Generating boot.img..."
-	[ -f "$ZIPFOLDER/boot.img" ] && rm -f "$ZIPFOLDER/boot.img"
+	rm -f "$ZIPFOLDER/boot.img"
+	if [ ! -f "$RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg" ]
+	then
+		make -C "$RDIR/scripts/mkqcdtbootimg" || warnandfail "Failed to make dtb tool!"
+	fi
 
-    $RDIR/tools/dtbTool -s 2048 -o "$DTIMG" -p "$DTCDIR" "$KDIR" 2>&1 | \
-                   tee -a "$LOGDIR/$QUICKDATE.Mark$(cat $RDIR/.oldversion).log" || warnandfail "dtbTool failed to build $DTIMG!"
-
-    $RDIR/tools/mkbootimg --kernel "$NEWZMG" \
-        --dt "$DTIMG" \
-        --ramdisk "$KDIR/ramdisk.cpio.gz" \
-        --cmdline "console=null androidboot.hardware=qcom user_debug=23 msm_rtb.filter=0x37 ehci-hcd.park=3 enforcing=0" \
-        --base "0x00000000" \
-        --pagesize "2048" \
-        --kernel_offset "0x00008000" \
-        --ramdisk_offset "0x02000000" \
-        --tags_offset "0x01e00000" \
-        --second_offset "0x00f00000" \ 
-        --output "$ZIPFOLDER/boot.img" 2>&1 | tee -a "$LOGDIR/$QUICKDATE.Mark$(cat $RDIR/.oldversion).log" \
-          || warnandfail "mkbootimg failed to build boot.img!"
-
+	$RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg --kernel "$KDIR/zImage" \
+		--ramdisk "$KDIR/ramdisk.cpio.gz" \
+        --dt_dir "$KDIR" \
+		--cmdline "console=null androidboot.hardware=qcom user_debug=23 msm_rtb.filter=0x37 ehci-hcd.park=3" \
+		--base "0x00000000" \
+		--pagesize "2048" \
+		--ramdisk_offset "0x02000000" \
+		--tags_offset "0x01e00000" \
+		--output "$ZIPFOLDER/boot.img"
+	if [ "$?" -eq 0 ]
+	then
+		echo "mkqcdtbootimg appears to have succeeded in building an image"
+	else
+		warnandfail "mkqcdtbootimg appears to have failed in building an image!"
+	fi
 	[ -f "$ZIPFOLDER/boot.img" ] || warnandfail "$ZIPFOLDER/boot.img does not exist!"
 	echo -n "SEANDROIDENFORCE" >> "$ZIPFOLDER/boot.img"
 
@@ -660,7 +657,6 @@ create_zip() {
                 if [ "$NOREBOOT" = "false" ]
                 then
     				echo "Rebooting Device"
-                    adb shell sync
         			adb reboot
                 else
                     echo "Skipping Reboot due to command line option!"
@@ -670,14 +666,14 @@ create_zip() {
 			fi
 		else
 			echo "Device not Connected.  Skipping adb transfer."
-			#echo "Uploading $MX_KERNEL_VERSION.zip to Google Drive Instead."
-			#/bin/bash /home/rob/google-drive-upload/upload.sh "$RDIR/$MX_KERNEL_VERSION.zip"
-			#if [ "$?" -eq "0" ]
-			#then
-			#	echo "$RDIR/$MX_KERNEL_VERSION.zip upload SUCCESS!"
-			#else
-			#	echo "$RDIR/$MX_KERNEL_VERSION.zip upload FAILED!"
-			#fi
+			echo "Uploading $MX_KERNEL_VERSION.zip to Google Drive Instead."
+			/bin/bash /root/google-drive-upload/upload.sh "$RDIR/$MX_KERNEL_VERSION.zip"
+			if [ "$?" -eq "0" ]
+			then
+				echo "$RDIR/$MX_KERNEL_VERSION.zip upload SUCCESS!"
+			else
+				echo "$RDIR/$MX_KERNEL_VERSION.zip upload FAILED!"
+			fi
 		fi
 	else
 		warnandfail "$RDIR/$MX_KERNEL_VERSION.zip is 0 bytes, something is wrong!"

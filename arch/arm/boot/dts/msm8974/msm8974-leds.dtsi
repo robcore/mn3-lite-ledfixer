@@ -13,7 +13,7 @@
 
 &pm8941_lsid1 {
 	qcom,leds@d000 {
-		status = "ok";
+		status = "okay";
 		qcom,rgb_0 {
 			label = "rgb";
 				linux,name = "led:rgb_red";
