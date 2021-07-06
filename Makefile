@@ -259,10 +259,12 @@ CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
 	  else if [ -x /bin/bash ]; then echo /bin/bash; \
 	  else echo sh; fi ; fi)
 
+XTRAHFLAGS   = -fivopts -fmodulo-sched -fmodulo-sched-allow-regmoves
+
 HOSTCC       = gcc
 HOSTCXX      = g++
-HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fomit-frame-pointer -std=gnu89 -pipe
-HOSTCXXFLAGS = -O2
+HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fomit-frame-pointer -std=gnu89 -pipe $(XTRAHFLAGS)
+HOSTCXXFLAGS = -O2 $(XTRAHFLAGS)
 
 # Decide whether to build built-in, modular, or both.
 # Normally, just do built-in.
@@ -337,11 +339,6 @@ KALLSYMS	= scripts/kallsyms
 PERL		= perl
 CHECK		= sparse
 
-ifeq ($(CONFIG_CRYPTO_FIPS),)
- READELF	= $(CROSS_COMPILE)readelf
- export READELF
-endif
-
 # Use the wrapper for the compiler.  This wrapper scans for new
 # warnings and causes the build to stop upon encountering them.
 #CC		= $(srctree)/scripts/gcc-wrapper.py $(REAL_CC)
@@ -352,9 +349,9 @@ MODFLAGS	= -DMODULE -fno-pic -mfpu=neon-vfpv4
 CFLAGS_MODULE   = $(MODFLAGS)
 AFLAGS_MODULE   = $(MODFLAGS)
 LDFLAGS_MODULE  =
-CFLAGS_KERNEL	= -mtune=cortex-a15 -mfpu=neon-vfpv4 -fgcse-las -fpredictive-commoning
+CFLAGS_KERNEL	= -mfpu=neon-vfpv4
 AFLAGS_KERNEL	=
-CFLAGS_GCOV	= -fprofile-arcs -ftest-coverage
+CFLAGS_GCOV	= -fprofile-arcs -ftest-coverage -fno-tree-loop-im
 
 
 # Use LINUXINCLUDE when you must reference the include/ directory.
@@ -366,18 +363,45 @@ LINUXINCLUDE    := -I$(srctree)/arch/$(hdr-arch)/include \
 
 KBUILD_CPPFLAGS := -D__KERNEL__
 
-KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
-		   -fno-strict-aliasing -fno-common \
+KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -pipe \
+		   -Wno-unused-variable -Wno-maybe-uninitialized \
 		   -Werror-implicit-function-declaration \
-		   -Wno-format-security \
-		   -fno-delete-null-pointer-checks \
-		   -Wno-unused-function -Wno-unused-label -Wno-unused-variable \
-		   -Wno-misleading-indentation -Wno-maybe-uninitialized
+		   -fno-unsafe-math-optimizations \
+		   -Wno-unused-function -Wno-unused-label -Wno-array-bounds \
+		   -Wno-format-security -Wno-format-truncation \
+		   -Wno-misleading-indentation -Wno-int-in-bool-context \
+		   -Wno-bool-compare -Wno-tautological-compare \
+		   -fno-delete-null-pointer-checks -Wno-pointer-compare \
+		   -Wno-switch-unreachable -Wno-stringop-overflow \
+		   -fno-strict-aliasing -fno-common -std=gnu89 \
+		   -Wno-stringop-truncation -Wno-sizeof-pointer-memaccess \
+		   -Wno-restrict -Wno-format-overflow -fno-aggressive-loop-optimizations \
+		   -mfpu=neon-vfpv4 -mcpu=cortex-a15 -mtune=cortex-a15 \
+		   -Wno-sequence-point
+
+		   #-fno-strict-aliasing -fno-common \
+           #-fomit-frame-pointer -fno-omit-frame-pointer \
+		   #-fno-align-functions -fno-align-loops \
 KBUILD_AFLAGS_KERNEL :=
-KBUILD_CFLAGS_KERNEL :=
+KBUILD_CFLAGS_KERNEL := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
+		   -Wno-unused-variable -Wno-maybe-uninitialized \
+		   -Werror-implicit-function-declaration \
+		   -fno-unsafe-math-optimizations \
+		   -Wno-unused-function -Wno-unused-label -Wno-array-bounds \
+		   -Wno-format-security -Wno-format-truncation \
+		   -Wno-misleading-indentation -Wno-int-in-bool-context \
+		   -Wno-bool-compare -Wno-tautological-compare \
+		   -fno-delete-null-pointer-checks -Wno-pointer-compare \
+		   -Wno-switch-unreachable -Wno-stringop-overflow \
+		   -fno-strict-aliasing -fno-common -std=gnu89 \
+		   -Wno-stringop-truncation -Wno-sizeof-pointer-memaccess \
+		   -Wno-restrict -Wno-format-overflow -fno-aggressive-loop-optimizations \
+		   -mfpu=neon-vfpv4 -mcpu=cortex-a15 -mtune=cortex-a15 \
+		   -Wno-sequence-point
+
 KBUILD_AFLAGS   := -D__ASSEMBLY__
 KBUILD_AFLAGS_MODULE  := -DMODULE
-KBUILD_CFLAGS_MODULE  := -DMODULE -fno-pic
+KBUILD_CFLAGS_MODULE  := -DMODULE -fno-pic -fno-common
 KBUILD_LDFLAGS_MODULE := -T $(srctree)/scripts/module-common.lds
 
 # Read KERNELRELEASE from include/config/kernel.release (if it exists)
@@ -607,7 +631,7 @@ KBUILD_CFLAGS   += $(call cc-option, -fno-var-tracking-assignments)
 
 ifdef CONFIG_DEBUG_INFO
 KBUILD_CFLAGS	+= -g
-KBUILD_AFLAGS	+= -gdwarf-2
+KBUILD_AFLAGS	+= -Wa,-gdwarf-2
 endif
 
 ifdef CONFIG_DEBUG_INFO_REDUCED
@@ -634,16 +658,19 @@ NOSTDINC_FLAGS += -nostdinc -isystem $(shell $(CC) -print-file-name=include)
 CHECKFLAGS     += $(NOSTDINC_FLAGS)
 
 # improve gcc optimization
-CFLAGS += $(call cc-option,-funit-at-a-time)
+CFLAGS += $(call cc-option,-funit-at-a-time,)
 
 # warn about C99 declaration after statement
-KBUILD_CFLAGS += $(call cc-option,-Wdeclaration-after-statement)
+KBUILD_CFLAGS += $(call cc-option,-Wdeclaration-after-statement,)
 
 # disable pointer signed / unsigned warnings in gcc 4.0
 KBUILD_CFLAGS += $(call cc-disable-warning, pointer-sign)
 
 # disable invalid "can't wrap" optimizations for signed / pointers
 KBUILD_CFLAGS	+= $(call cc-option,-fno-strict-overflow)
+
+# conserve stack if available
+KBUILD_CFLAGS   += $(call cc-option,-fconserve-stack)
 
 # use the deterministic mode of AR if available
 KBUILD_ARFLAGS := $(call ar-option,D)
