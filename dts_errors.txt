@@ -1,0 +1,340 @@
+Creating build/arch/arm/boot/msm8974-sec-hlte-r05.dtb from arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r05.dts
+arch/arm/boot/dts/msm8974/skeleton.dtsi:12.9-17.4: Warning (unit_address_vs_reg): /memory: node has a reg or ranges property, but no unit name
+  also defined at arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:72.9-91.4
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:73.29-77.5: Warning (unit_address_vs_reg): /memory/secure_region: node has a reg or ranges property, but no unit name
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:79.25-83.5: Warning (unit_address_vs_reg): /memory/adsp_region: node has a reg or ranges property, but no unit name
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:85.29-89.5: Warning (unit_address_vs_reg): /memory/qsecom_region: node has a reg or ranges property, but no unit name
+arch/arm/boot/dts/msm8974/msm8974-v2-sec.dtsi:200.17-203.4: Warning (unit_address_vs_reg): /soc/qcom,cci@fda0C000/qcom,camera@6e: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-v2-sec.dtsi:205.17-208.4: Warning (unit_address_vs_reg): /soc/qcom,cci@fda0C000/qcom,camera@20: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-v2-sec.dtsi:210.17-213.4: Warning (unit_address_vs_reg): /soc/qcom,cci@fda0C000/qcom,camera@6c: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-v2-sec.dtsi:215.17-218.4: Warning (unit_address_vs_reg): /soc/qcom,cci@fda0C000/qcom,camera@90: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-smp2p.dtsi:13.19-19.4: Warning (unit_address_vs_reg): /soc/qcom,smp2p-modem: node has a reg or ranges property, but no unit name
+arch/arm/boot/dts/msm8974/msm8974-smp2p.dtsi:21.18-27.4: Warning (unit_address_vs_reg): /soc/qcom,smp2p-adsp: node has a reg or ranges property, but no unit name
+arch/arm/boot/dts/msm8974/msm8974-smp2p.dtsi:29.19-35.4: Warning (unit_address_vs_reg): /soc/qcom,smp2p-wcnss: node has a reg or ranges property, but no unit name
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:288.18-292.4: Warning (unit_address_vs_reg): /soc/rmtfs_sharedmem: node has a reg or ranges property, but no unit name
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:294.16-298.4: Warning (unit_address_vs_reg): /soc/dsp_sharedmem: node has a reg or ranges property, but no unit name
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:300.16-304.4: Warning (unit_address_vs_reg): /soc/mdm_sharedmem: node has a reg or ranges property, but no unit name
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:666.15-669.4: Warning (unit_address_vs_reg): /soc/spi@f9924000: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:671.15-674.4: Warning (unit_address_vs_reg): /soc/spi@f9925000: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:676.15-679.4: Warning (unit_address_vs_reg): /soc/spi@f9926000: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:681.15-684.4: Warning (unit_address_vs_reg): /soc/spi@f9927000: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:686.15-689.4: Warning (unit_address_vs_reg): /soc/spi@f9928000: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:691.15-693.4: Warning (unit_address_vs_reg): /soc/spi@f9963000: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:695.15-698.4: Warning (unit_address_vs_reg): /soc/spi@f9964000: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:700.15-703.4: Warning (unit_address_vs_reg): /soc/spi@f9965000: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:734.15-736.4: Warning (unit_address_vs_reg): /soc/spi@f9968000: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:858.8-910.4: Warning (unit_address_vs_reg): /soc/sound: node has a reg or ranges property, but no unit name
+  also defined at arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r05.dtsi:461.8-490.4
+arch/arm/boot/dts/msm8974/msm-pm8841.dtsi:242.56-263.5: Warning (unit_address_vs_reg): /soc/qcom,spmi@fc4c0000/qcom,pm8841@5/qcom,krait-regulator-pmic@2000: node has a unit name, but no reg property
+  also defined at arch/arm/boot/dts/msm8974/msm8974-v2-sec.dtsi:182.23-196.3
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:972.15-975.4: Warning (unit_address_vs_reg): /soc/i2c@f9926000: node has a unit name, but no reg property
+  also defined at arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r05.dtsi:329.15-331.4
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:1027.15-1030.4: Warning (unit_address_vs_reg): /soc/i2c@f9964000: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:2650.17-2654.4: Warning (unit_address_vs_reg): /soc/bimc_sharedmem: node has a reg or ranges property, but no unit name
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:2721.15-2726.4: Warning (unit_address_vs_reg): /soc/qcom,avtimer: node has a reg or ranges property, but no unit name
+arch/arm/boot/dts/msm8974/msm8974-v2-pm.dtsi:137.20-143.6: Warning (unit_address_vs_reg): /soc/qcom,lpm-levels/qcom,cpu-modes/qcom,cpu-mode@0: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-v2-pm.dtsi:145.20-151.6: Warning (unit_address_vs_reg): /soc/qcom,lpm-levels/qcom,cpu-modes/qcom,cpu-mode@1: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-v2-pm.dtsi:153.20-159.6: Warning (unit_address_vs_reg): /soc/qcom,lpm-levels/qcom,cpu-modes/qcom,cpu-mode@2: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-v2-pm.dtsi:161.20-167.6: Warning (unit_address_vs_reg): /soc/qcom,lpm-levels/qcom,cpu-modes/qcom,cpu-mode@3: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-v2-pm.dtsi:173.23-182.6: Warning (unit_address_vs_reg): /soc/qcom,lpm-levels/qcom,system-modes/qcom,system-mode@0: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-v2-pm.dtsi:184.23-193.6: Warning (unit_address_vs_reg): /soc/qcom,lpm-levels/qcom,system-modes/qcom,system-mode@1: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-max77803-hlte-r02.dtsi:22.9-43.4: Warning (unit_address_vs_reg): /soc/i2c@13: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r05.dtsi:78.9-107.4: Warning (unit_address_vs_reg): /soc/i2c@19: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r05.dtsi:109.9-131.4: Warning (unit_address_vs_reg): /soc/i2c@21: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r05.dtsi:133.9-155.4: Warning (unit_address_vs_reg): /soc/i2c@22: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r05.dtsi:157.9-165.4: Warning (unit_address_vs_reg): /soc/i2c@23: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-bus.dtsi:1146.22-1260.4: Warning (unit_address_format): /soc/msm-bimc@0xfc380000: unit name should not have leading "0x"
+arch/arm/boot/dts/msm8974/msm8974-sii8240_mhl-hlte-r05.dtsi:45.18-49.5: Warning (i2c_bus_reg): /soc/i2c@f9965000/sii8240disc@4D: I2C bus unit address format error, expected "4d"
+arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r05.dtsi:406.12-414.5: Warning (i2c_bus_reg): /soc/i2c@f9966000/pn547@2B: I2C bus unit address format error, expected "2b"
+arch/arm/boot/dts/msm8974/msm8974-v2-pm.dtsi:129.30-195.4: Warning (avoid_unnecessary_addr_size): /soc/qcom,lpm-levels: unnecessary #address-cells/#size-cells without "ranges" or child "reg" property
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:643.22-664.4: Warning (unique_unit_address): /soc/spi@f9923000: duplicate unit-address (also used in node /soc/i2c@f9923000)
+  also defined at arch/arm/boot/dts/msm8974/msm8974-camera-sensor-hlte-r02.dtsi:16.15-74.4
+  also defined at arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r05.dtsi:297.15-299.4
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:666.15-669.4: Warning (unique_unit_address): /soc/spi@f9924000: duplicate unit-address (also used in node /soc/i2c@f9924000)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:671.15-674.4: Warning (unique_unit_address): /soc/spi@f9925000: duplicate unit-address (also used in node /soc/i2c@f9925000)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:676.15-679.4: Warning (unique_unit_address): /soc/spi@f9926000: duplicate unit-address (also used in node /soc/i2c@f9926000)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:681.15-684.4: Warning (unique_unit_address): /soc/spi@f9927000: duplicate unit-address (also used in node /soc/i2c@f9927000)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:686.15-689.4: Warning (unique_unit_address): /soc/spi@f9928000: duplicate unit-address (also used in node /soc/i2c@f9928000)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:691.15-693.4: Warning (unique_unit_address): /soc/spi@f9963000: duplicate unit-address (also used in node /soc/i2c@f9963000)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:695.15-698.4: Warning (unique_unit_address): /soc/spi@f9964000: duplicate unit-address (also used in node /soc/i2c@f9964000)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:700.15-703.4: Warning (unique_unit_address): /soc/spi@f9965000: duplicate unit-address (also used in node /soc/i2c@f9965000)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:705.31-728.4: Warning (unique_unit_address): /soc/spi@f9966000: duplicate unit-address (also used in node /soc/i2c@f9966000)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:730.15-732.4: Warning (unique_unit_address): /soc/spi@f9967000: duplicate unit-address (also used in node /soc/i2c@f9967000)
+  also defined at arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r05.dtsi:426.23-459.4
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:734.15-736.4: Warning (unique_unit_address): /soc/spi@f9968000: duplicate unit-address (also used in node /soc/i2c@f9968000)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:260.24-286.4: Warning (unique_unit_address): /soc/usb@f9a55000: duplicate unit-address (also used in node /soc/qcom,ehci-host@f9a55000)
+arch/arm/boot/dts/msm8974/msm8974-coresight.dtsi:484.22-492.4: Warning (unique_unit_address): /soc/fuse@fc4be024: duplicate unit-address (also used in node /soc/jtagfuse@fc4be024)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:2327.30-2342.4: Warning (unique_unit_address): /soc/qcom,qcedev@fd440000: duplicate unit-address (also used in node /soc/qcom,qcrypto@fd440000)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:2327.30-2342.4: Warning (unique_unit_address): /soc/qcom,qcedev@fd440000: duplicate unit-address (also used in node /soc/qcom,qcrypto1@fd440000)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:2344.31-2363.4: Warning (unique_unit_address): /soc/qcom,qcrypto@fd440000: duplicate unit-address (also used in node /soc/qcom,qcrypto1@fd440000)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:239.18-244.4: Warning (unique_unit_address): /soc/serial@f995e000: duplicate unit-address (also used in node /soc/uart@f995e000)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:2550.20-2616.4: Warning (unique_unit_address): /soc/qcom,smem@fa00000: duplicate unit-address (also used in node /soc/qcom,ipc-spinlock@fa00000)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:2265.26-2289.4: Warning (unique_unit_address): /soc/qcom,cache_erp@f9012000: duplicate unit-address (also used in node /soc/qcom,spm@f9012000)
+arch/arm/boot/dts/msm8974/msm-pm8841.dtsi:158.18-177.5: Warning (unique_unit_address): /soc/qcom,spmi@fc4c0000/qcom,pm8841@5/regulator@2000: duplicate unit-address (also used in node /soc/qcom,spmi@fc4c0000/qcom,pm8841@5/qcom,krait-regulator-pmic@2000)
+arch/arm/boot/dts/msm8974/msm-pm8941-sec.dtsi:333.22-521.4: Warning (interrupts_property): /soc/qcom,spmi@fc4c0000/qcom,pm8941@0/gpios: Missing interrupt-controller or interrupt-map property
+  also defined at arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r05.dtsi:833.15-1078.3
+arch/arm/boot/dts/msm8974/msm-pm8941-sec.dtsi:333.22-521.4: Warning (interrupts_property): /soc/qcom,spmi@fc4c0000/qcom,pm8941@0/gpios: Missing #interrupt-cells in interrupt-parent
+  also defined at arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r05.dtsi:833.15-1078.3
+arch/arm/boot/dts/msm8974/msm-pm8941-sec.dtsi:333.22-521.4: Warning (interrupts_property): /soc/qcom,spmi@fc4c0000/qcom,pm8941@0/gpios: Missing interrupt-controller or interrupt-map property
+  also defined at arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r05.dtsi:833.15-1078.3
+arch/arm/boot/dts/msm8974/msm-pm8941-sec.dtsi:333.22-521.4: Warning (interrupts_property): /soc/qcom,spmi@fc4c0000/qcom,pm8941@0/gpios: Missing #interrupt-cells in interrupt-parent
+  also defined at arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r05.dtsi:833.15-1078.3
+arch/arm/boot/dts/msm8974/msm-pm8941-sec.dtsi:333.22-521.4: Warning (interrupts_property): /soc/qcom,spmi@fc4c0000/qcom,pm8941@0/gpios: Missing interrupt-controller or interrupt-map property
+  also defined at arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r05.dtsi:833.15-1078.3
+arch/arm/boot/dts/msm8974/msm-pm8941-sec.dtsi:333.22-521.4: Warning (interrupts_property): /soc/qcom,spmi@fc4c0000/qcom,pm8941@0/gpios: Missing #interrupt-cells in interrupt-parent
+  also defined at arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r05.dtsi:833.15-1078.3
+Creating build/arch/arm/boot/msm8974-sec-hlte-r06.dtb from arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r06.dts
+arch/arm/boot/dts/msm8974/skeleton.dtsi:12.9-17.4: Warning (unit_address_vs_reg): /memory: node has a reg or ranges property, but no unit name
+  also defined at arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:72.9-91.4
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:73.29-77.5: Warning (unit_address_vs_reg): /memory/secure_region: node has a reg or ranges property, but no unit name
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:79.25-83.5: Warning (unit_address_vs_reg): /memory/adsp_region: node has a reg or ranges property, but no unit name
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:85.29-89.5: Warning (unit_address_vs_reg): /memory/qsecom_region: node has a reg or ranges property, but no unit name
+arch/arm/boot/dts/msm8974/msm8974-v2-sec.dtsi:200.17-203.4: Warning (unit_address_vs_reg): /soc/qcom,cci@fda0C000/qcom,camera@6e: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-v2-sec.dtsi:205.17-208.4: Warning (unit_address_vs_reg): /soc/qcom,cci@fda0C000/qcom,camera@20: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-v2-sec.dtsi:210.17-213.4: Warning (unit_address_vs_reg): /soc/qcom,cci@fda0C000/qcom,camera@6c: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-v2-sec.dtsi:215.17-218.4: Warning (unit_address_vs_reg): /soc/qcom,cci@fda0C000/qcom,camera@90: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-smp2p.dtsi:13.19-19.4: Warning (unit_address_vs_reg): /soc/qcom,smp2p-modem: node has a reg or ranges property, but no unit name
+arch/arm/boot/dts/msm8974/msm8974-smp2p.dtsi:21.18-27.4: Warning (unit_address_vs_reg): /soc/qcom,smp2p-adsp: node has a reg or ranges property, but no unit name
+arch/arm/boot/dts/msm8974/msm8974-smp2p.dtsi:29.19-35.4: Warning (unit_address_vs_reg): /soc/qcom,smp2p-wcnss: node has a reg or ranges property, but no unit name
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:288.18-292.4: Warning (unit_address_vs_reg): /soc/rmtfs_sharedmem: node has a reg or ranges property, but no unit name
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:294.16-298.4: Warning (unit_address_vs_reg): /soc/dsp_sharedmem: node has a reg or ranges property, but no unit name
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:300.16-304.4: Warning (unit_address_vs_reg): /soc/mdm_sharedmem: node has a reg or ranges property, but no unit name
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:666.15-669.4: Warning (unit_address_vs_reg): /soc/spi@f9924000: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:671.15-674.4: Warning (unit_address_vs_reg): /soc/spi@f9925000: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:676.15-679.4: Warning (unit_address_vs_reg): /soc/spi@f9926000: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:681.15-684.4: Warning (unit_address_vs_reg): /soc/spi@f9927000: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:686.15-689.4: Warning (unit_address_vs_reg): /soc/spi@f9928000: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:691.15-693.4: Warning (unit_address_vs_reg): /soc/spi@f9963000: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:695.15-698.4: Warning (unit_address_vs_reg): /soc/spi@f9964000: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:700.15-703.4: Warning (unit_address_vs_reg): /soc/spi@f9965000: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:734.15-736.4: Warning (unit_address_vs_reg): /soc/spi@f9968000: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:858.8-910.4: Warning (unit_address_vs_reg): /soc/sound: node has a reg or ranges property, but no unit name
+  also defined at arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r06.dtsi:462.8-491.4
+arch/arm/boot/dts/msm8974/msm-pm8841.dtsi:242.56-263.5: Warning (unit_address_vs_reg): /soc/qcom,spmi@fc4c0000/qcom,pm8841@5/qcom,krait-regulator-pmic@2000: node has a unit name, but no reg property
+  also defined at arch/arm/boot/dts/msm8974/msm8974-v2-sec.dtsi:182.23-196.3
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:972.15-975.4: Warning (unit_address_vs_reg): /soc/i2c@f9926000: node has a unit name, but no reg property
+  also defined at arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r06.dtsi:330.15-332.4
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:1027.15-1030.4: Warning (unit_address_vs_reg): /soc/i2c@f9964000: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:2650.17-2654.4: Warning (unit_address_vs_reg): /soc/bimc_sharedmem: node has a reg or ranges property, but no unit name
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:2721.15-2726.4: Warning (unit_address_vs_reg): /soc/qcom,avtimer: node has a reg or ranges property, but no unit name
+arch/arm/boot/dts/msm8974/msm8974-v2-pm.dtsi:137.20-143.6: Warning (unit_address_vs_reg): /soc/qcom,lpm-levels/qcom,cpu-modes/qcom,cpu-mode@0: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-v2-pm.dtsi:145.20-151.6: Warning (unit_address_vs_reg): /soc/qcom,lpm-levels/qcom,cpu-modes/qcom,cpu-mode@1: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-v2-pm.dtsi:153.20-159.6: Warning (unit_address_vs_reg): /soc/qcom,lpm-levels/qcom,cpu-modes/qcom,cpu-mode@2: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-v2-pm.dtsi:161.20-167.6: Warning (unit_address_vs_reg): /soc/qcom,lpm-levels/qcom,cpu-modes/qcom,cpu-mode@3: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-v2-pm.dtsi:173.23-182.6: Warning (unit_address_vs_reg): /soc/qcom,lpm-levels/qcom,system-modes/qcom,system-mode@0: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-v2-pm.dtsi:184.23-193.6: Warning (unit_address_vs_reg): /soc/qcom,lpm-levels/qcom,system-modes/qcom,system-mode@1: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-max77803-hlte-r06.dtsi:22.9-43.4: Warning (unit_address_vs_reg): /soc/i2c@13: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r06.dtsi:79.9-108.4: Warning (unit_address_vs_reg): /soc/i2c@19: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r06.dtsi:110.9-132.4: Warning (unit_address_vs_reg): /soc/i2c@21: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r06.dtsi:134.9-156.4: Warning (unit_address_vs_reg): /soc/i2c@22: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r06.dtsi:158.9-166.4: Warning (unit_address_vs_reg): /soc/i2c@23: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-bus.dtsi:1146.22-1260.4: Warning (unit_address_format): /soc/msm-bimc@0xfc380000: unit name should not have leading "0x"
+arch/arm/boot/dts/msm8974/msm8974-sii8240_mhl-hlte-r06.dtsi:46.18-50.5: Warning (i2c_bus_reg): /soc/i2c@f9965000/sii8240disc@4D: I2C bus unit address format error, expected "4d"
+arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r06.dtsi:407.12-415.5: Warning (i2c_bus_reg): /soc/i2c@f9966000/pn547@2B: I2C bus unit address format error, expected "2b"
+arch/arm/boot/dts/msm8974/msm8974-v2-pm.dtsi:129.30-195.4: Warning (avoid_unnecessary_addr_size): /soc/qcom,lpm-levels: unnecessary #address-cells/#size-cells without "ranges" or child "reg" property
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:643.22-664.4: Warning (unique_unit_address): /soc/spi@f9923000: duplicate unit-address (also used in node /soc/i2c@f9923000)
+  also defined at arch/arm/boot/dts/msm8974/msm8974-camera-sensor-hlte-r02.dtsi:16.15-74.4
+  also defined at arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r06.dtsi:298.15-300.4
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:666.15-669.4: Warning (unique_unit_address): /soc/spi@f9924000: duplicate unit-address (also used in node /soc/i2c@f9924000)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:671.15-674.4: Warning (unique_unit_address): /soc/spi@f9925000: duplicate unit-address (also used in node /soc/i2c@f9925000)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:676.15-679.4: Warning (unique_unit_address): /soc/spi@f9926000: duplicate unit-address (also used in node /soc/i2c@f9926000)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:681.15-684.4: Warning (unique_unit_address): /soc/spi@f9927000: duplicate unit-address (also used in node /soc/i2c@f9927000)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:686.15-689.4: Warning (unique_unit_address): /soc/spi@f9928000: duplicate unit-address (also used in node /soc/i2c@f9928000)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:691.15-693.4: Warning (unique_unit_address): /soc/spi@f9963000: duplicate unit-address (also used in node /soc/i2c@f9963000)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:695.15-698.4: Warning (unique_unit_address): /soc/spi@f9964000: duplicate unit-address (also used in node /soc/i2c@f9964000)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:700.15-703.4: Warning (unique_unit_address): /soc/spi@f9965000: duplicate unit-address (also used in node /soc/i2c@f9965000)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:705.31-728.4: Warning (unique_unit_address): /soc/spi@f9966000: duplicate unit-address (also used in node /soc/i2c@f9966000)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:730.15-732.4: Warning (unique_unit_address): /soc/spi@f9967000: duplicate unit-address (also used in node /soc/i2c@f9967000)
+  also defined at arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r06.dtsi:427.23-460.4
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:734.15-736.4: Warning (unique_unit_address): /soc/spi@f9968000: duplicate unit-address (also used in node /soc/i2c@f9968000)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:260.24-286.4: Warning (unique_unit_address): /soc/usb@f9a55000: duplicate unit-address (also used in node /soc/qcom,ehci-host@f9a55000)
+arch/arm/boot/dts/msm8974/msm8974-coresight.dtsi:484.22-492.4: Warning (unique_unit_address): /soc/fuse@fc4be024: duplicate unit-address (also used in node /soc/jtagfuse@fc4be024)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:2327.30-2342.4: Warning (unique_unit_address): /soc/qcom,qcedev@fd440000: duplicate unit-address (also used in node /soc/qcom,qcrypto@fd440000)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:2327.30-2342.4: Warning (unique_unit_address): /soc/qcom,qcedev@fd440000: duplicate unit-address (also used in node /soc/qcom,qcrypto1@fd440000)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:2344.31-2363.4: Warning (unique_unit_address): /soc/qcom,qcrypto@fd440000: duplicate unit-address (also used in node /soc/qcom,qcrypto1@fd440000)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:239.18-244.4: Warning (unique_unit_address): /soc/serial@f995e000: duplicate unit-address (also used in node /soc/uart@f995e000)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:2550.20-2616.4: Warning (unique_unit_address): /soc/qcom,smem@fa00000: duplicate unit-address (also used in node /soc/qcom,ipc-spinlock@fa00000)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:2265.26-2289.4: Warning (unique_unit_address): /soc/qcom,cache_erp@f9012000: duplicate unit-address (also used in node /soc/qcom,spm@f9012000)
+arch/arm/boot/dts/msm8974/msm-pm8841.dtsi:158.18-177.5: Warning (unique_unit_address): /soc/qcom,spmi@fc4c0000/qcom,pm8841@5/regulator@2000: duplicate unit-address (also used in node /soc/qcom,spmi@fc4c0000/qcom,pm8841@5/qcom,krait-regulator-pmic@2000)
+arch/arm/boot/dts/msm8974/msm-pm8941-sec.dtsi:333.22-521.4: Warning (interrupts_property): /soc/qcom,spmi@fc4c0000/qcom,pm8941@0/gpios: Missing interrupt-controller or interrupt-map property
+  also defined at arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r06.dtsi:836.15-1081.3
+arch/arm/boot/dts/msm8974/msm-pm8941-sec.dtsi:333.22-521.4: Warning (interrupts_property): /soc/qcom,spmi@fc4c0000/qcom,pm8941@0/gpios: Missing #interrupt-cells in interrupt-parent
+  also defined at arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r06.dtsi:836.15-1081.3
+arch/arm/boot/dts/msm8974/msm-pm8941-sec.dtsi:333.22-521.4: Warning (interrupts_property): /soc/qcom,spmi@fc4c0000/qcom,pm8941@0/gpios: Missing interrupt-controller or interrupt-map property
+  also defined at arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r06.dtsi:836.15-1081.3
+arch/arm/boot/dts/msm8974/msm-pm8941-sec.dtsi:333.22-521.4: Warning (interrupts_property): /soc/qcom,spmi@fc4c0000/qcom,pm8941@0/gpios: Missing #interrupt-cells in interrupt-parent
+  also defined at arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r06.dtsi:836.15-1081.3
+arch/arm/boot/dts/msm8974/msm-pm8941-sec.dtsi:333.22-521.4: Warning (interrupts_property): /soc/qcom,spmi@fc4c0000/qcom,pm8941@0/gpios: Missing interrupt-controller or interrupt-map property
+  also defined at arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r06.dtsi:836.15-1081.3
+arch/arm/boot/dts/msm8974/msm-pm8941-sec.dtsi:333.22-521.4: Warning (interrupts_property): /soc/qcom,spmi@fc4c0000/qcom,pm8941@0/gpios: Missing #interrupt-cells in interrupt-parent
+  also defined at arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r06.dtsi:836.15-1081.3
+Creating build/arch/arm/boot/msm8974-sec-hlte-r07.dtb from arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r07.dts
+arch/arm/boot/dts/msm8974/skeleton.dtsi:12.9-17.4: Warning (unit_address_vs_reg): /memory: node has a reg or ranges property, but no unit name
+  also defined at arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:72.9-91.4
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:73.29-77.5: Warning (unit_address_vs_reg): /memory/secure_region: node has a reg or ranges property, but no unit name
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:79.25-83.5: Warning (unit_address_vs_reg): /memory/adsp_region: node has a reg or ranges property, but no unit name
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:85.29-89.5: Warning (unit_address_vs_reg): /memory/qsecom_region: node has a reg or ranges property, but no unit name
+arch/arm/boot/dts/msm8974/msm8974-v2-sec.dtsi:200.17-203.4: Warning (unit_address_vs_reg): /soc/qcom,cci@fda0C000/qcom,camera@6e: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-v2-sec.dtsi:205.17-208.4: Warning (unit_address_vs_reg): /soc/qcom,cci@fda0C000/qcom,camera@20: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-v2-sec.dtsi:210.17-213.4: Warning (unit_address_vs_reg): /soc/qcom,cci@fda0C000/qcom,camera@6c: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-v2-sec.dtsi:215.17-218.4: Warning (unit_address_vs_reg): /soc/qcom,cci@fda0C000/qcom,camera@90: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-smp2p.dtsi:13.19-19.4: Warning (unit_address_vs_reg): /soc/qcom,smp2p-modem: node has a reg or ranges property, but no unit name
+arch/arm/boot/dts/msm8974/msm8974-smp2p.dtsi:21.18-27.4: Warning (unit_address_vs_reg): /soc/qcom,smp2p-adsp: node has a reg or ranges property, but no unit name
+arch/arm/boot/dts/msm8974/msm8974-smp2p.dtsi:29.19-35.4: Warning (unit_address_vs_reg): /soc/qcom,smp2p-wcnss: node has a reg or ranges property, but no unit name
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:288.18-292.4: Warning (unit_address_vs_reg): /soc/rmtfs_sharedmem: node has a reg or ranges property, but no unit name
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:294.16-298.4: Warning (unit_address_vs_reg): /soc/dsp_sharedmem: node has a reg or ranges property, but no unit name
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:300.16-304.4: Warning (unit_address_vs_reg): /soc/mdm_sharedmem: node has a reg or ranges property, but no unit name
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:666.15-669.4: Warning (unit_address_vs_reg): /soc/spi@f9924000: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:671.15-674.4: Warning (unit_address_vs_reg): /soc/spi@f9925000: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:676.15-679.4: Warning (unit_address_vs_reg): /soc/spi@f9926000: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:681.15-684.4: Warning (unit_address_vs_reg): /soc/spi@f9927000: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:686.15-689.4: Warning (unit_address_vs_reg): /soc/spi@f9928000: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:691.15-693.4: Warning (unit_address_vs_reg): /soc/spi@f9963000: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:695.15-698.4: Warning (unit_address_vs_reg): /soc/spi@f9964000: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:700.15-703.4: Warning (unit_address_vs_reg): /soc/spi@f9965000: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:734.15-736.4: Warning (unit_address_vs_reg): /soc/spi@f9968000: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:858.8-910.4: Warning (unit_address_vs_reg): /soc/sound: node has a reg or ranges property, but no unit name
+  also defined at arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r07.dtsi:460.8-489.4
+arch/arm/boot/dts/msm8974/msm-pm8841.dtsi:242.56-263.5: Warning (unit_address_vs_reg): /soc/qcom,spmi@fc4c0000/qcom,pm8841@5/qcom,krait-regulator-pmic@2000: node has a unit name, but no reg property
+  also defined at arch/arm/boot/dts/msm8974/msm8974-v2-sec.dtsi:182.23-196.3
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:972.15-975.4: Warning (unit_address_vs_reg): /soc/i2c@f9926000: node has a unit name, but no reg property
+  also defined at arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r07.dtsi:328.15-330.4
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:1027.15-1030.4: Warning (unit_address_vs_reg): /soc/i2c@f9964000: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:2650.17-2654.4: Warning (unit_address_vs_reg): /soc/bimc_sharedmem: node has a reg or ranges property, but no unit name
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:2721.15-2726.4: Warning (unit_address_vs_reg): /soc/qcom,avtimer: node has a reg or ranges property, but no unit name
+arch/arm/boot/dts/msm8974/msm8974-v2-pm.dtsi:137.20-143.6: Warning (unit_address_vs_reg): /soc/qcom,lpm-levels/qcom,cpu-modes/qcom,cpu-mode@0: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-v2-pm.dtsi:145.20-151.6: Warning (unit_address_vs_reg): /soc/qcom,lpm-levels/qcom,cpu-modes/qcom,cpu-mode@1: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-v2-pm.dtsi:153.20-159.6: Warning (unit_address_vs_reg): /soc/qcom,lpm-levels/qcom,cpu-modes/qcom,cpu-mode@2: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-v2-pm.dtsi:161.20-167.6: Warning (unit_address_vs_reg): /soc/qcom,lpm-levels/qcom,cpu-modes/qcom,cpu-mode@3: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-v2-pm.dtsi:173.23-182.6: Warning (unit_address_vs_reg): /soc/qcom,lpm-levels/qcom,system-modes/qcom,system-mode@0: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-v2-pm.dtsi:184.23-193.6: Warning (unit_address_vs_reg): /soc/qcom,lpm-levels/qcom,system-modes/qcom,system-mode@1: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-max77803-hlte-r06.dtsi:22.9-43.4: Warning (unit_address_vs_reg): /soc/i2c@13: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r07.dtsi:79.9-108.4: Warning (unit_address_vs_reg): /soc/i2c@19: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r07.dtsi:110.9-133.4: Warning (unit_address_vs_reg): /soc/i2c@21: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r07.dtsi:135.9-155.4: Warning (unit_address_vs_reg): /soc/i2c@22: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r07.dtsi:157.9-164.4: Warning (unit_address_vs_reg): /soc/i2c@23: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-bus.dtsi:1146.22-1260.4: Warning (unit_address_format): /soc/msm-bimc@0xfc380000: unit name should not have leading "0x"
+arch/arm/boot/dts/msm8974/msm8974-sii8240_mhl-hlte-r06.dtsi:46.18-50.5: Warning (i2c_bus_reg): /soc/i2c@f9965000/sii8240disc@4D: I2C bus unit address format error, expected "4d"
+arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r07.dtsi:405.12-413.5: Warning (i2c_bus_reg): /soc/i2c@f9966000/pn547@2B: I2C bus unit address format error, expected "2b"
+arch/arm/boot/dts/msm8974/msm8974-v2-pm.dtsi:129.30-195.4: Warning (avoid_unnecessary_addr_size): /soc/qcom,lpm-levels: unnecessary #address-cells/#size-cells without "ranges" or child "reg" property
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:643.22-664.4: Warning (unique_unit_address): /soc/spi@f9923000: duplicate unit-address (also used in node /soc/i2c@f9923000)
+  also defined at arch/arm/boot/dts/msm8974/msm8974-camera-sensor-hlte-r02.dtsi:16.15-74.4
+  also defined at arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r07.dtsi:296.15-298.4
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:666.15-669.4: Warning (unique_unit_address): /soc/spi@f9924000: duplicate unit-address (also used in node /soc/i2c@f9924000)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:671.15-674.4: Warning (unique_unit_address): /soc/spi@f9925000: duplicate unit-address (also used in node /soc/i2c@f9925000)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:676.15-679.4: Warning (unique_unit_address): /soc/spi@f9926000: duplicate unit-address (also used in node /soc/i2c@f9926000)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:681.15-684.4: Warning (unique_unit_address): /soc/spi@f9927000: duplicate unit-address (also used in node /soc/i2c@f9927000)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:686.15-689.4: Warning (unique_unit_address): /soc/spi@f9928000: duplicate unit-address (also used in node /soc/i2c@f9928000)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:691.15-693.4: Warning (unique_unit_address): /soc/spi@f9963000: duplicate unit-address (also used in node /soc/i2c@f9963000)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:695.15-698.4: Warning (unique_unit_address): /soc/spi@f9964000: duplicate unit-address (also used in node /soc/i2c@f9964000)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:700.15-703.4: Warning (unique_unit_address): /soc/spi@f9965000: duplicate unit-address (also used in node /soc/i2c@f9965000)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:705.31-728.4: Warning (unique_unit_address): /soc/spi@f9966000: duplicate unit-address (also used in node /soc/i2c@f9966000)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:730.15-732.4: Warning (unique_unit_address): /soc/spi@f9967000: duplicate unit-address (also used in node /soc/i2c@f9967000)
+  also defined at arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r07.dtsi:425.23-458.4
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:734.15-736.4: Warning (unique_unit_address): /soc/spi@f9968000: duplicate unit-address (also used in node /soc/i2c@f9968000)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:260.24-286.4: Warning (unique_unit_address): /soc/usb@f9a55000: duplicate unit-address (also used in node /soc/qcom,ehci-host@f9a55000)
+arch/arm/boot/dts/msm8974/msm8974-coresight.dtsi:484.22-492.4: Warning (unique_unit_address): /soc/fuse@fc4be024: duplicate unit-address (also used in node /soc/jtagfuse@fc4be024)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:2327.30-2342.4: Warning (unique_unit_address): /soc/qcom,qcedev@fd440000: duplicate unit-address (also used in node /soc/qcom,qcrypto@fd440000)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:2327.30-2342.4: Warning (unique_unit_address): /soc/qcom,qcedev@fd440000: duplicate unit-address (also used in node /soc/qcom,qcrypto1@fd440000)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:2344.31-2363.4: Warning (unique_unit_address): /soc/qcom,qcrypto@fd440000: duplicate unit-address (also used in node /soc/qcom,qcrypto1@fd440000)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:239.18-244.4: Warning (unique_unit_address): /soc/serial@f995e000: duplicate unit-address (also used in node /soc/uart@f995e000)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:2550.20-2616.4: Warning (unique_unit_address): /soc/qcom,smem@fa00000: duplicate unit-address (also used in node /soc/qcom,ipc-spinlock@fa00000)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:2265.26-2289.4: Warning (unique_unit_address): /soc/qcom,cache_erp@f9012000: duplicate unit-address (also used in node /soc/qcom,spm@f9012000)
+arch/arm/boot/dts/msm8974/msm-pm8841.dtsi:158.18-177.5: Warning (unique_unit_address): /soc/qcom,spmi@fc4c0000/qcom,pm8841@5/regulator@2000: duplicate unit-address (also used in node /soc/qcom,spmi@fc4c0000/qcom,pm8841@5/qcom,krait-regulator-pmic@2000)
+arch/arm/boot/dts/msm8974/msm-pm8941-sec.dtsi:333.22-521.4: Warning (interrupts_property): /soc/qcom,spmi@fc4c0000/qcom,pm8941@0/gpios: Missing interrupt-controller or interrupt-map property
+  also defined at arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r07.dtsi:834.15-1079.3
+arch/arm/boot/dts/msm8974/msm-pm8941-sec.dtsi:333.22-521.4: Warning (interrupts_property): /soc/qcom,spmi@fc4c0000/qcom,pm8941@0/gpios: Missing #interrupt-cells in interrupt-parent
+  also defined at arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r07.dtsi:834.15-1079.3
+arch/arm/boot/dts/msm8974/msm-pm8941-sec.dtsi:333.22-521.4: Warning (interrupts_property): /soc/qcom,spmi@fc4c0000/qcom,pm8941@0/gpios: Missing interrupt-controller or interrupt-map property
+  also defined at arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r07.dtsi:834.15-1079.3
+arch/arm/boot/dts/msm8974/msm-pm8941-sec.dtsi:333.22-521.4: Warning (interrupts_property): /soc/qcom,spmi@fc4c0000/qcom,pm8941@0/gpios: Missing #interrupt-cells in interrupt-parent
+  also defined at arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r07.dtsi:834.15-1079.3
+arch/arm/boot/dts/msm8974/msm-pm8941-sec.dtsi:333.22-521.4: Warning (interrupts_property): /soc/qcom,spmi@fc4c0000/qcom,pm8941@0/gpios: Missing interrupt-controller or interrupt-map property
+  also defined at arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r07.dtsi:834.15-1079.3
+arch/arm/boot/dts/msm8974/msm-pm8941-sec.dtsi:333.22-521.4: Warning (interrupts_property): /soc/qcom,spmi@fc4c0000/qcom,pm8941@0/gpios: Missing #interrupt-cells in interrupt-parent
+  also defined at arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r07.dtsi:834.15-1079.3
+Creating build/arch/arm/boot/msm8974-sec-hlte-r09.dtb from arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r09.dts
+arch/arm/boot/dts/msm8974/skeleton.dtsi:12.9-17.4: Warning (unit_address_vs_reg): /memory: node has a reg or ranges property, but no unit name
+  also defined at arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:72.9-91.4
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:73.29-77.5: Warning (unit_address_vs_reg): /memory/secure_region: node has a reg or ranges property, but no unit name
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:79.25-83.5: Warning (unit_address_vs_reg): /memory/adsp_region: node has a reg or ranges property, but no unit name
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:85.29-89.5: Warning (unit_address_vs_reg): /memory/qsecom_region: node has a reg or ranges property, but no unit name
+arch/arm/boot/dts/msm8974/msm8974-v2-sec.dtsi:200.17-203.4: Warning (unit_address_vs_reg): /soc/qcom,cci@fda0C000/qcom,camera@6e: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-v2-sec.dtsi:205.17-208.4: Warning (unit_address_vs_reg): /soc/qcom,cci@fda0C000/qcom,camera@20: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-v2-sec.dtsi:210.17-213.4: Warning (unit_address_vs_reg): /soc/qcom,cci@fda0C000/qcom,camera@6c: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-v2-sec.dtsi:215.17-218.4: Warning (unit_address_vs_reg): /soc/qcom,cci@fda0C000/qcom,camera@90: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-smp2p.dtsi:13.19-19.4: Warning (unit_address_vs_reg): /soc/qcom,smp2p-modem: node has a reg or ranges property, but no unit name
+arch/arm/boot/dts/msm8974/msm8974-smp2p.dtsi:21.18-27.4: Warning (unit_address_vs_reg): /soc/qcom,smp2p-adsp: node has a reg or ranges property, but no unit name
+arch/arm/boot/dts/msm8974/msm8974-smp2p.dtsi:29.19-35.4: Warning (unit_address_vs_reg): /soc/qcom,smp2p-wcnss: node has a reg or ranges property, but no unit name
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:288.18-292.4: Warning (unit_address_vs_reg): /soc/rmtfs_sharedmem: node has a reg or ranges property, but no unit name
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:294.16-298.4: Warning (unit_address_vs_reg): /soc/dsp_sharedmem: node has a reg or ranges property, but no unit name
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:300.16-304.4: Warning (unit_address_vs_reg): /soc/mdm_sharedmem: node has a reg or ranges property, but no unit name
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:666.15-669.4: Warning (unit_address_vs_reg): /soc/spi@f9924000: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:671.15-674.4: Warning (unit_address_vs_reg): /soc/spi@f9925000: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:676.15-679.4: Warning (unit_address_vs_reg): /soc/spi@f9926000: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:681.15-684.4: Warning (unit_address_vs_reg): /soc/spi@f9927000: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:686.15-689.4: Warning (unit_address_vs_reg): /soc/spi@f9928000: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:691.15-693.4: Warning (unit_address_vs_reg): /soc/spi@f9963000: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:695.15-698.4: Warning (unit_address_vs_reg): /soc/spi@f9964000: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:700.15-703.4: Warning (unit_address_vs_reg): /soc/spi@f9965000: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:734.15-736.4: Warning (unit_address_vs_reg): /soc/spi@f9968000: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:858.8-910.4: Warning (unit_address_vs_reg): /soc/sound: node has a reg or ranges property, but no unit name
+  also defined at arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r09.dtsi:470.8-499.4
+arch/arm/boot/dts/msm8974/msm-pm8841.dtsi:242.56-263.5: Warning (unit_address_vs_reg): /soc/qcom,spmi@fc4c0000/qcom,pm8841@5/qcom,krait-regulator-pmic@2000: node has a unit name, but no reg property
+  also defined at arch/arm/boot/dts/msm8974/msm8974-v2-sec.dtsi:182.23-196.3
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:972.15-975.4: Warning (unit_address_vs_reg): /soc/i2c@f9926000: node has a unit name, but no reg property
+  also defined at arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r09.dtsi:330.15-332.4
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:1027.15-1030.4: Warning (unit_address_vs_reg): /soc/i2c@f9964000: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:2650.17-2654.4: Warning (unit_address_vs_reg): /soc/bimc_sharedmem: node has a reg or ranges property, but no unit name
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:2721.15-2726.4: Warning (unit_address_vs_reg): /soc/qcom,avtimer: node has a reg or ranges property, but no unit name
+arch/arm/boot/dts/msm8974/msm8974-v2-pm.dtsi:137.20-143.6: Warning (unit_address_vs_reg): /soc/qcom,lpm-levels/qcom,cpu-modes/qcom,cpu-mode@0: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-v2-pm.dtsi:145.20-151.6: Warning (unit_address_vs_reg): /soc/qcom,lpm-levels/qcom,cpu-modes/qcom,cpu-mode@1: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-v2-pm.dtsi:153.20-159.6: Warning (unit_address_vs_reg): /soc/qcom,lpm-levels/qcom,cpu-modes/qcom,cpu-mode@2: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-v2-pm.dtsi:161.20-167.6: Warning (unit_address_vs_reg): /soc/qcom,lpm-levels/qcom,cpu-modes/qcom,cpu-mode@3: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-v2-pm.dtsi:173.23-182.6: Warning (unit_address_vs_reg): /soc/qcom,lpm-levels/qcom,system-modes/qcom,system-mode@0: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-v2-pm.dtsi:184.23-193.6: Warning (unit_address_vs_reg): /soc/qcom,lpm-levels/qcom,system-modes/qcom,system-mode@1: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-max77803-hlte-r06.dtsi:22.9-43.4: Warning (unit_address_vs_reg): /soc/i2c@13: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r09.dtsi:78.9-107.4: Warning (unit_address_vs_reg): /soc/i2c@19: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r09.dtsi:109.9-132.4: Warning (unit_address_vs_reg): /soc/i2c@21: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r09.dtsi:134.9-156.4: Warning (unit_address_vs_reg): /soc/i2c@22: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r09.dtsi:158.9-166.4: Warning (unit_address_vs_reg): /soc/i2c@23: node has a unit name, but no reg property
+arch/arm/boot/dts/msm8974/msm8974-bus.dtsi:1146.22-1260.4: Warning (unit_address_format): /soc/msm-bimc@0xfc380000: unit name should not have leading "0x"
+arch/arm/boot/dts/msm8974/msm8974-sii8240_mhl-hlte-r06.dtsi:46.18-50.5: Warning (i2c_bus_reg): /soc/i2c@f9965000/sii8240disc@4D: I2C bus unit address format error, expected "4d"
+arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r09.dtsi:415.12-423.5: Warning (i2c_bus_reg): /soc/i2c@f9966000/pn547@2B: I2C bus unit address format error, expected "2b"
+arch/arm/boot/dts/msm8974/msm8974-v2-pm.dtsi:129.30-195.4: Warning (avoid_unnecessary_addr_size): /soc/qcom,lpm-levels: unnecessary #address-cells/#size-cells without "ranges" or child "reg" property
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:643.22-664.4: Warning (unique_unit_address): /soc/spi@f9923000: duplicate unit-address (also used in node /soc/i2c@f9923000)
+  also defined at arch/arm/boot/dts/msm8974/msm8974-camera-sensor-hlte-r02.dtsi:16.15-74.4
+  also defined at arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r09.dtsi:298.15-300.4
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:666.15-669.4: Warning (unique_unit_address): /soc/spi@f9924000: duplicate unit-address (also used in node /soc/i2c@f9924000)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:671.15-674.4: Warning (unique_unit_address): /soc/spi@f9925000: duplicate unit-address (also used in node /soc/i2c@f9925000)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:676.15-679.4: Warning (unique_unit_address): /soc/spi@f9926000: duplicate unit-address (also used in node /soc/i2c@f9926000)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:681.15-684.4: Warning (unique_unit_address): /soc/spi@f9927000: duplicate unit-address (also used in node /soc/i2c@f9927000)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:686.15-689.4: Warning (unique_unit_address): /soc/spi@f9928000: duplicate unit-address (also used in node /soc/i2c@f9928000)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:691.15-693.4: Warning (unique_unit_address): /soc/spi@f9963000: duplicate unit-address (also used in node /soc/i2c@f9963000)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:695.15-698.4: Warning (unique_unit_address): /soc/spi@f9964000: duplicate unit-address (also used in node /soc/i2c@f9964000)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:700.15-703.4: Warning (unique_unit_address): /soc/spi@f9965000: duplicate unit-address (also used in node /soc/i2c@f9965000)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:705.31-728.4: Warning (unique_unit_address): /soc/spi@f9966000: duplicate unit-address (also used in node /soc/i2c@f9966000)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:730.15-732.4: Warning (unique_unit_address): /soc/spi@f9967000: duplicate unit-address (also used in node /soc/i2c@f9967000)
+  also defined at arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r09.dtsi:435.23-468.4
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:734.15-736.4: Warning (unique_unit_address): /soc/spi@f9968000: duplicate unit-address (also used in node /soc/i2c@f9968000)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:260.24-286.4: Warning (unique_unit_address): /soc/usb@f9a55000: duplicate unit-address (also used in node /soc/qcom,ehci-host@f9a55000)
+arch/arm/boot/dts/msm8974/msm8974-coresight.dtsi:484.22-492.4: Warning (unique_unit_address): /soc/fuse@fc4be024: duplicate unit-address (also used in node /soc/jtagfuse@fc4be024)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:2327.30-2342.4: Warning (unique_unit_address): /soc/qcom,qcedev@fd440000: duplicate unit-address (also used in node /soc/qcom,qcrypto@fd440000)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:2327.30-2342.4: Warning (unique_unit_address): /soc/qcom,qcedev@fd440000: duplicate unit-address (also used in node /soc/qcom,qcrypto1@fd440000)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:2344.31-2363.4: Warning (unique_unit_address): /soc/qcom,qcrypto@fd440000: duplicate unit-address (also used in node /soc/qcom,qcrypto1@fd440000)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:239.18-244.4: Warning (unique_unit_address): /soc/serial@f995e000: duplicate unit-address (also used in node /soc/uart@f995e000)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:2550.20-2616.4: Warning (unique_unit_address): /soc/qcom,smem@fa00000: duplicate unit-address (also used in node /soc/qcom,ipc-spinlock@fa00000)
+arch/arm/boot/dts/msm8974/msm8974-sec.dtsi:2265.26-2289.4: Warning (unique_unit_address): /soc/qcom,cache_erp@f9012000: duplicate unit-address (also used in node /soc/qcom,spm@f9012000)
+arch/arm/boot/dts/msm8974/msm-pm8841.dtsi:158.18-177.5: Warning (unique_unit_address): /soc/qcom,spmi@fc4c0000/qcom,pm8841@5/regulator@2000: duplicate unit-address (also used in node /soc/qcom,spmi@fc4c0000/qcom,pm8841@5/qcom,krait-regulator-pmic@2000)
+arch/arm/boot/dts/msm8974/msm-pm8941-sec.dtsi:333.22-521.4: Warning (interrupts_property): /soc/qcom,spmi@fc4c0000/qcom,pm8941@0/gpios: Missing interrupt-controller or interrupt-map property
+  also defined at arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r09.dtsi:844.15-1089.3
+arch/arm/boot/dts/msm8974/msm-pm8941-sec.dtsi:333.22-521.4: Warning (interrupts_property): /soc/qcom,spmi@fc4c0000/qcom,pm8941@0/gpios: Missing #interrupt-cells in interrupt-parent
+  also defined at arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r09.dtsi:844.15-1089.3
+arch/arm/boot/dts/msm8974/msm-pm8941-sec.dtsi:333.22-521.4: Warning (interrupts_property): /soc/qcom,spmi@fc4c0000/qcom,pm8941@0/gpios: Missing interrupt-controller or interrupt-map property
+  also defined at arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r09.dtsi:844.15-1089.3
+arch/arm/boot/dts/msm8974/msm-pm8941-sec.dtsi:333.22-521.4: Warning (interrupts_property): /soc/qcom,spmi@fc4c0000/qcom,pm8941@0/gpios: Missing #interrupt-cells in interrupt-parent
+  also defined at arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r09.dtsi:844.15-1089.3
+arch/arm/boot/dts/msm8974/msm-pm8941-sec.dtsi:333.22-521.4: Warning (interrupts_property): /soc/qcom,spmi@fc4c0000/qcom,pm8941@0/gpios: Missing interrupt-controller or interrupt-map property
+  also defined at arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r09.dtsi:844.15-1089.3
+arch/arm/boot/dts/msm8974/msm-pm8941-sec.dtsi:333.22-521.4: Warning (interrupts_property): /soc/qcom,spmi@fc4c0000/qcom,pm8941@0/gpios: Missing #interrupt-cells in interrupt-parent
+  also defined at arch/arm/boot/dts/msm8974/msm8974-sec-hlte-r09.dtsi:844.15-1089.3

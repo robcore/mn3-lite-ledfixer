@@ -1,0 +1,13 @@
+    CURVAL=$(busybox cat /sys/kernel/sound_control/)
+    if [ -n "$2" ]
+    then
+        if [ "$2" = "$CURVAL" ]
+        then
+            busybox cat /sys/kernel/sound_control/
+        else
+            busybox echo "$2" > /sys/kernel/sound_control/
+            busybox cat /sys/kernel/sound_control/
+        fi
+    else
+        busybox cat /sys/kernel/sound_control/
+    fi

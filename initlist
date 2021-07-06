@@ -1,0 +1,8 @@
+mkdir /firmware 0771 system system
+mkdir /firmware-modem 0771 system system
+mkdir /persist/data 0700 system system
+mkdir /data/tombstones 0771 system system
+mkdir /tombstones/modem 0771 system system
+mkdir /tombstones/lpass 0771 system system
+mkdir /tombstones/wcnss 0771 system system
+mkdir /tombstones/dsps 0771 system system

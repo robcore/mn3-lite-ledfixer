@@ -1,0 +1,107 @@
+[0]  	0xEC,
+[1]  	0x00, //roi ctrl
+[2]  	0x00, //roi0 x start
+[3]  	0x00,
+[4]  	0x00, //roi0 x end
+[5]  	0x00,
+[6]  	0x00, //roi0 y start
+[7]  	0x00,
+[8]  	0x00, //roi0 y end
+[9]  	0x00,
+[10]  	0x00, //roi1 x strat
+[11]  	0x00,
+[12]  	0x00, //roi1 x end
+[13]  	0x00,
+[14]  	0x00, //roi1 y start
+[15]  	0x00,
+[16]  	0x00, //roi1 y end
+[17]  	0x00,
+[18]  	0x00, //scr Cr Yb
+[19]  	0xff, //scr Rr Bb
+[20]  	0xff, //scr Cg Yg
+[21]  	0x00, //scr Rg Bg
+[22]  	0xff, //scr Cb Yr
+[23]  	0x00, //scr Rb Br
+[24]  	0xff, //scr Mr Mb
+[25]  	0x00, //scr Gr Gb
+[26]  	0x00, //scr Mg Mg
+[27]  	0xff, //scr Gg Gg
+[28]  	0xff, //scr Mb Mr
+[29]  	0x00, //scr Gb Gr
+[30]  	0xff, //scr Yr Cb
+[31]  	0x00, //scr Br Rb
+[32]  	0xff, //scr Yg Cg
+[33]  	0x00, //scr Bg Rg
+[34]  	0x00, //scr Yb Cr
+[35]  	0xff, //scr Bb Rr
+[36]  	0xff, //scr Wr Wb
+[37]  	0x00, //scr Kr Kb
+[38]  	0xff, //scr Wg Wg
+[39]  	0x00, //scr Kg Kg
+[40]  	0xff, //scr Wb Wr
+[41]  	0x00, //scr Kb Kr
+[42]  	0x00, //curve 1 b
+[43]  	0x20, //curve 1 a
+[44]  	0x00, //curve 2 b
+[45]  	0x20, //curve 2 a
+[46]  	0x00, //curve 3 b
+[47]  	0x20, //curve 3 a
+[48]  	0x00, //curve 4 b
+[49]  	0x20, //curve 4 a
+[50]  	0x02, //curve 5 b
+[51]  	0x1b, //curve 5 a
+[52]  	0x02, //curve 6 b
+[53]  	0x1b, //curve 6 a
+[54]  	0x02, //curve 7 b
+[55]  	0x1b, //curve 7 a
+[56]  	0x01, //curve 8 b
+[57]  	0x1b, //curve 8 a
+[58]  	0x09, //curve 9 b
+[59]  	0xa6, //curve 9 a
+[60]  	0x09, //curve10 b
+[61]  	0xa6, //curve10 a
+[62]  	0x09, //curve11 b
+[63]  	0xa6, //curve11 a
+[64]  	0x09, //curve12 b
+[65]  	0xa6, //curve12 a
+[66]  	0x00, //curve13 b
+[67]  	0x20, //curve13 a
+[68]  	0x00, //curve14 b
+[69]  	0x20, //curve14 a
+[70]  	0x00, //curve15 b
+[71]  	0x20, //curve15 a
+[72]  	0x00, //curve16 b
+[73]  	0x20, //curve16 a
+[74]  	0x00, //curve17 b
+[75]  	0x20, //curve17 a
+[76]  	0x00, //curve18 b
+[77]  	0x20, //curve18 a
+[78]  	0x00, //curve19 b
+[79]  	0x20, //curve19 a
+[80]  	0x00, //curve20 b
+[81]  	0x20, //curve20 a
+[82]  	0x00, //curve21 b
+[83]  	0x20, //curve21 a
+[84]  	0x00, //curve22 b
+[85]  	0x20, //curve22 a
+[86]  	0x00, //curve23 b
+[87]  	0x20, //curve23 a
+[88]  	0x00, //curve24 b
+[89]  	0xFF, //curve24 a
+[90]  	0x04, //cc r1 0.08x
+[91]  	0x39,
+[92]  	0x1f, //cc r2
+[93]  	0xd0,
+[94]  	0x1f, //cc r3
+[95]  	0xf7,
+[96]  	0x1f, //cc g1
+[97]  	0xe8,
+[98]  	0x04, //cc g2
+[99]  	0x21,
+[100]  	0x1f, //cc g3
+[101]  	0xf7,
+[102]  	0x1f, //cc b1
+[103]  	0xe8,
+[104]  	0x1f, //cc b2
+[105]  	0xd0,
+[106]  	0x04, //cc b3

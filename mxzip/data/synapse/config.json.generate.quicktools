@@ -1,0 +1,99 @@
+cat << CTAG
+    {
+    name:QUICKTOOLS,
+        elements:[
+            { SLiveLabel:{
+                refresh:0,
+                action:"getinfo label"
+            }},
+            { SSpacer:{
+                height: 1
+            }},
+            { STitleBar:{
+                title:"Battery Current"
+            }},
+            { SLiveLabel:{
+                refresh:1000,
+                action:"getinfo current_now"
+            }},
+            { SSpacer:{
+                height: 1
+            }},
+            { STitleBar:{
+                title:"HBM Control"
+            }},
+            { SButton:{
+                label:"HBM Toggle",
+                action:"mdniecontrol force_500cd"
+            }},
+            { SLiveLabel:{
+                action:"mdniecontrol show_force_500cd"
+            }},
+            { SSpacer:{
+                height: 1
+            }},
+            { STitleBar:{
+                title:"Reboot SystemUI"
+            }},
+            { SDescription:{
+                description:"Workaround to fix lockscreen problems on boot."
+            }},
+            { SButton:{
+                label:"Reboot SystemUI",
+                action:"utils killsysui"
+            }},
+            { SSpacer:{
+                height: 1
+            }},
+            { STitleBar:{
+                title:"Restart ViperFX"
+            }},
+            { SDescription:{
+                description:"Workaround to fix ViperFX after clearing cache breaks it."
+            }},
+            { SButton:{
+                label:"Restart ViperFX",
+                action:"utils killviper"
+            }},
+            { SSpacer:{
+                height: 1
+            }},
+            { STitleBar:{
+                title:"Quick Memory Dropper"
+            }},
+            { SDescription:{
+                description:"Easy access to drop unused memory accounted by the kernel."
+            }},
+            { SButton:{
+                label:"Dropper",
+                action:"utils dropper"
+            }},
+            { SSpacer:{
+                height: 1
+            }},
+            { STitleBar:{
+                title:"TCP Route Cache Flush"
+            }},
+            { SDescription:{
+                description:"Easy access to flush tcp route cache."
+            }},
+            { SButton:{
+                label:"TCP Flush",
+                action:"utils flushtcp"
+            }},
+            { SSpacer:{
+                height: 1
+            }},
+            { STitleBar:{
+                title:"TinyMix Dump"
+            }},
+            { SDescription:{
+                description:"Dump tinymix output to /storage/extSdCard/mx3_tmix/tmix-date.txt."
+            }},
+            { SButton:{
+                label:"Tinymix Dump",
+                action:"utils tmixdump"
+            }},
+        ]
+    }
+CTAG

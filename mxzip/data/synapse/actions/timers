@@ -1,0 +1,198 @@
+#!/system/bin/sh
+
+if [ "$1" = "sleeptimer" ]
+then
+    if [ -f "/data/synapse/stemp/sleeplate.lock" ]
+    then
+        busybox echo "Sleeptimer already Running"
+    else
+        busybox echo 'RUN' > /data/synapse/stemp/sleeplate.lock
+        /sbin/sleepcond &
+        busybox echo "Sleeptimer Running"
+    fi
+elif [ "$1" = "cancelsleeptimer" ]
+then
+    if [ -f "/data/synapse/stemp/sleeplate.lock" ]
+    then
+        busybox rm "/data/synapse/stemp/sleeplate.lock"
+        busybox echo "Sleeptimer Cancelled"
+    else
+        busybox echo "Sleeptimer Not Running"
+    fi
+elif [ "$1" = "sleephours" ]
+then
+    if [ ! -f "/data/synapse/stemp/sleephours" ] || [ -z "$(busybox cat /data/synapse/stemp/sleephours)" ]
+    then
+        busybox echo "1" > /data/synapse/stemp/sleephours
+    fi
+    CURVAL="$(busybox cat /data/synapse/stemp/sleephours)"
+    if [ -n "$2" ]
+    then
+        if [ "$2" = "$CURVAL" ] || [ -f "/data/synapse/stemp/sleeplate.lock" ]
+        then
+            busybox echo "$CURVAL"
+        else
+            busybox echo "$2" > /data/synapse/stemp/sleephours
+            busybox cat /data/synapse/stemp/sleephours
+        fi
+    else
+        busybox echo "$CURVAL"
+    fi
+elif [ "$1" = "sleepmins" ]
+then
+    if [ ! -f "/data/synapse/stemp/sleepmins" ] || [ -z "$(busybox cat /data/synapse/stemp/sleepmins)" ] || [ "$(busybox cat /data/synapse/stemp/sleephours)" = "12" ]
+    then
+        busybox echo "0" > /data/synapse/stemp/sleepmins
+    fi
+    CURVAL="$(busybox cat /data/synapse/stemp/sleepmins)"
+    if [ -n "$2" ]
+    then
+        if [ "$2" = "$CURVAL" ] || [ -f "/data/synapse/stemp/sleeplate.lock" ]
+        then
+            busybox echo "$CURVAL"
+        else
+            busybox echo "$2" > /data/synapse/stemp/sleepmins
+            busybox cat /data/synapse/stemp/sleepmins
+        fi
+    else
+        busybox echo "$CURVAL"
+    fi
+elif [ "$1" = "sleepclock" ]
+then
+    if [ ! -f "/data/synapse/stemp/sleepclock" ] || [ -z "$(busybox cat /data/synapse/stemp/sleepclock)" ]
+    then
+        busybox echo "0" > /data/synapse/stemp/sleepclock
+    fi
+    RAWTIME="$(busybox cat /data/synapse/stemp/sleepclock)"
+    printf '%d:%02d:%02d\n' $((RAWTIME/3600)) $((RAWTIME%3600/60)) $((RAWTIME%60))
+elif [ "$1" = "reboottimer" ]
+then
+    if [ -f "/data/synapse/stemp/rebootlate.lock" ]
+    then
+        busybox echo "Reboottimer already Running"
+    else
+        busybox echo 'RUN' > /data/synapse/stemp/rebootlate.lock
+        /sbin/recond &
+        busybox echo "Reboottimer Running"
+    fi
+elif [ "$1" = "cancelreboottimer" ]
+then
+    if [ -f "/data/synapse/stemp/rebootlate.lock" ]
+    then
+        busybox rm "/data/synapse/stemp/rebootlate.lock"
+        busybox echo "Reboottimer Cancelled"
+    else
+        busybox echo "Reboottimer Not Running"
+    fi
+elif [ "$1" = "reboothours" ]
+then
+    if [ ! -f "/data/synapse/stemp/reboothours" ] || [ -z "$(busybox cat /data/synapse/stemp/reboothours)" ]
+    then
+        busybox echo "1" > /data/synapse/stemp/reboothours
+    fi
+    CURVAL="$(busybox cat /data/synapse/stemp/reboothours)"
+    if [ -n "$2" ]
+    then
+        if [ "$2" = "$CURVAL" ] || [ -f "/data/synapse/stemp/rebootlate.lock" ]
+        then
+            busybox echo "$CURVAL"
+        else
+            busybox echo "$2" > /data/synapse/stemp/reboothours
+            busybox cat /data/synapse/stemp/reboothours
+        fi
+    else
+        busybox echo "$CURVAL"
+    fi
+elif [ "$1" = "rebootmins" ]
+then
+    if [ ! -f "/data/synapse/stemp/rebootmins" ] || [ -z "$(busybox cat /data/synapse/stemp/rebootmins)" ] || [ "$(busybox cat /data/synapse/stemp/reboothours)" = "12" ]
+    then
+        busybox echo "0" > /data/synapse/stemp/rebootmins
+    fi
+    CURVAL="$(busybox cat /data/synapse/stemp/rebootmins)"
+    if [ -n "$2" ]
+    then
+        if [ "$2" = "$CURVAL" ] || [ -f "/data/synapse/stemp/rebootlate.lock" ]
+        then
+            busybox echo "$CURVAL"
+        else
+            busybox echo "$2" > /data/synapse/stemp/rebootmins
+            busybox cat /data/synapse/stemp/rebootmins
+        fi
+    else
+        busybox echo "$CURVAL"
+    fi
+elif [ "$1" = "rebootclock" ]
+then
+    if [ ! -f "/data/synapse/stemp/rebootclock" ] || [ -z "$(busybox cat /data/synapse/stemp/rebootclock)" ]
+    then
+        busybox echo "0" > /data/synapse/stemp/rebootclock
+    fi
+    RAWTIME="$(busybox cat /data/synapse/stemp/rebootclock)"
+    printf '%d:%02d:%02d\n' $((RAWTIME/3600)) $((RAWTIME%3600/60)) $((RAWTIME%60))
+elif [ "$1" = "powerofftimer" ]
+then
+    if [ -f "/data/synapse/stemp/powerofflate.lock" ]
+    then
+        busybox echo "PowerOfftimer already Running"
+    else
+        busybox echo 'RUN' > /data/synapse/stemp/powerofflate.lock
+        /sbin/powond &
+        busybox echo "PowerOfftimer Running"
+    fi
+elif [ "$1" = "cancelpowerofftimer" ]
+then
+    if [ -f "/data/synapse/stemp/powerofflate.lock" ]
+    then
+        busybox rm "/data/synapse/stemp/powerofflate.lock"
+        busybox echo "PowerOfftimer Cancelled"
+    else
+        busybox echo "PowerOfftimer Not Running"
+    fi
+elif [ "$1" = "poweroffhours" ]
+then
+    if [ ! -f "/data/synapse/stemp/poweroffhours" ] || [ -z "$(busybox cat /data/synapse/stemp/poweroffhours)" ]
+    then
+        busybox echo "1" > /data/synapse/stemp/poweroffhours
+    fi
+    CURVAL="$(busybox cat /data/synapse/stemp/poweroffhours)"
+    if [ -n "$2" ]
+    then
+        if [ "$2" = "$CURVAL" ] || [ -f "/data/synapse/stemp/powerofflate.lock" ]
+        then
+            busybox echo "$CURVAL"
+        else
+            busybox echo "$2" > /data/synapse/stemp/poweroffhours
+            busybox cat /data/synapse/stemp/poweroffhours
+        fi
+    else
+        busybox echo "$CURVAL"
+    fi
+elif [ "$1" = "poweroffmins" ]
+then
+    if [ ! -f "/data/synapse/stemp/poweroffmins" ] || [ -z "$(busybox cat /data/synapse/stemp/poweroffmins)" ] || [ "$(busybox cat /data/synapse/stemp/poweroffhours)" = "12" ]
+    then
+        busybox echo "0" > /data/synapse/stemp/poweroffmins
+    fi
+    CURVAL="$(busybox cat /data/synapse/stemp/poweroffmins)"
+    if [ -n "$2" ]
+    then
+        if [ "$2" = "$CURVAL" ] || [ -f "/data/synapse/stemp/powerofflate.lock" ]
+        then
+            busybox echo "$CURVAL"
+        else
+            busybox echo "$2" > /data/synapse/stemp/poweroffmins
+            busybox cat /data/synapse/stemp/poweroffmins
+        fi
+    else
+        busybox echo "$CURVAL"
+    fi
+elif [ "$1" = "poweroffclock" ]
+then
+    if [ ! -f "/data/synapse/stemp/poweroffclock" ] || [ -z "$(busybox cat /data/synapse/stemp/poweroffclock)" ]
+    then
+        busybox echo "0" > /data/synapse/stemp/poweroffclock
+    fi
+    RAWTIME="$(busybox cat /data/synapse/stemp/poweroffclock)"
+    printf '%d:%02d:%02d\n' $((RAWTIME/3600)) $((RAWTIME%3600/60)) $((RAWTIME%60))
+fi
