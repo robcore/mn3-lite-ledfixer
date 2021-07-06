@@ -35,14 +35,13 @@ QUICKYMD="$(date +%Y-%m-%d)"
 QUICKTIME="$QUICKHOUR_$QUICKMIN-${QUICKAMPM}"
 QUICKDATE="$QUICKYMD-$QUICKTIME"
 #CORECOUNT="$(grep processor /proc/cpuinfo | wc -l)"
-#TOOLCHAIN="/root/mx_toolchains/arm-cortex_a15-linux-gnueabihf_5.3/bin/arm-cortex_a15-linux-gnueabihf-"
-#TOOLCHAIN="/root/mx_toolchains/gcc-linaro-7.5.0-2019.12-x86_64_arm-linux-gnueabihf/bin/arm-linux-gnueabihf-"
-#TOOLCHAIN="/root/mx_toolchains/arm-cortex_a15-linux-gnueabihf-linaro_4.9.4-2015.06/bin/arm-cortex_a15-linux-gnueabihf-"
+#TOOLCHAIN="/opt/toolchains/arm-cortex_a15-linux-gnueabihf_5.3/bin/arm-cortex_a15-linux-gnueabihf-"
+#TOOLCHAIN="/opt/toolchains/gcc-linaro-7.5.0-2019.12-x86_64_arm-linux-gnueabihf/bin/arm-linux-gnueabihf-"
+#TOOLCHAIN="/opt/arm-cortex_a15-linux-gnueabihf-linaro_4.9.4-2015.06/bin/arm-cortex_a15-linux-gnueabihf-"
 #TOOLCHAIN="/root/mx_toolchains/gcc-linaro-4.9.4-2017.01-x86_64_arm-linux-gnueabi/bin/arm-linux-gnueabi-"
-#TOOLCHAIN="/root/mx_toolchains/gcc-linaro-6.5.0-2018.12-x86_64_arm-linux-gnueabihf/bin/arm-linux-gnueabihf-"
-#TOOLCHAIN="/root/mx_toolchains/gcc-arm-9.2-2019.12-x86_64-arm-none-linux-gnueabihf/bin/arm-none-linux-gnueabihf-"
-#TOOLCHAIN="/root/mx_toolchains/gcc-arm-8.2-2019.01-x86_64-arm-linux-gnueabihf/bin/arm-linux-gnueabihf-"
-TOOLCHAIN="/root/mx_toolchains/arm-cortex_a15-linux-gnueabihf-linaro_4.9.4-2015.06/bin/arm-cortex_a15-linux-gnueabihf-"
+#TOOLCHAIN="/opt/toolchains/gcc-linaro-6.5.0-2018.12-x86_64_arm-linux-gnueabihf/bin/arm-linux-gnueabihf-"
+#TOOLCHAIN="/opt/toolchains/gcc-arm-9.2-2019.12-x86_64-arm-none-linux-gnueabihf/bin/arm-none-linux-gnueabihf-"
+TOOLCHAIN="/root/mx_toolchains/gcc-arm-8.2-2019.01-x86_64-arm-linux-gnueabihf/bin/arm-linux-gnueabihf-"
 #export ARCH="arm"
 export CROSS_COMPILE="$TOOLCHAIN"
 
@@ -577,38 +576,37 @@ build_boot_img() {
     [ -f "$MXRD/ramdisk-new.cpio.gz" ] && rm "$MXRD/ramdisk-new.cpio.gz"
 
     echo "Regnerating .dtb files"
-    rm "$KDIR/msm8974-sec-hlte-r05.dtb" &> /dev/null
-    rm "$KDIR/msm8974-sec-hlte-r06.dtb" &> /dev/null
-    rm "$KDIR/msm8974-sec-hlte-r07.dtb" &> /dev/null
-    rm "$KDIR/msm8974-sec-hlte-r09.dtb" &> /dev/null
+    rm "$KDIR/msm8974-sec-hlte-r05.dtb"
+    rm "$KDIR/msm8974-sec-hlte-r06.dtb"
+    rm "$KDIR/msm8974-sec-hlte-r07.dtb"
+    rm "$KDIR/msm8974-sec-hlte-r09.dtb"
 
     local DTB_FILE
     local DTS_FILE
 
 ###EXPERIMENTAL###
-#
-#    local DTS_PREFIX
-#    DTS_PREFIX="msm8974-sec-hlte-r07"
-#    DTS_FILE="$RDIR/arch/arm/boot/dts/msm8974/$DTS_PREFIX.dts"
-#    DTB_FILE="$KDIR/$DTS_PREFIX.dtb"
-#    echo "Creating $DTB_FILE from $DTS_FILE"
-#    "$BUILDIR/scripts/dtc/dtc" -i "$RDIR/arch/arm/boot/dts/msm8974/" -p 1024 -O dtb -o "$DTB_FILE" "$DTS_FILE" 2>&1 | \
-#               tee -a "$LOGDIR/$QUICKDATE.Mark$(cat $RDIR/.oldversion).log" || warnandfail "Failed to build $DTB_FILE!"
-#
+
+    local DTS_PREFIX
+    DTS_PREFIX="msm8974-sec-hlte-r07"
+    DTS_FILE="$RDIR/arch/arm/boot/dts/msm8974/$DTS_PREFIX.dts"
+    DTB_FILE="$KDIR/$DTS_PREFIX.dtb"
+    echo "Creating $DTB_FILE from $DTS_FILE"
+    "$BUILDIR/scripts/dtc/dtc" -i "$RDIR/arch/arm/boot/dts/msm8974/" -p 1024 -O dtb -o "$DTB_FILE" "$DTS_FILE" 2>&1 | \
+               tee -a "$LOGDIR/$QUICKDATE.Mark$(cat $RDIR/.oldversion).log" || warnandfail "Failed to build $DTB_FILE!"
+
 ###EXPERIMENTAL###
 
-    for DTS_PREFIX in msm8974-sec-hlte-r05 msm8974-sec-hlte-r06 msm8974-sec-hlte-r07 msm8974-sec-hlte-r09
-    do
-        DTS_FILE="$RDIR/arch/arm/boot/dts/msm8974/$DTS_PREFIX.dts"
-        DTB_FILE="$KDIR/$DTS_PREFIX.dtb"
-        echo "Creating $DTB_FILE from $DTS_FILE"
-        #"$BUILDIR/scripts/dtc/dtc" -i "$RDIR/arch/arm/boot/dts/msm8974/" -p 1024 -O dtb -o "$DTB_FILE" "$DTS_FILE" 2>&1 | \
-        #           tee -a "$LOGDIR/$QUICKDATE.Mark$(cat $RDIR/.oldversion).log" || warnandfail "Failed to build $DTB_FILE!"
-        #"$BUILDIR/scripts/dtc/dtc" -i "$RDIR/arch/arm/boot/dts/msm8974/" -p 1024 -O dtb -o "$DTB_FILE" "$DTS_FILE" || warnandfail "Failed to build $DTB_FILE!"
-        /usr/bin/dtc -i "$RDIR/arch/arm/boot/dts/msm8974" -A -H both -p 1024 -O dtb -o "$DTB_FILE" "$DTS_FILE" || warnandfail "Failed to build $DTB_FILE!"
-        /usr/bin/dtc -i "$RDIR/arch/arm/boot/dts/msm8974/" -p 1024 -O dtb -o "$DTB_FILE" "$DTS_FILE" 2>&1 | \
-                   tee -a "$LOGDIR/$QUICKDATE.Mark$(cat $RDIR/.oldversion).log" || warnandfail "Failed to build $DTB_FILE!"
-    done
+#    for DTS_PREFIX in msm8974-sec-hlte-r05 msm8974-sec-hlte-r06 msm8974-sec-hlte-r07 msm8974-sec-hlte-r09
+#    do
+#        DTS_FILE="$RDIR/arch/arm/boot/dts/msm8974/$DTS_PREFIX.dts"
+#        DTB_FILE="$KDIR/$DTS_PREFIX.dtb"
+#        echo "Creating $DTB_FILE from $DTS_FILE"
+#        "$BUILDIR/scripts/dtc/dtc" -i "$RDIR/arch/arm/boot/dts/msm8974/" -p 1024 -O dtb -o "$DTB_FILE" "$DTS_FILE" 2>&1 | \
+#                   tee -a "$LOGDIR/$QUICKDATE.Mark$(cat $RDIR/.oldversion).log" || warnandfail "Failed to build $DTB_FILE!"
+#        #"$BUILDIR/scripts/dtc/dtc" -i "$RDIR/arch/arm/boot/dts/msm8974/" -p 1024 -O dtb -o "$DTB_FILE" "$DTS_FILE" || warnandfail "Failed to build $DTB_FILE!"
+#        #/usr/bin/dtc -i "$RDIR/arch/arm/boot/dts/msm8974" -A -H both -p 1024 -O dtb -o "$DTB_FILE" "$DTS_FILE" || warnandfail "Failed to build $DTB_FILE!"
+#        #/usr/bin/dtc -i "$RDIR/arch/arm/boot/dts/msm8974" -p 1024 -O dtb -o "$DTB_FILE" "$DTS_FILE" || warnandfail "Failed to build $DTB_FILE!"
+#    done
 
 	echo "Generating $DTIMG"
 

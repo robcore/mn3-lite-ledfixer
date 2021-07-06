@@ -41,7 +41,7 @@ static void dt_free_map(struct pinctrl_dev *pctldev,
 		     struct pinctrl_map *map, unsigned num_maps)
 {
 	if (pctldev) {
-		const struct pinctrl_ops *ops = pctldev->desc->pctlops;
+		struct pinctrl_ops *ops = pctldev->desc->pctlops;
 		ops->dt_free_map(pctldev, map, num_maps);
 	} else {
 		/* There is no pctldev for PIN_MAP_TYPE_DUMMY_STATE */
@@ -210,13 +210,8 @@ int pinctrl_dt_to_map(struct pinctrl *p)
 		propname = kasprintf(GFP_KERNEL, "pinctrl-%d", state);
 		prop = of_find_property(np, propname, &size);
 		kfree(propname);
-		if (!prop) {
-			if (!state) {
-				ret = -EINVAL;
-				goto err;
-			}
+		if (!prop)
 			break;
-		}
 		list = prop->value;
 		size /= sizeof(*list);
 

@@ -139,18 +139,19 @@ extern char *__compat_exports_end[];
 #endif
 
 #if defined CONFIG_ARCH_MSM_SCORPION || defined CONFIG_ARCH_MSM_KRAIT
-#define arch_has_speculative_dfetch() 1
+#define arch_has_speculative_dfetch()	1
 #endif
 
 #endif
 
 /* these correspond to values known by the modem */
-#define MEMORY_DEEP_POWERDOWN 0
+#define MEMORY_DEEP_POWERDOWN	0
 #define MEMORY_SELF_REFRESH	1
-#define MEMORY_ACTIVE 2
+#define MEMORY_ACTIVE		2
 
-#define NPA_MEMORY_NODE_NAME "/mem/apps/ddr_dpd"
+#define NPA_MEMORY_NODE_NAME	"/mem/apps/ddr_dpd"
 
 #ifndef CONFIG_ARCH_MSM7X27
 #define CONSISTENT_DMA_SIZE	(SZ_1M * 14)
+
 #endif

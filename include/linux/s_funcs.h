@@ -13,10 +13,10 @@ static void replace_str(char *str, char *orig, char *new)
     if (p == NULL || !p)
 		return;
 
-	strncpy(buffer, str, (p - str));
+	strncpy(buffer, str, p-str);
 	buffer[p-str] = '\0';
 
-	sprintf(buffer + (p - str), "%s%s", new, (p + strlen(orig)));
+	sprintf(buffer+(p-str), "%s%s", new, (p + strlen(orig)));
 
 	strncpy(str, buffer, strlen(buffer));
 }

@@ -1085,12 +1085,12 @@ static void dwc3_restart_usb_work(struct work_struct *w)
 
 	/* Reset active USB connection */
 	mdwc->ext_xceiv.bsv = false;
-	queue_delayed_work(system_nrt_wq, &mdwc->resume_work, 0);
+	schedule_delayed_work(&mdwc->resume_work, 0);
 	/* Make sure disconnect is processed before sending connect */
 	flush_delayed_work(&mdwc->resume_work);
 
 	mdwc->ext_xceiv.bsv = true;
-	queue_delayed_work(system_nrt_wq, &mdwc->resume_work, 0);
+	schedule_delayed_work(&mdwc->resume_work, 0);
 }
 
 /**
@@ -1108,7 +1108,7 @@ void msm_dwc3_restart_usb_session(struct usb_gadget *gadget)
 		return;
 
 	dev_dbg(mdwc->dev, "%s\n", __func__);
-	queue_work(system_nrt_wq, &mdwc->restart_usb_work);
+	schedule_work(&mdwc->restart_usb_work);
 }
 EXPORT_SYMBOL(msm_dwc3_restart_usb_session);
 
@@ -1542,7 +1542,7 @@ static void dwc3_msm_notify_event(struct dwc3 *dwc, unsigned event)
 		 * schedule work for doing block reset for recovery from erratic
 		 * error event.
 		 */
-		queue_work(system_nrt_wq, &mdwc->usb_block_reset_work);
+		schedule_work(&mdwc->usb_block_reset_work);
 		break;
 	case DWC3_CONTROLLER_RESET_EVENT:
 		dev_dbg(mdwc->dev, "DWC3_CONTROLLER_RESET_EVENT received\n");
@@ -1815,7 +1815,7 @@ static void dwc3_chg_detect_work(struct work_struct *w)
 		return;
 	}
 
-	queue_delayed_work(system_nrt_wq, &mdwc->chg_work, delay);
+	schedule_delayed_work(&mdwc->chg_work, delay);
 }
 
 static void dwc3_start_chg_det(struct dwc3_charger *charger, bool start)
@@ -1837,7 +1837,7 @@ static void dwc3_start_chg_det(struct dwc3_charger *charger, bool start)
 
 	mdwc->chg_state = USB_CHG_STATE_UNDEFINED;
 	charger->chg_type = DWC3_INVALID_CHARGER;
-	queue_delayed_work(system_nrt_wq, &mdwc->chg_work, 0);
+	schedule_delayed_work(&mdwc->chg_work, 0);
 }
 
 static int dwc3_msm_suspend(struct dwc3_msm *mdwc)
@@ -2319,7 +2319,7 @@ static irqreturn_t msm_dwc3_irq(int irq, void *data)
 		dev_dbg(mdwc->dev, "%s received in LPM\n", __func__);
 		mdwc->lpm_irq_seen = true;
 		disable_irq_nosync(irq);
-		queue_delayed_work(system_nrt_wq, &mdwc->resume_work, 0);
+		schedule_delayed_work(&mdwc->resume_work, 0);
 	} else {
 		pr_info_ratelimited("%s: IRQ outside LPM\n", __func__);
 	}
@@ -2407,8 +2407,7 @@ static int dwc3_msm_power_set_property_usb(struct power_supply *psy,
 			 * charging CDP complaince test fails if delay > 120ms.
 			 */
 			dev_info(mdwc->dev, "%s: queue_delayed_work mdwc->resume_work\n", __func__);
-			queue_delayed_work(system_nrt_wq,
-							&mdwc->resume_work, 12);
+			schedule_delayed_work(&mdwc->resume_work, 12);
 
 			if (!init)
 				init = true;
@@ -2528,7 +2527,7 @@ static void dwc3_ext_notify_online(void *ctx, int on)
 		power_supply_set_present(mdwc->ext_vbus_psy, on);
 
 	if (notify_otg)
-		queue_delayed_work(system_nrt_wq, &mdwc->resume_work, 0);
+		schedule_delayed_work(&mdwc->resume_work, 0);
 }
 
 static void dwc3_id_work(struct work_struct *w)
@@ -2573,7 +2572,7 @@ static irqreturn_t dwc3_pmic_id_irq(int irq, void *data)
 	id = !!irq_read_line(irq);
 	if (mdwc->id_state != id) {
 		mdwc->id_state = id;
-		queue_work(system_nrt_wq, &mdwc->id_work);
+		schedule_work(&mdwc->id_work);
 	}
 
 	return IRQ_HANDLED;
@@ -2615,7 +2614,7 @@ static void dwc3_init_adc_work(struct work_struct *w)
 	mdwc->adc_tm_dev = qpnp_get_adc_tm(mdwc->dev, "dwc_usb3-adc_tm");
 	if (IS_ERR(mdwc->adc_tm_dev)) {
 		if (PTR_ERR(mdwc->adc_tm_dev) == -EPROBE_DEFER)
-			queue_delayed_work(system_nrt_wq, to_delayed_work(w),
+			schedule_delayed_work(to_delayed_work(w),
 					msecs_to_jiffies(100));
 		else
 			mdwc->adc_tm_dev = NULL;
@@ -3124,8 +3123,7 @@ static int __devinit dwc3_msm_probe(struct platform_device *pdev)
 				mdwc->id_state =
 					!!irq_read_line(mdwc->pmic_id_irq);
 				if (mdwc->id_state == DWC3_ID_GROUND)
-					queue_work(system_nrt_wq,
-							&mdwc->id_work);
+					schedule_work(&mdwc->id_work);
 				local_irq_restore(flags);
 				enable_irq_wake(mdwc->pmic_id_irq);
 			}
@@ -3133,7 +3131,7 @@ static int __devinit dwc3_msm_probe(struct platform_device *pdev)
 
 		if (mdwc->pmic_id_irq <= 0) {
 			/* If no PMIC ID IRQ, use ADC for ID pin detection */
-			queue_work(system_nrt_wq, &mdwc->init_adc_work.work);
+			schedule_work(&mdwc->init_adc_work.work);
 			device_create_file(&pdev->dev, &dev_attr_adc_enable);
 			mdwc->pmic_id_irq = 0;
 		}
@@ -3432,7 +3430,7 @@ static int dwc3_msm_pm_suspend(struct device *dev)
 	dev_dbg(dev, "dwc3-msm PM suspend\n");
 #endif
 
-	flush_delayed_work_sync(&mdwc->resume_work);
+	flush_delayed_work(&mdwc->resume_work);
 	if (!atomic_read(&mdwc->in_lpm)) {
 		dev_err(mdwc->dev, "Abort PM suspend!! (USB is outside LPM)\n");
 		return -EBUSY;

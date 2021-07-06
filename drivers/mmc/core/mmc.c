@@ -1494,7 +1494,6 @@ static int mmc_init_card(struct mmc_host *host, u32 ocr,
 		card->rca = 1;
 		memcpy(card->raw_cid, cid, sizeof(card->raw_cid));
 		card->reboot_notify.notifier_call = mmc_reboot_notify;
-		host->card = card;
 	}
 
 	/*
@@ -1748,10 +1747,12 @@ static int mmc_init_card(struct mmc_host *host, u32 ocr,
 		}
 	}
 
+	if (!oldcard)
+		host->card = card;
+
 	return 0;
 
 free_card:
-	host->card = NULL;
 	if (!oldcard)
 		mmc_remove_card(card);
 err:
@@ -1880,8 +1881,7 @@ static int mmc_suspend(struct mmc_host *host)
 	 * Disable clock scaling before suspend and enable it after resume so
 	 * as to avoid clock scaling decisions kicking in during this window.
 	 */
-	if (mmc_can_scale_clk(host))
-		mmc_disable_clk_scaling(host);
+	mmc_disable_clk_scaling(host);
 
 	mmc_claim_host(host);
 

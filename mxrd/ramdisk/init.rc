@@ -515,8 +515,8 @@ on boot
     chmod 0644 /sys/module/lowmemorykiller/parameters/minfree
 
     # Tweak background writeout
-    #write /proc/sys/vm/dirty_expire_centisecs 200
-    #write /proc/sys/vm/dirty_background_ratio  5
+    write /proc/sys/vm/dirty_expire_centisecs 200
+    write /proc/sys/vm/dirty_background_ratio  5
 
     # Permissions for System Server and daemons.
     chown radio system /sys/android_power/state
@@ -920,7 +920,7 @@ on boot
 # Define default initial receive window size in segments.
     setprop net.tcp.default_init_rwnd 60
 
-#    write /sys/block/mmcblk0/queue/scheduler noop
+    write /sys/block/mmcblk0/queue/scheduler noop
     copy /system/etc/battery_charging_temp.data /sys/class/power_supply/battery/batt_temp_table
 
     class_start core
