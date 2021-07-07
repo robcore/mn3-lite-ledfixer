@@ -1,0 +1,57 @@
+#!/system/xbin/busybox sh
+
+if [ ! -f "/data/synapse/stemp/powerofflate.lock" ]
+then
+    exit 0
+fi
+
+ZTIME="0"
+
+if [ ! -f "/data/synapse/stemp/poweroffhours" ] || [ -z "$(busybox cat /data/synapse/stemp/poweroffhours)" ]
+then
+    busybox echo "1" > /data/synapse/stemp/poweroffhours
+fi
+
+if [ ! -f "/data/synapse/stemp/poweroffmins" ] || [ -z "$(busybox cat /data/synapse/stemp/poweroffmins)" ]
+then
+    busybox echo "0" > /data/synapse/stemp/poweroffmins
+fi
+
+if [ "$(busybox cat /data/synapse/stemp/poweroffhours)" = "0" ] && [ "$(busybox cat /data/synapse/stemp/poweroffmins)" = "0" ]
+then
+    rm /data/synapse/stemp/powerofflate.lock
+    exit 0
+fi
+
+RAWHOURS="$(busybox cat /data/synapse/stemp/poweroffhours)"
+HOURS=$(( RAWHOURS * 60 * 60))
+RAWMINS="$(busybox cat /data/synapse/stemp/poweroffmins)"
+MINS=$(( RAWMINS * 60))
+TIMEOUTVAL=$(( HOURS + MINS ))
+
+if [ -z "$TIMEOUTVAL" ]
+then
+    TIMEOUTVAL="3600"
+fi
+
+if [ -f "/data/synapse/stemp/powerofflate.lock" ]
+then
+    while [ $TIMEOUTVAL -gt $ZTIME ]
+    do
+        if [ ! -f "/data/synapse/stemp/powerofflate.lock" ]
+        then
+            break
+        fi
+        busybox echo "$TIMEOUTVAL" > /data/synapse/stemp/poweroffclock
+        sleep 1
+        TIMEOUTVAL=$(( TIMEOUTVAL - 1 ))
+    done
+fi
+
+busybox echo "0" > /data/synapse/stemp/poweroffclock
+
+if [ -f "/data/synapse/stemp/powerofflate.lock" ]
+then
+    rm /data/synapse/stemp/powerofflate.lock &> /dev/null
+    reboot -p poweroff
+fi

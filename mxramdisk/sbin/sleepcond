@@ -1,0 +1,60 @@
+#!/system/xbin/busybox sh
+
+if [ ! -f "/data/synapse/stemp/sleeplate.lock" ]
+then
+    exit 0
+fi
+
+ZTIME="0"
+
+if [ ! -f "/data/synapse/stemp/sleephours" ] || [ -z "$(busybox cat /data/synapse/stemp/sleephours)" ]
+then
+    busybox echo "1" > /data/synapse/stemp/sleephours
+fi
+
+if [ ! -f "/data/synapse/stemp/sleepmins" ] || [ -z "$(busybox cat /data/synapse/stemp/sleepmins)" ]
+then
+    busybox echo "0" > /data/synapse/stemp/sleepmins
+fi
+
+if [ "$(busybox cat /data/synapse/stemp/sleephours)" = "0" ] && [ "$(busybox cat /data/synapse/stemp/sleepmins)" = "0" ]
+then
+    rm /data/synapse/stemp/sleeplate.lock
+    exit 0
+fi
+
+RAWHOURS="$(busybox cat /data/synapse/stemp/sleephours)"
+HOURS=$(( RAWHOURS * 60 * 60))
+RAWMINS="$(busybox cat /data/synapse/stemp/sleepmins)"
+MINS=$(( RAWMINS * 60))
+TIMEOUTVAL=$(( HOURS + MINS ))
+
+if [ -z "$TIMEOUTVAL" ]
+then
+    TIMEOUTVAL="3600"
+fi
+
+if [ -f "/data/synapse/stemp/sleeplate.lock" ]
+then
+    while [ $TIMEOUTVAL -gt $ZTIME ]
+    do
+        if [ ! -f "/data/synapse/stemp/sleeplate.lock" ]
+        then
+            break
+        fi
+        busybox echo "$TIMEOUTVAL" > /data/synapse/stemp/sleepclock
+        sleep 1
+        TIMEOUTVAL=$(( TIMEOUTVAL - 1 ))
+    done
+fi
+
+busybox echo "0" > /data/synapse/stemp/sleepclock
+
+if [ -f "/data/synapse/stemp/sleeplate.lock" ]
+then
+    rm /data/synapse/stemp/sleeplate.lock &> /dev/null
+    if [ "$(cat /sys/class/lcd/panel/panel/backlight)" != "0" ]
+    then
+        input keyevent KEYCODE_SLEEP
+    fi
+fi

@@ -67,7 +67,9 @@ include/linux/version.h
 include/generated
 arch/*/include/generated
 build/
-mx.zip/
+!mxzip/data/synapse
+!mxzip/data
+!mxzip/data/synapse/*
 
 # stgit generated dirs
 patches-*
@@ -116,6 +118,7 @@ scripts/mkqcdtbootimg/mkqcdtbootimg
 config.*
 magiskbackup
 mxzip/boot.img
+mxzip/common/boot.img
 .lastzip
 .starttime
 .endtime
@@ -127,3 +130,11 @@ robtools/*
 wtflog.txt
 dolbydumpprops.txt
 arch/arm/configs/mxconfig.recent
+mxtempusb
+mxrd/split_img/
+mxrd/split_img/*
+mxrd/split_img.orig
+mxrd/split_img.orig/*
+buildlogs
+buildlogs/*
+wppdtmplink.txt

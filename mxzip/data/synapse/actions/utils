@@ -1,0 +1,54 @@
+#!/system/bin/sh
+
+if [ "$1" = "dropper" ]
+then
+	echo '3' > /proc/sys/vm/drop_caches
+	echo "Memory Dropped"
+elif [ "$1" = "killsysui" ]
+then
+    SYSUIPID="$(pidof com.android.systemui)"
+    if kill -9 "$SYSUIPID"
+    then
+        echo "SystemUI Rebooted"
+    else
+        echo "SystemUI Reboot Failed"
+    fi
+elif [ "$1" = "killviper" ]
+then
+    VPPID="$(pidof com.audlabs.viperfx)"
+    if kill -9 "$VPPID"
+    then
+        echo "ViperFX Restarted"
+    else
+        echo "ViperFX Restart Failed"
+    fi
+elif [ "$1" = "flushtcp" ]
+then
+    echo '1' > /proc/sys/net/ipv4/route/flush
+    echo '1' > /proc/sys/net/ipv6/route/flush
+    echo "TCP Cache Flushed"
+elif [ "$1" = "tmixdump" ]
+then
+    TPATH="/storage/extSdCard/mx3_tmix/tmix-$(busybox date +%F-%H-%M).txt"
+    tinymix > "$TPATH"
+    echo "Tinymix Output dumped to $TPATH"
+elif [ "$1" = "rmsdiv" ]
+then
+    RDIV="$(busybox cat /sys/kernel/sound_control/rms_meter_div_fact)"
+    echo $(( $RDIV * 16 ))
+elif [ "$1" = "ksm" ]
+then
+    KSMVAL="$(busybox cat /sys/kernel/mm/ksm/run)"
+    if [ -n "$2" ]
+    then
+        if [ "$2" = "$KSMVAL" ]
+        then
+            busybox cat /sys/kernel/mm/ksm/run
+        else
+            busybox echo "$2" > /sys/kernel/mm/ksm/run
+            busybox cat /sys/kernel/mm/ksm/run
+        fi
+    else
+        busybox cat /sys/kernel/mm/ksm/run
+    fi
+fi
