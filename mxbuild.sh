@@ -47,7 +47,7 @@ FZMG="$NEWZMG-fixup"
 MXZMG="$MXRD/split_img/boot.img-kernel"
 DTBTOOL="$RDIR/tools/dtbTool"
 MKBOOTIMG="/usr/bin/mkbootimg"
-OLDCFG="$RDIR/local-oldconfigs"
+OLDCFG="$RDIR/oldconfigs"
 QUICKHOUR="$(date +%l | cut -d " " -f2)"
 QUICKMIN="$(date +%S)"
 QUICKAMPM="$(date +%p)"
@@ -515,6 +515,16 @@ build_kernel_config() {
 
 }
 
+backupconfig() {
+
+    if [ -d "$BUILDIR" ]
+    then
+    	echo "Backing up .config to $OLDCFG/config.$QUICKDATE"
+    	cp "$BUILDIR/.config" "$OLDCFG/config.$QUICKDATE" || warnandfail "Config Copy Error!"
+    fi
+
+}
+
 build_single_driver() {
 
 	echo "Building Single Driver..."
@@ -524,27 +534,21 @@ build_single_driver() {
 
 build_kernel() {
 
-	echo "Backing up .config to $OLDCFG/config.$QUICKDATE"
-	cp "$BUILDIR/.config" "$OLDCFG/config.$QUICKDATE" || warnandfail "Config Copy Error!"
-	#echo "Snapshot of current environment variables:"
-	#env
+    backupconfig
 	start_build_timer
 	echo "Starting build..."
 	make ARCH="arm" SUBARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -S -s -j16 -C "$RDIR" O="$BUILDIR" 2>&1 | tee -a "$LOGDIR/$QUICKDATE.Mark$(cat $RDIR/.oldversion).log" \
-                                                                                    || warnandfail "Kernel Build failed!"
+    || warnandfail "Kernel Build failed!"
 
 }
 
 build_kernel_debug() {
 
-	echo "Backing up .config to $OLDCFG/config.$QUICKDATE"
-	cp "$BUILDIR/.config" "$OLDCFG/config.$QUICKDATE" || warnandfail "Config Copy Error!"
-	#echo "Snapshot of current environment variables:"
-	#env
+    backupconfig
 	start_build_timer
 	echo "Starting build..."
 	make ARCH="arm" SUBARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -S -s -j16 -C "$RDIR" O="$BUILDIR" 2>&1 | tee -a "$LOGDIR/$QUICKDATE.Mark$(cat $RDIR/.oldversion).log" \
-                                                                                    || warnandfail "Kernel Build failed!"
+    || warnandfail "Kernel Build failed!"
     stop_build_timer
     timerprint
 }

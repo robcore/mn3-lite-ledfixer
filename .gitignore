@@ -140,3 +140,5 @@ buildlogs/*
 wppdtmplink.txt
 local-oldconfigs
 local-oldconfigs/*
+oldconfigs
+oldconfigs/*
