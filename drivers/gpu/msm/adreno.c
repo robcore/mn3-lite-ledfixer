@@ -255,8 +255,7 @@ static const struct {
 };
 
 /* Nice level for the higher priority GPU start thread */
-static int _wake_nice = -7;
-module_param(_wake_nice, int, 0644);
+static unsigned int _wake_nice = -7;
 
 /* Number of milliseconds to stay active active after a wake on touch */
 static unsigned int _wake_timeout = 100;
@@ -304,37 +303,15 @@ static void adreno_input_event(struct input_handle *handle, unsigned int type,
 	struct kgsl_device *device = handle->handler->private;
 	struct adreno_device *adreno_dev = ADRENO_DEVICE(device);
 
-	/* Only consider EV_ABS (touch) events */
-	if (type != EV_ABS)
-		return;
-
 	/*
-	 * Don't do anything if anything hasn't been rendered since we've been
-	 * here before
+	 * Only queue the work under certain circumstances: we have to be in
+	 * slumber, the event has to be EV_EBS and we had to have processed an
+	 * IB since the last time we called wake on touch.
 	 */
-
-	if (device->flags & KGSL_FLAG_WAKE_ON_TOUCH)
-		return;
-
-	/*
-	 * If the device is in nap, kick the idle timer to make sure that we
-	 * don't go into slumber before the first render. If the device is
-	 * already in slumber schedule the wake.
-	 */
-
-	if (device->state == KGSL_STATE_NAP) {
-		/*
-		 * Set the wake on touch bit to keep from coming back here and
-		 * keeping the device in nap without rendering
-		 */
-
-		device->flags |= KGSL_FLAG_WAKE_ON_TOUCH;
-
-		mod_timer(&device->idle_timer,
-			jiffies + device->pwrctrl.interval_timeout);
-	} else if (device->state == KGSL_STATE_SLUMBER) {
+	if ((type == EV_ABS) &&
+		!(device->flags & KGSL_FLAG_WAKE_ON_TOUCH) &&
+		(device->state == KGSL_STATE_SLUMBER))
 		schedule_work(&adreno_dev->input_work);
-	}
 }
 
 static int adreno_input_connect(struct input_handler *handler,
@@ -462,11 +439,6 @@ static int adreno_perfcounter_start(struct adreno_device *adreno_dev)
 					KGSL_PERFCOUNTER_BROKEN)
 				continue;
 
-			/*
-			 * The GPU has to be idle before calling the perfcounter
-			 * enable function, but since this function is called
-			 * during start we already know the GPU is idle
-			 */
 			if (adreno_dev->gpudev->perfcounter_enable)
 				ret = adreno_dev->gpudev->perfcounter_enable(
 					adreno_dev, i, j,
@@ -589,14 +561,7 @@ int adreno_perfcounter_get_groupid(struct adreno_device *adreno_dev,
 
 	for (i = 0; i < counters->group_count; ++i) {
 		group = &(counters->groups[i]);
-
-		/* make sure there is a name for this group */
-		if (group->name == NULL)
-			continue;
-
-		/* verify name and length */
-		if (strlen(name) == strlen(group->name) &&
-			strcmp(group->name, name) == 0)
+		if (!strcmp(group->name, name))
 			return i;
 	}
 
@@ -875,11 +840,6 @@ int adreno_perfcounter_put(struct adreno_device *adreno_dev,
  */
 static inline void adreno_perfcounter_restore(struct adreno_device *adreno_dev)
 {
-	/*
-	 * The GPU needs to be idle before writing the perfcounter select
-	 * registers. Since this function gets called during start/resume we
-	 * know the GPU is already idle so we don't need to stop it
-	 */
 	if (adreno_dev->gpudev->perfcounter_restore)
 		adreno_dev->gpudev->perfcounter_restore(adreno_dev);
 }
@@ -979,10 +939,15 @@ static unsigned int _adreno_iommu_setstate_v0(struct kgsl_device *device,
 	struct adreno_device *adreno_dev = ADRENO_DEVICE(device);
 	int i;
 
-	cmds += adreno_add_bank_change_cmds(cmds,
-				KGSL_IOMMU_CONTEXT_USER,
-				device->mmu.setstate_memory.gpuaddr +
-				KGSL_IOMMU_SETSTATE_NOP_OFFSET);
+	if (cpu_is_msm8960())
+		cmds += adreno_add_change_mh_phys_limit_cmds(cmds, 0xFFFFF000,
+					device->mmu.setstate_memory.gpuaddr +
+					KGSL_IOMMU_SETSTATE_NOP_OFFSET);
+	else
+		cmds += adreno_add_bank_change_cmds(cmds,
+					KGSL_IOMMU_CONTEXT_USER,
+					device->mmu.setstate_memory.gpuaddr +
+					KGSL_IOMMU_SETSTATE_NOP_OFFSET);
 
 	cmds += adreno_add_idle_cmds(adreno_dev, cmds);
 
@@ -1056,10 +1021,17 @@ static unsigned int _adreno_iommu_setstate_v0(struct kgsl_device *device,
 	/* Release GPU-CPU sync Lock here */
 	cmds += kgsl_mmu_sync_unlock(&device->mmu, cmds);
 
-	cmds += adreno_add_bank_change_cmds(cmds,
-		KGSL_IOMMU_CONTEXT_PRIV,
-		device->mmu.setstate_memory.gpuaddr +
-		KGSL_IOMMU_SETSTATE_NOP_OFFSET);
+	if (cpu_is_msm8960())
+		cmds += adreno_add_change_mh_phys_limit_cmds(cmds,
+			kgsl_mmu_get_reg_gpuaddr(&device->mmu, 0,
+						0, KGSL_IOMMU_GLOBAL_BASE),
+			device->mmu.setstate_memory.gpuaddr +
+			KGSL_IOMMU_SETSTATE_NOP_OFFSET);
+	else
+		cmds += adreno_add_bank_change_cmds(cmds,
+			KGSL_IOMMU_CONTEXT_PRIV,
+			device->mmu.setstate_memory.gpuaddr +
+			KGSL_IOMMU_SETSTATE_NOP_OFFSET);
 
 	cmds += adreno_add_idle_cmds(adreno_dev, cmds);
 
@@ -1121,14 +1093,9 @@ static unsigned int _adreno_iommu_setstate_v1(struct kgsl_device *device,
 				KGSL_IOMMU_IMPLDEF_MICRO_MMU_CTRL_IDLE,
 				KGSL_IOMMU_IMPLDEF_MICRO_MMU_CTRL_IDLE, 0xF);
 			}
-			/*
-			 * set ttbr0, only need to set the higer bits if the
-			 * address bits lie in the higher bits
-			 */
-			if (KGSL_IOMMU_CTX_TTBR0_ADDR_MASK &
-				0xFFFFFFFF00000000ULL) {
-				reg_pt_val = (unsigned int)ttbr0_val &
-						0xFFFFFFFF;
+			/* set ttbr0 */
+			if (sizeof(phys_addr_t) > sizeof(unsigned long)) {
+				reg_pt_val = ttbr0_val & 0xFFFFFFFF;
 				*cmds++ = cp_type0_packet(ttbr0, 1);
 				*cmds++ = reg_pt_val;
 				reg_pt_val = (unsigned int)
@@ -1651,7 +1618,6 @@ done:
 static int adreno_of_get_iommu(struct device_node *parent,
 	struct kgsl_device_platform_data *pdata)
 {
-	int result = -EINVAL;
 	struct device_node *node, *child;
 	struct kgsl_device_iommu_data *data = NULL;
 	struct kgsl_iommu_ctx *ctxs = NULL;
@@ -1664,7 +1630,7 @@ static int adreno_of_get_iommu(struct device_node *parent,
 
 	data = kzalloc(sizeof(*data), GFP_KERNEL);
 	if (data == NULL) {
-		result = -ENOMEM;
+		KGSL_CORE_ERR("kzalloc(%d) failed\n", sizeof(*data));
 		goto err;
 	}
 
@@ -1685,7 +1651,8 @@ static int adreno_of_get_iommu(struct device_node *parent,
 		GFP_KERNEL);
 
 	if (ctxs == NULL) {
-		result = -ENOMEM;
+		KGSL_CORE_ERR("kzalloc(%d) failed\n",
+			data->iommu_ctx_count * sizeof(struct kgsl_iommu_ctx));
 		goto err;
 	}
 
@@ -1726,7 +1693,7 @@ err:
 	kfree(ctxs);
 	kfree(data);
 
-	return result;
+	return -EINVAL;
 }
 
 static int adreno_of_get_pdata(struct platform_device *pdev)
@@ -1751,6 +1718,7 @@ static int adreno_of_get_pdata(struct platform_device *pdev)
 
 	pdata = kzalloc(sizeof(*pdata), GFP_KERNEL);
 	if (pdata == NULL) {
+		KGSL_CORE_ERR("kzalloc(%d) failed\n", sizeof(*pdata));
 		ret = -ENOMEM;
 		goto err;
 	}
@@ -1830,17 +1798,17 @@ adreno_ocmem_gmem_malloc(struct adreno_device *adreno_dev)
 		adreno_is_a305b(adreno_dev)))
 		return 0;
 
-	if (adreno_dev->ocmem_hdl == NULL) {
-		adreno_dev->ocmem_hdl =
-			ocmem_allocate(OCMEM_GRAPHICS, adreno_dev->gmem_size);
-		if (IS_ERR_OR_NULL(adreno_dev->ocmem_hdl)) {
-			adreno_dev->ocmem_hdl = NULL;
-			return -ENOMEM;
-		}
+	/* OCMEM is only needed once, do not support consective allocation */
+	if (adreno_dev->ocmem_hdl != NULL)
+		return 0;
 
-		adreno_dev->gmem_size = adreno_dev->ocmem_hdl->len;
-		adreno_dev->ocmem_base = adreno_dev->ocmem_hdl->addr;
-	}
+	adreno_dev->ocmem_hdl =
+		ocmem_allocate(OCMEM_GRAPHICS, adreno_dev->gmem_size);
+	if (adreno_dev->ocmem_hdl == NULL)
+		return -ENOMEM;
+
+	adreno_dev->gmem_size = adreno_dev->ocmem_hdl->len;
+	adreno_dev->ocmem_base = adreno_dev->ocmem_hdl->addr;
 
 	return 0;
 }
@@ -1852,10 +1820,11 @@ adreno_ocmem_gmem_free(struct adreno_device *adreno_dev)
 		adreno_is_a305b(adreno_dev)))
 		return;
 
-	if (adreno_dev->ocmem_hdl != NULL) {
-		ocmem_free(OCMEM_GRAPHICS, adreno_dev->ocmem_hdl);
-		adreno_dev->ocmem_hdl = NULL;
-	}
+	if (adreno_dev->ocmem_hdl == NULL)
+		return;
+
+	ocmem_free(OCMEM_GRAPHICS, adreno_dev->ocmem_hdl);
+	adreno_dev->ocmem_hdl = NULL;
 }
 #else
 static int
@@ -2623,7 +2592,7 @@ static ssize_t _ft_hang_intr_status_store(struct device *dev,
 				struct device_attribute *attr,
 				const char *buf, size_t count)
 {
-	unsigned int new_setting = 0, old_setting;
+	unsigned int new_setting, old_setting;
 	struct kgsl_device *device = kgsl_device_from_dev(dev);
 	struct adreno_device *adreno_dev;
 	int ret;
@@ -2694,6 +2663,36 @@ static ssize_t _ft_hang_intr_status_show(struct device *dev,
 		test_bit(ADRENO_DEVICE_HANG_INTR, &adreno_dev->priv) ? 1 : 0);
 }
 
+/**
+ * _wake_nice_store() - Store nice level for the higher priority GPU start
+ * thread
+ * @dev: device ptr
+ * @attr: Device attribute
+ * @buf: value to write
+ * @count: size of the value to write
+ *
+ */
+static ssize_t _wake_nice_store(struct device *dev,
+				     struct device_attribute *attr,
+				     const char *buf, size_t count)
+{
+	return _ft_sysfs_store(buf, count, &_wake_nice);
+}
+
+/**
+ * _wake_nice_show() -  Show nice level for the higher priority GPU start
+ * thread
+ * @dev: device ptr
+ * @attr: Device attribute
+ * @buf: value read
+ */
+static ssize_t _wake_nice_show(struct device *dev,
+					struct device_attribute *attr,
+					char *buf)
+{
+	return snprintf(buf, PAGE_SIZE, "%d\n", _wake_nice);
+}
+
 #define FT_DEVICE_ATTR(name) \
 	DEVICE_ATTR(name, 0644,	_ ## name ## _show, _ ## name ## _store);
 
@@ -2703,6 +2702,7 @@ FT_DEVICE_ATTR(ft_fast_hang_detect);
 FT_DEVICE_ATTR(ft_long_ib_detect);
 FT_DEVICE_ATTR(ft_hang_intr_status);
 
+static FT_DEVICE_ATTR(wake_nice);
 static FT_DEVICE_ATTR(wake_timeout);
 
 const struct device_attribute *ft_attr_list[] = {
@@ -2710,6 +2710,7 @@ const struct device_attribute *ft_attr_list[] = {
 	&dev_attr_ft_pagefault_policy,
 	&dev_attr_ft_fast_hang_detect,
 	&dev_attr_ft_long_ib_detect,
+	&dev_attr_wake_nice,
 	&dev_attr_wake_timeout,
 	&dev_attr_ft_hang_intr_status,
 	NULL,

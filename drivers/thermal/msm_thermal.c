@@ -53,7 +53,7 @@
 static struct msm_thermal_data msm_thermal_info;
 static struct delayed_work check_temp_work;
 static struct delayed_work temp_log_work;
-static bool core_control_enabled = false;
+static bool core_control_enabled;
 static uint32_t cpus_offlined;
 static DEFINE_MUTEX(core_control_mutex);
 static uint32_t wakeup_ms;
@@ -68,7 +68,7 @@ static struct completion hotplug_notify_complete;
 static struct completion freq_mitigation_complete;
 static struct completion thermal_monitor_complete;
 
-static int enabled = 0;
+static int enabled;
 static int polling_enabled;
 static int rails_cnt;
 static int psm_rails_cnt;
@@ -80,7 +80,7 @@ static int max_tsens_num;
 static struct cpufreq_frequency_table *table;
 static uint32_t usefreq;
 static int freq_table_get;
-static bool vdd_rstr_enabled = false;
+static bool vdd_rstr_enabled;
 static bool vdd_rstr_nodes_called;
 static bool vdd_rstr_probed;
 static bool psm_enabled;
@@ -319,7 +319,7 @@ static int update_cpu_min_freq_all(uint32_t min)
 	if (!freq_table_get) {
 		ret = check_freq_table();
 		if (ret) {
-			//pr_err("Fail to get freq table. err:%d\n", ret);
+			pr_err("Fail to get freq table. err:%d\n", ret);
 			return ret;
 		}
 	}
@@ -1198,7 +1198,7 @@ static int do_vdd_restriction(void)
 	int i = 0;
 	int dis_cnt = 0;
 
-//	if (!vdd_rstr_enabled)
+	if (!vdd_rstr_enabled)
 		return ret;
 
 	if (usefreq && !freq_table_get) {
@@ -1370,7 +1370,7 @@ static void __ref check_temp(struct work_struct *work)
 	}
 
 	do_core_control(temp);
-//	do_vdd_restriction();
+	do_vdd_restriction();
 	do_psm();
 	do_ocr();
 	do_freq_control(temp);
@@ -1438,6 +1438,13 @@ static void thermal_rtc_setup(void)
 			(wakeup_ms * USEC_PER_MSEC));
 	alarm_start_range(&thermal_rtc, wakeup_time,
 			wakeup_time);
+	pr_debug("%s: Current Time: %ld %ld, Alarm set to: %ld %ld\n",
+			KBUILD_MODNAME,
+			ktime_to_timeval(curr_time).tv_sec,
+			ktime_to_timeval(curr_time).tv_usec,
+			ktime_to_timeval(wakeup_time).tv_sec,
+			ktime_to_timeval(wakeup_time).tv_usec);
+
 }
 
 static void timer_work_fn(struct work_struct *work)
@@ -1477,6 +1484,8 @@ static int hotplug_notify(enum thermal_trip_type type, int temp, void *data)
 	if (hotplug_task) {
 		cpu_node->hotplug_thresh_clear = true;
 		complete(&hotplug_notify_complete);
+	} else {
+		pr_err("Hotplug task is not initialized\n");
 	}
 	return 0;
 }
@@ -1495,6 +1504,8 @@ static int hotplug_init_cpu_offlined(void)
 			continue;
 		if (therm_get_temp(cpus[cpu].sensor_id, cpus[cpu].id_type,
 					&temp)) {
+			pr_err("Unable to read TSENS sensor:%d.\n",
+				cpus[cpu].sensor_id);
 			mutex_unlock(&core_control_mutex);
 			return -EINVAL;
 		}
@@ -1510,6 +1521,7 @@ static int hotplug_init_cpu_offlined(void)
 	if (hotplug_task)
 		complete(&hotplug_notify_complete);
 	else {
+		pr_err("Hotplug task is not initialized\n");
 		return -EINVAL;
 	}
 	return 0;
@@ -1549,6 +1561,8 @@ init_kthread:
 	init_completion(&hotplug_notify_complete);
 	hotplug_task = kthread_run(do_hotplug, NULL, "msm_thermal:hotplug");
 	if (IS_ERR(hotplug_task)) {
+		pr_err("Failed to create do_hotplug thread. err:%ld\n",
+				PTR_ERR(hotplug_task));
 		return;
 	}
 	/*
@@ -2265,7 +2279,7 @@ int msm_thermal_init(struct msm_thermal_data *pdata)
 		return -EINVAL;
 	}
 
-	enabled = 0;
+	enabled = 1;
 	polling_enabled = 1;
 	ret = cpufreq_register_notifier(&msm_thermal_cpufreq_notifier,
 			CPUFREQ_POLICY_NOTIFIER);
@@ -2760,7 +2774,7 @@ static int probe_vdd_rstr(struct device_node *node,
 					ret);
 			goto read_node_fail;
 		}
-		vdd_rstr_enabled = false;
+		vdd_rstr_enabled = true;
 	}
 read_node_fail:
 	vdd_rstr_probed = true;
@@ -3085,7 +3099,7 @@ static int probe_cc(struct device_node *node, struct msm_thermal_data *data,
 	uint32_t cpu = 0;
 
 	if (num_possible_cpus() > 1) {
-		core_control_enabled = 0;
+		core_control_enabled = 1;
 		hotplug_enabled = 1;
 	}
 

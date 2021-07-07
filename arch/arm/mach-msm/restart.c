@@ -281,9 +281,6 @@ static irqreturn_t resout_irq_handler(int irq, void *dev_id)
 	return IRQ_HANDLED;
 }
 
-static unsigned int hard_reset = 0;
-module_param(hard_reset, uint, 0644);
-
 static void msm_restart_prepare(const char *cmd)
 {
 	unsigned long value;
@@ -310,8 +307,9 @@ static void msm_restart_prepare(const char *cmd)
 #endif
 #endif
 
-#if defined(CONFIG_SEC_DEBUG_LOW_LOG) && defined(CONFIG_MSM_DLOAD_MODE) \
-&& defined(CONFIG_SEC_DEBUG)
+#ifdef CONFIG_SEC_DEBUG_LOW_LOG
+#ifdef CONFIG_MSM_DLOAD_MODE
+#ifdef CONFIG_SEC_DEBUG
 	if (sec_debug_is_enabled()
 	&& ((restart_mode == RESTART_DLOAD) || in_panic))
 		set_dload_mode(1);
@@ -323,6 +321,8 @@ static void msm_restart_prepare(const char *cmd)
 	if (restart_mode == RESTART_DLOAD)
 		set_dload_mode(1);
 #endif
+#endif
+#endif
 	printk(KERN_NOTICE "Going down for restart now\n");
 
 	pm8xxx_reset_pwr_off(1);
@@ -333,18 +333,12 @@ static void msm_restart_prepare(const char *cmd)
 	else
 		qpnp_pon_system_pwr_off(PON_POWER_OFF_HARD_RESET);
 #else
-    if (hard_reset > 1)
-        hard_reset = 1;
-
-    if (hard_reset == 1)
-        qpnp_pon_system_pwr_off(PON_POWER_OFF_HARD_RESET);
-    else
-        qpnp_pon_system_pwr_off(PON_POWER_OFF_WARM_RESET);
+		qpnp_pon_system_pwr_off(PON_POWER_OFF_WARM_RESET);
 #endif
 #ifdef CONFIG_SEC_DEBUG
-    if (!restart_reason)
-        restart_reason = ioremap_nocache((unsigned long)(MSM_IMEM_BASE \
-						+ RESTART_REASON_ADDR), SZ_4K);
+		if (!restart_reason)
+			restart_reason = ioremap_nocache((unsigned long)(MSM_IMEM_BASE \
+							+ RESTART_REASON_ADDR), SZ_4K);
 #endif
 
 	if (cmd != NULL) {

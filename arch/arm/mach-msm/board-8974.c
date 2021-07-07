@@ -67,6 +67,10 @@
 extern int msm_show_resume_irq_mask;
 #endif
 
+#ifdef CONFIG_SEC_PM_DEBUG
+extern int msm_show_resume_irq_mask;
+#endif
+
 #ifdef CONFIG_REGULATOR_MAX77826
 #include <linux/regulator/max77826.h>
 #endif
@@ -671,7 +675,7 @@ void __init msm8974_init_very_early(void)
 	msm8974_early_memory();
 }
 
-static const char *msm8974_dt_match[] __initdata = {
+static const char *msm8974_dt_match[] __initconst = {
 	"qcom,msm8974",
 	"qcom,apq8074",
 	NULL

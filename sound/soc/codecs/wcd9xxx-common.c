@@ -423,13 +423,12 @@ wcd9xxx_enable_clsh_block(struct snd_soc_codec *codec,
 		clsh_d->clsh_users, enable);
 }
 
-extern unsigned int anc_delay;
 static inline void wcd9xxx_enable_anc_delay(
 	struct snd_soc_codec *codec,
 	bool on)
 {
 	snd_soc_update_bits(codec, WCD9XXX_A_CDC_CLSH_B1_CTL,
-		0x02, (on && anc_delay) ? 0x02 : 0x00);
+		0x02, on ? 0x02 : 0x00);
 }
 
 static inline void
@@ -489,14 +488,14 @@ static void wcd9xxx_cfg_clsh_param_common(
 {
 	int i;
 	const struct wcd9xxx_reg_mask_val reg_set[] = {
-		{WCD9XXX_A_CDC_CLSH_BUCK_NCP_VARS, 0x3 << 0, 0},
-		{WCD9XXX_A_CDC_CLSH_BUCK_NCP_VARS, 0x3 << 2, 1 << 2},
+		{WCD9XXX_A_CDC_CLSH_BUCK_NCP_VARS, (0x3 << 0), 0},
+		{WCD9XXX_A_CDC_CLSH_BUCK_NCP_VARS, (0x3 << 2), (1 << 2)},
 		{WCD9XXX_A_CDC_CLSH_BUCK_NCP_VARS, (0x1 << 4), 0},
 		{WCD9XXX_A_CDC_CLSH_B2_CTL, (0x3 << 0), 0x01},
 		{WCD9XXX_A_CDC_CLSH_B2_CTL, (0x3 << 2), (0x01 << 2)},
 		{WCD9XXX_A_CDC_CLSH_B2_CTL, (0xf << 4), (0x03 << 4)},
 		{WCD9XXX_A_CDC_CLSH_B3_CTL, (0xf << 4), (0x03 << 4)},
-		{WCD9XXX_A_CDC_CLSH_B3_CTL, (0xf << 0), (0x0B)},
+		{WCD9XXX_A_CDC_CLSH_B3_CTL, (0xf << 0), 0x0B},
 		{WCD9XXX_A_CDC_CLSH_B1_CTL, (0x1 << 5), (0x01 << 5)},
 		{WCD9XXX_A_CDC_CLSH_B1_CTL, (0x1 << 1), (0x01 << 1)},
 	};
@@ -530,6 +529,7 @@ static void wcd9xxx_chargepump_request(struct snd_soc_codec *codec, bool on)
 					__func__);
 			}
 			cp_count = 0;
+			WARN_ON(1);
 		}
 
 		if (cp_count == 0) {
@@ -541,46 +541,6 @@ static void wcd9xxx_chargepump_request(struct snd_soc_codec *codec, bool on)
 		}
 	}
 }
-
-void wcd9xxx_enable_high_perf_mode(struct snd_soc_codec *codec,
-				struct wcd9xxx_clsh_cdc_data *clsh_d,
-				u8 req_state, bool req_type)
-{
-	dev_dbg(codec->dev, "%s: users fclk8 %d, fclk5 %d", __func__,
-			clsh_d->ncp_users[NCP_FCLK_LEVEL_8],
-			clsh_d->ncp_users[NCP_FCLK_LEVEL_5]);
-
-	if (req_type == WCD9XXX_CLSAB_REQ_ENABLE) {
-		clsh_d->ncp_users[NCP_FCLK_LEVEL_8]++;
-		snd_soc_update_bits(codec, WCD9XXX_A_RX_HPH_CHOP_CTL,
-					0x20, 0x00);
-		wcd9xxx_chargepump_request(codec, true);
-		wcd9xxx_enable_anc_delay(codec, true);
-		if (clsh_d->ncp_users[NCP_FCLK_LEVEL_8] > 0)
-			snd_soc_update_bits(codec, WCD9XXX_A_NCP_STATIC,
-						0x0F, 0x08);
-		snd_soc_update_bits(codec, WCD9XXX_A_NCP_STATIC, 0x30, 0x30);
-
-		/* Enable NCP and wait until settles down */
-		if (snd_soc_update_bits(codec, WCD9XXX_A_NCP_EN, 0x01, 0x01))
-			usleep_range(NCP_SETTLE_TIME_US, NCP_SETTLE_TIME_US+10);
-	} else {
-		snd_soc_update_bits(codec, WCD9XXX_A_RX_HPH_CHOP_CTL,
-					0x20, 0x20);
-		wcd9xxx_chargepump_request(codec, false);
-		wcd9xxx_enable_anc_delay(codec, false);
-		clsh_d->ncp_users[NCP_FCLK_LEVEL_8]--;
-		if (clsh_d->ncp_users[NCP_FCLK_LEVEL_8] == 0 &&
-		    clsh_d->ncp_users[NCP_FCLK_LEVEL_5] == 0)
-			snd_soc_update_bits(codec, WCD9XXX_A_NCP_EN,
-						0x01, 0x00);
-		else if (clsh_d->ncp_users[NCP_FCLK_LEVEL_8] == 0)
-			snd_soc_update_bits(codec, WCD9XXX_A_NCP_STATIC,
-						0x0F, 0x05);
-	}
-	dev_dbg(codec->dev, "%s: leave\n", __func__);
-}
-EXPORT_SYMBOL(wcd9xxx_enable_high_perf_mode);
 
 static int get_impedance_index(u32 imped)
 {
@@ -781,7 +741,7 @@ static void wcd9xxx_clsh_enable_post_pa(struct snd_soc_codec *codec,
 		snd_soc_update_bits(codec, WCD9XXX_A_BUCK_MODE_3,
 							0x08, 0x08);
 
-	dev_info(codec->dev, "%s: completed clsh mode settings after PA enable\n",
+	dev_dbg(codec->dev, "%s: completed clsh mode settings after PA enable\n",
 		   __func__);
 
 }
@@ -810,7 +770,7 @@ static void wcd9xxx_set_fclk_get_ncp(struct snd_soc_codec *codec,
 
 	/* enable NCP and wait until settles down */
 	if (snd_soc_update_bits(codec, WCD9XXX_A_NCP_EN, 0x01, 0x01))
-		usleep_range(NCP_SETTLE_TIME_US, NCP_SETTLE_TIME_US + 50);
+		usleep_range(NCP_SETTLE_TIME_US, NCP_SETTLE_TIME_US);
 	pr_debug("%s: leave\n", __func__);
 }
 
@@ -1152,7 +1112,7 @@ static void wcd9xxx_clsh_state_ear(struct snd_soc_codec *codec,
 		dev_dbg(codec->dev, "%s: stub fallback to ear\n", __func__);
 		wcd9xxx_set_fclk_put_ncp(codec, clsh_d, NCP_FCLK_LEVEL_8);
 		wcd9xxx_enable_buck(codec, clsh_d, false);
-		wcd9xxx_clsh_comp_req(codec, clsh_d, CLSH_COMPUTE_EAR, false);
+		wcd9xxx_clsh_comp_req(codec, clsh_d, CLSH_COMPUTE_EAR, true);
 		wcd9xxx_chargepump_request(codec, false);
 		wcd9xxx_enable_clsh_block(codec, clsh_d, false);
 	}
@@ -1366,8 +1326,7 @@ void wcd9xxx_clsh_fsm(struct snd_soc_codec *codec,
 	switch (clsh_event) {
 	case WCD9XXX_CLSH_EVENT_PRE_DAC:
 		/* PRE_DAC event should be used only for Enable */
-		if (req_type != WCD9XXX_CLSH_REQ_ENABLE)
-			pr_warn("%s PRE_DAC event should be used only for Enable\n", __func__);
+		BUG_ON(req_type != WCD9XXX_CLSH_REQ_ENABLE);
 
 		old_state = cdc_clsh_d->state;
 		new_state = old_state | req_state;

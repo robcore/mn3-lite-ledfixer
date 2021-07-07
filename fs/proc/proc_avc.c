@@ -71,10 +71,11 @@ void sec_avc_log(char *fmt, ...)
 	size = strlen(buf);
 
 	if (idx + size > sec_avc_log_size - 1) {
-		len = scnprintf(&sec_avc_log_buf[0], size + 1, "%s\n", buf);
+		len = scnprintf(&sec_avc_log_buf[0],
+				size + 1, "%s", buf);
 		*sec_avc_log_ptr = len;
 	} else {
-		len = scnprintf(&sec_avc_log_buf[idx], size + 1, "%s\n", buf);
+		len = scnprintf(&sec_avc_log_buf[idx], size + 1, "%s", buf);
 		*sec_avc_log_ptr += len;
 	}
 }
@@ -108,7 +109,7 @@ static ssize_t sec_avc_log_write(struct file *file,
 		pr_info("%s\n", page);
 		/* print avc_log to sec_avc_log_buf */
 		sec_avc_log("%s", page);
-	}
+	} 
 	ret = count;
 out:
 	free_page((unsigned long)page);

@@ -20,24 +20,6 @@
 /* widget has no PM register bit */
 #define SND_SOC_NOPM	-1
 
-/* dapm event types */
-#define SND_SOC_DAPM_PRE_PMU	0x1 	/* before widget power up */
-#define SND_SOC_DAPM_POST_PMU	0x2		/* after widget power up */
-#define SND_SOC_DAPM_PRE_PMD	0x4 	/* before widget power down */
-#define SND_SOC_DAPM_POST_PMD	0x8		/* after widget power down */
-#define SND_SOC_DAPM_PRE_REG	0x10	/* before audio path setup */
-#define SND_SOC_DAPM_POST_REG	0x20	/* after audio path setup */
-#define SND_SOC_DAPM_PRE_POST_PMD \
-				(SND_SOC_DAPM_PRE_PMD | SND_SOC_DAPM_POST_PMD)
-#define SND_SOC_DAPM_PRE_POST_PMU \
-				(SND_SOC_DAPM_PRE_PMU | SND_SOC_DAPM_POST_PMU)
-
-/* convenience event type detection */
-#define SND_SOC_DAPM_EVENT_ON(e)	\
-	(e & (SND_SOC_DAPM_PRE_PMU | SND_SOC_DAPM_POST_PMU))
-#define SND_SOC_DAPM_EVENT_OFF(e)	\
-	(e & (SND_SOC_DAPM_PRE_PMD | SND_SOC_DAPM_POST_PMD))
-
 /*
  * SoC dynamic audio power management
  *
@@ -321,6 +303,22 @@
 #define SND_SOC_DAPM_STREAM_PAUSE_PUSH	0x10
 #define SND_SOC_DAPM_STREAM_PAUSE_RELEASE	0x20
 
+/* dapm event types */
+#define SND_SOC_DAPM_PRE_PMU	0x1 	/* before widget power up */
+#define SND_SOC_DAPM_POST_PMU	0x2		/* after widget power up */
+#define SND_SOC_DAPM_PRE_PMD	0x4 	/* before widget power down */
+#define SND_SOC_DAPM_POST_PMD	0x8		/* after widget power down */
+#define SND_SOC_DAPM_PRE_REG	0x10	/* before audio path setup */
+#define SND_SOC_DAPM_POST_REG	0x20	/* after audio path setup */
+#define SND_SOC_DAPM_PRE_POST_PMD \
+				(SND_SOC_DAPM_PRE_PMD | SND_SOC_DAPM_POST_PMD)
+
+/* convenience event type detection */
+#define SND_SOC_DAPM_EVENT_ON(e)	\
+	(e & (SND_SOC_DAPM_PRE_PMU | SND_SOC_DAPM_POST_PMU))
+#define SND_SOC_DAPM_EVENT_OFF(e)	\
+	(e & (SND_SOC_DAPM_PRE_PMD | SND_SOC_DAPM_POST_PMD))
+
 struct snd_soc_dapm_widget;
 enum snd_soc_dapm_type;
 struct snd_soc_dapm_path;
@@ -588,11 +586,6 @@ struct snd_soc_dapm_widget_list {
 	int num_widgets;
 	struct snd_soc_dapm_widget *widgets[0];
 };
-
-#define for_each_dapm_widgets(list, i, widget)				\
-	for ((i) = 0;							\
-	     (i) < list->num_widgets && (widget = list->widgets[i]);	\
-	     (i)++)
 
 struct snd_soc_dapm_stats {
 	int power_checks;

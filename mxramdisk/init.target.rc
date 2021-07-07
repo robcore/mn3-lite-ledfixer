@@ -32,9 +32,6 @@ on early-init
     mkdir /firmware-modem 0771 system system
     symlink /data/tombstones /tombstones
 
-    setenforce 0
-    setprop ro.boot.selinux 0
-
 on init
     # Set the property to indicate type of virtual display to 0
     # 0 indicates that virtual display is not a Wifi display and that the
@@ -143,25 +140,25 @@ service qrngd /system/bin/qrngd -f
     user root
     group root
 
-service qrngp /system/bin/qrngp
-    class main
-    user root
-    group root
-    oneshot
-    disabled
+#service qrngp /system/bin/qrngp
+#    class main
+#    user root
+#    group root
+#    oneshot
+#    disabled
 
-on property:sys.boot_completed=1
-    start qrngp
+#on property:sys.boot_completed=1
+#    start qrngd
 
 service qseecomd /system/bin/qseecomd
    class core
    user root
    group root
 
-#service mpdecision /system/bin/mpdecision --avg_comp
-#   class main
-#   user root
-#   disabled
+service mpdecision /system/bin/mpdecision --avg_comp
+   class main
+   user root
+   disabled
 
 service qosmgrd /system/bin/qosmgr /system/etc/qosmgr_rules.xml
    user system
@@ -314,12 +311,10 @@ service ml_daemon /system/bin/ml_daemon
     user root
     group root
 # SecEDS
-
 service TvoutService_C /system/bin/bintvoutservice
      class main
      user system
      group graphics
-
 on property:ro.SecEDS.enable=false
     stop TvoutService_C
 
@@ -343,4 +338,3 @@ on property:ro.SecEDS.enable=false
 #    chown system system /dev/.secure_storage
 #    restorecon -R /dev/.secure_storage
 #    start secure_storage
-

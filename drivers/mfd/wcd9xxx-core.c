@@ -31,7 +31,7 @@
 #include <sound/soc.h>
 
 #define WCD9XXX_REGISTER_START_OFFSET 0x800
-#define WCD9XXX_SLIM_RW_MAX_TRIES 10
+#define WCD9XXX_SLIM_RW_MAX_TRIES 3
 #define SLIMBUS_PRESENT_TIMEOUT 100
 
 #define MAX_WCD9XXX_DEVICE	4
@@ -109,193 +109,99 @@ static int __wcd9xxx_reg_read(
 		return val;
 }
 
-int wcd9xxx_reg_read(struct wcd9xxx_core_resource *core_res,
-					 unsigned short reg)
-{
+int wcd9xxx_reg_read(
+	struct wcd9xxx_core_resource *core_res,
+	unsigned short reg) {
 	struct wcd9xxx *wcd9xxx = (struct wcd9xxx *) core_res->parent;
 	return __wcd9xxx_reg_read(wcd9xxx, reg);
 
 }
 EXPORT_SYMBOL(wcd9xxx_reg_read);
 
-extern u8 hphl_cached_gain;
-extern u8 hphr_cached_gain;
-extern u8 speaker_cached_gain;
-extern u8 iir1_cached_gain; /*0x340*/
-extern u8 iir2_cached_gain; /*0x350*/
-extern u8 iir1_inp2_cached_gain; /*0x341*/
-extern u8 iir2_inp2_cached_gain; /*0x351*/
-#ifdef CONFIG_RAMP_VOLUME
-extern unsigned int ramp_volume;
-#endif
-
-#if 0
-extern u8 crossleft_cached_gain; /* RX4 routed from right to left side Port: RX4 -> 0x2CF */
-extern u8 crossright_cached_gain; /* RX3 routed from left to right side Port: RX3 -> 0x2C7*/
-#endif
-
 static unsigned int sound_control_override = 0;
 void lock_sound_control(struct wcd9xxx_core_resource *core_res,
-						unsigned int lockval)
-{
+						unsigned int lockval) {
 	struct wcd9xxx *wcd9xxx = (struct wcd9xxx *) core_res->parent;
-/*	if (unlikely(lockval < 0))
+	if (unlikely(lockval <= 0))
 		lockval = 0;
-	if (unlikely(lockval > 1))
+	if (unlikely(lockval >= 1))
 		lockval = 1;
-*/
+
 	mutex_lock(&wcd9xxx->io_lock);
 	sound_control_override = lockval;
 	mutex_unlock(&wcd9xxx->io_lock);
 }
 EXPORT_SYMBOL(lock_sound_control);
 
-static bool sound_control_reserved(unsigned short reg)
-{
-	switch (reg) {
-		case 0x2B7:
-		case 0x2BF:
-		case 0x2E7:
-        case 0x340:
-        case 0x341:
-        case 0x350:
-        case 0x351:
-#if 0
-        case 0x2CF:
-        case 0x2C7:
-#endif
-			return true;
-		default:
-			break;
-	}
-	return false;
-}
-
 static int wcd9xxx_write(struct wcd9xxx *wcd9xxx, unsigned short reg,
-			int bytes, void *src, bool interface_reg)
-{
+			int bytes, void *src, bool interface_reg) {
 	int i;
 
-	if (bytes <= 0)
+	if (bytes <= 0) {
+		pr_err("%s: Error, invalid write length\n", __func__);
 		return -EINVAL;
+	}
 
-	if (!sound_control_override && sound_control_reserved(reg))
-		return 0;
-
+	if (!sound_control_override) {
+		switch (reg) {
+			case 0x2B7:
+			case 0x2BF:
+			case 0x2E7:
+				return 0;
+			default:
+				break;
+		}
+	}
+/*
+	if (reg == 0x1AE)
+		pr_info("%s: HPH Left PA write: %u\n", __func__, (u8 *)src);
+	if (reg == 0x1B4)
+		pr_info("%s: HPH Right PA write: %u\n", __func__, (u8 *)src);
+*/
+/*
+	for (i = 0; i < bytes; i++)
+		dev_dbg(wcd9xxx->dev, "Write %02x to 0x%x\n", ((u8 *)src)[i],
+			reg + i);
+*/
 	return wcd9xxx->write_dev(wcd9xxx, reg, bytes, src, interface_reg);
 }
-
+extern u8 hphl_cached_gain;
+extern u8 hphr_cached_gain;
+extern u8 speaker_cached_gain;
 static int __wcd9xxx_reg_write(struct wcd9xxx *wcd9xxx,
-							   unsigned short reg, u8 val)
-{
+							   unsigned short reg, u8 val) {
 	int ret;
-#ifdef CONFIG_RAMP_VOLUME
-	int i;
-	u8 oldval, tmpval;
-#endif
+	bool need_fixup = false;
 
 	mutex_lock(&wcd9xxx->io_lock);
-	if (sound_control_override) {
+	if ((!sound_control_override) &&
+	   (reg == 0x2E7 || reg == 0x2B7 || reg == 0x2BF)) {
+		mutex_unlock(&wcd9xxx->io_lock);
+		need_fixup = true;
+	} else {
 		ret = wcd9xxx_write(wcd9xxx, reg, 1, &val, false);
 		mutex_unlock(&wcd9xxx->io_lock);
-		return ret;
 	}
-	mutex_unlock(&wcd9xxx->io_lock);
 
-	if (!sound_control_reserved(reg)) {
+	if (need_fixup) {
+		lock_sound_control(&wcd9xxx->core_res, 1);
 		mutex_lock(&wcd9xxx->io_lock);
-		ret = wcd9xxx_write(wcd9xxx, reg, 1, &val, false);
-		mutex_unlock(&wcd9xxx->io_lock);
-		return ret;
-	}
-
-
-	lock_sound_control(&wcd9xxx->core_res, 1);
-	mutex_lock(&wcd9xxx->io_lock);
-	switch (reg) {
-		case 0x2B7:
-#ifdef CONFIG_RAMP_VOLUME
-			if (ramp_volume) {
-				if (val == 172) {
-					oldval = wcd9xxx_read(wcd9xxx, reg, 1, &val, false);
-					if (oldval > 0 && oldval <= 40) {
-						for (i = oldval - 1; i > 0; i--)
-							wcd9xxx_write(wcd9xxx, reg, 1, &i, false);
-						oldval = i;
-					}
-
-					if (oldval == 0) {
-						oldval = 255;
-						wcd9xxx_write(wcd9xxx, reg, 1, &oldval, false);
-					}
-
-					if (oldval > 173) {
-						for (i = oldval - 1; i > 173; i--)
-							wcd9xxx_write(wcd9xxx, reg, 1, &i, false);
-						ret = wcd9xxx_write(wcd9xxx, reg, 1, &val, false);
-					} else {
-						ret = wcd9xxx_write(wcd9xxx, reg, 1, &val, false);
-					}
-				} else {
-					oldval = wcd9xxx_read(wcd9xxx, reg, 1, &val, false);
-					if (oldval >= 172 && oldval <= 255) {
-					}
-					ret = wcd9xxx_write(wcd9xxx, reg, 1, &hphl_cached_gain, false);
-				}
-			} else {
-				if (val == 172)
-					ret = wcd9xxx_write(wcd9xxx, reg, 1, &val, false);
-				else
-					ret = wcd9xxx_write(wcd9xxx, reg, 1, &hphl_cached_gain, false);
-			}
-#else
-			if (val == 172)
-				ret = wcd9xxx_write(wcd9xxx, reg, 1, &val, false);
-			else
+		switch (reg) {
+			case 0x2B7:
 				ret = wcd9xxx_write(wcd9xxx, reg, 1, &hphl_cached_gain, false);
-#endif /* CONFIG_RAMP_VOLUME */
-			break;
-		case 0x2BF:
-			if (val == 172)
-				ret = wcd9xxx_write(wcd9xxx, reg, 1, &val, false);
-			else
+				break;
+			case 0x2BF:
 				ret = wcd9xxx_write(wcd9xxx, reg, 1, &hphr_cached_gain, false);
-			break;
-		case 0x2E7:
-			if (val == 172)
-				ret = wcd9xxx_write(wcd9xxx, reg, 1, &val, false);
-			else
+				break;
+			case 0x2E7:
 				ret = wcd9xxx_write(wcd9xxx, reg, 1, &speaker_cached_gain, false);
-			break;
-		case 0x340:
-			if (val == 172)
-				ret = wcd9xxx_write(wcd9xxx, reg, 1, &val, false);
-			else
-				ret = wcd9xxx_write(wcd9xxx, reg, 1, &iir1_cached_gain, false);
-			break;
-		case 0x350:
-			if (val == 172)
-				ret = wcd9xxx_write(wcd9xxx, reg, 1, &val, false);
-			else
-				ret = wcd9xxx_write(wcd9xxx, reg, 1, &iir2_cached_gain, false);
-			break;
-		case 0x341:
-			if (val == 172)
-				ret = wcd9xxx_write(wcd9xxx, reg, 1, &val, false);
-			else
-				ret = wcd9xxx_write(wcd9xxx, reg, 1, &iir1_inp2_cached_gain, false);
-			break;
-		case 0x351:
-			if (val == 172)
-				ret = wcd9xxx_write(wcd9xxx, reg, 1, &val, false);
-			else
-				ret = wcd9xxx_write(wcd9xxx, reg, 1, &iir2_inp2_cached_gain, false);
-			break;
-		default:
-			break;
+				break;
+			default:
+				break;
+		}
+		mutex_unlock(&wcd9xxx->io_lock);
+		lock_sound_control(&wcd9xxx->core_res, 0);
 	}
-	mutex_unlock(&wcd9xxx->io_lock);
-	lock_sound_control(&wcd9xxx->core_res, 0);
 
 	return ret;
 }
@@ -404,7 +310,7 @@ static int wcd9xxx_slim_read_device(struct wcd9xxx *wcd9xxx, unsigned short reg,
 		mutex_unlock(&wcd9xxx->xfer_lock);
 		if (likely(ret == 0) || (--slim_read_tries == 0))
 			break;
-		usleep_range(10000, 10100);
+		usleep_range(5000, 5000);
 	}
 
 	if (ret)
@@ -433,7 +339,7 @@ static int wcd9xxx_slim_write_device(struct wcd9xxx *wcd9xxx,
 		mutex_unlock(&wcd9xxx->xfer_lock);
 		if (likely(ret == 0) || (--slim_write_tries == 0))
 			break;
-		usleep_range(10000, 10100);
+		usleep_range(5000, 5000);
 	}
 
 	if (ret)
@@ -826,7 +732,7 @@ static int get_parameters(char *buf, long int *param1, int num_of_par)
 			else
 				base = 10;
 
-			if (kstrtoul(token, base, &param1[cnt]) != 0)
+			if (strict_strtoul(token, base, &param1[cnt]) != 0)
 				return -EINVAL;
 
 			token = strsep(&buf, " ");
@@ -1254,7 +1160,7 @@ static int __devinit wcd9xxx_i2c_probe(struct i2c_client *client,
 			       __func__);
 			goto err_codec;
 		}
-		usleep_range(5, 10);
+		usleep_range(5, 5);
 
 		ret = wcd9xxx_reset(wcd9xxx);
 		if (ret) {
@@ -1659,7 +1565,7 @@ static int wcd9xxx_slim_get_laddr(struct slim_device *sb,
 		if (!ret)
 			break;
 		/* Give SLIMBUS time to report present and be ready. */
-		usleep_range(1000, 1100);
+		usleep_range(1000, 1000);
 		pr_debug_ratelimited("%s: retyring get logical addr\n",
 				     __func__);
 	} while time_before(jiffies, timeout);
@@ -1734,7 +1640,7 @@ static int wcd9xxx_slim_probe(struct slim_device *slim)
 		       __func__);
 		goto err_codec;
 	}
-	usleep_range(5, 10);
+	usleep_range(5, 5);
 
 	ret = wcd9xxx_reset(wcd9xxx);
 	if (ret) {
@@ -1837,6 +1743,7 @@ static int wcd9xxx_device_up(struct wcd9xxx *wcd9xxx)
 		wcd9xxx->slim_device_bootup = false;
 		return 0;
 	}
+
 	dev_info(wcd9xxx->dev, "%s: codec bring up\n", __func__);
 	wcd9xxx_bring_up(wcd9xxx);
 	ret = wcd9xxx_irq_init(wcd9xxx_res);
@@ -1883,7 +1790,6 @@ static int wcd9xxx_slim_device_down(struct slim_device *sldev)
 {
 	struct wcd9xxx *wcd9xxx = slim_get_devicedata(sldev);
 
-	dev_info(wcd9xxx->dev, "%s: device down\n", __func__);
 	if (!wcd9xxx) {
 		pr_err("%s: wcd9xxx is NULL\n", __func__);
 		return -EINVAL;

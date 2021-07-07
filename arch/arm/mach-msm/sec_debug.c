@@ -1931,6 +1931,21 @@ int sec_debug_subsys_init(void)
 
 	secdbg_krait->tz_core_dump =
 		(struct tzbsp_dump_buf_s **)get_wdog_regsave_paddr();
+#if 0 //MSM8974 doesn't use the msm_fb.c. and JBP doesn't use fb on kernel side.
+	get_fbinfo(0, &secdbg_krait->fb_info.fb_paddr,
+		&secdbg_krait->fb_info.xres,
+		&secdbg_krait->fb_info.yres,
+		&secdbg_krait->fb_info.bpp,
+		&secdbg_krait->fb_info.rgb_bitinfo.r_off,
+		&secdbg_krait->fb_info.rgb_bitinfo.r_len,
+		&secdbg_krait->fb_info.rgb_bitinfo.g_off,
+		&secdbg_krait->fb_info.rgb_bitinfo.g_len,
+		&secdbg_krait->fb_info.rgb_bitinfo.b_off,
+		&secdbg_krait->fb_info.rgb_bitinfo.b_len,
+		&secdbg_krait->fb_info.rgb_bitinfo.a_off,
+		&secdbg_krait->fb_info.rgb_bitinfo.a_len);
+#endif
+
 	ADD_STR_TO_INFOMON(unit_name);
 	ADD_VAR_TO_INFOMON(system_rev);
 	if (___build_root_init(build_root) == 0)

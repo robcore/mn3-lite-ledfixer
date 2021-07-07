@@ -90,8 +90,8 @@ typedef struct {
 	void _RecorderReset(int nActuator);
 	void _Record(int actuatorIndex, const char *format, ...);
 #endif
-#define VIBRATION_ON 1
-#define VIBRATION_OFF 0
+#define VIBRATION_ON            1
+#define VIBRATION_OFF           0
 
 int32_t g_nforce_32;
 
@@ -298,11 +298,23 @@ int32_t vibe_set_pwm_freq(int nForce);
 #endif
 /* Kernel Debug Macros */
 #ifdef __KERNEL__
-	#define DbgOut(_x_)
-	#define DbgRecorderInit(_x_)
-	#define DbgRecorderTerminate(_x_)
-	#define DbgRecorderReset(_x_)
-	#define DbgRecord(_x_)
+	#ifdef VIBE_DEBUG
+		#define DbgOut(_x_)
+	#else   /* VIBE_DEBUG */
+		#define DbgOut(_x_)
+	#endif  /* VIBE_DEBUG */
+
+	#if defined(VIBE_RECORD) && defined(VIBE_DEBUG)
+		#define DbgRecorderInit(_x_) _RecorderInit _x_
+		#define DbgRecorderTerminate(_x_) _RecorderTerminate _x_
+		#define DbgRecorderReset(_x_) _RecorderReset _x_
+		#define DbgRecord(_x_) _Record _x_
+	#else /* defined(VIBE_RECORD) && defined(VIBE_DEBUG) */
+		#define DbgRecorderInit(_x_)
+		#define DbgRecorderTerminate(_x_)
+		#define DbgRecorderReset(_x_)
+		#define DbgRecord(_x_)
+	#endif /* defined(VIBE_RECORD) && defined(VIBE_DEBUG) */
 #endif  /* __KERNEL__ */
 
 #if defined(CONFIG_MOTOR_DRV_MAX77803)

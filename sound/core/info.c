@@ -105,7 +105,7 @@ static int resize_info_buffer(struct snd_info_buffer *buffer,
  *
  * Outputs the string on the procfs buffer just like printf().
  *
- * Return: The size of output string, or a negative error code.
+ * Returns the size of output string.
  */
 int snd_iprintf(struct snd_info_buffer *buffer, const char *fmt, ...)
 {
@@ -260,7 +260,6 @@ static ssize_t snd_info_entry_write(struct file *file, const char __user *buffer
 	struct snd_info_buffer *buf;
 	ssize_t size = 0;
 	loff_t pos;
-	unsigned long realloc_size;
 
 	data = file->private_data;
 	if (snd_BUG_ON(!data))
@@ -269,8 +268,7 @@ static ssize_t snd_info_entry_write(struct file *file, const char __user *buffer
 	pos = *offset;
 	if (pos < 0 || (long) pos != pos || (ssize_t) count < 0)
 		return -EIO;
-	realloc_size = (unsigned long) pos + (unsigned long) count;
-	if (realloc_size < (unsigned long) pos || realloc_size > UINT_MAX)
+	if ((unsigned long) pos + (unsigned long) count < (unsigned long) pos)
 		return -EIO;
 	switch (entry->content) {
 	case SNDRV_INFO_CONTENT_TEXT:
@@ -355,7 +353,7 @@ static int snd_info_entry_open(struct inode *inode, struct file *file)
 				goto __nomem;
 			data->rbuffer = buffer;
 			buffer->len = PAGE_SIZE;
-			buffer->buffer = kzalloc(buffer->len, GFP_KERNEL);
+			buffer->buffer = kmalloc(buffer->len, GFP_KERNEL);
 			if (buffer->buffer == NULL)
 				goto __nomem;
 		}
@@ -696,26 +694,31 @@ int snd_info_card_free(struct snd_card *card)
  *
  * Reads one line from the buffer and stores the string.
  *
- * Return: Zero if successful, or 1 if error or EOF.
+ * Returns zero if successful, or 1 if error or EOF.
  */
 int snd_info_get_line(struct snd_info_buffer *buffer, char *line, int len)
 {
 	int c = -1;
 
-	if (snd_BUG_ON(!buffer || !buffer->buffer))
-		return 1;
 	if (len <= 0 || buffer->stop || buffer->error)
 		return 1;
-	while (!buffer->stop) {
+	while (--len > 0) {
+		c = buffer->buffer[buffer->curr++];
+		if (c == '\n') {
+			if (buffer->curr >= buffer->size)
+				buffer->stop = 1;
+			break;
+		}
+		*line++ = c;
+		if (buffer->curr >= buffer->size) {
+			buffer->stop = 1;
+			break;
+		}
+	}
+	while (c != '\n' && !buffer->stop) {
 		c = buffer->buffer[buffer->curr++];
 		if (buffer->curr >= buffer->size)
 			buffer->stop = 1;
-		if (c == '\n')
-			break;
-		if (len) {
-			len--;
-			*line++ = c;
-		}
 	}
 	*line = '\0';
 	return 0;
@@ -732,7 +735,7 @@ EXPORT_SYMBOL(snd_info_get_line);
  * Parses the original string and copy a token to the given
  * string buffer.
  *
- * Return: The updated pointer of the original string so that
+ * Returns the updated pointer of the original string so that
  * it can be used for the next call.
  */
 const char *snd_info_get_str(char *dest, const char *src, int len)
@@ -771,7 +774,7 @@ EXPORT_SYMBOL(snd_info_get_str);
  * Usually called from other functions such as
  * snd_info_create_card_entry().
  *
- * Return: The pointer of the new instance, or %NULL on failure.
+ * Returns the pointer of the new instance, or NULL on failure.
  */
 static struct snd_info_entry *snd_info_create_entry(const char *name)
 {
@@ -800,7 +803,7 @@ static struct snd_info_entry *snd_info_create_entry(const char *name)
  *
  * Creates a new info entry and assigns it to the given module.
  *
- * Return: The pointer of the new instance, or %NULL on failure.
+ * Returns the pointer of the new instance, or NULL on failure.
  */
 struct snd_info_entry *snd_info_create_module_entry(struct module * module,
 					       const char *name,
@@ -824,7 +827,7 @@ EXPORT_SYMBOL(snd_info_create_module_entry);
  *
  * Creates a new info entry and assigns it to the given card.
  *
- * Return: The pointer of the new instance, or %NULL on failure.
+ * Returns the pointer of the new instance, or NULL on failure.
  */
 struct snd_info_entry *snd_info_create_card_entry(struct snd_card *card,
 					     const char *name,
@@ -890,7 +893,7 @@ static int snd_info_dev_register_entry(struct snd_device *device)
  * For releasing this entry, use snd_device_free() instead of
  * snd_info_free_entry(). 
  *
- * Return: Zero if successful, or a negative error code on failure.
+ * Returns zero if successful, or a negative error code on failure.
  */
 int snd_card_proc_new(struct snd_card *card, const char *name,
 		      struct snd_info_entry **entryp)
@@ -946,7 +949,7 @@ EXPORT_SYMBOL(snd_info_free_entry);
  *
  * Registers the proc info entry.
  *
- * Return: Zero if successful, or a negative error code on failure.
+ * Returns zero if successful, or a negative error code on failure.
  */
 int snd_info_register(struct snd_info_entry * entry)
 {

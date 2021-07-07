@@ -212,35 +212,35 @@ static int32_t msm_led_trigger_config(struct msm_led_flash_ctrl_t *fctrl,
 #if defined(CONFIG_LEDS_MAX77803)
 	switch (cfg->cfgtype) {
 	case MSM_CAMERA_LED_OFF:
-		pr_err("CAM Flash OFF\n");
+		pr_err("CAM Flash OFF");
 		max77803_led_en(0, 0);
 		max77803_led_en(0, 1);
 		break;
 
 	case MSM_CAMERA_LED_LOW:
-		pr_err("CAM Pre Flash ON\n");
+		pr_err("CAM Pre Flash ON");
 		max77803_led_en(1, 0);
 		break;
 
 	case MSM_CAMERA_LED_HIGH:
-		pr_err("CAM Flash ON\n");
+		pr_err("CAM Flash ON");
 		max77803_led_en(1, 1);
 		break;
 
 	case MSM_CAMERA_LED_INIT:
 		break;
 	case MSM_CAMERA_LED_RELEASE:
-		pr_err("CAM Flash OFF & release\n");
+		pr_err("CAM Flash OFF & release");
 		ret = gpio_request(led_flash_en, "max77803_flash_en");
 		if (ret)
-			pr_err("can't get max77803_flash_en\n");
+			pr_err("can't get max77803_flash_en");
 		else {
 			gpio_direction_output(led_flash_en, 0);
 			gpio_free(led_flash_en);
 		}
 		ret = gpio_request(led_torch_en, "max77803_torch_en");
 		if (ret)
-			pr_err("can't get max77803_torch_en\n");
+			pr_err("can't get max77803_torch_en");
 		else {
 			gpio_direction_output(led_torch_en, 0);
 			gpio_free(led_torch_en);

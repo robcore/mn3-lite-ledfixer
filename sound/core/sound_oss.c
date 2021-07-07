@@ -35,7 +35,7 @@
 #include <linux/sound.h>
 #include <linux/mutex.h>
 
-#define SNDRV_OSS_MINORS 256
+#define SNDRV_OSS_MINORS 128
 
 static struct snd_minor *snd_oss_minors[SNDRV_OSS_MINORS];
 static DEFINE_MUTEX(sound_oss_mutex);

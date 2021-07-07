@@ -1094,9 +1094,9 @@ static int aio_read_evt(struct kioctx *ioctx, struct io_event *ent)
 	spin_unlock(&info->ring_lock);
 
 out:
+	kunmap_atomic(ring);
 	dprintk("leaving aio_read_evt: %d  h%lu t%lu\n", ret,
 		 (unsigned long)ring->head, (unsigned long)ring->tail);
-	kunmap_atomic(ring);
 	return ret;
 }
 
@@ -1680,9 +1680,7 @@ long do_io_submit(aio_context_t ctx_id, long nr,
 	struct kioctx *ctx;
 	long ret = 0;
 	int i = 0;
-#ifndef CONFIG_AIO_SSD_ONLY
 	struct blk_plug plug;
-#endif
 	struct kiocb_batch batch;
 
 	if (unlikely(nr < 0))
@@ -1702,9 +1700,7 @@ long do_io_submit(aio_context_t ctx_id, long nr,
 
 	kiocb_batch_init(&batch, nr);
 
-#ifndef CONFIG_AIO_SSD_ONLY
 	blk_start_plug(&plug);
-#endif
 
 	/*
 	 * AKPM: should this return a partial result if some of the IOs were
@@ -1728,9 +1724,7 @@ long do_io_submit(aio_context_t ctx_id, long nr,
 		if (ret)
 			break;
 	}
-#ifndef CONFIG_AIO_SSD_ONLY
 	blk_finish_plug(&plug);
-#endif
 
 	kiocb_batch_free(ctx, &batch);
 	put_ioctx(ctx);

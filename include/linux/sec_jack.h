@@ -18,9 +18,12 @@
 #ifdef __KERNEL__
 
 enum {
-	SEC_JACK_NO_DEVICE				= 0,
-	SEC_HEADSET_4POLE				= 1,
-	SEC_HEADSET_3POLE				= 2,
+	SEC_JACK_NO_DEVICE				= 0x0,
+	SEC_HEADSET_4POLE				= 0x01 << 0,
+	SEC_HEADSET_3POLE				= 0x01 << 1,
+#if defined(CONFIG_MACH_KLTE_JPN)
+	SEC_EXTERNAL_ANTENNA			= 0x01 << 2,
+#endif
 };
 
 struct sec_jack_zone {
@@ -49,8 +52,6 @@ struct sec_jack_platform_data {
 	struct sec_jack_buttons_zone jack_buttons_zones[3];
 	int mpp_ch_scale[3];
 };
-
-extern int secjack_state;
 
 #endif
 

@@ -133,7 +133,7 @@ static int snd_compr_open(struct inode *inode, struct file *f)
 		kfree(data);
 	}
 	snd_card_unref(compr->card);
-	return ret;
+	return 0;
 }
 
 static int snd_compr_free(struct inode *inode, struct file *f)
@@ -145,8 +145,7 @@ static int snd_compr_free(struct inode *inode, struct file *f)
 	case SNDRV_PCM_STATE_RUNNING:
 	case SNDRV_PCM_STATE_DRAINING:
 	case SNDRV_PCM_STATE_PAUSED:
-		data->stream.ops->trigger(&data->stream,
-					SNDRV_PCM_TRIGGER_STOP);
+		data->stream.ops->trigger(&data->stream, SNDRV_PCM_TRIGGER_STOP);
 		break;
 	default:
 		break;
@@ -488,7 +487,7 @@ static int snd_compress_check_input(struct snd_compr_params *params)
 {
 	/* first let's check the buffer parameter's */
 	if (params->buffer.fragment_size == 0 ||
-	    params->buffer.fragments > INT_MAX / params->buffer.fragment_size)
+			params->buffer.fragments > UINT_MAX / params->buffer.fragment_size)
 		return -EINVAL;
 
 	/* now codec parameters */
@@ -783,9 +782,9 @@ static int snd_compress_simple_ioctls(struct file *file,
 		retval = snd_compr_ioctl_avail(stream, arg);
 		break;
 
-	/* drain and partial drain need special handling
-	 * we need to drop the locks here as the streams would get blocked on
-	 * the dsp to get drained. The locking would be handled in respective
+		/* drain and partial drain need special handling
+	 * we need to drop the locks here as the streams would get blocked on the
+	 * dsp to get drained. The locking would be handled in respective
 	 * function here
 	 */
 	case _IOC_NR(SNDRV_COMPRESS_DRAIN):
@@ -900,8 +899,7 @@ static int snd_compress_dev_disconnect(struct snd_device *device)
 	struct snd_compr *compr;
 
 	compr = device->device_data;
-	snd_unregister_device(SNDRV_DEVICE_TYPE_COMPRESS, compr->card,
-		compr->device);
+	snd_unregister_device(compr->direction, compr->card, compr->device);
 	return 0;
 }
 

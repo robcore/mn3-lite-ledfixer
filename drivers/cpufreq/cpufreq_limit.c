@@ -28,7 +28,7 @@ struct cpufreq_limit_handle {
 static DEFINE_MUTEX(cpufreq_limit_lock);
 static LIST_HEAD(cpufreq_limit_requests);
 
-#ifdef CONFIG_SEC_PM
+#if defined(CONFIG_ARCH_MSM8974PRO)
 static int suspend_boost = 1190400;
 module_param(suspend_boost, uint, 0644);
 #endif
@@ -179,7 +179,7 @@ static struct attribute_group limit_attr_group = {
 	.name = "cpufreq_limit",
 };
 
-#ifdef CONFIG_SEC_PM
+#if defined(CONFIG_ARCH_MSM8974PRO)
 static int cpufreq_limit_suspend_handler(struct notifier_block *nb,
 				unsigned long val, void *data)
 {
@@ -212,23 +212,22 @@ out:
 
 static int __init cpufreq_limit_init(void)
 {
-	int ret = 0;
+	int ret;
 
 	ret = cpufreq_register_notifier(&notifier_policy_block,
 				CPUFREQ_POLICY_NOTIFIER);
 	if (ret)
-		goto finishline;
+		return ret;
 
 	ret = sysfs_create_group(cpufreq_global_kobject,
 			&limit_attr_group);
 	if (ret)
-		goto finishline;
+		return ret;
 
-#ifdef CONFIG_SEC_PM
+#if defined(CONFIG_ARCH_MSM8974PRO)
 	pm_notifier(cpufreq_limit_suspend_handler, 0);
 #endif
-finishline:
-	return ret;
+	return 0;
 }
 
 static void __exit cpufreq_limit_exit(void)

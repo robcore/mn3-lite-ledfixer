@@ -1109,17 +1109,6 @@ config WCD9320_CODEC
 	  The WCD9320 codec support either I2C/I2S or Slimbus for
 	  control and data exchnage with master processor.
 
-config RAMP_VOLUME
-	bool "Option available to gradually ramp volume changes via sysfs"
-	depends on WCD9320_CODEC
-	default n
-	help
-	  This enables an experimental feature that allows the toggling
-	  of a volume ramping method for drastic changes in digital
-	  volume.
-	  Mainly useful for avoiding artifacts when transitioning to or
-	  from a muted state. DO NOTE USE. UNFINISHED.
-
 config WCD9306_CODEC
 	tristate "WCD9306 Codec"
 	select SLIMBUS

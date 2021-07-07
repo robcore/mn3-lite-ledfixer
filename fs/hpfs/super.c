@@ -385,13 +385,9 @@ static int hpfs_remount_fs(struct super_block *s, int *flags, char *data)
 	int o;
 	struct hpfs_sb_info *sbi = hpfs_sb(s);
 	char *new_opts = kstrdup(data, GFP_KERNEL);
-
-
-	if (!new_opts)
-		return -ENOMEM;
-
+	
 	*flags |= MS_NOATIME;
-
+	
 	hpfs_lock(s);
 	lock_super(s);
 	uid = sbi->sb_uid; gid = sbi->sb_gid;
@@ -556,13 +552,7 @@ static int hpfs_fill_super(struct super_block *s, void *options, int silent)
 	sbi->sb_cp_table = NULL;
 	sbi->sb_c_bitmap = -1;
 	sbi->sb_max_fwd_alloc = 0xffffff;
-
-	if (sbi->sb_fs_size >= 0x80000000) {
-		hpfs_error(s, "invalid size in superblock: %08x",
-			(unsigned)sbi->sb_fs_size);
-		goto bail4;
-	}
-
+	
 	/* Load bitmap directory */
 	if (!(sbi->sb_bmp_dir = hpfs_load_bitmap_directory(s, le32_to_cpu(superblock->bitmaps))))
 		goto bail4;

@@ -213,10 +213,7 @@ static int slave_put(struct snd_kcontrol *kcontrol,
 	}
 	if (!changed)
 		return 0;
-	err = slave_put_val(slave, ucontrol);
-	if (err < 0)
-		return err;
-	return 1;
+	return slave_put_val(slave, ucontrol);
 }
 
 static int slave_tlv_cmd(struct snd_kcontrol *kcontrol,
@@ -365,7 +362,8 @@ static void master_free(struct snd_kcontrol *kcontrol)
  * @name: name string of the control element to create
  * @tlv: optional TLV int array for dB information
  *
- * Creates a virtual master control with the given name string.
+ * Creates a virtual matster control with the given name string.
+ * Returns the created control element, or NULL for errors (ENOMEM).
  *
  * After creating a vmaster element, you can add the slave controls
  * via snd_ctl_add_slave() or snd_ctl_add_slave_uncached().
@@ -374,8 +372,6 @@ static void master_free(struct snd_kcontrol *kcontrol)
  * for dB scale of the master control.  It should be a single element
  * with #SNDRV_CTL_TLVT_DB_SCALE, #SNDRV_CTL_TLV_DB_MINMAX or
  * #SNDRV_CTL_TLVT_DB_MINMAX_MUTE type, and should be the max 0dB.
- *
- * Return: The created control element, or %NULL for errors (ENOMEM).
  */
 struct snd_kcontrol *snd_ctl_make_virtual_master(char *name,
 						 const unsigned int *tlv)
@@ -427,8 +423,6 @@ EXPORT_SYMBOL(snd_ctl_make_virtual_master);
  *
  * Adds the given hook to the vmaster control element so that it's called
  * at each time when the value is changed.
- *
- * Return: Zero.
  */
 int snd_ctl_add_vmaster_hook(struct snd_kcontrol *kcontrol,
 			     void (*hook)(void *private_data, int),

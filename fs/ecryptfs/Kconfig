@@ -28,6 +28,7 @@ config ECRYPT_FS_VIRTUAL_FAT_XATTR
 	help
 	  Modification of encrypted filesystem for virtual FAT xattr
 
+	  
 config SDP
 	bool "Enables SDP"
 	default n

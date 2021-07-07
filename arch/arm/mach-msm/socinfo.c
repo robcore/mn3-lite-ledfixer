@@ -32,7 +32,11 @@
 #include <mach/msm_smem.h>
 
 #include "boot_stats.h"
+
+#ifdef CONFIG_SEC_PM
 #include <linux/io.h>
+#endif
+
 #define BUILD_ID_LENGTH 32
 #define SMEM_IMAGE_VERSION_BLOCKS_COUNT 32
 #define SMEM_IMAGE_VERSION_SINGLE_BLOCK_SIZE 128
@@ -564,6 +568,7 @@ static uint32_t socinfo_get_format(void)
 	return socinfo ? socinfo->v1.format : 0;
 }
 
+#ifdef CONFIG_SEC_PM
 #define QFPROM_RAW_PTE_ROW1_LSB 0xFC4B80B0
 
 static uint32_t socinfo_get_pvs(void)
@@ -613,6 +618,7 @@ static uint32_t socinfo_get_iddq(void)
 
 	return qfprom_iddq_val;
 }
+#endif
 
 enum msm_cpu socinfo_get_msm_cpu(void)
 {
@@ -664,6 +670,7 @@ socinfo_show_build_id(struct sys_device *dev,
 	return snprintf(buf, PAGE_SIZE, "%-.32s\n", socinfo_get_build_id());
 }
 
+#ifdef CONFIG_SEC_PM
 static ssize_t
 socinfo_show_soc_iddq(struct sys_device *dev,
 		      struct sysdev_attribute *attr,
@@ -689,6 +696,7 @@ socinfo_show_soc_pvs(struct sys_device *dev,
 
 	return snprintf(buf, PAGE_SIZE, "%d\n", socinfo_get_pvs());
 }
+#endif
 
 static ssize_t
 socinfo_show_raw_id(struct sys_device *dev,
@@ -1099,8 +1107,10 @@ static struct sysdev_attribute socinfo_v1_files[] = {
 	_SYSDEV_ATTR(id, 0444, socinfo_show_id, NULL),
 	_SYSDEV_ATTR(version, 0444, socinfo_show_version, NULL),
 	_SYSDEV_ATTR(build_id, 0444, socinfo_show_build_id, NULL),
+#ifdef CONFIG_SEC_PM
 	_SYSDEV_ATTR(soc_iddq, 0444, socinfo_show_soc_iddq, NULL),
 	_SYSDEV_ATTR(soc_pvs, 0444, socinfo_show_soc_pvs, NULL),
+#endif
 };
 
 static struct sysdev_attribute socinfo_v2_files[] = {

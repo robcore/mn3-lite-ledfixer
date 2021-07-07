@@ -91,7 +91,7 @@ static int msm8974_auxpcm_rate = 8000;
 
 static void *adsp_state_notifier;
 
-#define ADSP_STATE_READY_TIMEOUT_MS 100
+#define ADSP_STATE_READY_TIMEOUT_MS 50
 
 static inline int param_is_mask(int p)
 {
@@ -116,7 +116,7 @@ static void param_set_mask(struct snd_pcm_hw_params *p, int n, unsigned bit)
 	}
 }
 
-static const char *auxpcm_rate_text[] = {"rate_8000", "rate_16000"};
+static const char *const auxpcm_rate_text[] = {"rate_8000", "rate_16000"};
 static const struct soc_enum msm8974_auxpcm_enum[] = {
 		SOC_ENUM_SINGLE_EXT(2, auxpcm_rate_text),
 };
@@ -952,9 +952,9 @@ static const struct snd_soc_dapm_widget msm8974_dapm_widgets[] = {
 };
 #endif
 
-static const char *spk_function[] = {"Off", "On"};
-static const char *slim0_rx_ch_text[] = {"One", "Two"};
-static const char *slim0_tx_ch_text[] = {"One", "Two", "Three", "Four",
+static const char *const spk_function[] = {"Off", "On"};
+static const char *const slim0_rx_ch_text[] = {"One", "Two"};
+static const char *const slim0_tx_ch_text[] = {"One", "Two", "Three", "Four",
 						"Five", "Six", "Seven",
 						"Eight"};
 static char const *hdmi_rx_ch_text[] = {"Two", "Three", "Four", "Five",
@@ -962,13 +962,13 @@ static char const *hdmi_rx_ch_text[] = {"Two", "Three", "Four", "Five",
 static char const *rx_bit_format_text[] = {"S16_LE", "S24_LE"};
 static char const *slim0_rx_sample_rate_text[] = {"KHZ_48", "KHZ_96",
 					"KHZ_192"};
-static const char *proxy_rx_ch_text[] = {"One", "Two", "Three", "Four",
+static const char *const proxy_rx_ch_text[] = {"One", "Two", "Three", "Four",
 	"Five",	"Six", "Seven", "Eight"};
 
 static char const *hdmi_rx_sample_rate_text[] = {"KHZ_48", "KHZ_96",
 					"KHZ_192"};
 
-static const char *btsco_rate_text[] = {"8000", "16000"};
+static const char *const btsco_rate_text[] = {"8000", "16000"};
 static const struct soc_enum msm_btsco_enum[] = {
 	SOC_ENUM_SINGLE_EXT(2, btsco_rate_text),
 };
@@ -1009,19 +1009,16 @@ static int slim0_rx_sample_rate_put(struct snd_kcontrol *kcontrol,
 	switch (ucontrol->value.integer.value[0]) {
 	case 2:
 		slim0_rx_sample_rate = SAMPLING_RATE_192KHZ;
-		pr_info("%s: Setting slim0_rx_sample_rate to 192KHZ\n", __func__);
 		break;
 	case 1:
 		slim0_rx_sample_rate = SAMPLING_RATE_96KHZ;
-		pr_info("%s: Setting slim0_rx_sample_rate to 96KHZ\n", __func__);
 		break;
 	case 0:
 	default:
 		slim0_rx_sample_rate = SAMPLING_RATE_48KHZ;
-		pr_info("%s: Setting slim0_rx_sample_rate to 48KHZ\n", __func__);
 	}
 
-	pr_debug("%s: slim0_rx_sample_rate = %d\n", __func__,
+	pr_info("%s: slim0_rx_sample_rate = %d\n", __func__,
 			slim0_rx_sample_rate);
 
 	return 0;
@@ -1034,13 +1031,11 @@ static int slim0_rx_bit_format_get(struct snd_kcontrol *kcontrol,
 	switch (slim0_rx_bit_format) {
 	case SNDRV_PCM_FORMAT_S24_LE:
 		ucontrol->value.integer.value[0] = 1;
-		pr_info("%s: slim0_rx_bit_format = 24 bit\n", __func__);
 		break;
 
 	case SNDRV_PCM_FORMAT_S16_LE:
 	default:
 		ucontrol->value.integer.value[0] = 0;
-		pr_info("%s: slim0_rx_bit_format = 16 bit\n", __func__);
 		break;
 	}
 
@@ -1115,11 +1110,9 @@ static int msm_btsco_rate_put(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
 	switch (ucontrol->value.integer.value[0]) {
-	case 0:	
 	case 8000:
 		msm_btsco_rate = BTSCO_RATE_8KHZ;
 		break;
-	case 1:
 	case 16000:
 		msm_btsco_rate = BTSCO_RATE_16KHZ;
 		break;
@@ -1317,12 +1310,7 @@ static int main_mic_delay_put(struct snd_kcontrol *kcontrol,
 static int speaker_status_get(struct snd_kcontrol *kcontrol,
 	struct snd_ctl_elem_value *ucontrol)
 {
-	if (speaker_status)
-		pr_info("%s: speaker_status: enabled (%d)\n",
-				 __func__, speaker_status);
-	else
-		pr_info("%s: speaker_status: disabled (%d)\n",
-				 __func__, speaker_status);	
+	pr_info("%s: speaker_status = %d\n", __func__, speaker_status);
 	ucontrol->value.integer.value[0] = speaker_status;
 	return 0;
 }
@@ -1330,13 +1318,8 @@ static int speaker_status_get(struct snd_kcontrol *kcontrol,
 static int speaker_status_put(struct snd_kcontrol *kcontrol,
 	struct snd_ctl_elem_value *ucontrol)
 {
-	if (ucontrol->value.integer.value[0])
-		pr_info("%s: Setting speaker_status: enabled (%ld)\n",
-				 __func__, ucontrol->value.integer.value[0]);
-	else
-		pr_info("%s: Setting speaker_status: disabled (%ld)\n",
-				 __func__, ucontrol->value.integer.value[0]);
 	speaker_status = ucontrol->value.integer.value[0];
+	pr_info("%s: speaker_status = %d\n", __func__, speaker_status);
 	return 1;
 }
 #endif

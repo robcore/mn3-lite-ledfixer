@@ -47,7 +47,6 @@
 #define TRUE        0x01
 #define FALSE       0x00
 
-#define FRAME_NUM   (8)
 /* TODO, combine them together */
 static DEFINE_MUTEX(session_lock);
 struct asm_mmap {
@@ -962,9 +961,6 @@ int q6asm_audio_client_buf_alloc(unsigned int dir,
 			pr_debug("%s: buffer already allocated\n", __func__);
 			return 0;
 		}
-
-		if (bufcnt != FRAME_NUM)
-			goto fail;		
 		mutex_lock(&ac->cmd_lock);
 		buf = kzalloc(((sizeof(struct audio_buffer))*bufcnt),
 				GFP_KERNEL);
@@ -3467,7 +3463,6 @@ int q6asm_set_lrgain(struct audio_client *ac, int left_gain, int right_gain)
 		goto fail_cmd;
 	}
 
-    pr_info("%s: Setting Gains. Left: %d Right:%d\n", __func__, left_gain, right_gain);
 	sz = sizeof(struct asm_volume_ctrl_lr_chan_gain);
 	q6asm_add_hdr_async(ac, &lrgain.hdr, sz, TRUE);
 	atomic_set(&ac->cmd_state, 1);
@@ -3564,8 +3559,6 @@ int q6asm_set_volume(struct audio_client *ac, int volume)
 		rc = -EINVAL;
 		goto fail_cmd;
 	}
-
-    pr_info("%s: Setting Volume to: %d\n", __func__, volume);
 
 	sz = sizeof(struct asm_volume_ctrl_master_gain);
 	q6asm_add_hdr_async(ac, &vol.hdr, sz, TRUE);
@@ -3722,7 +3715,7 @@ int q6asm_set_sa(struct audio_client *ac, int *param)
 	}
 
 	sz = sizeof(struct asm_stream_cmd_set_pp_params_sa);
-	q6asm_add_hdr_async(ac, &cmd.hdr, sz, TRUE);
+	q6asm_add_hdr_async(ac, &cmd.hdr, sz, false);
 
 	cmd.hdr.opcode = ASM_STREAM_CMD_SET_PP_PARAMS_V2;
 	cmd.param.data_payload_addr_lsw = 0;
@@ -3778,7 +3771,7 @@ int q6asm_set_vsp(struct audio_client *ac, int *param)
 	}
 
 	sz = sizeof(struct asm_stream_cmd_set_pp_params_vsp);
-	q6asm_add_hdr_async(ac, &cmd.hdr, sz, TRUE);
+	q6asm_add_hdr_async(ac, &cmd.hdr, sz, false);
 
 	cmd.hdr.opcode = ASM_STREAM_CMD_SET_PP_PARAMS_V2;
 	cmd.param.data_payload_addr_lsw = 0;
@@ -3818,7 +3811,7 @@ int q6asm_set_dha(struct audio_client *ac,int *param)
 	}
 
 	sz = sizeof(struct asm_stream_cmd_set_pp_params_dha);
-	q6asm_add_hdr_async(ac, &cmd.hdr, sz, TRUE);
+	q6asm_add_hdr_async(ac, &cmd.hdr, sz, false);
 
 	cmd.hdr.opcode = ASM_STREAM_CMD_SET_PP_PARAMS_V2;
 	cmd.param.data_payload_addr_lsw = 0;
@@ -3857,7 +3850,7 @@ int q6asm_set_lrsm(struct audio_client *ac,int *param)
 	}
 
 	sz = sizeof(struct asm_stream_cmd_set_pp_params_lrsm);
-	q6asm_add_hdr_async(ac, &cmd.hdr, sz, TRUE);
+	q6asm_add_hdr_async(ac, &cmd.hdr, sz, false);
 
 	cmd.hdr.opcode = ASM_STREAM_CMD_SET_PP_PARAMS_V2;
 	cmd.param.data_payload_addr_lsw = 0;
@@ -3895,7 +3888,7 @@ int q6asm_set_sa_ep(struct audio_client *ac,int *param)
 	}
 
 	sz = sizeof(struct asm_stream_cmd_set_pp_params_sa_ep);
-	q6asm_add_hdr_async(ac, &cmd.hdr, sz, TRUE);
+	q6asm_add_hdr_async(ac, &cmd.hdr, sz, false);
 
 	cmd.hdr.opcode = ASM_STREAM_CMD_SET_PP_PARAMS_V2;
 	cmd.param.data_payload_addr_lsw = 0;
@@ -3908,7 +3901,7 @@ int q6asm_set_sa_ep(struct audio_client *ac,int *param)
 	cmd.data.param_size = cmd.param.data_payload_size - sizeof(cmd.data);
 	cmd.data.reserved = 0;
 
-	/* SA EP parameters */
+	/* SA EP paramerters */
 	cmd.enable = param[0];
 	cmd.score = param[1];
 	printk("%s: %d %d\n", __func__, cmd.enable, cmd.score);
@@ -3926,10 +3919,10 @@ int q6asm_get_sa_ep(struct audio_client *ac)
 {
 #if 0
 	int sz = 0;
-	int rc = 0;
+	int rc  = 0;
 	struct asm_stream_cmd_get_pp_params_v2 cmd;
 
-	if (ac == NULL) {
+	if(ac == NULL) {
 		printk("%s: audio client is null\n", __func__);
 		return -1;
 	}
@@ -3955,7 +3948,7 @@ int q6asm_get_sa_ep(struct audio_client *ac)
 fail_cmd:
 	return rc;
 #else
-    return 0;
+	return 0;
 #endif
 }
 

@@ -99,8 +99,8 @@ static inline struct logger_log *file_get_log(struct file *file)
 	if (file->f_mode & FMODE_READ) {
 		struct logger_reader *reader = file->private_data;
 		return reader->log;
-	}
-	return file->private_data;
+	} else
+		return file->private_data;
 }
 
 /*
@@ -147,7 +147,8 @@ static size_t get_user_hdr_len(int ver)
 {
 	if (ver < 2)
 		return sizeof(struct user_logger_entry_compat);
-	return sizeof(struct logger_entry);
+	else
+		return sizeof(struct logger_entry);
 }
 
 static ssize_t copy_header_to_user(int ver, struct logger_entry *entry,
@@ -758,7 +759,11 @@ static struct logger_log VAR = { \
 	.size = SIZE, \
 };
 
+#ifdef CONFIG_SEC_LOGGER_BUFFER_EXPANSION
+DEFINE_LOGGER_DEVICE(log_main, LOGGER_LOG_MAIN, CONFIG_LOGCAT_SIZE*1024*2*CONFIG_SEC_LOGGER_BUFFER_EXPANSION_SIZE) // 2MB
+#else
 DEFINE_LOGGER_DEVICE(log_main, LOGGER_LOG_MAIN, CONFIG_LOGCAT_SIZE*1024*2)	// 1MB
+#endif
 DEFINE_LOGGER_DEVICE(log_events, LOGGER_LOG_EVENTS, CONFIG_LOGCAT_SIZE*1024)	// 512KB
 DEFINE_LOGGER_DEVICE(log_radio, LOGGER_LOG_RADIO, CONFIG_LOGCAT_SIZE*1024*4)	// 2MB
 DEFINE_LOGGER_DEVICE(log_system, LOGGER_LOG_SYSTEM, CONFIG_LOGCAT_SIZE*1024)	// 512KB
@@ -786,6 +791,9 @@ static int __init init_log(struct logger_log *log)
 		       "device for log '%s'!\n", log->misc.name);
 		return ret;
 	}
+
+	pr_info(KERN_INFO "logger: created %luK log '%s'\n",
+	       (unsigned long) log->size >> 10, log->misc.name);
 
 	return 0;
 }

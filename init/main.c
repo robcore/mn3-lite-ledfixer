@@ -70,7 +70,9 @@
 #include <linux/perf_event.h>
 #include <linux/random.h>
 #include <linux/s_funcs.h>
-
+#ifdef CONFIG_TIMA_RKP_COHERENT_TT
+#include <linux/memblock.h>
+#endif
 #include <asm/io.h>
 #include <asm/bugs.h>
 #include <asm/setup.h>
@@ -101,6 +103,11 @@ static inline void mark_rodata_ro(void) { }
 extern void tc_init(void);
 #endif
 
+#ifdef CONFIG_TIMA_RKP_30
+#define PGT_BIT_ARRAY_LENGTH 0x40000
+unsigned long pgt_bit_array[PGT_BIT_ARRAY_LENGTH];
+EXPORT_SYMBOL(pgt_bit_array);
+#endif
 /*
  * Debug helper: via this flag we know that we are in 'early bootup code'
  * where only the boot processor is running with IRQ disabled.  This means
@@ -396,6 +403,43 @@ static void __init setup_command_line(char *command_line)
 	strcpy (static_command_line, command_line);
 }
 
+#ifdef CONFIG_TIMA_RKP
+/* Block of Code for RKP initialization */
+static noinline void rkp_init(void)
+{
+#ifdef CONFIG_TIMA_RKP_COHERENT_TT
+	struct memblock_type *type = (struct memblock_type*)(&memblock.memory);
+#endif /*CONFIG_TIMA_RKP_COHERENT_TT*/
+
+#ifdef CONFIG_TIMA_RKP_RO_CRED
+/* Code for initializing Credential Protection */
+	tima_send_cmd5((unsigned long)__rkp_ro_start, (unsigned long)__rkp_ro_end,
+					sizeof(struct cred), offsetof(struct task_struct, cred),
+					offsetof(struct task_struct, active_mm), 0x40);		
+	tima_send_cmd5(offsetof(struct cred, uid), offsetof(struct cred, euid), 
+					offsetof(struct cred, bp_pgd), offsetof(struct cred, bp_task), 
+					offsetof(struct cred, exec_depth), 0x41);
+	tima_send_cmd4(offsetof(struct cred,security),offsetof(struct task_struct,pid),
+					offsetof(struct task_struct,real_parent),offsetof(struct task_struct,comm),0x42);
+	printk(KERN_ERR"RKP CRED INIT %x\n", sizeof(struct cred));
+#endif /*CONFIG_TIMA_RKP_RO_CRED*/
+
+#ifdef CONFIG_TIMA_RKP
+#ifdef CONFIG_TIMA_RKP_30
+#ifdef CONFIG_TIMA_RKP_COHERENT_TT
+	tima_send_cmd2(type->cnt, __pa(type->regions), 0x04);
+#endif /*CONFIG_TIMA_RKP_COHERENT_TT*/
+	tima_send_cmd5((unsigned long)_stext, (unsigned long)init_mm.pgd, (unsigned long)__init_begin, (unsigned long)__init_end,(unsigned long)__pa(pgt_bit_array),0x0c);
+	tima_send_cmd3((unsigned long)__pa((unsigned long)_sdata), ((unsigned long)__pa((unsigned long)_edata)-(unsigned long)__pa((unsigned long)_sdata)), 1, 0x26);
+	tima_send_cmd((unsigned long)__pa((unsigned long)_text),0x28);
+#else
+	tima_send_cmd4((unsigned long)_stext, (unsigned long)init_mm.pgd, (unsigned long)__init_begin, (unsigned long)__init_end, 0x0c);
+#endif /* CONFIG_TIMA_RKP_30 */
+#endif /*CONFIG_TIMA_RKP*/
+
+}
+#endif /*CONFIG_TIMA_RKP*/
+
 /*
  * We need to finalize in a non-__init function or else race conditions
  * between the root thread and the init thread may cause start_kernel to
@@ -412,6 +456,9 @@ static noinline void __init_refok rest_init(void)
 	int pid;
 	const struct sched_param param = { .sched_priority = 1 };
 
+#ifdef CONFIG_TIMA_RKP
+	rkp_init();
+#endif
 	rcu_scheduler_starting();
 	/*
 	 * We need to spawn init first so that it obtains pid 1, however
@@ -718,12 +765,8 @@ asmlinkage void __init start_kernel(void)
 	pidmap_init();
 	anon_vma_init();
 #ifdef CONFIG_X86
-	if (efi_enabled(EFI_RUNTIME_SERVICES))
+	if (efi_enabled)
 		efi_enter_virtual_mode();
-#endif
-#ifdef CONFIG_X86_ESPFIX64
-	/* Should be run before the first non-init thread is created */
-	init_espfix_bsp();
 #endif
 	thread_info_cache_init();
 	cred_init();
@@ -750,7 +793,7 @@ asmlinkage void __init start_kernel(void)
 	acpi_early_init(); /* before LAPIC and SMP init */
 	sfi_init_late();
 
-	if (efi_enabled(EFI_RUNTIME_SERVICES))
+	if (efi_enabled)
 		efi_free_boot_services();
 
 	ftrace_init();
@@ -899,7 +942,6 @@ static void __init do_basic_setup(void)
 	do_ctors();
 	usermodehelper_enable();
 	do_initcalls();
-	random_int_secret_init();
 }
 
 static void __init do_pre_smp_initcalls(void)
@@ -969,7 +1011,6 @@ static noinline int init_post(void)
 
 
 	current->signal->flags |= SIGNAL_UNKILLABLE;
-
 	if (ramdisk_execute_command) {
 		run_init_process(ramdisk_execute_command);
 		printk(KERN_WARNING "Failed to execute %s\n",

@@ -195,9 +195,9 @@ case "$target" in
         insmod /system/lib/modules/ss_mfcinit.ko
         insmod /system/lib/modules/ss_vencoder.ko
         insmod /system/lib/modules/ss_vdecoder.ko
-        /system/bin/chmod -h 0666 /dev/ss_mfc_reg
-        /system/bin/chmod -h 0666 /dev/ss_vdec
-        /system/bin/chmod -h 0666 /dev/ss_venc
+        chmod -h 0666 /dev/ss_mfc_reg
+        chmod -h 0666 /dev/ss_vdec
+        chmod -h 0666 /dev/ss_venc
 
         init_DMM
         ;;

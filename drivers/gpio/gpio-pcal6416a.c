@@ -697,7 +697,7 @@ static ssize_t show_pcal6416a_gpio_state(struct device *dev,
 static DEVICE_ATTR(expgpio, 0664,
 		show_pcal6416a_gpio_state, store_pcal6416a_gpio_inout);
 
-#if 0
+#ifdef CONFIG_SEC_PM_DEBUG
 int expander_print_all(void)
 {
 	struct pcal6416a_chip chip_state;

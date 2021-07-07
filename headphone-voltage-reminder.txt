@@ -1,7 +1,0 @@
-I think this is the string to grep for regarding headphone voltage:
-cdc-vdd-rx-h
-
-found in:
-/root/mn3lite/arch/arm/boot/dts/msm8974.dtsi
-/root/mn3lite/arch/arm/boot/dts/msm8974/msm8974.dtsi
-/root/mn3lite/arch/arm/boot/dts/msm8974/msm8974-sec.dtsi

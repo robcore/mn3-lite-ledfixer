@@ -1,9 +1,0 @@
-#!/system/bin/sh
-
-if [ "$1" = "label" ]
-then
-    busybox echo "Machin3x"
-elif [ "$1" = "current_now" ]
-then
-    busybox cat /sys/class/power_supply/battery/current_now
-fi

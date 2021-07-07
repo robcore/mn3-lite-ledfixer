@@ -4,3 +4,4 @@ config STP
 
 config GARP
 	tristate
+	select STP

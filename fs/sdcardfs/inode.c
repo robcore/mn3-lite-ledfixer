@@ -2,11 +2,11 @@
  * fs/sdcardfs/inode.c
  *
  * Copyright (c) 2013 Samsung Electronics Co. Ltd
- *   Authors: Daeho Jeong, Woojoong Lee, Seunghwan Hyun,
+ *   Authors: Daeho Jeong, Woojoong Lee, Seunghwan Hyun, 
  *               Sunghwan Yun, Sungjong Seo
- *
+ *                      
  * This program has been developed as a stackable file system based on
- * the WrapFS which written by
+ * the WrapFS which written by 
  *
  * Copyright (c) 1998-2011 Erez Zadok
  * Copyright (c) 2009     Shrikar Archak
@@ -23,29 +23,29 @@
 /* Do not directly use this function. Use OVERRIDE_CRED() instead. */
 const struct cred * override_fsids(struct sdcardfs_sb_info* sbi)
 {
-	struct cred * cred;
-	const struct cred * old_cred;
+	struct cred * cred; 
+	const struct cred * old_cred; 
 
-	cred = prepare_creds();
-	if (!cred)
-		return NULL;
+	cred = prepare_creds(); 
+	if (!cred) 
+		return NULL; 
 
 	cred->fsuid = sbi->options.fs_low_uid;
-	cred->fsgid = sbi->options.fs_low_gid;
+	cred->fsgid = sbi->options.fs_low_gid; 
 
-	old_cred = override_creds(cred);
+	old_cred = override_creds(cred); 
 
-	return old_cred;
+	return old_cred; 
 }
 
 /* Do not directly use this function, use REVERT_CRED() instead. */
 void revert_fsids(const struct cred * old_cred)
 {
-	const struct cred * cur_cred;
+	const struct cred * cur_cred; 
 
-	cur_cred = current->cred;
-	revert_creds(old_cred);
-	put_cred(cur_cred);
+	cur_cred = current->cred; 
+	revert_creds(old_cred); 
+	put_cred(cur_cred); 
 }
 
 static int sdcardfs_create(struct inode *dir, struct dentry *dentry,
@@ -60,6 +60,9 @@ static int sdcardfs_create(struct inode *dir, struct dentry *dentry,
 
 	int has_rw = get_caller_has_rw_locked(sbi->pkgl_id, sbi->options.derive);
 	if(!check_caller_access_to_name(dir, dentry->d_name.name, sbi->options.derive, 1, has_rw)) {
+		printk(KERN_INFO "%s: need to check the caller's gid in packages.list\n" 
+						 "  dentry: %s, task:%s\n",
+						 __func__, dentry->d_name.name, current->comm);
 		err = -EACCES;
 		goto out_eacces;
 	}
@@ -79,7 +82,7 @@ static int sdcardfs_create(struct inode *dir, struct dentry *dentry,
 	pathcpy(&nd->path, &lower_path);
 
 	/* set last 16bytes of mode field to 0664 */
-	mode = (mode & S_IFMT) | 00664;
+	mode = (mode & S_IFMT) | 00664; 
 	err = vfs_create(lower_parent_dentry->d_inode, lower_dentry, mode, nd);
 
 	pathcpy(&nd->path, &saved_path);
@@ -114,7 +117,7 @@ static int sdcardfs_link(struct dentry *old_dentry, struct inode *dir,
 	struct path lower_old_path, lower_new_path;
 
 	OVERRIDE_CRED(SDCARDFS_SB(dir->i_sb));
-
+	
 	file_size_save = i_size_read(old_dentry->d_inode);
 	sdcardfs_get_lower_path(old_dentry, &lower_old_path);
 	sdcardfs_get_lower_path(new_dentry, &lower_new_path);
@@ -162,6 +165,9 @@ static int sdcardfs_unlink(struct inode *dir, struct dentry *dentry)
 
 	int has_rw = get_caller_has_rw_locked(sbi->pkgl_id, sbi->options.derive);
 	if(!check_caller_access_to_name(dir, dentry->d_name.name, sbi->options.derive, 1, has_rw)) {
+		printk(KERN_INFO "%s: need to check the caller's gid in packages.list\n" 
+						 "  dentry: %s, task:%s\n",
+						 __func__, dentry->d_name.name, current->comm);
 		err = -EACCES;
 		goto out_eacces;
 	}
@@ -251,6 +257,8 @@ static int touch(char *abs_path, mode_t mode) {
 			return 0;
 		}
 		else {
+			printk(KERN_ERR "sdcardfs: failed to open(%s): %ld\n",
+						abs_path, PTR_ERR(filp));
 			return PTR_ERR(filp);
 		}
 	}
@@ -276,6 +284,9 @@ static int sdcardfs_mkdir(struct inode *dir, struct dentry *dentry, umode_t mode
 
 	int has_rw = get_caller_has_rw_locked(sbi->pkgl_id, sbi->options.derive);
 	if(!check_caller_access_to_name(dir, dentry->d_name.name, sbi->options.derive, 1, has_rw)) {
+		printk(KERN_INFO "%s: need to check the caller's gid in packages.list\n" 
+						 "  dentry: %s, task:%s\n",
+						 __func__, dentry->d_name.name, current->comm);
 		err = -EACCES;
 		goto out_eacces;
 	}
@@ -285,6 +296,7 @@ static int sdcardfs_mkdir(struct inode *dir, struct dentry *dentry, umode_t mode
 
 	/* check disk space */
 	if (!check_min_free_space(dentry, 0, 1)) {
+		printk(KERN_INFO "sdcardfs: No minimum free space.\n");
 		err = -ENOSPC;
 		goto out_revert;
 	}
@@ -301,27 +313,27 @@ static int sdcardfs_mkdir(struct inode *dir, struct dentry *dentry, umode_t mode
 	}
 
 	/* set last 16bytes of mode field to 0775 */
-	mode = (mode & S_IFMT) | 00775;
+	mode = (mode & S_IFMT) | 00775; 
 	err = vfs_mkdir(lower_parent_dentry->d_inode, lower_dentry, mode);
 
 	if (err) {
 		unlock_dir(lower_parent_dentry);
 		goto out;
 	}
-
+	
 	/* if it is a local obb dentry, setup it with the base obbpath */
 	if(need_graft_path(dentry)) {
 
 		err = setup_obb_dentry(dentry, &lower_path);
 		if(err) {
-			/* if the sbi->obbpath is not available, the lower_path won't be
-			 * changed by setup_obb_dentry() but the lower path is saved to
+			/* if the sbi->obbpath is not available, the lower_path won't be 
+			 * changed by setup_obb_dentry() but the lower path is saved to 
              * its orig_path. this dentry will be revalidated later.
 			 * but now, the lower_path should be NULL */
 			sdcardfs_put_reset_lower_path(dentry);
 
 			/* the newly created lower path which saved to its orig_path or
-			 * the lower_path is the base obbpath.
+			 * the lower_path is the base obbpath. 
              * therefore, an additional path_get is required */
 			path_get(&lower_path);
 		} else
@@ -351,12 +363,14 @@ static int sdcardfs_mkdir(struct inode *dir, struct dentry *dentry, umode_t mode
 
 		page_buf = (char *)__get_free_page(GFP_KERNEL);
 		if (!page_buf) {
+			printk(KERN_ERR "sdcardfs: failed to allocate page buf\n");
 			goto out;
 		}
 
 		nomedia_dir_name = d_absolute_path(&lower_path, page_buf, PAGE_SIZE);
 		if (IS_ERR(nomedia_dir_name)) {
 			free_page((unsigned long)page_buf);
+			printk(KERN_ERR "sdcardfs: failed to get .nomedia dir name\n");
 			goto out;
 		}
 
@@ -365,6 +379,7 @@ static int sdcardfs_mkdir(struct inode *dir, struct dentry *dentry, umode_t mode
 		nomedia_fullpath = kzalloc(fullpath_namelen + 1, GFP_KERNEL);
 		if (!nomedia_fullpath) {
 			free_page((unsigned long)page_buf);
+			printk(KERN_ERR "sdcardfs: failed to allocate .nomedia fullpath buf\n");
 			goto out;
 		}
 
@@ -373,6 +388,8 @@ static int sdcardfs_mkdir(struct inode *dir, struct dentry *dentry, umode_t mode
 		strcat(nomedia_fullpath, "/.nomedia");
 		touch_err = touch(nomedia_fullpath, 0664);
 		if (touch_err) {
+			printk(KERN_ERR "sdcardfs: failed to touch(%s): %d\n",
+							nomedia_fullpath, touch_err);
 			kfree(nomedia_fullpath);
 			goto out;
 		}
@@ -400,6 +417,9 @@ static int sdcardfs_rmdir(struct inode *dir, struct dentry *dentry)
 
 	int has_rw = get_caller_has_rw_locked(sbi->pkgl_id, sbi->options.derive);
 	if(!check_caller_access_to_name(dir, dentry->d_name.name, sbi->options.derive, 1, has_rw)) {
+		printk(KERN_INFO "%s: need to check the caller's gid in packages.list\n" 
+						 "  dentry: %s, task:%s\n",
+						  __func__, dentry->d_name.name, current->comm);
 		err = -EACCES;
 		goto out_eacces;
 	}
@@ -407,7 +427,7 @@ static int sdcardfs_rmdir(struct inode *dir, struct dentry *dentry)
 	/* save current_cred and override it */
 	OVERRIDE_CRED(SDCARDFS_SB(dir->i_sb), saved_cred);
 
-	/* sdcardfs_get_real_lower(): in case of remove an user's obb dentry
+	/* sdcardfs_get_real_lower(): in case of remove an user's obb dentry 
 	 * the dentry on the original path should be deleted. */
 	sdcardfs_get_real_lower(dentry, &lower_path);
 
@@ -499,6 +519,9 @@ static int sdcardfs_rename(struct inode *old_dir, struct dentry *old_dentry,
 			sbi->options.derive, 1, has_rw) ||
 		!check_caller_access_to_name(new_dir, new_dentry->d_name.name,
 			sbi->options.derive, 1, has_rw)) {
+		printk(KERN_INFO "%s: need to check the caller's gid in packages.list\n" 
+						 "  new dentry: %s, task:%s\n",
+						 __func__, new_dentry->d_name.name, current->comm);
 		err = -EACCES;
 		goto out_eacces;
 	}
@@ -649,24 +672,24 @@ static int sdcardfs_permission(struct inode *inode, int mask)
 
 	/*
 	 * Permission check on sdcardfs inode.
-	 * Calling process should have AID_SDCARD_RW permission
+	 * Calling process should have AID_SDCARD_RW permission 
 	 */
 	err = generic_permission(inode, mask);
 
-	/* XXX
+	/* XXX 
 	 * Original sdcardfs code calls inode_permission(lower_inode,.. )
 	 * for checking inode permission. But doing such things here seems
-	 * duplicated work, because the functions called after this func,
-	 * such as vfs_create, vfs_unlink, vfs_rename, and etc,
-	 * does exactly same thing, i.e., they calls inode_permission().
-	 * So we just let they do the things.
-	 * If there are any security hole, just uncomment following if block.
+	 * duplicated work, because the functions called after this func, 
+	 * such as vfs_create, vfs_unlink, vfs_rename, and etc, 
+	 * does exactly same thing, i.e., they calls inode_permission(). 
+	 * So we just let they do the things. 
+	 * If there are any security hole, just uncomment following if block. 
 	 */
 #if 0
 	if (!err) {
-		/*
-		 * Permission check on lower_inode(=EXT4).
-		 * we check it with AID_MEDIA_RW permission
+		/* 
+		 * Permission check on lower_inode(=EXT4). 
+		 * we check it with AID_MEDIA_RW permission 
 		 */
 		struct inode *lower_inode;
 		OVERRIDE_CRED(SDCARDFS_SB(inode->sb));
@@ -677,7 +700,7 @@ static int sdcardfs_permission(struct inode *inode, int mask)
 		REVERT_CRED();
 	}
 #endif
-	return err;
+	return err; 
 
 }
 
@@ -695,6 +718,9 @@ static int sdcardfs_getattr(struct vfsmount *mnt, struct dentry *dentry,
 	if(!check_caller_access_to_name(parent->d_inode, dentry->d_name.name,
 						sbi->options.derive, 0, 0)) {
 		dput(parent);
+		printk(KERN_INFO "%s: need to check the caller's gid in packages.list\n" 
+						 "  dentry: %s, task:%s\n",
+						 __func__, dentry->d_name.name, current->comm);
 		return -EACCES;
 	}
 	dput(parent);
@@ -749,10 +775,13 @@ static int sdcardfs_setattr(struct dentry *dentry, struct iattr *ia)
 		parent = dget_parent(dentry);
 		if(!check_caller_access_to_name(parent->d_inode, dentry->d_name.name,
 						sbi->options.derive, 1, has_rw)) {
+			printk(KERN_INFO "%s: need to check the caller's gid in packages.list\n" 
+							 "  dentry: %s, task:%s\n",
+							 __func__, dentry->d_name.name, current->comm);
 			err = -EACCES;
 		}
 		dput(parent);
-	}
+	} 
 
 	if (err)
 		goto out_err;
@@ -828,12 +857,12 @@ const struct inode_operations sdcardfs_symlink_iops = {
 	.listxattr	= sdcardfs_listxattr,
 	.removexattr = sdcardfs_removexattr,
 #endif // SDCARD_FS_XATTR
-	/* XXX Following operations are implemented,
+	/* XXX Following operations are implemented, 
 	 *     but FUSE(sdcard) or FAT does not support them
-	 *     These methods are *NOT* perfectly tested.
-	.readlink	= sdcardfs_readlink,
-	.follow_link	= sdcardfs_follow_link,
-	.put_link	= sdcardfs_put_link,
+	 *     These methods are *NOT* perfectly tested. 
+	.readlink	= sdcardfs_readlink, 
+	.follow_link	= sdcardfs_follow_link, 
+	.put_link	= sdcardfs_put_link, 
 	 */
 };
 
@@ -853,18 +882,18 @@ const struct inode_operations sdcardfs_dir_iops = {
 	.listxattr	= sdcardfs_listxattr,
 	.removexattr = sdcardfs_removexattr,
 #endif // SDCARD_FS_XATTR
-	/* XXX Following operations are implemented,
+	/* XXX Following operations are implemented, 
 	 *     but FUSE(sdcard) or FAT does not support them
-	 *     These methods are *NOT* perfectly tested.
-	.symlink	= sdcardfs_symlink,
-	.link		= sdcardfs_link,
-	.mknod		= sdcardfs_mknod,
+	 *     These methods are *NOT* perfectly tested. 
+	.symlink	= sdcardfs_symlink, 
+	.link		= sdcardfs_link, 
+	.mknod		= sdcardfs_mknod, 
 	 */
 };
 
 const struct inode_operations sdcardfs_main_iops = {
-	.permission	= sdcardfs_permission,
-	.setattr	= sdcardfs_setattr,
+	.permission	= sdcardfs_permission, 
+	.setattr	= sdcardfs_setattr, 
 	.getattr	= sdcardfs_getattr,
 #ifdef SDCARD_FS_XATTR
 	.setxattr	= sdcardfs_setxattr,

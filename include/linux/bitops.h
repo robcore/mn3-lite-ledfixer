@@ -185,21 +185,6 @@ static inline unsigned long __ffs64(u64 word)
 
 #ifdef __KERNEL__
 
-#ifndef set_mask_bits
-#define set_mask_bits(ptr, _mask, _bits)	\
-({								\
-	const typeof(*ptr) mask = (_mask), bits = (_bits);	\
-	typeof(*ptr) old, new;					\
-								\
-	do {							\
-		old = ACCESS_ONCE(*ptr);			\
-		new = (old & ~mask) | bits;			\
-	} while (cmpxchg(ptr, old, new) != old);		\
-								\
-	new;							\
-})
-#endif
-
 #ifndef find_last_bit
 /**
  * find_last_bit - find the last set bit in a memory region
@@ -211,17 +196,6 @@ static inline unsigned long __ffs64(u64 word)
 extern unsigned long find_last_bit(const unsigned long *addr,
 				   unsigned long size);
 #endif
-/*
- * Create a contiguous bitmask starting at bit position @l and ending at
- * position @h. For example
- * GENMASK_ULL(39, 21) gives us the 64bit vector 0x000000ffffe00000.
- */
-#define GENMASK(h, l) \
-	(((~0UL) - (1UL << (l)) + 1) & (~0UL >> (BITS_PER_LONG - 1 - (h))))
-
-#define GENMASK_ULL(h, l) \
-	(((~0ULL) - (1ULL << (l)) + 1) & \
-	 (~0ULL >> (BITS_PER_LONG_LONG - 1 - (h))))
 
 #endif /* __KERNEL__ */
 #endif

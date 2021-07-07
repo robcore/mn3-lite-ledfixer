@@ -80,6 +80,7 @@
 #if defined(CONFIG_BCM4335) || defined(CONFIG_BCM4335_MODULE) || defined(CONFIG_BCM4339) || defined(CONFIG_BCM4339_MODULE)
 int bt_is_running=0;
 #endif
+
 EXPORT_SYMBOL(bt_is_running);
 
 static struct rfkill *bt_rfkill;
@@ -164,19 +165,19 @@ static int bcm4339_bt_rfkill_set_power(void *data, bool blocked)
 #endif
 
     if (!blocked) {
-        pr_debug("[BT] Bluetooth Power On.\n");
+        pr_err("[BT] Bluetooth Power On.\n");
 
         gpio_set_value(get_gpio_hwrev(BT_WAKE), 1);
 
         if (gpio_get_value(get_gpio_hwrev(GPIO_BT_HOST_WAKE)) == 0)
-            pr_debug("[BT] BT_HOST_WAKE is low.\n");
+            pr_err("[BT] BT_HOST_WAKE is low.\n");
 
 #ifdef BT_UART_CFG
         for (pin = 0; pin < ARRAY_SIZE(bt_uart_on_table); pin++) {
             rc = gpio_tlmm_config(bt_uart_on_table[pin],
                 GPIO_CFG_ENABLE);
             if (rc < 0)
-                pr_debug("[BT] %s: gpio_tlmm_config(%#x)=%d\n",
+                pr_err("[BT] %s: gpio_tlmm_config(%#x)=%d\n",
                     __func__, bt_uart_on_table[pin], rc);
         }
 #endif
@@ -191,11 +192,11 @@ static int bcm4339_bt_rfkill_set_power(void *data, bool blocked)
             rc = gpio_tlmm_config(bt_uart_off_table[pin],
                 GPIO_CFG_ENABLE);
             if (rc < 0)
-                pr_debug("%s: gpio_tlmm_config(%#x)=%d\n",
+                pr_err("%s: gpio_tlmm_config(%#x)=%d\n",
                     __func__, bt_uart_off_table[pin], rc);
         }
 #endif
-        pr_debug("[BT] Bluetooth Power Off.\n");
+        pr_err("[BT] Bluetooth Power Off.\n");
 
         gpio_set_value(get_gpio_hwrev(BT_EN), 0);
 		gpio_set_value(get_gpio_hwrev(BT_WAKE), 0);
@@ -223,12 +224,12 @@ void __init msm8974_bt_init(void)
     int err = 0;
 #ifdef CONFIG_MACH_MONTBLANC
     int rc = 0;
-    pr_debug("[BT] msm8974_bt_init(%d)\n", system_rev);
+    pr_err("[BT] msm8974_bt_init(%d)\n", system_rev);
 
     if (system_rev < 2) {
         rc = gpio_request(get_gpio_hwrev(BTWIFI_LDO_EN), "btwifi_ldoen_gpio");
         if (unlikely(rc)) {
-            pr_debug("[BT] BTWIFI_LDO_EN request failed.\n");
+            pr_err("[BT] BTWIFI_LDO_EN request failed.\n");
             //return;
         }
         gpio_direction_output(get_gpio_hwrev(BTWIFI_LDO_EN), 0);
@@ -240,7 +241,7 @@ void __init msm8974_bt_init(void)
     gpio_rev_init();
     err = platform_device_register(&msm_bluesleep_device);
 	if (err) {
-	    pr_debug("[BT] failed to register Bluesleep device.\n");
+	    pr_err("[BT] failed to register Bluesleep device.\n");
 		return;
 	}
 #endif
@@ -265,7 +266,7 @@ static int bcm4339_bluetooth_probe(struct platform_device *pdev)
 #endif
     rc = gpio_request(get_gpio_hwrev(BT_EN), "bcm4339_bten_gpio");
     if (unlikely(rc)) {
-        pr_debug("[BT] GPIO_BT_EN request failed.\n");
+        pr_err("[BT] GPIO_BT_EN request failed.\n");
         return rc;
     }
 
@@ -283,7 +284,7 @@ static int bcm4339_bluetooth_probe(struct platform_device *pdev)
 	/* gpio request for bt_wake will be in bluesleeep.
     rc = gpio_request(get_gpio_hwrev(BT_WAKE), "bcm4339_btwake_gpio");
     if (unlikely(rc)) {
-        pr_debug("[BT] GPIO_BT_WAKE request failed.\n");
+        pr_err("[BT] GPIO_BT_WAKE request failed.\n");
         return rc;
 	}
     gpio_direction_output(get_gpio_hwrev(BT_WAKE), 0);
@@ -303,7 +304,7 @@ static int bcm4339_bluetooth_probe(struct platform_device *pdev)
     for (pin = 0; pin < ARRAY_SIZE(bt_uart_off_table); pin++) {
         rc = gpio_tlmm_config(bt_uart_off_table[pin], GPIO_CFG_ENABLE);
         if (rc < 0)
-            pr_debug("%s: gpio_tlmm_config(%#x)=%d\n",
+            pr_err("%s: gpio_tlmm_config(%#x)=%d\n",
                 __func__, bt_uart_off_table[pin], rc);
     }
 #endif
@@ -313,22 +314,24 @@ static int bcm4339_bluetooth_probe(struct platform_device *pdev)
                 NULL);
 
     if (unlikely(!bt_rfkill)) {
-        pr_debug("[BT] bt_rfkill alloc failed.\n");
+        pr_err("[BT] bt_rfkill alloc failed.\n");
         gpio_free(get_gpio_hwrev(BT_EN));
         return -ENOMEM;
     }
+
 
     rfkill_init_sw_state(bt_rfkill, 0);
 
     rc = rfkill_register(bt_rfkill);
 
     if (unlikely(rc)) {
-        pr_debug("[BT] bt_rfkill register failed.\n");
+        pr_err("[BT] bt_rfkill register failed.\n");
         rfkill_destroy(bt_rfkill);
         gpio_free(get_gpio_hwrev(BT_EN));
         gpio_free(get_gpio_hwrev(BT_WAKE));
         return rc;
     }
+
 
     rfkill_set_sw_state(bt_rfkill, true);
 

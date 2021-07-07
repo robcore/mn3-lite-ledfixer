@@ -807,7 +807,7 @@ static int lpm_suspend_prepare(void)
 
 	suspend_in_progress = true;
 	msm_mpm_suspend_prepare();
-	//regulator_showall_enabled();
+	regulator_showall_enabled();
 
 /* Temporary fix for RUBEN LTE for configuring GPIO 33 to NC configuration
 before entering sleep as some other process is changing it*/
@@ -826,13 +826,12 @@ before entering sleep as some other process is changing it*/
 	gpio_dvs_check_sleepgpio();
 #endif
 
-//#ifdef CONFIG_SEC_PM_DEBUG
-#if 0
+#ifdef CONFIG_SEC_PM_DEBUG
 	if (msm_pm_sleep_sec_debug) {
-		//msm_gpio_print_enabled();
-		//qpnp_debug_suspend_show();
+		msm_gpio_print_enabled();
+		qpnp_debug_suspend_show();
 #ifdef CONFIG_GPIO_PCAL6416A
-		//expander_print_all();
+		expander_print_all();
 #endif
 	}
 #endif

@@ -15,14 +15,13 @@ LASTZIP="$(cat $LASTZIPFILE)"
 RAMDISKFOLDER="$RDIR/mxramdisk"
 ZIPFOLDER="$RDIR/mxzip"
 MXCONFIG="$RDIR/arch/arm/configs/mxconfig"
-MXNEWCFG="$MXCONFIG.new"
-QUICKYEAR="$(date | awk '{print $4}')"
+MXRECENT="$MXCONFIG.recent"
 QUICKMONTHDAY="$(date | awk '{print $2$3}')"
 QUICKHOUR="$(date +%l | cut -d " " -f2)"
 QUICKMIN="$(date +%S)"
 QUICKAMPM="$(date +%p)"
 QUICKTIME="$QUICKHOUR:$QUICKMIN${QUICKAMPM}"
-QUICKDATE="$QUICKYEAR-$QUICKMONTHDAY-$QUICKTIME"
+QUICKDATE="$QUICKMONTHDAY-$QUICKTIME"
 #CORECOUNT="$(grep processor /proc/cpuinfo | wc -l)"
 #TOOLCHAIN="/opt/toolchains/arm-cortex_a15-linux-gnueabihf_5.3/bin/arm-cortex_a15-linux-gnueabihf-"
 TOOLCHAIN="/opt/toolchains/gcc-linaro-7.5.0-2019.12-x86_64_arm-linux-gnueabihf/bin/arm-linux-gnueabihf-"
@@ -31,14 +30,8 @@ TOOLCHAIN="/opt/toolchains/gcc-linaro-7.5.0-2019.12-x86_64_arm-linux-gnueabihf/b
 #TOOLCHAIN="/opt/toolchains/gcc-arm-9.2-2019.12-x86_64-arm-none-linux-gnueabihf/bin/arm-none-linux-gnueabihf-"
 #export ARCH="arm"
 export CROSS_COMPILE="$TOOLCHAIN"
-
-if [ "$2" = "noreboot" ] || [ "$1" = "-anr" ] || [ "$1" = "--allnoreboot" ]
-then
-    NOREBOOT="true"
-    echo "Script will not reboot after recovery install!"
-else
-    NOREBOOT="false"
-fi
+echo -n "$(date +%s)" > "$RDIR/.starttime"
+STARTTIME="$(cat $RDIR/.starttime)"
 
 timerprint() {
 
@@ -72,8 +65,8 @@ timerdiff() {
 
 	printf "%s" "$(date +%s)" > "$RDIR/.endtime"
 	ENDTIME="$(cat $RDIR/.endtime)"
-    STARTTIME="$(cat $RDIR/.starttime)"
 	DIFFTIME=$(( ENDTIME - STARTTIME ))
+	timerprint "$DIFFTIME"
 
 }
 
@@ -95,7 +88,6 @@ takeouttrash() {
 
 	rm $RDIR/.starttime &> /dev/null
 	rm $RDIR/.endtime &> /dev/null
-	rm $RDIR/mxtempusb &> /dev/null
 
 	find . -type f \( -iname \*.rej \
 			-o -iname \*.orig \
@@ -107,22 +99,10 @@ takeouttrash() {
 
 getmxrecent() {
 
-	local NEEDCOMMIT;
 	if [ -f "$BUILDIR/.config" ]
 	then
-		cp "$BUILDIR/.config" "$MXNEWCFG"
-		diff "$MXCONFIG" "$MXNEWCFG"
-		if [ "$?" -eq "1" ]
-		then
-			NEEDCOMMIT="true"
-		fi
-		[ -f "$MXCONFIG" ] && rm "$MXCONFIG"
-		mv "$MXNEWCFG" "$MXCONFIG"
-		if [ "$NEEDCOMMIT" = "true" ]
-		then
-			git add "$MXCONFIG"
-			git commit -a -m 'mxconfig updated from build'
-		fi
+		[ -f "$MXRECENT" ] && rm "$MXRECENT"
+		cp "$BUILDIR/.config" "$MXRECENT"
 	fi
 }
 
@@ -151,7 +131,7 @@ clean_build() {
 	echo -ne "Cleaning build....     \r"; \
 	rm -rf "$BUILDIR" &>/dev/null
 	echo -ne "Cleaning build.....    \r"; \
-	rm "$ZIPFOLDER/boot.img" &>/dev/null
+	rm "$ZIPFOLDER/common/boot.img" &>/dev/null
 	echo -ne "Cleaning build......   \r"; \
 	make -C "$RDIR/scripts/mkqcdtbootimg" clean &>/dev/null
 	echo -ne "Cleaning build.......  \r"; \
@@ -287,24 +267,6 @@ test_funcs() {
 
 }
 
-checkrecov() {
-	lsusb > "$RDIR/mxtempusb"
-	if grep -q '04e8:6860' mxtempusb;
-	then
-		echo "Ensuring System is ready for operations"
-		adb "wait-for-device";
-		echo "System is Ready"
-		echo -n "Reboot into Recovery? [y|n]: "
-		read -r RECREBOOT
-		if [ "$RECREBOOT" = "y" ]
-		then
-			echo "Rebooting into TWRP Recovery"
-			adb reboot recovery
-		fi
-	fi
-	rm $RDIR/mxtempusb &> /dev/null
-}
-
 handle_existing() {
 
 	if [ -z "$OLDVER" ]
@@ -412,7 +374,7 @@ build_single_config() {
 	MX_KERNEL_VERSION="buildingsingledriver"
 	mkdir -p "$BUILDIR" || warnandfail "Failed to make $BUILDIR directory!"
 	cp "$MXCONFIG" "$BUILDIR/.config" || warnandfail "Config Copy Error!"
-	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -C "$RDIR" O="$BUILDIR" oldconfig || warnandfail "make oldconfig Failed!"
+	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -C "$RDIR" O="$BUILDIR" -j16 oldconfig || warnandfail "make oldconfig Failed!"
 
 }
 
@@ -422,7 +384,7 @@ build_kernel_config() {
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
 	mkdir -p "$BUILDIR" || warnandfail "Failed to make $BUILDIR directory!"
 	cp "$MXCONFIG" "$BUILDIR/.config" || warnandfail "Config Copy Error!"
-	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -C "$RDIR" O="$BUILDIR" oldconfig || warnandfail "make oldconfig Failed!"
+	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -C "$RDIR" O="$BUILDIR" -j16 oldconfig || warnandfail "make oldconfig Failed!"
 	getmxrecent
 
 }
@@ -438,11 +400,10 @@ build_kernel() {
 	OLDCFG="/root/mn3-oldconfigs"
 	echo "Backing up .config to $OLDCFG/config.$QUICKDATE"
 	cp "$BUILDIR/.config" "$OLDCFG/config.$QUICKDATE"
-	#echo "Snapshot of current environment variables:"
-	#env
-	echo -n "$(date +%s)" > "$RDIR/.starttime"
+	echo "Snapshot of current environment variables:"
+	env
 	echo "Starting build..."
-	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -S -s -j16 -C "$RDIR" O="$BUILDIR" || warnandfail "Kernel Build failed!"
+	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -S -s -C "$RDIR" O="$BUILDIR" -j16 || warnandfail "Kernel Build failed!"
 
 }
 
@@ -452,6 +413,7 @@ build_ramdisk() {
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR"
 	rm -rf "$BUILDIR/ramdisk" &>/dev/null
 	cp -par "$RAMDISKFOLDER" "$BUILDIR/ramdisk" || warnandfail "Failed to create $BUILDIR/ramdisk!"
+	echo "Building ramdisk img"
 	cd "$BUILDIR/ramdisk" || warnandfail "Failed to cd to $BUILDIR/ramdisk!"
 	mkdir -pm 755 dev proc sys system
 	mkdir -pm 771 data
@@ -460,7 +422,6 @@ build_ramdisk() {
 		rm "$KDIR/ramdisk.cpio.gz"
 	fi
 #	find | fakeroot cpio -v -H newc -o | lzop -9 > "$KDIR/ramdisk.cpio.gz"
-	echo "Building ramdisk img"
 	find | fakeroot cpio -v -o -H newc | gzip -v -9 > "$KDIR/ramdisk.cpio.gz"
 	[ ! -f "$KDIR/ramdisk.cpio.gz" ] && warnandfail "NO ramdisk!"
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR"
@@ -470,7 +431,7 @@ build_ramdisk() {
 build_boot_img() {
 
 	echo "Generating boot.img..."
-	rm -f "$ZIPFOLDER/boot.img"
+	rm -f "$ZIPFOLDER/common/boot.img"
 	if [ ! -f "$RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg" ]
 	then
 		make -C "$RDIR/scripts/mkqcdtbootimg" || warnandfail "Failed to make dtb tool!"
@@ -484,20 +445,19 @@ build_boot_img() {
 		--pagesize "2048" \
 		--ramdisk_offset "0x02000000" \
 		--tags_offset "0x01e00000" \
-		--output "$ZIPFOLDER/boot.img"
+		--output "$ZIPFOLDER/common/boot.img"
 	if [ "$?" -eq 0 ]
 	then
 		echo "mkqcdtbootimg appears to have succeeded in building an image"
 	else
 		warnandfail "mkqcdtbootimg appears to have failed in building an image!"
 	fi
-	[ -f "$ZIPFOLDER/boot.img" ] || warnandfail "$ZIPFOLDER/boot.img does not exist!"
-	echo -n "SEANDROIDENFORCE" >> "$ZIPFOLDER/boot.img"
+	[ -f "$ZIPFOLDER/common/boot.img" ] || warnandfail "$ZIPFOLDER/common/boot.img does not exist!"
+	#echo -n "SEANDROIDENFORCE" >> "$ZIPFOLDER/common/boot.img"
 
 }
 
 ADBPUSHLOCATION="/sdcard/Download"
-MAGISKFILE="Magisk-v22.1.zip"
 
 create_zip() {
 
@@ -513,19 +473,24 @@ create_zip() {
 	#	fi
 	#done
 	zip -r -9 - * > "$RDIR/$MX_KERNEL_VERSION.zip"
+	echo "Kernel $MX_KERNEL_VERSION.zip finished"
+	echo "Filepath: "
+	echo "$RDIR/$MX_KERNEL_VERSION.zip"
 	if [ ! -f "$RDIR/$MX_KERNEL_VERSION.zip" ]
 	then
 		warnandfail "$RDIR/$MX_KERNEL_VERSION.zip does not exist!"
 	fi
-	echo "Kernel $MX_KERNEL_VERSION.zip finished"
-	echo "Filepath: "
-	echo "$RDIR/$MX_KERNEL_VERSION.zip"
-	timerdiff
 	if [ -s "$RDIR/$MX_KERNEL_VERSION.zip" ]
 	then
+		echo "Uploading $MX_KERNEL_VERSION.zip to Google Drive"
+		/bin/bash /root/google-drive-upload/upload.sh "$RDIR/$MX_KERNEL_VERSION.zip"
+		if [ "$?" -eq "0" ]
+		then
+			echo "$RDIR/$MX_KERNEL_VERSION.zip upload SUCCESS!"
+		else
+			echo "$RDIR/$MX_KERNEL_VERSION.zip upload FAILED!"
+		fi
 		echo -n "$MX_KERNEL_VERSION.zip" > "$RDIR/.lastzip"
-		echo "Starting ADB as root."
-		adb root
 		echo "Checking if Device is Connected..."
 		local SAMSTRING
 		SAMSTRING="$(lsusb | grep '04e8:6860')"
@@ -534,9 +499,6 @@ create_zip() {
 		then
 			echo "Device is Connected via Usb in System Mode!"
 			echo "$SAMSTRING"
-			echo "Ensuring System is ready for operations"
-			adb "wait-for-device";
-			echo "System is Ready"
 			adb shell input keyevent KEYCODE_WAKEUP
 			#adb shell input touchscreen swipe 930 880 930 380
 			echo "Transferring via adb to $ADBPUSHLOCATION/$MX_KERNEL_VERSION.zip"
@@ -549,57 +511,31 @@ create_zip() {
 			else
 				echo "Failed to push $RDIR/$MX_KERNEL_VERSION.zip to $ADBPUSHLOCATION over ADB!"
 			fi
+			adb kill-server || echo "Failed to kill ADB server!"
 		elif [ -n "$RECOVSTRING" ]
 		then
 			echo "Device is Connected via Usb in Recovery Mode!"
 			echo "$RECOVSTRING"
 			#adb shell input keyevent KEYCODE_WAKEUP
 			#adb shell input touchscreen swipe 930 880 930 380
-			echo "Ensuring Recovery is ready for operations"
-			adb "wait-for-recovery";
-			echo "Recovery is Ready"
-			echo "Transferring installer via adb to $ADBPUSHLOCATION/$MX_KERNEL_VERSION.zip"
+			echo "Transferring via adb to $ADBPUSHLOCATION/$MX_KERNEL_VERSION.zip"
 			adb push "$RDIR/$MX_KERNEL_VERSION.zip" "$ADBPUSHLOCATION"
 			if [ "$?" -eq "0" ]
 			then
-				echo "Successfully pushed $RDIR/$MX_KERNEL_VERSION.zip to $ADBPUSHLOCATION/$MX_KERNEL_VERSION.zip over ADB!"
-				echo "Installing $ADBPUSHLOCATION/$MX_KERNEL_VERSION.zip via open recovery script"
-				adb shell twrp install "$ADBPUSHLOCATION/$MX_KERNEL_VERSION.zip"
-                echo "Pushing Magisk to $ADBPUSHLOCATION/$MAGISKFILE"
-                adb push "$RDIR/$MAGISKFILE" "$ADBPUSHLOCATION"
-				echo "Installing $ADBPUSHLOCATION/$MAGISKFILE via open recovery script"
-				adb shell twrp install "$ADBPUSHLOCATION/$MAGISKFILE"
-                echo "Removing leftovers"
-                adb shell rm "/data/dalvik-cache/arm/dev@tmp@install@common@magisk.apk@classes.dex" &> /dev/null
-                adb shell rm "/data/dalvik-cache/arm/data@app@com.topjohnwu.magisk-1@base.apk@classes.dex" &> /dev/null
-                adb shell rm "/data/dalvik-cache/profiles/com.topjohnwu.magisk" &> /dev/null
-                if [ "$NOREBOOT" = "false" ]
-                then
-    				echo "Rebooting Device"
-        			adb reboot
-                else
-                    echo "Skipping Reboot due to command line option!"
-                fi
+				echo "Successfully pushed $RDIR/$MX_KERNEL_VERSION.zip to $ADBPUSHLOCATION over ADB!"
 			else
-				echo "FAILED to push $RDIR/$MX_KERNEL_VERSION.zip to $ADBPUSHLOCATION/$MX_KERNEL_VERSION.zip over ADB!"
+				echo "Failed to push $RDIR/$MX_KERNEL_VERSION.zip to $ADBPUSHLOCATION over ADB!"
 			fi
+			adb kill-server || echo "Failed to kill ADB server!"
 		else
 			echo "Device not Connected.  Skipping adb transfer."
-			echo "Uploading $MX_KERNEL_VERSION.zip to Google Drive Instead."
-			/bin/bash /root/google-drive-upload/upload.sh "$RDIR/$MX_KERNEL_VERSION.zip"
-			if [ "$?" -eq "0" ]
-			then
-				echo "$RDIR/$MX_KERNEL_VERSION.zip upload SUCCESS!"
-			else
-				echo "$RDIR/$MX_KERNEL_VERSION.zip upload FAILED!"
-			fi
 		fi
+		timerdiff
 	else
 		warnandfail "$RDIR/$MX_KERNEL_VERSION.zip is 0 bytes, something is wrong!"
 	fi
-	adb kill-server || echo "Failed to kill ADB server!"
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR"
-	timerprint "$DIFFTIME"
+
 }
 
 #CREATE_TAR()
@@ -608,7 +544,7 @@ create_zip() {
 #
 #	echo "Compressing to Odin flashable tar.md5 file..."
 #	cd $RDIR/$ZIPFOLDER
-#	tar -H ustar -c boot.img > $RDIR/$MX_KERNEL_VERSION.tar
+#	tar -H ustar -c common/boot.img > $RDIR/$MX_KERNEL_VERSION.tar
 #	cd $RDIR
 #	md5sum -t $MX_KERNEL_VERSION.tar >> $MX_KERNEL_VERSION.tar
 #	mv $MX_KERNEL_VERSION.tar $MX_KERNEL_VERSION.tar.md5
@@ -617,30 +553,23 @@ create_zip() {
 
 show_help() {
 
-cat << EOF
+	cat << EOF
 Machinexlite kernel by robcore
 Script written by jcadduono, frequentc & robcore
 
 usage: ./mxbuild.sh [OPTION]
 Common options:
  -a|--all            Do a complete build (starting at the beginning)
- -anr|--allnoreboot  Do a complete build (starting at the beginning), do not reboot
  -d|--debug          Same as --all but skips final cleanup
  -r|--rebuildme      Same as --all but defaults to rebuilding previous version
  -b|--bsd            Build single driver (path/to/folder/ | path/to/file.o)
  -c|--clean          Remove everything this build script has done
--nc|--newconfig      Concatecate samsung defconfigs & enter menuconfig
- -m|--menuconfig     Setup an environment for and enter menuconfig
+-nc|--newconfig)     Concatecate samsung defconfigs & enter menuconfig
+ -m|--menu           Setup an environment for and enter menuconfig
  -k|--kernel         Try the build again starting at compiling the kernel
  -o|--kernel-only    Recompile only the kernel, nothing else
 -rd|--ramdisk        Try the build again starting at the ramdisk
  -t|--tests          Testing playground
-
-Extra command line options are possible, with more to be added in the future:
-Currently, it is just the one.
-Appending "noreboot" as the second option will keep the device from rebooting.
-Or, just use the -anr option that is the same as -a to build all,
-but skips the reboot.
 EOF
 
 	exit 1
@@ -679,6 +608,18 @@ bsdwrapper() {
 
 }
 
+build_nc() {
+
+	build_new_config
+
+}
+
+build_mc() {
+
+	build_menuconfig
+
+}
+
 runtest() {
 
 test_funcs && exit 0
@@ -694,28 +635,18 @@ do
 	extrargs="$2"
 	case "$1" in
 	     -a|--all)
-			checkrecov
-			handle_existing
-			build_all
-			break
-	    	;;
-
-	     -anr|--allnoreboot)
-			checkrecov
 			handle_existing
 			build_all
 			break
 	    	;;
 
 	     -d|--debug)
-			checkrecov
 			handle_existing
 			build_debug
 			break
 	    	;;
 
 	     -r|--rebuildme)
-			checkrecov
 			rebuild
 			build_all
 			break
@@ -731,30 +662,27 @@ do
 	    	break
 	    	;;
 		 -nc|--newconfig)
-			build_new_config
+			build_nc
 			break
 			;;
-		 -m|--menuconfig)
-			build_menuconfig
+		 -m|--menu)
+			build_mc
 			break
 			;;
 
 	     -k|--kernel)
-			checkrecov
 			handle_existing
 	    	build_kernel_and_package
 	    	break
 	    	;;
 
 	    -o|--kernel-only)
-			checkrecov
 			handle_existing
 	    	build_kernel
 	    	break
 	    	;;
 
 	     -rd|--ramdisk)
-			checkrecov
 			handle_existing
 	     	package_ramdisk_and_zip
 	    	break

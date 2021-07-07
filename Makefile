@@ -1,6 +1,6 @@
 VERSION = 3
 PATCHLEVEL = 4
-SUBLEVEL = 113
+SUBLEVEL = 19
 EXTRAVERSION =
 NAME = Saber-toothed Squirrel
 
@@ -377,29 +377,17 @@ KBUILD_CPPFLAGS := -D__KERNEL__
 KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -Wno-unused-variable -Wno-maybe-uninitialized \
 		   -Werror-implicit-function-declaration \
-		   -std=gnu89 \
+		   -fno-strict-aliasing -fno-common \
+		   -std=gnu89 -fomit-frame-pointer -fno-omit-frame-pointer \
+		   -fno-align-functions -fno-align-loops \
 		   -Wno-unused-function -Wno-unused-label -Wno-array-bounds \
 		   -Wno-format-security -Wno-format-truncation \
 		   -Wno-misleading-indentation -Wno-int-in-bool-context \
 		   -Wno-bool-compare -Wno-tautological-compare \
 		   -fno-delete-null-pointer-checks -Wno-pointer-compare \
-		   -Wno-switch-unreachable -Wno-stringop-overflow \
-		   -fno-strict-aliasing -fno-common
-		   #-fno-strict-aliasing -fno-common \
-           #-fomit-frame-pointer -fno-omit-frame-pointer \
-		   #-fno-align-functions -fno-align-loops \
+		   -Wno-switch-unreachable -Wno-stringop-overflow
 KBUILD_AFLAGS_KERNEL :=
-KBUILD_CFLAGS_KERNEL := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
-		   -Wno-unused-variable -Wno-maybe-uninitialized \
-		   -Werror-implicit-function-declaration \
-		   -std=gnu89 \
-		   -Wno-unused-function -Wno-unused-label -Wno-array-bounds \
-		   -Wno-format-security -Wno-format-truncation \
-		   -Wno-misleading-indentation -Wno-int-in-bool-context \
-		   -Wno-bool-compare -Wno-tautological-compare \
-		   -fno-delete-null-pointer-checks -Wno-pointer-compare \
-		   -Wno-switch-unreachable -Wno-stringop-overflow \
-		   -fno-strict-aliasing -fno-common
+KBUILD_CFLAGS_KERNEL :=
 KBUILD_AFLAGS   := -D__ASSEMBLY__
 KBUILD_AFLAGS_MODULE  := -DMODULE
 KBUILD_CFLAGS_MODULE  := -DMODULE
@@ -669,9 +657,6 @@ KBUILD_CFLAGS += $(call cc-disable-warning, pointer-sign)
 
 # disable invalid "can't wrap" optimizations for signed / pointers
 KBUILD_CFLAGS	+= $(call cc-option,-fno-strict-overflow)
-
-# conserve stack if available
-KBUILD_CFLAGS   += $(call cc-option,-fconserve-stack)
 
 # use the deterministic mode of AR if available
 KBUILD_ARFLAGS := $(call ar-option,D)

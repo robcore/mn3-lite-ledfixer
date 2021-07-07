@@ -129,8 +129,6 @@ static struct gpio_event_platform_data sec_jack_input_data = {
 	.info_count = ARRAY_SIZE(sec_jack_input_info),
 };
 
-int secjack_state;
-
 #ifdef CONFIG_ARCH_MSM8226
 /*Enabling Ear Mic Bias of WCD Codec*/
 extern void msm8226_enable_ear_micbias(bool state);
@@ -342,14 +340,6 @@ static void sec_jack_buttons_disconnect(struct input_handle *handle)
 	input_unregister_handle(handle);
 }
 
-/*
-enum {
-	SEC_JACK_NO_DEVICE				= 0,
-	SEC_HEADSET_4POLE				= 1,
-	SEC_HEADSET_3POLE				= 2,
-};
-*/
-
 static void sec_jack_set_type(struct sec_jack_info *hi, int jack_type)
 {
 	//struct sec_jack_platform_data *pdata = hi->pdata;
@@ -357,14 +347,21 @@ static void sec_jack_set_type(struct sec_jack_info *hi, int jack_type)
 	/* this can happen during slow inserts where we think we identified
 	 * the type but then we get another interrupt and do it again
 	 */
-
 	if (jack_type == hi->cur_jack_type) {
+#if defined(CONFIG_MACH_KLTE_JPN)
+		if ((jack_type != SEC_HEADSET_4POLE) || (jack_type != SEC_EXTERNAL_ANTENNA))
+#else
 		if (jack_type != SEC_HEADSET_4POLE)
+#endif
 			set_sec_micbias_state(hi, false);
 		return;
 	}
 
+#if defined(CONFIG_MACH_KLTE_JPN)
+	if ((jack_type == SEC_HEADSET_4POLE) || (jack_type == SEC_EXTERNAL_ANTENNA)) {
+#else
 	if (jack_type == SEC_HEADSET_4POLE) {
+#endif
 		/* for a 4 pole headset, enable detection of send/end key */
 		if (hi->send_key_dev == NULL)
 			/* enable to get events again */
@@ -389,8 +386,31 @@ static void sec_jack_set_type(struct sec_jack_info *hi, int jack_type)
 	}
 
 	hi->cur_jack_type = jack_type;
-    secjack_state = hi->cur_jack_type;
-	pr_info("%s : jack_type = %d\n", __func__, jack_type);
+	pr_debug("%s : jack_type = %d\n", __func__, jack_type);
+
+#if defined(CONFIG_MACH_KLTE_JPN)
+	if (jack_type == SEC_EXTERNAL_ANTENNA) {
+		if(++detect_count > MAX_DETECT_LIMIT) {
+			detect_count = 0;
+			return;
+		}
+		else {
+			int time_left_ms = 100;
+		
+			while (time_left_ms > 0) {
+				usleep_range(10000, 10000);
+				time_left_ms -= 10;
+			}
+
+			hi->cur_jack_type = SEC_JACK_NO_DEVICE;
+			determine_jack_type(hi);
+			
+			return;
+		}
+	}
+	else
+		detect_count = 0;
+#endif
 	switch_set_state(&switch_jack_detection, jack_type);
 }
 

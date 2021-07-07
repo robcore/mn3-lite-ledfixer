@@ -516,20 +516,8 @@ struct mount *__lookup_mnt(struct vfsmount *mnt, struct dentry *dentry,
 }
 
 /*
- * lookup_mnt - Return the first child mount mounted at path
- *
- * "First" means first mounted chronologically.  If you create the
- * following mounts:
- *
- * mount /dev/sda1 /mnt
- * mount /dev/sda2 /mnt
- * mount /dev/sda3 /mnt
- *
- * Then lookup_mnt() on the base /mnt dentry in the root mount will
- * return successively the root dentry and vfsmount of /dev/sda1, then
- * /dev/sda2, then /dev/sda3, then NULL.
- *
- * lookup_mnt takes a reference to the found vfsmount.
+ * lookup_mnt increments the ref count before returning
+ * the vfsmount struct.
  */
 struct vfsmount *lookup_mnt(struct path *path)
 {
@@ -1079,9 +1067,6 @@ void umount_tree(struct mount *mnt, int propagate, struct list_head *kill)
 	for (p = mnt; p; p = next_mnt(p, mnt))
 		list_move(&p->mnt_hash, &tmp_list);
 
-	list_for_each_entry(p, &tmp_list, mnt_hash)
-		list_del_init(&p->mnt_child);
-
 	if (propagate)
 		propagate_umount(&tmp_list);
 
@@ -1092,6 +1077,7 @@ void umount_tree(struct mount *mnt, int propagate, struct list_head *kill)
 		if (p->mnt_ns)
 			__mnt_make_shortterm(p);
 		p->mnt_ns = NULL;
+		list_del_init(&p->mnt_child);
 		if (mnt_has_parent(p)) {
 			p->mnt_parent->mnt_ghosts++;
 			dentry_reset_mounted(p->mnt_mountpoint);
@@ -1167,8 +1153,6 @@ static int do_umount(struct mount *mnt, int flags)
 		 * Special case for "unmounting" root ...
 		 * we just try to remount it readonly.
 		 */
-		if (!capable(CAP_SYS_ADMIN))
-			return -EPERM;
 		down_write(&sb->s_umount);
 		if (!(sb->s_flags & MS_RDONLY))
 			retval = do_remount_sb(sb, MS_RDONLY, NULL, 0);
@@ -1227,7 +1211,7 @@ SYSCALL_DEFINE2(umount, char __user *, name, int, flags)
 		goto dput_and_out;
 
 	retval = -EPERM;
-	if (flags & MNT_FORCE && !capable(CAP_SYS_ADMIN))
+	if (!capable(CAP_SYS_ADMIN))
 		goto dput_and_out;
 
 	retval = do_umount(mnt, flags);
@@ -1299,9 +1283,8 @@ struct mount *copy_tree(struct mount *mnt, struct dentry *dentry,
 		return NULL;
 
 	res = q = clone_mnt(mnt, dentry, flag);
-	if (IS_ERR(q))
-		return q;
-
+	if (!q)
+		goto Enomem;
 	q->mnt_mountpoint = mnt->mnt_mountpoint;
 
 	p = mnt;
@@ -1347,15 +1330,10 @@ struct vfsmount *collect_mounts(struct path *path)
 {
 	struct mount *tree;
 	down_write(&namespace_sem);
-	if (!check_mnt(real_mount(path->mnt)))
-		tree = ERR_PTR(-EINVAL);
-	else
-		tree = copy_tree(real_mount(path->mnt), path->dentry,
-				 CL_COPY_ALL | CL_PRIVATE);
+	tree = copy_tree(real_mount(path->mnt), path->dentry,
+			 CL_COPY_ALL | CL_PRIVATE);
 	up_write(&namespace_sem);
-	if (IS_ERR(tree))
-		return ERR_CAST(tree);
-	return &tree->mnt;
+	return tree ? &tree->mnt : NULL;
 }
 
 void drop_collected_mounts(struct vfsmount *mnt)
@@ -1592,6 +1570,9 @@ static int do_change_type(struct path *path, int flag)
 	int type;
 	int err = 0;
 
+	if (!capable(CAP_SYS_ADMIN))
+		return -EPERM;
+
 	if (path->dentry != path->mnt->mnt_root)
 		return -EINVAL;
 
@@ -1657,10 +1638,8 @@ static int do_loopback(struct path *path, char *old_name,
 	else
 		mnt = clone_mnt(old, old_path.dentry, 0);
 
-	if (IS_ERR(mnt)) {
-		err = PTR_ERR(mnt);
-		goto out;
-	}
+	if (!mnt)
+		goto out2;
 
 	err = graft_tree(mnt, path);
 	if (err) {
@@ -1705,6 +1684,9 @@ static int do_remount(struct path *path, int flags, int mnt_flags,
 	struct super_block *sb = path->mnt->mnt_sb;
 	struct mount *mnt = real_mount(path->mnt);
 
+	if (!capable(CAP_SYS_ADMIN))
+		return -EPERM;
+
 	if (!check_mnt(mnt))
 		return -EINVAL;
 
@@ -1718,18 +1700,20 @@ static int do_remount(struct path *path, int flags, int mnt_flags,
 	down_write(&sb->s_umount);
 	if (flags & MS_BIND)
 		err = change_mount_flags(path->mnt, flags);
-	else if (!capable(CAP_SYS_ADMIN))
-		err = -EPERM;
 	else
 		err = do_remount_sb(sb, flags, data, 0);
 	if (!err) {
 		br_write_lock(vfsmount_lock);
-		mnt_flags |= mnt->mnt.mnt_flags & ~MNT_USER_SETTABLE_MASK;
+		mnt_flags |= mnt->mnt.mnt_flags & MNT_PROPAGATION_MASK;
 		mnt->mnt.mnt_flags = mnt_flags;
-		touch_mnt_namespace(mnt->mnt_ns);
 		br_write_unlock(vfsmount_lock);
 	}
 	up_write(&sb->s_umount);
+	if (!err) {
+		br_write_lock(vfsmount_lock);
+		touch_mnt_namespace(mnt->mnt_ns);
+		br_write_unlock(vfsmount_lock);
+	}
 	return err;
 }
 
@@ -1748,8 +1732,9 @@ static int do_move_mount(struct path *path, char *old_name)
 	struct path old_path, parent_path;
 	struct mount *p;
 	struct mount *old;
-	int err;
-
+	int err = 0;
+	if (!capable(CAP_SYS_ADMIN))
+		return -EPERM;
 	if (!old_name || !*old_name)
 		return -EINVAL;
 	err = kern_path(old_name, LOOKUP_FOLLOW, &old_path);
@@ -1897,6 +1882,10 @@ static int do_new_mount(struct path *path, char *type, int flags,
 
 	if (!type)
 		return -EINVAL;
+
+	/* we need capabilities... */
+	if (!capable(CAP_SYS_ADMIN))
+		return -EPERM;
 
 	mnt = do_kern_mount(type, flags, name, data);
 	if (IS_ERR(mnt))
@@ -2291,10 +2280,10 @@ static struct mnt_namespace *dup_mnt_ns(struct mnt_namespace *mnt_ns,
 	down_write(&namespace_sem);
 	/* First pass: copy the tree topology */
 	new = copy_tree(old, old->mnt.mnt_root, CL_COPY_ALL | CL_EXPIRE);
-	if (IS_ERR(new)) {
+	if (!new) {
 		up_write(&namespace_sem);
 		kfree(new_ns);
-		return ERR_CAST(new);
+		return ERR_PTR(-ENOMEM);
 	}
 	new_ns->root = new;
 	br_write_lock(vfsmount_lock);
@@ -2367,7 +2356,7 @@ static struct mnt_namespace *create_mnt_ns(struct vfsmount *m)
 		mnt->mnt_ns = new_ns;
 		__mnt_make_longterm(mnt);
 		new_ns->root = mnt;
-		list_add(&mnt->mnt_list, &new_ns->list);
+		list_add(&new_ns->list, &mnt->mnt_list);
 	} else {
 		mntput(m);
 	}
@@ -2689,13 +2678,13 @@ static void *mntns_get(struct task_struct *task)
 	struct mnt_namespace *ns = NULL;
 	struct nsproxy *nsproxy;
 
-	task_lock(task);
+	rcu_read_lock();
 	nsproxy = task_nsproxy(task);
 	if (nsproxy) {
 		ns = nsproxy->mnt_ns;
 		get_mnt_ns(ns);
 	}
-	task_unlock(task);
+	rcu_read_unlock();
 
 	return ns;
 }

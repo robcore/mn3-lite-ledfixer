@@ -44,8 +44,8 @@ struct pcal6416a_platform_data {
 	const char *supply_name;
 };
 
-#if 0
-//int expander_print_all(void);
+#ifdef CONFIG_SEC_PM_DEBUG
+int expander_print_all(void);
 #endif
 
 #endif

@@ -672,6 +672,7 @@ static struct file *__dentry_open(struct dentry *dentry, struct vfsmount *mnt,
 	f->f_path.dentry = dentry;
 	f->f_path.mnt = mnt;
 	f->f_pos = 0;
+	file_sb_list_add(f, inode->i_sb);
 
 	if (unlikely(f->f_mode & FMODE_PATH)) {
 		f->f_op = &empty_fops;
@@ -729,6 +730,7 @@ cleanup_all:
 			mnt_drop_write(mnt);
 		}
 	}
+	file_sb_list_del(f);
 	f->f_path.dentry = NULL;
 	f->f_path.mnt = NULL;
 cleanup_file:
@@ -1040,12 +1042,9 @@ SYSCALL_DEFINE2(creat, const char __user *, pathname, umode_t, mode)
 int filp_close(struct file *filp, fl_owner_t id)
 {
 	int retval = 0;
-	long ret;
 
-	ret = file_count(filp);
-	if (ret <= 0) {
-		printk(KERN_ERR "VFS: Close: file count is %ld\n", ret);
-		WARN_ON(ret < 0);
+	if (!file_count(filp)) {
+		printk(KERN_ERR "VFS: Close: file count is 0\n");
 		return 0;
 	}
 

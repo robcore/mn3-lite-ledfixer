@@ -885,7 +885,7 @@ static int is_connected_input_ep(struct snd_soc_dapm_widget *widget,
 	return con;
 }
 
-/* Get the DAPM AIF widget for the DAI stream */
+/* Get the DAPM AIF widget for thie DAI stream */
 struct snd_soc_dapm_widget *snd_soc_get_codec_widget(struct snd_soc_card *card,
 		struct snd_soc_codec *codec, const char *name)
 {
@@ -1372,15 +1372,12 @@ static void dapm_seq_run(struct snd_soc_dapm_context *dapm,
 				list_for_each_entry_safe_continue(w, n, list,
 								  power_list);
 
-			if (event == SND_SOC_DAPM_STREAM_START) {
-				pr_info("%s: SND_SOC_DAPM_STREAM_START : SND_SOC_DAPM_PRE_PMU\n", __func__);
+			if (event == SND_SOC_DAPM_STREAM_START)
 				ret = w->event(w,
 					       NULL, SND_SOC_DAPM_PRE_PMU);
-			} else if (event == SND_SOC_DAPM_STREAM_STOP) {
-				pr_info("%s: SND_SOC_DAPM_STREAM_STOP : SND_SOC_DAPM_PRE_PMD\n", __func__);
+			else if (event == SND_SOC_DAPM_STREAM_STOP)
 				ret = w->event(w,
 					       NULL, SND_SOC_DAPM_PRE_PMD);
-			}
 			break;
 
 		case snd_soc_dapm_post:
@@ -1388,15 +1385,12 @@ static void dapm_seq_run(struct snd_soc_dapm_context *dapm,
 				list_for_each_entry_safe_continue(w, n, list,
 								  power_list);
 
-			if (event == SND_SOC_DAPM_STREAM_START) {
-				pr_info("%s: SND_SOC_DAPM_STREAM_START : SND_SOC_DAPM_POST_PMU\n", __func__);
+			if (event == SND_SOC_DAPM_STREAM_START)
 				ret = w->event(w,
 					       NULL, SND_SOC_DAPM_POST_PMU);
-			} else if (event == SND_SOC_DAPM_STREAM_STOP) {
-				pr_info("%s: SND_SOC_DAPM_STREAM_STOP : SND_SOC_DAPM_POST_PMD\n", __func__);
+			else if (event == SND_SOC_DAPM_STREAM_STOP)
 				ret = w->event(w,
 					       NULL, SND_SOC_DAPM_POST_PMD);
-			}
 			break;
 
 		default:
@@ -1805,7 +1799,7 @@ static ssize_t dapm_widget_power_read_file(struct file *file,
 				w->active ? "active" : "inactive");
 
 	list_for_each_entry(p, &w->sources, list_sink) {
-		if (p->connected && !p->connected(w, p->source))
+		if (p->connected && !p->connected(w, p->sink))
 			continue;
 
 		if (p->connect)
@@ -3114,7 +3108,7 @@ static void soc_dapm_stream_event(struct snd_soc_dapm_context *dapm,
 	{
 		if (!w->sname || w->dapm != dapm)
 			continue;
-		dev_info(w->dapm->dev, "widget %s\n %s stream %s event %d\n",
+		dev_vdbg(w->dapm->dev, "widget %s\n %s stream %s event %d\n",
 			w->name, w->sname, stream, event);
 		if (strstr(w->sname, stream)) {
 			dapm_mark_dirty(w, "stream event");
@@ -3136,7 +3130,7 @@ static void soc_dapm_stream_event(struct snd_soc_dapm_context *dapm,
 
 	dapm_power_widgets(dapm, event);
 
-	/* we need to notify any clients that DAPM stream is complete */
+	/* do we need to notify any clients that DAPM stream is complete */
 	if (dapm->stream_event)
 		dapm->stream_event(dapm, event);
 }
@@ -3482,7 +3476,7 @@ void snd_soc_dapm_shutdown(struct snd_soc_card *card)
 {
 	struct snd_soc_codec *codec;
 
-	list_for_each_entry(codec, &card->codec_dev_list, card_list) {
+	list_for_each_entry(codec, &card->codec_dev_list, list) {
 		soc_dapm_shutdown_codec(&codec->dapm);
 		snd_soc_dapm_set_bias_level(&codec->dapm, SND_SOC_BIAS_OFF);
 	}

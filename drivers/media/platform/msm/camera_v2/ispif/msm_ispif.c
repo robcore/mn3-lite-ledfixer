@@ -144,7 +144,7 @@ static int msm_ispif_reset_hw(struct ispif_device *ispif)
 		ispif_8974_reset_clk_info, reset_clk,
 		ARRAY_SIZE(ispif_8974_reset_clk_info), 1);
 	if (rc < 0) {
-		pr_err("%s: cannot enable clock, error = %d\n",
+		pr_err("%s: cannot enable clock, error = %d",
 			__func__, rc);
 	}
 
@@ -179,13 +179,13 @@ static int msm_ispif_reset_hw(struct ispif_device *ispif)
 			goto end;
 		}
 	}
-	pr_info("%s: ISPIF reset hw done\n", __func__);
+	pr_info("%s: ISPIF reset hw done", __func__);
 end:
 	rc = msm_cam_clk_enable(&ispif->pdev->dev,
 		ispif_8974_reset_clk_info, reset_clk,
 		ARRAY_SIZE(ispif_8974_reset_clk_info), 0);
 	if (rc < 0) {
-		pr_err("%s: cannot disable clock, error = %d\n",
+		pr_err("%s: cannot disable clock, error = %d",
 			__func__, rc);
 	}
 	return rc;
@@ -204,7 +204,7 @@ static int msm_ispif_clk_ahb_enable(struct ispif_device *ispif, int enable)
 		ispif_8974_ahb_clk_info, &ispif->ahb_clk,
 		ARRAY_SIZE(ispif_8974_ahb_clk_info), enable);
 	if (rc < 0) {
-		pr_err("%s: cannot enable clock, error = %d\n",
+		pr_err("%s: cannot enable clock, error = %d",
 			__func__, rc);
 	}
 
@@ -951,7 +951,7 @@ static int msm_ispif_init(struct ispif_device *ispif,
 
 	rc = msm_ispif_clk_ahb_enable(ispif, 1);
 	if (rc) {
-		pr_err("%s: ahb_clk enable failed\n", __func__);
+		pr_err("%s: ahb_clk enable failed", __func__);
 		goto error_ahb;
 	}
 
@@ -1005,7 +1005,7 @@ static void msm_ispif_release(struct ispif_device *ispif)
 	iounmap(ispif->clk_mux_base);
 
 	ispif->ispif_state = ISPIF_POWER_DOWN;
-	pr_info("%s: power down done\n", __func__);
+	pr_info("%s: power down done", __func__);
 }
 
 static long msm_ispif_cmd(struct v4l2_subdev *sd, void *arg)
@@ -1173,14 +1173,14 @@ static int __devinit ispif_probe(struct platform_device *pdev)
 	ispif->mem = platform_get_resource_byname(pdev,
 		IORESOURCE_MEM, "ispif");
 	if (!ispif->mem) {
-		pr_err("%s: no mem resource\n", __func__);
+		pr_err("%s: no mem resource?\n", __func__);
 		rc = -ENODEV;
 		goto error;
 	}
 	ispif->irq = platform_get_resource_byname(pdev,
 		IORESOURCE_IRQ, "ispif");
 	if (!ispif->irq) {
-		pr_err("%s: no irq resource\n", __func__);
+		pr_err("%s: no irq resource?\n", __func__);
 		rc = -ENODEV;
 		goto error;
 	}
