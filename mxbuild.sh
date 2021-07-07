@@ -24,7 +24,7 @@ then
     warnandfailearly "/root/mx_toolchains folder does not exist!"
 fi
 
-RDIR="mn3-lite-ledfixer"
+RDIR="/root/mn3-lite-ledfixer"
 MXPREFIX="machinexlite-Mark"
 MXSUFFIX="-hltetmo-LTSTEST"
 
@@ -39,7 +39,7 @@ OLDCFG="$RDIR/oldconfigs"
 OLDVERFILE="$RDIR/.oldversion"
 OLDVER="$(cat $OLDVERFILE)"
 LASTZIPFILE="$RDIR/.lastzip"
-[ ! -f "$LASTZIPFILE" ] && echo -n "${MXPREFIX}1${MXSUFFIX}.zip"
+[ ! -f "$LASTZIPFILE" ] && echo -n "${MXPREFIX}1${MXSUFFIX}.zip" > "$LASTZIPFILE"
 LASTZIP="$(cat $LASTZIPFILE)"
 ENDFILE="$RDIR/.endtime"
 STARTFILE="$RDIR/.starttime"
@@ -54,6 +54,7 @@ FZMG="$NEWZMG-fixup"
 MXZMG="$MXRD/split_img/boot.img-kernel"
 DTBTOOL="$RDIR/tools/dtbTool"
 MKBOOTIMG="/usr/bin/mkbootimg"
+NEWRD="$MXRD/ramdisk-new.cpio.gz"
 
 QUICKHOUR="$(date +%l | cut -d " " -f2)"
 QUICKMIN="$(date +%S)"
@@ -237,7 +238,7 @@ clean_build() {
 	rm "$ZIPFOLDER/boot.img" &>/dev/null
 	echo -ne "Cleaning build......   \r"; \
     [ -f "$MXRD/image-new.img" ] && rm "$MXRD/image-new.img"
-    [ -f "$MXRD/ramdisk-new.cpio.gz" ] && rm "$MXRD/ramdisk-new.cpio.gz"
+    [ -f "$NEWRD" ] && rm "$NEWRD"
 	echo -ne "Cleaning build.......  \r"; \
 #	rm -rf "$RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg" &>/dev/null
 	echo -ne "Cleaning build........ \r"; \
@@ -620,7 +621,7 @@ build_boot_img() {
 
 	[ -f "$ZIPFOLDER/boot.img" ] && rm "$ZIPFOLDER/boot.img"
     [ -f "$MXRD/image-new.img" ] && rm "$MXRD/image-new.img"
-    [ -f "$MXRD/ramdisk-new.cpio.gz" ] && rm "$MXRD/ramdisk-new.cpio.gz"
+    [ -f "$NEWRD" ] && rm "$NEWRD"
 
     echo "Regenerating .dtb files"
     rm "$KDIR/msm8974-sec-hlte-r05.dtb" &> /dev/null
@@ -668,7 +669,7 @@ build_boot_img() {
     ./repackimg.sh --sudo
     cd "$RDIR" || warnandfail "Failed to cd into $RDIR!"
 
-    [ -f "$MXRD/ramdisk-new.cpio.gz" ] && rm "$MXRD/ramdisk-new.cpio.gz"
+    [ -f "$NEWRD" ] && rm "$NEWRD"
 
     if [ -f "$MXRD/image-new.img" ]
     then
