@@ -24,7 +24,7 @@ then
     warnandfailearly "/root/mx_toolchains folder does not exist!"
 fi
 
-RDIR="/root/mn3lite"
+RDIR="mn3-lite-ledfixer"
 BUILDIR="$RDIR/build"
 LOGDIR="$RDIR/buildlogs"
 KDIR="$BUILDIR/arch/arm/boot"
@@ -47,8 +47,7 @@ FZMG="$NEWZMG-fixup"
 MXZMG="$MXRD/split_img/boot.img-kernel"
 DTBTOOL="$RDIR/tools/dtbTool"
 MKBOOTIMG="/usr/bin/mkbootimg"
-OLDCFG="/root/mn3-oldconfigs"
-
+OLDCFG="$RDIR/local-oldconfigs"
 QUICKHOUR="$(date +%l | cut -d " " -f2)"
 QUICKMIN="$(date +%S)"
 QUICKAMPM="$(date +%p)"
