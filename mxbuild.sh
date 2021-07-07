@@ -25,18 +25,25 @@ then
 fi
 
 RDIR="mn3-lite-ledfixer"
+MXPREFIX="machinexlite-Mark"
+MXSUFFIX="-hltetmo-LTSTEST"
+
+RAMDISKFOLDER="$MXRD/ramdisk"
+ZIPFOLDER="$RDIR/mxzip"
 BUILDIR="$RDIR/build"
 LOGDIR="$RDIR/buildlogs"
 KDIR="$BUILDIR/arch/arm/boot"
+MXRD="$RDIR/mxrd"
+OLDCFG="$RDIR/oldconfigs"
+
 OLDVERFILE="$RDIR/.oldversion"
 OLDVER="$(cat $OLDVERFILE)"
 LASTZIPFILE="$RDIR/.lastzip"
+[ ! -f "$LASTZIPFILE" ] && echo -n "${MXPREFIX}1${MXSUFFIX}.zip"
 LASTZIP="$(cat $LASTZIPFILE)"
 ENDFILE="$RDIR/.endtime"
 STARTFILE="$RDIR/.starttime"
-MXRD="$RDIR/mxrd"
-RAMDISKFOLDER="$MXRD/ramdisk"
-ZIPFOLDER="$RDIR/mxzip"
+
 MXCONFIG="$RDIR/arch/arm/configs/mxconfig"
 MXNEWCFG="$MXCONFIG.new"
 DTCPATH="$BUILDIR/scripts/dtc"
@@ -47,9 +54,7 @@ FZMG="$NEWZMG-fixup"
 MXZMG="$MXRD/split_img/boot.img-kernel"
 DTBTOOL="$RDIR/tools/dtbTool"
 MKBOOTIMG="/usr/bin/mkbootimg"
-OLDCFG="$RDIR/oldconfigs"
-MXPREFIX="machinexlite-Mark"
-MXSUFFIX="-hltetmo-LTSTEST"
+
 QUICKHOUR="$(date +%l | cut -d " " -f2)"
 QUICKMIN="$(date +%S)"
 QUICKAMPM="$(date +%p)"
@@ -402,13 +407,13 @@ handle_existing() {
 		warnandfail "FATAL ERROR! Failed to read version from .oldversion"
 	fi
 
-	if [ ! -f "$RDIR/$MXPREFIX$OLDVER$MXSUFFIX.zip" ]
+	if [ ! -f "$RDIR/${MXPREFIX}${OLDVER}${MXSUFFIX}.zip" ]
 	then
 		echo "Version Override!"
 		echo "Previous version was not completed!"
 		echo "Rebuilding old version"
-		MX_KERNEL_VERSION="$MXPREFIX$OLDVER$MXSUFFIX"
-	elif [ "$LASTZIP" = "$MXPREFIX$OLDVER$MXSUFFIX.zip" ]
+		MX_KERNEL_VERSION="${MXPREFIX}${OLDVER}${MXSUFFIX}"
+	elif [ "$LASTZIP" = "${MXPREFIX}${OLDVER}${MXSUFFIX}.zip" ]
 	then
 		echo "Version Override"
 		echo "Previous version completed successfully!"
@@ -418,7 +423,7 @@ handle_existing() {
 		then
 			warnandfail "FATAL ERROR! Failed to raise version number by one!"
 		fi
-		MX_KERNEL_VERSION="$MXPREFIX$NEWVER$MXSUFFIX"
+		MX_KERNEL_VERSION="${MXPREFIX}${NEWVER}${MXSUFFIX}"
 		echo -n "$NEWVER" > "$OLDVERFILE"
 	else
 		echo -n "Rebuilding (o)ld version? Or building (n)ew version? Please specify [o|n]: "
@@ -442,7 +447,7 @@ handle_existing() {
 		then
 			echo "Rebulding old version has been selected"
 			echo "Removing old zip files..."
-			MX_KERNEL_VERSION="$MXPREFIX$OLDVER$MXSUFFIX"
+			MX_KERNEL_VERSION="${MXPREFIX}${OLDVER}${MXSUFFIX}"
 			rm -f "$RDIR/$MX_KERNEL_VERSION.zip"
 		elif [ "$CURVER" = "new" ]
 		then
@@ -452,7 +457,7 @@ handle_existing() {
 			then
 				warnandfail "FATAL ERROR! Failed to raise version number by one!"
 			fi
-			MX_KERNEL_VERSION="$MXPREFIX$NEWVER$MXSUFFIX"
+			MX_KERNEL_VERSION="${MXPREFIX}${NEWVER}${MXSUFFIX}"
 			echo -n "$NEWVER" > "$OLDVERFILE"
 		fi
 	fi
@@ -465,7 +470,7 @@ handle_existing() {
 rebuild() {
 
 	echo "Using last version. Mark$OLDVER will be removed."
-	MX_KERNEL_VERSION="$MXPREFIX$OLDVER$MXSUFFIX"
+	MX_KERNEL_VERSION="${MXPREFIX}${OLDVER}${MXSUFFIX}"
     rm "$RDIR/localversion" &> /dev/null
     echo "$MX_KERNEL_VERSION" > "$RDIR/localversion"
 	echo "Removing old zip files..."
@@ -706,7 +711,7 @@ create_zip() {
 
 	if [ -s "$RDIR/$MX_KERNEL_VERSION.zip" ]
 	then
-		echo -n "$MX_KERNEL_VERSION.zip" > "$RDIR/.lastzip"
+		echo -n "$MX_KERNEL_VERSION.zip" > "$LASTZIPFILE"
 		echo "Starting ADB as root."
 		adb root
 		echo "Checking if Device is Connected..."
