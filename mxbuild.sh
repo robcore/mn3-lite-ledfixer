@@ -7,41 +7,28 @@ env KCONFIG_NOTIMESTAMP=true &>/dev/null
 
 RDIR="/root/mn3lite"
 BUILDIR="$RDIR/build"
-LOGDIR="$RDIR/buildlogs"
 KDIR="$BUILDIR/arch/arm/boot"
 OLDVERFILE="$RDIR/.oldversion"
 OLDVER="$(cat $OLDVERFILE)"
 LASTZIPFILE="$RDIR/.lastzip"
 LASTZIP="$(cat $LASTZIPFILE)"
-ENDFILE="$RDIR/.endtime"
-STARTFILE="$RDIR/.starttime"
-MXRD="$RDIR/mxrd"
-RAMDISKFOLDER="$MXRD/ramdisk"
+RAMDISKFOLDER="$RDIR/mxramdisk"
 ZIPFOLDER="$RDIR/mxzip"
 MXCONFIG="$RDIR/arch/arm/configs/mxconfig"
 MXNEWCFG="$MXCONFIG.new"
-DTCDIR="$BUILDIR/scripts/dtc"
-DTIMG="$KDIR/dt.img"
-MXDT="$MXRD/split_img/boot.img-dt"
-NEWZMG="$KDIR/zImage"
-MXZMG="$MXRD/split_img/boot.img-kernel"
-DTS_NAMES="msm8974-sec-hlte-r"
-
 QUICKHOUR="$(date +%l | cut -d " " -f2)"
 QUICKMIN="$(date +%S)"
 QUICKAMPM="$(date +%p)"
 QUICKDMY="$(date +%d-%m-%Y)"
-QUICKYMD="$(date +%Y-%m-%d)"
-QUICKTIME="$QUICKHOUR_$QUICKMIN-${QUICKAMPM}"
-QUICKDATE="$QUICKYMD-$QUICKTIME"
+QUICKTIME="$QUICKHOUR:$QUICKMIN-${QUICKAMPM}"
+QUICKDATE="$QUICKDMY-$QUICKTIME"
 #CORECOUNT="$(grep processor /proc/cpuinfo | wc -l)"
-#TOOLCHAIN="/opt/toolchains/arm-cortex_a15-linux-gnueabihf_5.3/bin/arm-cortex_a15-linux-gnueabihf-"
+TOOLCHAIN="/opt/toolchains/arm-cortex_a15-linux-gnueabihf_5.3/bin/arm-cortex_a15-linux-gnueabihf-"
 #TOOLCHAIN="/opt/toolchains/gcc-linaro-7.5.0-2019.12-x86_64_arm-linux-gnueabihf/bin/arm-linux-gnueabihf-"
 #TOOLCHAIN="/opt/arm-cortex_a15-linux-gnueabihf-linaro_4.9.4-2015.06/bin/arm-cortex_a15-linux-gnueabihf-"
 #TOOLCHAIN="/root/mx_toolchains/gcc-linaro-4.9.4-2017.01-x86_64_arm-linux-gnueabi/bin/arm-linux-gnueabi-"
 #TOOLCHAIN="/opt/toolchains/gcc-linaro-6.5.0-2018.12-x86_64_arm-linux-gnueabihf/bin/arm-linux-gnueabihf-"
 #TOOLCHAIN="/opt/toolchains/gcc-arm-9.2-2019.12-x86_64-arm-none-linux-gnueabihf/bin/arm-none-linux-gnueabihf-"
-TOOLCHAIN="/root/mx_toolchains/gcc-arm-8.2-2019.01-x86_64-arm-linux-gnueabihf/bin/arm-linux-gnueabihf-"
 #export ARCH="arm"
 export CROSS_COMPILE="$TOOLCHAIN"
 
@@ -53,76 +40,40 @@ else
     NOREBOOT="false"
 fi
 
-if [ "$1" = "-d" ] || [ "$1" = "--debug" ]
-then
-    CLEANONFAIL="no"
-else
-    CLEANONFAIL="yes"
-fi
-
-if [ ! -d "$RDIR/buildlogs" ]
-then
-    mkdir "$RDIR/buildlogs"
-fi
-
-stop_build_timer() {
-
-    echo "Stopping MXBuild Timer."
-    [ -f "$ENDFILE" ] && rm "$ENDFILE"
-    printf "%s" "$(date +%s)" > "$ENDFILE"
-
-}
-
-start_build_timer() {
-
-    echo "Starting MXBuild Timer."
-    [ -f "$STARTFILE" ] && rm "$STARTFILE"
-    printf "%s" "$(date +%s)" > "$STARTFILE"
-}
-
 timerprint() {
 
 	local DIFFMINS
 	local DIFFSECS
-	local ENDTIME
-    local STARTTIME
-	local DIFFTIME
 
-    if [ ! -f "$ENDFILE" ]
-    then
-        echo "Looks like you forgot to start the timer. I will do it for you."
-        start_build_timer
-    fi
+	DIFFMINS=$(bc <<< "(${1}%3600)/60")
+	DIFFSECS=$(bc <<< "${1}%60")
+	printf "%s" "Build completed in: "
+	printf "%d" "$DIFFMINS"
+	if [ "$DIFFMINS" = "1" ]
+	then
+		printf "%s" " Minute and "
+	else
+		printf "%s" " Minutes and "
+	fi
+	printf "%d" "$DIFFSECS"
+	if [ "$DIFFSECS" = "1" ]
+	then
+		printf "%s\n" " Second."
+	else
+		printf "%s\n" " Seconds."
+	fi
+	rm $RDIR/.starttime &> /dev/null
+	rm $RDIR/.endtime &> /dev/null
+	printf "%s" "Finished!"
 
-	ENDTIME="$(cat $ENDFILE)"
-    STARTTIME="$(cat $STARTFILE)"
+}
+
+timerdiff() {
+
+	printf "%s" "$(date +%s)" > "$RDIR/.endtime"
+	ENDTIME="$(cat $RDIR/.endtime)"
+    STARTTIME="$(cat $RDIR/.starttime)"
 	DIFFTIME=$(( ENDTIME - STARTTIME ))
-
-    if [ -z "$DIFFTIME" ]
-    then
-        printf "%s\n" "MXBUILD Completed!"
-    else
-    	DIFFMINS=$(bc <<< "(${DIFFTIME}%3600)/60")
-    	DIFFSECS=$(bc <<< "${DIFFTIME}%60")
-    	printf "%s" "Build completed in: "
-    	printf "%d" "$DIFFMINS"
-    	if [ "$DIFFMINS" = "1" ]
-    	then
-    		printf "%s" " Minute and "
-    	else
-    		printf "%s" " Minutes and "
-    	fi
-    	printf "%d" "$DIFFSECS"
-    	if [ "$DIFFSECS" = "1" ]
-    	then
-    		printf "%s\n" " Second."
-    	else
-    		printf "%s\n" " Seconds."
-    	fi
-    	rm $STARTFILE &> /dev/null
-    	rm $ENDFILE &> /dev/null
-    	printf "%s\n" "MXBUILD is Finished!"
-    fi
 
 }
 
@@ -143,8 +94,8 @@ cleanupfail() {
 takeouttrash() {
 
     rm "$RDIR/localversion" &> /dev/null
-	rm "$STARTFILE" &> /dev/null
-	rm "$ENDFILE" &> /dev/null
+	rm "$RDIR/.starttime" &> /dev/null
+	rm "$RDIR/.endtime" &> /dev/null
 	rm "$RDIR/mxtempusb" &> /dev/null
 
 	find . -type f \( -iname \*.rej \
@@ -203,8 +154,7 @@ clean_build() {
 	echo -ne "Cleaning build.....    \r"; \
 	rm "$ZIPFOLDER/boot.img" &>/dev/null
 	echo -ne "Cleaning build......   \r"; \
-    [ -f "$MXRD/image-new.img" ] && rm "$MXRD/image-new.img"
-    [ -f "$MXRD/ramdisk-new.cpio.gz" ] && rm "$MXRD/ramdisk-new.cpio.gz"
+	make -C "$RDIR/scripts/mkqcdtbootimg" clean &>/dev/null
 	echo -ne "Cleaning build.......  \r"; \
 	rm -rf "$RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg" &>/dev/null
 	echo -ne "Cleaning build........ \r"; \
@@ -224,10 +174,7 @@ warnandfail() {
 	then
 		printf "%s\n" "$ISTRING"
 	fi
-    if [ "$CLEANONFAIL" = "yes" ]
-    then
-    	clean_build
-    fi
+	clean_build
 	exit 1
 
 }
@@ -353,7 +300,6 @@ checkrecov() {
 		if [ "$RECREBOOT" = "y" ]
 		then
 			echo "Rebooting into TWRP Recovery"
-            adb shell sync
 			adb reboot recovery
 		fi
 	fi
@@ -485,164 +431,69 @@ build_kernel_config() {
 build_single_driver() {
 
 	echo "Building Single Driver..."
-	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -C "$RDIR" -S -s -j16 O="$BUILDIR" "$1"
+	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -C "$RDIR" -S -s -j16 O="$BUILDIR/" "$1"
 
 }
 
 build_kernel() {
-
 	OLDCFG="/root/mn3-oldconfigs"
 	echo "Backing up .config to $OLDCFG/config.$QUICKDATE"
-	cp "$BUILDIR/.config" "$OLDCFG/config.$QUICKDATE" || warnandfail "Config Copy Error!"
+	cp "$BUILDIR/.config" "$OLDCFG/config.$QUICKDATE"
 	#echo "Snapshot of current environment variables:"
 	#env
-	start_build_timer
+	echo -n "$(date +%s)" > "$RDIR/.starttime"
 	echo "Starting build..."
-	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -S -s -j16 -C "$RDIR" O="$BUILDIR" 2>&1 | tee -a "$LOGDIR/$QUICKDATE.Mark$(cat $RDIR/.oldversion).log" \
-                                                                                    || warnandfail "Kernel Build failed!"
+	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -S -s -j16 -C "$RDIR" O="$BUILDIR" || warnandfail "Kernel Build failed!"
 
 }
 
-build_kernel_debug() {
+build_ramdisk() {
 
-	OLDCFG="/root/mn3-oldconfigs"
-	echo "Backing up .config to $OLDCFG/config.$QUICKDATE"
-	cp "$BUILDIR/.config" "$OLDCFG/config.$QUICKDATE" || warnandfail "Config Copy Error!"
-	#echo "Snapshot of current environment variables:"
-	#env
-	start_build_timer
-	echo "Starting build..."
-	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -S -s -j16 -C "$RDIR" O="$BUILDIR" 2>&1 | tee -a "$LOGDIR/$QUICKDATE.Mark$(cat $RDIR/.oldversion).log" \
-                                                                                    || warnandfail "Kernel Build failed!"
-    stop_build_timer
-    timerprint
+	echo "Building ramdisk structure..."
+	cd "$RDIR" || warnandfail "Failed to cd to $RDIR"
+	rm -rf "$BUILDIR/ramdisk" &>/dev/null
+	cp -par "$RAMDISKFOLDER" "$BUILDIR/ramdisk" || warnandfail "Failed to create $BUILDIR/ramdisk!"
+	cd "$BUILDIR/ramdisk" || warnandfail "Failed to cd to $BUILDIR/ramdisk!"
+	mkdir -pm 755 dev proc sys system
+	mkdir -pm 771 data
+	if [ -f "$KDIR/ramdisk.cpio.gz" ]
+	then
+		rm "$KDIR/ramdisk.cpio.gz"
+	fi
+#	find | fakeroot cpio -v -H newc -o | lzop -9 > "$KDIR/ramdisk.cpio.gz"
+	echo "Building ramdisk img"
+	find | fakeroot cpio -v -o -H newc | gzip -v -9 > "$KDIR/ramdisk.cpio.gz"
+	[ ! -f "$KDIR/ramdisk.cpio.gz" ] && warnandfail "NO ramdisk!"
+	cd "$RDIR" || warnandfail "Failed to cd to $RDIR"
+
 }
-
-#build_ramdisk() {
-#
-#	echo "Building ramdisk structure..."
-#	cd "$RDIR" || warnandfail "Failed to cd to $RDIR"
-#	rm -rf "$BUILDIR/ramdisk" &>/dev/null
-#	cp -par "$RAMDISKFOLDER" "$BUILDIR/ramdisk" || warnandfail "Failed to create $BUILDIR/ramdisk!"
-#	cd "$BUILDIR/ramdisk" || warnandfail "Failed to cd to $BUILDIR/ramdisk!"
-#	mkdir -pm 755 dev proc sys system
-#	mkdir -pm 771 data
-#	if [ -f "$KDIR/ramdisk.cpio.gz" ]
-#	then
-#		rm "$KDIR/ramdisk.cpio.gz"
-#	fi
-#	echo "Building ramdisk img"
-#	find | fakeroot cpio -v -o -H newc | gzip -v -9 > "$KDIR/ramdisk.cpio.gz"
-#	[ ! -f "$KDIR/ramdisk.cpio.gz" ] && warnandfail "NO ramdisk!"
-#	cd "$RDIR" || warnandfail "Failed to cd to $RDIR"
-#
-#}
-
-#build_boot_img_qcdt() {
-#
-#	echo "Generating boot.img..."
-#	rm -f "$ZIPFOLDER/boot.img"
-#	if [ ! -f "$RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg" ]
-#	then
-#		make -C "$RDIR/scripts/mkqcdtbootimg" || warnandfail "Failed to make dtb tool!"
-#	fi
-#
-#	$RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg --kernel "$KDIR/zImage" \
-#		--ramdisk "$KDIR/ramdisk.cpio.gz" \
-#        --dt_dir "$KDIR" \
-#		--cmdline "console=null androidboot.hardware=qcom user_debug=23 msm_rtb.filter=0x37 ehci-hcd.park=3" \
-#		--base "0x00000000" \
-#		--pagesize "2048" \
-#		--ramdisk_offset "0x02000000" \
-#		--tags_offset "0x01e00000" \
-#		--output "$ZIPFOLDER/boot.img"
-#	if [ "$?" -eq 0 ]
-#	then
-#		echo "mkqcdtbootimg appears to have succeeded in building an image"
-#	else
-#		warnandfail "mkqcdtbootimg appears to have failed in building an image!"
-#	fi
-#	[ -f "$ZIPFOLDER/boot.img" ] || warnandfail "$ZIPFOLDER/boot.img does not exist!"
-#	echo -n "SEANDROIDENFORCE" >> "$ZIPFOLDER/boot.img"
-#
-#}
 
 build_boot_img() {
 
-    cd "$RDIR" || warnandfail "Failed to cd into $RDIR!"
-
-	[ -f "$ZIPFOLDER/boot.img" ] && rm "$ZIPFOLDER/boot.img"
-    [ -f "$MXRD/image-new.img" ] && rm "$MXRD/image-new.img"
-    [ -f "$MXRD/ramdisk-new.cpio.gz" ] && rm "$MXRD/ramdisk-new.cpio.gz"
-
-    echo "Regnerating .dtb files"
-    rm "$KDIR/msm8974-sec-hlte-r05.dtb"
-    rm "$KDIR/msm8974-sec-hlte-r06.dtb"
-    rm "$KDIR/msm8974-sec-hlte-r07.dtb"
-    rm "$KDIR/msm8974-sec-hlte-r09.dtb"
-
-    local DTB_FILE
-    local DTS_FILE
-
-###EXPERIMENTAL###
-
-    local DTS_PREFIX
-    DTS_PREFIX="msm8974-sec-hlte-r07"
-    DTS_FILE="$RDIR/arch/arm/boot/dts/msm8974/$DTS_PREFIX.dts"
-    DTB_FILE="$KDIR/$DTS_PREFIX.dtb"
-    echo "Creating $DTB_FILE from $DTS_FILE"
-    "$BUILDIR/scripts/dtc/dtc" -i "$RDIR/arch/arm/boot/dts/msm8974/" -p 1024 -O dtb -o "$DTB_FILE" "$DTS_FILE" 2>&1 | \
-               tee -a "$LOGDIR/$QUICKDATE.Mark$(cat $RDIR/.oldversion).log" || warnandfail "Failed to build $DTB_FILE!"
-
-###EXPERIMENTAL###
-
-#    for DTS_PREFIX in msm8974-sec-hlte-r05 msm8974-sec-hlte-r06 msm8974-sec-hlte-r07 msm8974-sec-hlte-r09
-#    do
-#        DTS_FILE="$RDIR/arch/arm/boot/dts/msm8974/$DTS_PREFIX.dts"
-#        DTB_FILE="$KDIR/$DTS_PREFIX.dtb"
-#        echo "Creating $DTB_FILE from $DTS_FILE"
-#        "$BUILDIR/scripts/dtc/dtc" -i "$RDIR/arch/arm/boot/dts/msm8974/" -p 1024 -O dtb -o "$DTB_FILE" "$DTS_FILE" 2>&1 | \
-#                   tee -a "$LOGDIR/$QUICKDATE.Mark$(cat $RDIR/.oldversion).log" || warnandfail "Failed to build $DTB_FILE!"
-#        #"$BUILDIR/scripts/dtc/dtc" -i "$RDIR/arch/arm/boot/dts/msm8974/" -p 1024 -O dtb -o "$DTB_FILE" "$DTS_FILE" || warnandfail "Failed to build $DTB_FILE!"
-#        #/usr/bin/dtc -i "$RDIR/arch/arm/boot/dts/msm8974" -A -H both -p 1024 -O dtb -o "$DTB_FILE" "$DTS_FILE" || warnandfail "Failed to build $DTB_FILE!"
-#        #/usr/bin/dtc -i "$RDIR/arch/arm/boot/dts/msm8974" -p 1024 -O dtb -o "$DTB_FILE" "$DTS_FILE" || warnandfail "Failed to build $DTB_FILE!"
-#    done
-
-	echo "Generating $DTIMG"
-
-    ./tools/skales/dtbTool -v -o "$DTIMG" -s 1024 -p "$DTCDIR" "$KDIR" 2>&1 | \
-                   tee -a "$LOGDIR/$QUICKDATE.Mark$(cat $RDIR/.oldversion).log" || warnandfail "dtbTool failed to build $DTIMG!"
-
-    if [ ! -f "$DTIMG" ]
-    then
-		warnandfail "dtbTool failed to build $DTIMG!"
+	echo "Generating boot.img..."
+	rm -f "$ZIPFOLDER/boot.img"
+	if [ ! -f "$RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg" ]
+	then
+		make -C "$RDIR/scripts/mkqcdtbootimg" || warnandfail "Failed to make dtb tool!"
 	fi
 
-    echo "Packing up boot.img"
-
-    [ -f "$MXDT" ] && rm "$MXDT"
-    cp "$DTIMG" "$MXDT" || warnandfail "Failed to copy $DTIMG to $MXDT!"
-    chmod 644 "$MXDT"
-
-    [ -f "$MXZMG" ] && rm "$MXZMG"
-    cp "$NEWZMG" "$MXZMG" || warnandfail "Failed to copy $NEWZMG to $MXZMG!"
-    chmod 644 "$MXZMG"
-
-    cd "$MXRD" || warnandfail "Failed to cd into $MXRD!"
-    ./repackimg.sh --sudo
-    cd "$RDIR" || warnandfail "Failed to cd into $RDIR!"
-
-    [ -f "$MXRD/ramdisk-new.cpio.gz" ] && rm "$MXRD/ramdisk-new.cpio.gz"
-
-    if [ -f "$MXRD/image-new.img" ]
-    then
-        mv "$MXRD/image-new.img" "$ZIPFOLDER/boot.img" || warnandfail "Failed to move $MXRD/image-new.img to $ZIPFOLDER/boot.img!"
-    else
-        warnandfail "$MXRD/image-new.img nonexistant! Repack must have Failed!"
-    fi
-
+	$RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg --kernel "$KDIR/zImage" \
+		--ramdisk "$KDIR/ramdisk.cpio.gz" \
+        --dt_dir "$KDIR" \
+		--cmdline "console=null androidboot.hardware=qcom user_debug=23 msm_rtb.filter=0x37 ehci-hcd.park=3" \
+		--base "0x00000000" \
+		--pagesize "2048" \
+		--ramdisk_offset "0x02000000" \
+		--tags_offset "0x01e00000" \
+		--output "$ZIPFOLDER/boot.img"
+	if [ "$?" -eq 0 ]
+	then
+		echo "mkqcdtbootimg appears to have succeeded in building an image"
+	else
+		warnandfail "mkqcdtbootimg appears to have failed in building an image!"
+	fi
 	[ -f "$ZIPFOLDER/boot.img" ] || warnandfail "$ZIPFOLDER/boot.img does not exist!"
-    chmod 644 "$ZIPFOLDER/boot.img"
+	echo -n "SEANDROIDENFORCE" >> "$ZIPFOLDER/boot.img"
 
 }
 
@@ -667,12 +518,10 @@ create_zip() {
 	then
 		warnandfail "$RDIR/$MX_KERNEL_VERSION.zip does not exist!"
 	fi
-
 	echo "Kernel $MX_KERNEL_VERSION.zip finished"
 	echo "Filepath: "
 	echo "$RDIR/$MX_KERNEL_VERSION.zip"
-    stop_build_timer
-
+	timerdiff
 	if [ -s "$RDIR/$MX_KERNEL_VERSION.zip" ]
 	then
 		echo -n "$MX_KERNEL_VERSION.zip" > "$RDIR/.lastzip"
@@ -751,12 +600,12 @@ create_zip() {
 	fi
 	adb kill-server || echo "Failed to kill ADB server!"
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR"
-	timerprint
+	timerprint "$DIFFTIME"
 }
 
 #CREATE_TAR()
 #{
-#	if [ $MAKE_TAR != 1 ]; then return; fi-d|--debug
+#	if [ $MAKE_TAR != 1 ]; then return; fi
 #
 #	echo "Compressing to Odin flashable tar.md5 file..."
 #	cd $RDIR/$ZIPFOLDER
@@ -777,7 +626,7 @@ usage: ./mxbuild.sh [OPTION]
 Common options:
  -a|--all            Do a complete build (starting at the beginning)
  -anr|--allnoreboot  Do a complete build (starting at the beginning), do not reboot
- -d|--debug          Similiar to --all but no img, zip or cleanup. Not for production.
+ -d|--debug          Same as --all but skips final cleanup
  -r|--rebuildme      Same as --all but defaults to rebuilding previous version
  -b|--bsd            Build single driver (path/to/folder/ | path/to/file.o)
  -c|--clean          Remove everything this build script has done
@@ -785,6 +634,7 @@ Common options:
  -m|--menuconfig     Setup an environment for and enter menuconfig
  -k|--kernel         Try the build again starting at compiling the kernel
  -o|--kernel-only    Recompile only the kernel, nothing else
+-rd|--ramdisk        Try the build again starting at the ramdisk
  -t|--tests          Testing playground
 
 Extra command line options are possible, with more to be added in the future:
@@ -798,15 +648,9 @@ EOF
 
 }
 
-#package_ramdisk_and_zip() {
-#
-#	build_ramdisk && build_boot_img && create_zip
-#
-#}
-
 package_ramdisk_and_zip() {
 
-	build_boot_img && create_zip
+	build_ramdisk && build_boot_img && create_zip
 
 }
 
@@ -824,7 +668,7 @@ build_all() {
 
 build_debug() {
 
-	clean_build && build_kernel_config && build_kernel_debug
+	clean_build && build_kernel_config && build_kernel_and_package
 
 }
 
@@ -865,6 +709,7 @@ do
 	    	;;
 
 	     -d|--debug)
+			checkrecov
 			handle_existing
 			build_debug
 			break
@@ -910,6 +755,13 @@ do
 			checkrecov
 			handle_existing
 	    	build_kernel
+	    	break
+	    	;;
+
+	     -rd|--ramdisk)
+			checkrecov
+			handle_existing
+	     	package_ramdisk_and_zip
 	    	break
 	    	;;
 

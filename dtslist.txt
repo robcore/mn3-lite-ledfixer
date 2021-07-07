@@ -1,5 +1,0 @@
-arch/arm/boot/dts/msm8974/msm8974-leds.dtsi
-arch/arm/boot/dts/msm8974/msm8974-camera-sensor-hlte-r02.dtsi
-arch/arm/boot/dts/msm8974/msm8974-sii8240_mhl-hlte-r06.dtsi
-arch/arm/boot/dts/msm8974/msm8974-max77803-hlte-r06.dtsi
-arch/arm/boot/dts/msm8974/msm8974-w1.dtsi

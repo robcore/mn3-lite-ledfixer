@@ -131,10 +131,3 @@ wtflog.txt
 dolbydumpprops.txt
 arch/arm/configs/mxconfig.recent
 mxtempusb
-mxrd/split_img/
-mxrd/split_img/*
-mxrd/split_img.orig
-mxrd/split_img.orig/*
-buildlogs
-buildlogs/*
-wppdtmplink.txt

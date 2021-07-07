@@ -260,13 +260,12 @@ bail_set_l2_mode:
 	return rc;
 }
 
-static DEFINE_MUTEX(lpm_lock);
-
 static void lpm_system_level_update(void)
 {
 	int i;
 	struct lpm_system_level *l = NULL;
 	uint32_t max_l2_mode;
+	static DEFINE_MUTEX(lpm_lock);
 
 	mutex_lock(&lpm_lock);
 
@@ -1156,7 +1155,7 @@ static struct of_device_id cpu_modes_mtch_tbl[] = {
 	{},
 };
 
-static struct platform_driver cpu_modes_driver __refdata = {
+static struct platform_driver cpu_modes_driver = {
 	.probe = lpm_cpu_probe,
 	.driver = {
 		.name = "cpu-modes",
@@ -1170,7 +1169,7 @@ static struct of_device_id system_modes_mtch_tbl[] = {
 	{},
 };
 
-static struct platform_driver system_modes_driver __refdata = {
+static struct platform_driver system_modes_driver = {
 	.probe = lpm_system_probe,
 	.driver = {
 		.name = "system-modes",
@@ -1184,7 +1183,7 @@ static struct of_device_id lpm_levels_match_table[] = {
 	{},
 };
 
-static struct platform_driver lpm_levels_driver __refdata = {
+static struct platform_driver lpm_levels_driver = {
 	.probe = lpm_probe,
 	.driver = {
 		.name = "lpm-levels",

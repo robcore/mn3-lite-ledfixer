@@ -129,11 +129,11 @@
 	};
 
 	i2c@22 {
-		#address-cells = <1>;
-		#size-cells = <0>;
 		cell-index = <22>;
 		compatible = "i2c-gpio";
-		gpios = <&msmgpio 109 0	&msmgpio 108 0>;
+		gpios = <&msmgpio 109 0 /* sda */
+		&msmgpio 108 0 /* scl */
+		>;
 
 		barcode_emul_ice4@19 {
 			compatible = "barcode_hlte,barcode_emul_hlte";
@@ -151,22 +151,18 @@
 	};
 
 	i2c@23 {
-		#address-cells = <1>;
-		#size-cells = <0>;
 		cell-index = <23>;
 		compatible = "i2c-gpio";
-		gpios = <&msmgpio 60 0 &msmgpio 61 0>;
+		gpios = <&msmgpio 60 0 /* sda */
+		&msmgpio 61 0 /* scl */
+		>;
 	};
 
-	i2c@f9963000 {
 	actuator1: qcom,actuator@36 {
-		#address-cells = <1>;
-		#size-cells = <1>;
 		compatible = "qcom,actuator";
 		cell-index = <1>;
 		reg = <0x36>;
 		qcom,cci-master = <0>;
-		};
 	};
 
 	qcom,hdmi_tx@fd922100 {

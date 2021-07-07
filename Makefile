@@ -10,8 +10,10 @@ NAME = Saber-toothed Squirrel
 # Comments in this file are targeted only to the developer, do not
 # expect to learn how to build the kernel reading this file.
 
-# Do not use make's built-in rules and variables
-# (this increases performance and avoids hard-to-debug behaviour);
+# Do not:
+# o  use make's built-in rules and variables
+#    (this increases performance and avoids hard-to-debug behaviour);
+# o  print "Entering directory ...";
 MAKEFLAGS += -rR --no-print-directory
 
 # Avoid funny character set dependencies
@@ -36,29 +38,6 @@ export LC_COLLATE LC_NUMERIC
 # descending is started. They are now explicitly listed as the
 # prepare rule.
 
-# Beautify output
-# ---------------------------------------------------------------------------
-#
-# Normally, we echo the whole command before executing it. By making
-# that echo $($(quiet)$(cmd)), we now have the possibility to set
-# $(quiet) to choose other forms of output instead, e.g.
-#
-#         quiet_cmd_cc_o_c = Compiling $(RELDIR)/$@
-#         cmd_cc_o_c       = $(CC) $(c_flags) -c -o $@ $<
-#
-# If $(quiet) is empty, the whole command will be printed.
-# If it is set to "quiet_", only the short version will be printed.
-# If it is set to "silent_", nothing will be printed at all, since
-# the variable $(silent_cmd_cc_o_c) doesn't exist.
-#
-# A simple variant is to prefix commands with $(Q) - that's useful
-# for commands that shall be hidden in non-verbose mode.
-#
-#	$(Q)ln $@ :<
-#
-# If KBUILD_VERBOSE equals 0 then the above command will be hidden.
-# If KBUILD_VERBOSE equals 1 then the above command is displayed.
-#
 # To put more focus on warnings, be less verbose as default
 # Use 'make V=1' to see the full commands
 
@@ -75,7 +54,7 @@ endif
 # Use 'make C=1' to enable checking of only re-compiled files.
 # Use 'make C=2' to enable checking of *all* source files, regardless
 # of whether they are re-compiled or not.
-# --no-print-directory
+#
 # See the file "Documentation/sparse.txt" for more details, including
 # where to get the "sparse" utility.
 
@@ -112,6 +91,7 @@ endif
 # The O= assignment takes precedence over the KBUILD_OUTPUT environment
 # variable.
 
+
 # KBUILD_SRC is set on invocation of make in OBJ directory
 # KBUILD_SRC is not intended to be used by the regular user (for now)
 ifeq ($(KBUILD_SRC),)
@@ -137,10 +117,9 @@ ifneq ($(KBUILD_OUTPUT),)
 # Invoke a second make in the output directory, passing relevant variables
 # check that the output directory actually exists
 saved-output := $(KBUILD_OUTPUT)
-KBUILD_OUTPUT := $(shell mkdir -p $(KBUILD_OUTPUT) && cd $(KBUILD_OUTPUT) \
-								&& /bin/pwd)
+KBUILD_OUTPUT := $(shell cd $(KBUILD_OUTPUT) && /bin/pwd)
 $(if $(KBUILD_OUTPUT),, \
-     $(error failed to create output directory "$(saved-output)"))
+     $(error output directory "$(saved-output)" does not exist))
 
 PHONY += $(MAKECMDGOALS) sub-make
 
@@ -178,6 +157,7 @@ obj		:= $(objtree)
 VPATH		:= $(srctree)$(if $(KBUILD_EXTMOD),:$(KBUILD_EXTMOD))
 
 export srctree objtree VPATH
+
 
 # SUBARCH tells the usermode build what the underlying arch is.  That is set
 # first, and if a usermode build is happening, the "ARCH=um" on the command
@@ -251,6 +231,10 @@ endif
 # Where to locate arch specific headers
 hdr-arch  := $(SRCARCH)
 
+ifeq ($(ARCH),m68knommu)
+       hdr-arch  := m68k
+endif
+
 KCONFIG_CONFIG	?= .config
 export KCONFIG_CONFIG
 
@@ -259,12 +243,10 @@ CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
 	  else if [ -x /bin/bash ]; then echo /bin/bash; \
 	  else echo sh; fi ; fi)
 
-XTRAHFLAGS   = -fivopts -fmodulo-sched -fmodulo-sched-allow-regmoves
-
 HOSTCC       = gcc
 HOSTCXX      = g++
-HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fomit-frame-pointer -std=gnu89 -pipe $(XTRAHFLAGS)
-HOSTCXXFLAGS = -O2 $(XTRAHFLAGS)
+HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fomit-frame-pointer
+HOSTCXXFLAGS = -O2
 
 # Decide whether to build built-in, modular, or both.
 # Normally, just do built-in.
@@ -272,18 +254,18 @@ HOSTCXXFLAGS = -O2 $(XTRAHFLAGS)
 KBUILD_MODULES :=
 KBUILD_BUILTIN := 1
 
-# If we have only "make modules", don't compile built-in objects.
-# When we're building modules with modversions, we need to consider
-# the built-in objects during the descend as well, in order to
-# make sure the checksums are up to date before we record them.
+#	If we have only "make modules", don't compile built-in objects.
+#	When we're building modules with modversions, we need to consider
+#	the built-in objects during the descend as well, in order to
+#	make sure the checksums are up to date before we record them.
 
 ifeq ($(MAKECMDGOALS),modules)
   KBUILD_BUILTIN := $(if $(CONFIG_MODVERSIONS),1)
 endif
 
-# If we have "make <whatever> modules", compile modules
-# in addition to whatever we do anyway.
-# Just "make" or "make all" shall build modules as well
+#	If we have "make <whatever> modules", compile modules
+#	in addition to whatever we do anyway.
+#	Just "make" or "make all" shall build modules as well
 
 ifneq ($(filter all _all modules,$(MAKECMDGOALS)),)
   KBUILD_MODULES := 1
@@ -295,6 +277,29 @@ endif
 
 export KBUILD_MODULES KBUILD_BUILTIN
 export KBUILD_CHECKSRC KBUILD_SRC KBUILD_EXTMOD
+
+# Beautify output
+# ---------------------------------------------------------------------------
+#
+# Normally, we echo the whole command before executing it. By making
+# that echo $($(quiet)$(cmd)), we now have the possibility to set
+# $(quiet) to choose other forms of output instead, e.g.
+#
+#         quiet_cmd_cc_o_c = Compiling $(RELDIR)/$@
+#         cmd_cc_o_c       = $(CC) $(c_flags) -c -o $@ $<
+#
+# If $(quiet) is empty, the whole command will be printed.
+# If it is set to "quiet_", only the short version will be printed.
+# If it is set to "silent_", nothing will be printed at all, since
+# the variable $(silent_cmd_cc_o_c) doesn't exist.
+#
+# A simple variant is to prefix commands with $(Q) - that's useful
+# for commands that shall be hidden in non-verbose mode.
+#
+#	$(Q)ln $@ :<
+#
+# If KBUILD_VERBOSE equals 0 then the above command will be hidden.
+# If KBUILD_VERBOSE equals 1 then the above command is displayed.
 
 ifeq ($(KBUILD_VERBOSE),1)
   quiet =
@@ -313,6 +318,7 @@ endif
 
 export quiet Q KBUILD_VERBOSE
 
+
 # Look for make include files relative to root of kernel src
 MAKEFLAGS += --include-dir=$(srctree)
 
@@ -321,6 +327,7 @@ $(srctree)/scripts/Kbuild.include: ;
 include $(srctree)/scripts/Kbuild.include
 
 # Make variables (CC, etc...)
+
 AS		= $(CROSS_COMPILE)as
 LD		= $(CROSS_COMPILE)ld
 #REAL_CC		= $(CROSS_COMPILE)gcc
@@ -339,19 +346,24 @@ KALLSYMS	= scripts/kallsyms
 PERL		= perl
 CHECK		= sparse
 
+ifeq ($(CONFIG_CRYPTO_FIPS),)
+ READELF	= $(CROSS_COMPILE)readelf
+ export READELF
+endif
+
 # Use the wrapper for the compiler.  This wrapper scans for new
 # warnings and causes the build to stop upon encountering them.
 #CC		= $(srctree)/scripts/gcc-wrapper.py $(REAL_CC)
 
 CHECKFLAGS     := -D__linux__ -Dlinux -D__STDC__ -Dunix -D__unix__ \
 		  -Wbitwise -Wno-return-void $(CF)
-MODFLAGS	= -DMODULE -fno-pic -mfpu=neon-vfpv4
+MODFLAGS	= -DMODULE
 CFLAGS_MODULE   = $(MODFLAGS)
 AFLAGS_MODULE   = $(MODFLAGS)
 LDFLAGS_MODULE  =
-CFLAGS_KERNEL	= -mfpu=neon-vfpv4
+CFLAGS_KERNEL	=
 AFLAGS_KERNEL	=
-CFLAGS_GCOV	= -fprofile-arcs -ftest-coverage -fno-tree-loop-im
+CFLAGS_GCOV	= -fprofile-arcs -ftest-coverage
 
 
 # Use LINUXINCLUDE when you must reference the include/ directory.
@@ -363,23 +375,17 @@ LINUXINCLUDE    := -I$(srctree)/arch/$(hdr-arch)/include \
 
 KBUILD_CPPFLAGS := -D__KERNEL__
 
-KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -pipe \
+KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -Wno-unused-variable -Wno-maybe-uninitialized \
 		   -Werror-implicit-function-declaration \
-		   -fno-unsafe-math-optimizations \
-		   -ftree-loop-vectorize -floop-nest-optimize \
+		   -std=gnu89 \
 		   -Wno-unused-function -Wno-unused-label -Wno-array-bounds \
 		   -Wno-format-security -Wno-format-truncation \
 		   -Wno-misleading-indentation -Wno-int-in-bool-context \
 		   -Wno-bool-compare -Wno-tautological-compare \
 		   -fno-delete-null-pointer-checks -Wno-pointer-compare \
 		   -Wno-switch-unreachable -Wno-stringop-overflow \
-		   -fno-strict-aliasing -fno-common -std=gnu89 \
-		   -Wno-stringop-truncation -Wno-sizeof-pointer-memaccess \
-		   -Wno-restrict -Wno-format-overflow -fno-aggressive-loop-optimizations \
-		   -mfpu=neon-vfpv4 -mcpu=cortex-a15 -mtune=cortex-a15 \
-		   -Wno-sequence-point
-
+		   -fno-strict-aliasing -fno-common
 		   #-fno-strict-aliasing -fno-common \
            #-fomit-frame-pointer -fno-omit-frame-pointer \
 		   #-fno-align-functions -fno-align-loops \
@@ -387,23 +393,17 @@ KBUILD_AFLAGS_KERNEL :=
 KBUILD_CFLAGS_KERNEL := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -Wno-unused-variable -Wno-maybe-uninitialized \
 		   -Werror-implicit-function-declaration \
-		   -fno-unsafe-math-optimizations \
-		   -ftree-loop-vectorize -floop-nest-optimize \
+		   -std=gnu89 \
 		   -Wno-unused-function -Wno-unused-label -Wno-array-bounds \
 		   -Wno-format-security -Wno-format-truncation \
 		   -Wno-misleading-indentation -Wno-int-in-bool-context \
 		   -Wno-bool-compare -Wno-tautological-compare \
 		   -fno-delete-null-pointer-checks -Wno-pointer-compare \
 		   -Wno-switch-unreachable -Wno-stringop-overflow \
-		   -fno-strict-aliasing -fno-common -std=gnu89 \
-		   -Wno-stringop-truncation -Wno-sizeof-pointer-memaccess \
-		   -Wno-restrict -Wno-format-overflow -fno-aggressive-loop-optimizations \
-		   -mfpu=neon-vfpv4 -mcpu=cortex-a15 -mtune=cortex-a15 \
-		   -Wno-sequence-point
-
+		   -fno-strict-aliasing -fno-common
 KBUILD_AFLAGS   := -D__ASSEMBLY__
 KBUILD_AFLAGS_MODULE  := -DMODULE
-KBUILD_CFLAGS_MODULE  := -DMODULE -fno-pic -fno-common
+KBUILD_CFLAGS_MODULE  := -DMODULE -fno-pic
 KBUILD_LDFLAGS_MODULE := -T $(srctree)/scripts/module-common.lds
 
 # Read KERNELRELEASE from include/config/kernel.release (if it exists)

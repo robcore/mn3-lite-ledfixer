@@ -4,7 +4,7 @@ busybox cat << CTAG
     $(. /data/synapse/config.json.generate.quicktools),
     $(. /data/synapse/config.json.generate.timers),
     $(. /data/synapse/config.json.generate.sound),
-    $(. /data/synapse/config.json.generate.hweq),
+    $(. /data/synapse/config.json.generate.iirs),
     $(. /data/synapse/config.json.generate.mdnie)
   ]
 }

@@ -994,7 +994,7 @@ static struct of_device_id msm_slp_sts_match_tbl[] = {
 	{},
 };
 
-static struct platform_driver msm_cpu_status_driver __refdata = {
+static struct platform_driver msm_cpu_status_driver = {
 	.probe = msm_cpu_status_probe,
 	.driver = {
 		.name = "cpu_slp_status",
@@ -1008,7 +1008,7 @@ static struct of_device_id msm_snoc_clnt_match_tbl[] = {
 	{},
 };
 
-static struct platform_driver msm_cpu_pm_snoc_client_driver __refdata = {
+static struct platform_driver msm_cpu_pm_snoc_client_driver = {
 	.probe = msm_pm_snoc_client_probe,
 	.driver = {
 		.name = "pm_snoc_client",
@@ -1053,7 +1053,7 @@ struct msm_pc_debug_counters_buffer {
 };
 
 static inline u32 msm_pc_debug_counters_read_register(
-		void __iomem *reg, unsigned int index , unsigned int offset)
+		void __iomem *reg, int index , int offset)
 {
 	return readl_relaxed(reg + (index * 4 + offset) * 4);
 }
@@ -1067,22 +1067,21 @@ static char *counter_name[] = {
 static int msm_pc_debug_counters_copy(
 		struct msm_pc_debug_counters_buffer *data)
 {
+	int j;
 	u32 stat;
-	unsigned int cpu, j;
+	unsigned int cpu;
 
 	for_each_possible_cpu(cpu) {
 		data->len += scnprintf(data->buf + data->len,
 				sizeof(data->buf)-data->len,
-				"CPU%u\n", cpu);
+				"CPU%d\n", cpu);
 
 		for (j = 0; j < MSM_PC_NUM_COUNTERS; j++) {
 			stat = msm_pc_debug_counters_read_register(
 					data->reg, cpu, j);
-            if (stat < 0)
-                stat = 0;
 			data->len += scnprintf(data->buf + data->len,
 					sizeof(data->buf)-data->len,
-					"\t%s : %u\n", counter_name[j],
+					"\t%s : %d\n", counter_name[j],
 					stat);
 		}
 
@@ -1200,7 +1199,7 @@ static int msm_cpu_pm_probe(struct platform_device *pdev)
 	char *key = NULL;
 	struct dentry *dent = NULL;
 	struct resource *res = NULL;
-	unsigned int i;
+	int i;
 	struct msm_pm_init_data_type pdata_local;
 	struct device_node *lpm_node;
 	int ret = 0;
@@ -1217,6 +1216,13 @@ static int msm_cpu_pm_probe(struct platform_device *pdev)
 	if (msm_pc_debug_counters) {
 		for (i = 0; i < resource_size(res)/4; i++)
 			__raw_writel(0, msm_pc_debug_counters + i * 4);
+
+		dent = debugfs_create_file("pc_debug_counter", S_IRUGO, NULL,
+				msm_pc_debug_counters,
+				&msm_pc_debug_counters_fops);
+		if (!dent)
+			pr_err("%s: ERROR debugfs_create_file failed\n",
+					__func__);
 	} else {
 		msm_pc_debug_counters = 0;
 		msm_pc_debug_counters_phys = 0;
@@ -1269,7 +1275,7 @@ static struct of_device_id msm_cpu_pm_table[] = {
 	{},
 };
 
-static struct platform_driver msm_cpu_pm_driver __refdata = {
+static struct platform_driver msm_cpu_pm_driver = {
 	.probe = msm_cpu_pm_probe,
 	.driver = {
 		.name = "pm-8x60",

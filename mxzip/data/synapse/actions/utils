@@ -27,13 +27,5 @@ then
     echo '1' > /proc/sys/net/ipv4/route/flush
     echo '1' > /proc/sys/net/ipv6/route/flush
     echo "TCP Cache Flushed"
-elif [ "$1" = "tmixdump" ]
-then
-    TPATH="/storage/extSdCard/mx3_tmix/tmix-$(busybox date +%F-%H-%M).txt"
-    tinymix > "$TPATH"
-    echo "Tinymix Output dumped to $TPATH"
-elif [ "$1" = "rmsdiv" ]
-then
-    RDIV="$(busybox cat /sys/kernel/sound_control/rms_meter_div_fact)"
-    echo $(( $RDIV * 16 ))
 fi
+

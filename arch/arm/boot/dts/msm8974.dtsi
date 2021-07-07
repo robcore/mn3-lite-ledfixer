@@ -49,7 +49,7 @@
 			reg = <0x0>;
 			// The currents(uA) correspond to the frequencies in the
 			// frequency table.
-			current = <57900 //300000 kHz
+			current = < 57900 //300000 kHz
 			            88200 //422400 kHz
 			            99600 //652800 kHz
 			            138800 //729600 kHz
@@ -71,7 +71,7 @@
 			reg = <0x1>;
 			// The currents(uA) correspond to the frequencies in the
 			// frequency table.
-			current = <23739 //300000 kHz
+			current = < 23739 //300000 kHz
 			            36162 //422400 kHz
 			            40836 //652800 kHz
 			            56908 //729600 kHz
@@ -93,7 +93,7 @@
 			reg = <0x2>;
 			// The currents(uA) correspond to the frequencies in the
 			// frequency table.
-			current = <27213 //300000 kHz
+			current = < 27213 //300000 kHz
 			            41454 //422400 kHz
 			            46812 //652800 kHz
 			            65235 //729600 kHz
@@ -115,7 +115,7 @@
 			reg = <0x3>;
 			// The currents(uA) correspond to the frequencies in the
 			// frequency table.
-			current = <31266 //300000 kHz
+			current = < 31266 //300000 kHz
 			            47628 //422400 kHz
 			            53784 //652800 kHz
 			            74952 //729600 kHz

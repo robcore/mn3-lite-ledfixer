@@ -1,1 +1,0 @@
-find "$(pwd)/" -type f -name *.patch -exec grep -l '/kernel/workqueue.c\|/kernel/workqueue_internal.h\|/include/linux/workqueue.h\|/kernel/workqueue_sched.h' '{}' \; | sort -n | tee -a wqnew.txt

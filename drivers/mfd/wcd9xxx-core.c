@@ -20,7 +20,6 @@
 #include <linux/mfd/wcd9xxx/wcd9xxx-slimslave.h>
 #include <linux/mfd/wcd9xxx/core.h>
 #include <linux/mfd/wcd9xxx/core-resource.h>
-#include <linux/mxaudio.h>
 #include <linux/mfd/wcd9xxx/pdata.h>
 #include <linux/mfd/wcd9xxx/wcd9xxx_registers.h>
 
@@ -124,16 +123,27 @@ extern u8 hphr_cached_gain;
 extern u8 speaker_cached_gain;
 extern u8 iir1_cached_gain; /*0x340*/
 extern u8 iir2_cached_gain; /*0x350*/
+extern u8 iir1_inp2_cached_gain; /*0x341*/
+extern u8 iir2_inp2_cached_gain; /*0x351*/
 #ifdef CONFIG_RAMP_VOLUME
 extern unsigned int ramp_volume;
+#endif
+
+#if 0
+extern u8 crossleft_cached_gain; /* RX4 routed from right to left side Port: RX4 -> 0x2CF */
+extern u8 crossright_cached_gain; /* RX3 routed from left to right side Port: RX3 -> 0x2C7*/
 #endif
 
 static unsigned int sound_control_override = 0;
 void lock_sound_control(struct wcd9xxx_core_resource *core_res,
 						unsigned int lockval)
 {
-	struct wcd9xxx *wcd9xxx = (struct wcd9xxx *)core_res->parent;
-
+	struct wcd9xxx *wcd9xxx = (struct wcd9xxx *) core_res->parent;
+/*	if (unlikely(lockval < 0))
+		lockval = 0;
+	if (unlikely(lockval > 1))
+		lockval = 1;
+*/
 	mutex_lock(&wcd9xxx->io_lock);
 	sound_control_override = lockval;
 	mutex_unlock(&wcd9xxx->io_lock);
@@ -142,22 +152,23 @@ EXPORT_SYMBOL(lock_sound_control);
 
 static bool sound_control_reserved(unsigned short reg)
 {
-    bool is_reserved = false;
-
 	switch (reg) {
 		case 0x2B7:
 		case 0x2BF:
 		case 0x2E7:
         case 0x340:
+        case 0x341:
         case 0x350:
-			is_reserved = true;
-            break;
+        case 0x351:
+#if 0
+        case 0x2CF:
+        case 0x2C7:
+#endif
+			return true;
 		default:
-            is_reserved = false;
 			break;
 	}
-
-	return is_reserved;
+	return false;
 }
 
 static int wcd9xxx_write(struct wcd9xxx *wcd9xxx, unsigned short reg,
@@ -168,7 +179,7 @@ static int wcd9xxx_write(struct wcd9xxx *wcd9xxx, unsigned short reg,
 	if (bytes <= 0)
 		return -EINVAL;
 
-	if (sound_control_reserved(reg) && !sound_control_override)
+	if (!sound_control_override && sound_control_reserved(reg))
 		return 0;
 
 	return wcd9xxx->write_dev(wcd9xxx, reg, bytes, src, interface_reg);
@@ -268,7 +279,6 @@ static int __wcd9xxx_reg_write(struct wcd9xxx *wcd9xxx,
 			else
 				ret = wcd9xxx_write(wcd9xxx, reg, 1, &iir2_cached_gain, false);
 			break;
-#if 0
 		case 0x341:
 			if (val == 172)
 				ret = wcd9xxx_write(wcd9xxx, reg, 1, &val, false);
@@ -281,7 +291,6 @@ static int __wcd9xxx_reg_write(struct wcd9xxx *wcd9xxx,
 			else
 				ret = wcd9xxx_write(wcd9xxx, reg, 1, &iir2_inp2_cached_gain, false);
 			break;
-#endif //0
 		default:
 			break;
 	}

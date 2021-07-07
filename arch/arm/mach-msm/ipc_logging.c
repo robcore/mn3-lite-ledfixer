@@ -288,7 +288,7 @@ void ipc_log_write(void *ctxt, struct encode_context *ectxt)
 	unsigned long flags;
 
 	if (!ilctxt || !ectxt) {
-		pr_debug("%s: Invalid ipc_log or encode context\n", __func__);
+		pr_err("%s: Invalid ipc_log or encode context\n", __func__);
 		return;
 	}
 
@@ -335,7 +335,7 @@ EXPORT_SYMBOL(ipc_log_write);
 void msg_encode_start(struct encode_context *ectxt, uint32_t type)
 {
 	if (!ectxt) {
-		pr_debug("%s: Invalid encode context\n", __func__);
+		pr_err("%s: Invalid encode context\n", __func__);
 		return;
 	}
 
@@ -351,7 +351,7 @@ EXPORT_SYMBOL(msg_encode_start);
 void msg_encode_end(struct encode_context *ectxt)
 {
 	if (!ectxt) {
-		pr_debug("%s: Invalid encode context\n", __func__);
+		pr_err("%s: Invalid encode context\n", __func__);
 		return;
 	}
 
@@ -373,11 +373,11 @@ static inline int tsv_write_data(struct encode_context *ectxt,
 				 void *data, uint32_t size)
 {
 	if (!ectxt) {
-		pr_debug("%s: Invalid encode context\n", __func__);
+		pr_err("%s: Invalid encode context\n", __func__);
 		return -EINVAL;
 	}
 	if ((ectxt->offset + size) > MAX_MSG_SIZE) {
-		pr_debug("%s: No space to encode further\n", __func__);
+		pr_err("%s: No space to encode further\n", __func__);
 		return -EINVAL;
 	}
 
@@ -539,7 +539,7 @@ int ipc_log_extract(void *ctxt, char *buff, int size)
 		if (deserialize_func)
 			deserialize_func(&ectxt, &dctxt);
 		else
-			pr_debug("%s: unknown message 0x%x\n",
+			pr_err("%s: unknown message 0x%x\n",
 				__func__, ectxt.hdr.type);
 		read_lock_irqsave(&context_list_lock_lha1, flags);
 		spin_lock(&ilctxt->context_lock_lhb1);
@@ -729,7 +729,7 @@ void *ipc_log_context_create(int max_num_pages,
 
 	ctxt = kzalloc(sizeof(struct ipc_log_context), GFP_KERNEL);
 	if (!ctxt) {
-		pr_debug("%s: cannot create ipc_log_context\n", __func__);
+		pr_err("%s: cannot create ipc_log_context\n", __func__);
 		return 0;
 	}
 
@@ -740,7 +740,7 @@ void *ipc_log_context_create(int max_num_pages,
 	for (page_cnt = 0; page_cnt < max_num_pages; page_cnt++) {
 		pg = kzalloc(sizeof(struct ipc_log_page), GFP_KERNEL);
 		if (!pg) {
-			pr_debug("%s: cannot create ipc_log_page\n", __func__);
+			pr_err("%s: cannot create ipc_log_page\n", __func__);
 			goto release_ipc_log_context;
 		}
 		pg->hdr.log_id = (uint64_t)(uintptr_t)ctxt;

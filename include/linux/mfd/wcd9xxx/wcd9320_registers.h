@@ -408,7 +408,7 @@
 #define TAIKO_A_RX_HPH_CHOP_CTL			(0x1A5)
 #define TAIKO_A_RX_HPH_CHOP_CTL__POR				(0xB4)
 #define TAIKO_A_RX_HPH_BIAS_PA			(0x1A6)
-#define TAIKO_A_RX_HPH_BIAS_PA__POR				(0x7A)
+#define TAIKO_A_RX_HPH_BIAS_PA__POR				(0x6D)
 #define TAIKO_A_RX_HPH_BIAS_LDO			(0x1A7)
 #define TAIKO_A_RX_HPH_BIAS_LDO__POR				(0x87)
 #define TAIKO_A_RX_HPH_BIAS_CNP			(0x1A8)

@@ -14,7 +14,7 @@
 
 #define pr_fmt(fmt) "AXI: %s(): " fmt, __func__
 
-//#define DEBUG_MSM_BUS_ARB_REQ
+#define DEBUG_MSM_BUS_ARB_REQ
 
 #include <linux/kernel.h>
 #include <linux/init.h>

@@ -131,7 +131,9 @@ void __bitmap_shift_right(unsigned long *dst,
 		lower = src[off + k];
 		if (left && off + k == lim - 1)
 			lower &= mask;
-		dst[k] = upper << (BITS_PER_LONG - rem) | lower >> rem;
+		dst[k] = lower >> rem;
+		if (rem)
+			dst[k] |= upper << (BITS_PER_LONG - rem);
 		if (left && k == lim - 1)
 			dst[k] &= mask;
 	}
@@ -172,7 +174,9 @@ void __bitmap_shift_left(unsigned long *dst,
 		upper = src[k];
 		if (left && k == lim - 1)
 			upper &= (1UL << left) - 1;
-		dst[k + off] = lower  >> (BITS_PER_LONG - rem) | upper << rem;
+		dst[k + off] = upper << rem;
+		if (rem)
+			dst[k + off] |= lower >> (BITS_PER_LONG - rem);
 		if (left && k + off == lim - 1)
 			dst[k + off] &= (1UL << left) - 1;
 	}
@@ -355,7 +359,7 @@ again:
 EXPORT_SYMBOL(bitmap_find_next_zero_area_off);
 
 /*
- * Bitmap printing & parsing functions: first version by Nadia Yvette Chambers,
+ * Bitmap printing & parsing functions: first version by Bill Irwin,
  * second version by Paul Jackson, third by Joe Korty.
  */
 
@@ -371,8 +375,7 @@ EXPORT_SYMBOL(bitmap_find_next_zero_area_off);
  * @nmaskbits: size of bitmap, in bits
  *
  * Exactly @nmaskbits bits are displayed.  Hex digits are grouped into
- * comma-separated sets of eight digits per set.  Returns the number of
- * characters which were written to *buf, excluding the trailing \0.
+ * comma-separated sets of eight digits per set.
  */
 int bitmap_scnprintf(char *buf, unsigned int buflen,
 	const unsigned long *maskp, int nmaskbits)
@@ -520,8 +523,8 @@ EXPORT_SYMBOL(bitmap_parse_user);
  *
  * Helper routine for bitmap_scnlistprintf().  Write decimal number
  * or range to buf, suppressing output past buf+buflen, with optional
- * comma-prefix.  Return len of what was written to *buf, excluding the
- * trailing \0.
+ * comma-prefix.  Return len of what would be written to buf, if it
+ * all fit.
  */
 static inline int bscnl_emit(char *buf, int buflen, int rbot, int rtop, int len)
 {
@@ -547,8 +550,9 @@ static inline int bscnl_emit(char *buf, int buflen, int rbot, int rtop, int len)
  * the range.  Output format is compatible with the format
  * accepted as input by bitmap_parselist().
  *
- * The return value is the number of characters which were written to *buf
- * excluding the trailing '\0', as per ISO C99's scnprintf.
+ * The return value is the number of characters which would be
+ * generated for the given input, excluding the trailing '\0', as
+ * per ISO C99.
  */
 int bitmap_scnlistprintf(char *buf, unsigned int buflen,
 	const unsigned long *maskp, int nmaskbits)
@@ -601,12 +605,12 @@ static int __bitmap_parselist(const char *buf, unsigned int buflen,
 	unsigned a, b;
 	int c, old_c, totaldigits;
 	const char __user __force *ubuf = (const char __user __force *)buf;
-	int exp_digit, in_range;
+	int at_start, in_range;
 
 	totaldigits = c = 0;
 	bitmap_zero(maskp, nmaskbits);
 	do {
-		exp_digit = 1;
+		at_start = 1;
 		in_range = 0;
 		a = b = 0;
 
@@ -635,11 +639,10 @@ static int __bitmap_parselist(const char *buf, unsigned int buflen,
 				break;
 
 			if (c == '-') {
-				if (exp_digit || in_range)
+				if (at_start || in_range)
 					return -EINVAL;
 				b = 0;
 				in_range = 1;
-				exp_digit = 1;
 				continue;
 			}
 
@@ -649,16 +652,18 @@ static int __bitmap_parselist(const char *buf, unsigned int buflen,
 			b = b * 10 + (c - '0');
 			if (!in_range)
 				a = b;
-			exp_digit = 0;
+			at_start = 0;
 			totaldigits++;
 		}
 		if (!(a <= b))
 			return -EINVAL;
 		if (b >= nmaskbits)
 			return -ERANGE;
-		while (a <= b) {
-			set_bit(a, maskp);
-			a++;
+		if (!at_start) {
+			while (a <= b) {
+				set_bit(a, maskp);
+				a++;
+			}
 		}
 	} while (buflen && c == ',');
 	return 0;

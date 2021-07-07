@@ -442,17 +442,17 @@
 			 * ************************************************************************************************************************
 			 */
 			samsung,panel-smart-acl-elvss-cmds-list = [
-				29 01 00 00 00 00 03 b6 88 18 /* 0 SMART_ACL_ELVSS(0x18) */
-				29 01 00 00 00 00 03 b6 88 17 /* 1 SMART_ACL_ELVSS(0x17) */
-				29 01 00 00 00 00 03 b6 88 16 /* 2 SMART_ACL_ELVSS(0x16) */
-				29 01 00 00 00 00 03 b6 88 15 /* 3 SMART_ACL_ELVSS(0x15) */
-				29 01 00 00 00 00 03 b6 88 14 /* 4 SMART_ACL_ELVSS(0x14) */
-				29 01 00 00 00 00 03 b6 88 13 /* 5 SMART_ACL_ELVSS(0x13) */
-				29 01 00 00 00 00 03 b6 88 12 /* 6 SMART_ACL_ELVSS(0x12) */
-				29 01 00 00 00 00 03 b6 88 11 /* 7 SMART_ACL_ELVSS(0x11) */
-				29 01 00 00 00 00 03 b6 88 10 /* 8 SMART_ACL_ELVSS(0x10) */
-				29 01 00 00 00 00 03 b6 88 0F /* 9 SMART_ACL_ELVSS(0x0F) */
-				29 01 00 00 00 00 03 b6 88 0E /* 10 SMART_ACL_ELVSS(0x0E) */
+				29 01 00 00 00 00 03 b6 88 18 /* 0 SMART_ACL_ELVSS(0x18) 24 */
+				29 01 00 00 00 00 03 b6 88 17 /* 1 SMART_ACL_ELVSS(0x17) 23 */
+				29 01 00 00 00 00 03 b6 88 16 /* 2 SMART_ACL_ELVSS(0x16) 22 */
+				29 01 00 00 00 00 03 b6 88 15 /* 3 SMART_ACL_ELVSS(0x15) 21 */
+				29 01 00 00 00 00 03 b6 88 14 /* 4 SMART_ACL_ELVSS(0x14) 20 */
+				29 01 00 00 00 00 03 b6 88 13 /* 5 SMART_ACL_ELVSS(0x13) 19 */
+				29 01 00 00 00 00 03 b6 88 12 /* 6 SMART_ACL_ELVSS(0x12) 18 */
+				29 01 00 00 00 00 03 b6 88 11 /* 7 SMART_ACL_ELVSS(0x11) 17 */
+				29 01 00 00 00 00 03 b6 88 10 /* 8 SMART_ACL_ELVSS(0x10) 16 */
+				29 01 00 00 00 00 03 b6 88 0F /* 9 SMART_ACL_ELVSS(0x0F) 15 */
+				29 01 00 00 00 00 03 b6 88 0E /* 10 SMART_ACL_ELVSS(0x0E) 14 */
 			];
 			/* bl_level, Index in elvss command list */
 			samsung,panel-smart-acl-elvss-map-table = <

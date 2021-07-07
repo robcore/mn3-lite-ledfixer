@@ -80,7 +80,6 @@
 #if defined(CONFIG_BCM4335) || defined(CONFIG_BCM4335_MODULE) || defined(CONFIG_BCM4339) || defined(CONFIG_BCM4339_MODULE)
 int bt_is_running=0;
 #endif
-
 EXPORT_SYMBOL(bt_is_running);
 
 static struct rfkill *bt_rfkill;

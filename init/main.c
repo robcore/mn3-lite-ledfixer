@@ -69,6 +69,7 @@
 #include <linux/slab.h>
 #include <linux/perf_event.h>
 #include <linux/random.h>
+#include <linux/sched_clock.h>
 #include <linux/s_funcs.h>
 
 #include <asm/io.h>
@@ -158,8 +159,8 @@ static int __init set_reset_devices(char *str)
 
 __setup("reset_devices", set_reset_devices);
 
-static const char *argv_init[MAX_INIT_ARGS+2] = { "init", NULL, };
-const char *envp_init[MAX_INIT_ENVS+2] = { "HOME=/", "TERM=linux", NULL, };
+static const char * argv_init[MAX_INIT_ARGS+2] = { "init", NULL, };
+const char * envp_init[MAX_INIT_ENVS+2] = { "HOME=/", "TERM=linux", NULL, };
 static const char *panic_later, *panic_param;
 
 extern const struct obs_kernel_param __setup_start[], __setup_end[];
@@ -181,8 +182,8 @@ static int __init obsolete_checksetup(char *line)
 				if (line[n] == '\0' || line[n] == '=')
 					had_early_param = 1;
 			} else if (!p->setup_func) {
-				pr_warn("Parameter %s is obsolete, ignored\n",
-					p->str);
+				printk(KERN_WARNING "Parameter %s is obsolete,"
+				       " ignored\n", p->str);
 				return 1;
 			} else if (p->setup_func(line + n))
 				return 1;
@@ -198,6 +199,7 @@ static int __init obsolete_checksetup(char *line)
  * still work even if initially too large, it will just take slightly longer
  */
 unsigned long loops_per_jiffy = (1<<12);
+
 EXPORT_SYMBOL(loops_per_jiffy);
 
 static int __init debug_kernel(char *str)
@@ -391,8 +393,8 @@ static void __init setup_command_line(char *command_line)
 
 	saved_command_line = alloc_bootmem(strlen(boot_command_line) + 1);
 	static_command_line = alloc_bootmem(strlen(command_line) + 1 );
-	strcpy(saved_command_line, boot_command_line);
-	strcpy(static_command_line, command_line);
+	strcpy (saved_command_line, boot_command_line);
+	strcpy (static_command_line, command_line);
 }
 
 /*
@@ -479,8 +481,8 @@ void __init parse_early_options(char *cmdline)
 /* Arch code calls this early on, or if not, just before other parsing. */
 void __init parse_early_param(void)
 {
-	static int done __initdata;
-	static char tmp_cmdline[COMMAND_LINE_SIZE] __initdata;
+	static __initdata int done = 0;
+	static __initdata char tmp_cmdline[COMMAND_LINE_SIZE];
 
 	if (done)
 		return;
@@ -530,6 +532,48 @@ static void __init mm_init(void)
 	vmalloc_init();
 }
 
+#ifdef CONFIG_CRYPTO_FIPS_OLD_INTEGRITY_CHECK
+/* change@ksingh.sra-dallas - in kernel 3.4 and + 
+ * the mmu clears the unused/unreserved memory with default RAM initial sticky 
+ * bit data.
+ * Hence to preseve the copy of zImage in the unmarked area, the Copied zImage
+ * memory range has to be marked reserved.
+*/
+#define SHA256_DIGEST_SIZE 32
+
+// this is the size of memory area that is marked as reserved
+long integrity_mem_reservoir = 0;
+
+// internal API to mark zImage copy memory area as reserved
+static void __init integrity_mem_reserve(void) {
+	int result = 0;
+	long len = 0;
+	u8* zBuffer = 0;
+	
+	zBuffer = (u8*)phys_to_virt((unsigned long)CONFIG_CRYPTO_FIPS_INTEG_COPY_ADDRESS);
+	if (*((u32 *) &zBuffer[36]) != 0x016F2818) {
+		printk(KERN_ERR "FIPS main.c: invalid zImage magic number.");
+		return;
+	}
+
+	if (*(u32 *) &zBuffer[44] <= *(u32 *) &zBuffer[40]) {
+		printk(KERN_ERR "FIPS main.c: invalid zImage calculated len");
+		return;
+	}
+	
+	len = *(u32 *) &zBuffer[44] - *(u32 *) &zBuffer[40];
+	printk(KERN_NOTICE "FIPS Actual zImage len = %ld\n", len);
+	
+	integrity_mem_reservoir = len + SHA256_DIGEST_SIZE;
+	result = reserve_bootmem((unsigned long)CONFIG_CRYPTO_FIPS_INTEG_COPY_ADDRESS, integrity_mem_reservoir, 1);
+	if(result != 0) {
+		integrity_mem_reservoir = 0;
+	} 
+	printk(KERN_NOTICE "FIPS integrity_mem_reservoir = %ld\n", integrity_mem_reservoir);
+}
+// change@ksingh.sra-dallas - end
+#endif // CONFIG_CRYPTO_FIPS_OLD_INTEGRITY_CHECK
+
 asmlinkage void __init start_kernel(void)
 {
 	char * command_line;
@@ -552,9 +596,10 @@ asmlinkage void __init start_kernel(void)
  * Interrupts are still disabled. Do necessary setups, then
  * enable them
  */
+	tick_init();
 	boot_cpu_init();
 	page_address_init();
-	pr_notice("%s", linux_banner);
+	printk(KERN_NOTICE "%s", linux_banner);
 	setup_arch(&command_line);
 	/*
 	 * Set up the the initial canary ASAP:
@@ -570,7 +615,7 @@ asmlinkage void __init start_kernel(void)
 	build_all_zonelists(NULL);
 	page_alloc_init();
 
-	pr_notice("Kernel command line: %s\n", boot_command_line);
+	printk(KERN_NOTICE "Kernel command line: %s\n", boot_command_line);
 	parse_early_param();
 	parse_args("Booting kernel", static_command_line, __start___param,
 		   __stop___param - __start___param,
@@ -578,6 +623,12 @@ asmlinkage void __init start_kernel(void)
 
 	jump_label_init();
 
+#ifdef CONFIG_CRYPTO_FIPS_OLD_INTEGRITY_CHECK
+	/* change@ksingh.sra-dallas
+	 * marks the zImage copy area as reserve before mmu can clear it
+	 */
+ 	integrity_mem_reserve();
+#endif // CONFIG_CRYPTO_FIPS_OLD_INTEGRITY_CHECK
 	/*
 	 * These use large bootmem allocations and must precede
 	 * kmem_cache_init()
@@ -612,13 +663,13 @@ asmlinkage void __init start_kernel(void)
 	/* init some links before init_ISA_irqs() */
 	early_irq_init();
 	init_IRQ();
-	tick_init();
 	prio_tree_init();
 	init_timers();
 	hrtimers_init();
 	softirq_init();
 	timekeeping_init();
 	time_init();
+	sched_clock_postinit();
 	profile_init();
 	call_function_init();
 	if (!irqs_disabled())
@@ -650,7 +701,8 @@ asmlinkage void __init start_kernel(void)
 #ifdef CONFIG_BLK_DEV_INITRD
 	if (initrd_start && !initrd_below_start_ok &&
 	    page_to_pfn(virt_to_page((void *)initrd_start)) < min_low_pfn) {
-		pr_crit("initrd overwritten (0x%08lx < 0x%08lx) - disabling it.\n",
+		printk(KERN_CRIT "initrd overwritten (0x%08lx < 0x%08lx) - "
+		    "disabling it.\n",
 		    page_to_pfn(virt_to_page((void *)initrd_start)),
 		    min_low_pfn);
 		initrd_start = 0;
@@ -737,7 +789,7 @@ static int __init_or_module do_one_initcall_debug(initcall_t fn)
 	rettime = ktime_get();
 	delta = ktime_sub(rettime, calltime);
 	duration = (unsigned long long) ktime_to_ns(delta) >> 10;
-	pr_debug("initcall %pF returned %d after %lld usecs\n", fn,
+	printk(KERN_DEBUG "initcall %pF returned %d after %lld usecs\n", fn,
 		ret, duration);
 
 	return ret;
@@ -797,7 +849,6 @@ static initcall_t *initcall_levels[] __initdata = {
 	__initcall_end,
 };
 
-/* Keep these in sync with initcalls in include/linux/init.h */
 static char *initcall_level_names[] __initdata = {
 	"early parameters",
 	"core parameters",
@@ -923,7 +974,7 @@ static noinline int init_post(void)
 
 	if (ramdisk_execute_command) {
 		run_init_process(ramdisk_execute_command);
-		pr_err("Failed to execute %s\n",
+		printk(KERN_WARNING "Failed to execute %s\n",
 				ramdisk_execute_command);
 	}
 
@@ -935,10 +986,9 @@ static noinline int init_post(void)
 	 */
 	if (execute_command) {
 		run_init_process(execute_command);
-		pr_err("Failed to execute %s.  Attempting "
+		printk(KERN_WARNING "Failed to execute %s.  Attempting "
 					"defaults...\n", execute_command);
 	}
-	run_init_process("/init");
 	run_init_process("/sbin/init");
 	run_init_process("/etc/init");
 	run_init_process("/bin/init");
@@ -981,7 +1031,7 @@ static int __init kernel_init(void * unused)
 
 	/* Open the /dev/console on the rootfs, this should never fail */
 	if (sys_open((const char __user *) "/dev/console", O_RDWR, 0) < 0)
-		pr_debug("Warning: unable to open an initial console.\n");
+		printk(KERN_WARNING "Warning: unable to open an initial console.\n");
 
 	(void) sys_dup(0);
 	(void) sys_dup(0);

@@ -1,3 +1,10 @@
+config LEDS_GPIO_REGISTER
+	bool
+	help
+	  This option provides the function gpio_led_register_device.
+	  As this function is used by arch code it must not be compiled as a
+	  module.
+
 menuconfig NEW_LEDS
 	bool "LED Support"
 	help
@@ -8,13 +15,6 @@ menuconfig NEW_LEDS
 	  via the input system.
 
 if NEW_LEDS
-
-config LEDS_GPIO_REGISTER
-	bool "LED GPIO Support"
-	help
-	  This option provides the function gpio_led_register_device.
-	  As this function is used by arch code it must not be compiled as a
-	  module.
 
 config LEDS_CLASS
 	tristate "LED Class Support"
@@ -82,7 +82,7 @@ config LEDS_NET48XX
 	  This option enables support for the Soekris net4801 and net4826 error
 	  LED.
 
-config LEDS_FSGClass
+config LEDS_FSG
 	tristate "LED Support for the Freecom FSG-3"
 	depends on LEDS_CLASS
 	depends on MACH_FSG

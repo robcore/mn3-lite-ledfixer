@@ -17,9 +17,15 @@
  */
 
 /include/ "msm8974-sec.dtsi"
-
 /include/ "msm-pm8x41-rpm-regulator.dtsi"
 /include/ "msm-pm8841.dtsi"
+/include/ "msm-pm8941-sec.dtsi"
+/include/ "msm8974-regulator.dtsi"
+/include/ "msm8974-clock.dtsi"
+/include/ "msm8974-v2-iommu.dtsi"
+/include/ "msm8974-v2-iommu-domains.dtsi"
+/include/ "msm8974-v2-pm.dtsi"
+
 &spmi_bus {
 	pm8941_lsid0: qcom,pm8941@0 {
 		reg = <0x0>;
@@ -28,13 +34,6 @@
 		reg = <0x1>;
 	};
 };
-/include/ "msm-pm8941-sec.dtsi"
-/include/ "msm8974-regulator.dtsi"
-/include/ "msm8974-clock.dtsi"
-
-/include/ "msm8974-v2-iommu.dtsi"
-/include/ "msm8974-v2-iommu-domains.dtsi"
-/include/ "msm8974-v2-pm.dtsi"
 
 &soc {
 	android_usb@fe8050c8 {
@@ -137,7 +136,7 @@
 		<1608000 604000>,
 		<2576000 967000>,
 		<4680000 1404000>,
-		<4988000 1496000>;
+		<49880000 1496000>;
 	qcom,dec-ddr-ab-ib = <0 0>,
 		<208000 303000>,
 		<536000 1600000>,

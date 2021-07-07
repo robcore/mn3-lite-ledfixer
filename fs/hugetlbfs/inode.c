@@ -1,7 +1,7 @@
 /*
  * hugetlbpage-backed filesystem.  Based on ramfs.
  *
- * Nadia Yvette Chambers, 2002
+ * William Irwin, 2002
  *
  * Copyright (C) 2002 Linus Torvalds.
  */

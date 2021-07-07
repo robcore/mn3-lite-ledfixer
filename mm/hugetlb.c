@@ -1,6 +1,6 @@
 /*
  * Generic hugetlb support.
- * (C) Nadia Yvette Chambers, April 2004
+ * (C) William Irwin, April 2004
  */
 #include <linux/list.h>
 #include <linux/init.h>

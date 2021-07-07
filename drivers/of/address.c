@@ -328,7 +328,6 @@ static struct of_bus *of_match_bus(struct device_node *np)
 	return NULL;
 }
 
-#if defined(CONFIG_PPC)
 static int of_empty_ranges_quirk(void)
 {
 	if (IS_ENABLED(CONFIG_PPC)) {
@@ -343,7 +342,6 @@ static int of_empty_ranges_quirk(void)
 	}
 	return false;
 }
-#endif /* !defined(CONFIG_PPC) */
 
 static int of_translate_one(struct device_node *parent, struct of_bus *bus,
 			    struct of_bus *pbus, u32 *addr,
@@ -370,7 +368,7 @@ static int of_translate_one(struct device_node *parent, struct of_bus *bus,
 	 * This code is only enabled on powerpc. --gcl
 	 */
 	ranges = of_get_property(parent, rprop, &rlen);
-	if (ranges == NULL) {
+	if (ranges == NULL && !of_empty_ranges_quirk()) {
 		pr_err("OF: no ranges; cannot translate\n");
 		return 1;
 	}

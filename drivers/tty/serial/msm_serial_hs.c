@@ -3277,7 +3277,7 @@ static int __init msm_serial_hs_init(void)
 	ipc_msm_hs_log_ctxt = ipc_log_context_create(IPC_MSM_HS_LOG_PAGES,
 							"msm_serial_hs", 0);
 	if (!ipc_msm_hs_log_ctxt)
-		pr_debug("%s: error creating logging context", __func__);
+		MSM_HS_WARN("%s: error creating logging context", __func__);
 
 	ret = uart_register_driver(&msm_hs_driver);
 	if (unlikely(ret)) {
@@ -3377,8 +3377,6 @@ static void msm_hs_shutdown(struct uart_port *uport)
 	if (msm_uport->clk_state != MSM_HS_CLK_OFF) {
 		/* to balance clk_state */
 		msm_hs_clock_unvote(msm_uport);
-		if (wake_lock_active(&msm_uport->dma_wake_lock))
-			wake_unlock(&msm_uport->dma_wake_lock);
 	}
 
 	pm_runtime_disable(uport->dev);

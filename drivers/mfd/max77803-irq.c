@@ -180,6 +180,8 @@ static irqreturn_t max77803_irq_thread(int irq, void *data)
 	u8 irq_src;
 	int ret;
 	int i;
+	pr_debug("%s: irq gpio pre-state(0x%02x)\n", __func__,
+		gpio_get_value(max77803->irq_gpio));
 
 clear_retry:
 	ret = max77803_read_reg(max77803->i2c,
@@ -189,11 +191,14 @@ clear_retry:
 				ret);
 		return IRQ_NONE;
 	}
+	pr_info("%s: interrupt source(0x%02x)\n", __func__, irq_src);
 
 	if (irq_src & MAX77803_IRQSRC_CHG) {
 		/* CHG_INT */
 		ret = max77803_read_reg(max77803->i2c, MAX77803_CHG_REG_CHG_INT,
 				&irq_reg[CHG_INT]);
+		pr_info("%s: charger interrupt(0x%02x)\n",
+			__func__, irq_reg[CHG_INT]);
 		/* mask chgin to prevent chgin infinite interrupt
 		 * chgin is unmasked chgin isr
 		 */
@@ -220,6 +225,8 @@ clear_retry:
 		ret = max77803_read_reg(max77803->i2c,
 				MAX77803_PMIC_REG_TOPSYS_INT,
 				&irq_reg[TOPSYS_INT]);
+		pr_info("%s: topsys interrupt(0x%02x)\n",
+			__func__, irq_reg[TOPSYS_INT]);
 	}
 
 	if (irq_src & MAX77803_IRQSRC_FLASH) {
@@ -227,6 +234,8 @@ clear_retry:
 		ret = max77803_read_reg(max77803->i2c,
 				MAX77803_LED_REG_FLASH_INT,
 				&irq_reg[LED_INT]);
+		pr_info("%s: led interrupt(0x%02x)\n",
+			__func__, irq_reg[LED_INT]);
 	}
 
 	if (irq_src & MAX77803_IRQSRC_MUIC) {
@@ -235,9 +244,16 @@ clear_retry:
 		MAX77803_MUIC_REG_INT1,
 		MAX77803_NUM_IRQ_MUIC_REGS,
 				&irq_reg[MUIC_INT1]);
+		pr_info("%s: muic interrupt(0x%02x, 0x%02x, 0x%02x)\n",
+			__func__, irq_reg[MUIC_INT1],
+			irq_reg[MUIC_INT2], irq_reg[MUIC_INT3]);
 	}
 
+	pr_debug("%s: irq gpio post-state(0x%02x)\n", __func__,
+		gpio_get_value(max77803->irq_gpio));
+
 	if (gpio_get_value(max77803->irq_gpio) == 0) {
+		pr_warn("%s: irq_gpio is not High!\n", __func__);
 		goto clear_retry;
 	}
 
@@ -266,6 +282,8 @@ int max77803_irq_resume(struct max77803_dev *max77803)
 	if (max77803->irq && max77803->irq_base)
 		ret = max77803_irq_thread(max77803->irq_base, max77803);
 
+	dev_info(max77803->dev, "%s: irq_resume ret=%d", __func__, ret);
+
 	return ret >= 0 ? 0 : ret;
 }
 
@@ -276,12 +294,16 @@ int max77803_irq_init(struct max77803_dev *max77803)
 	int ret;
 	u8 i2c_data;
 
+	pr_info("func: %s, irq_gpio: %d, irq_base: %d\n", __func__,
+			max77803->irq_gpio, max77803->irq_base);
 	if (!max77803->irq_gpio) {
+		dev_warn(max77803->dev, "No interrupt specified.\n");
 		max77803->irq_base = 0;
 		return 0;
 	}
 
 	if (!max77803->irq_base) {
+		dev_err(max77803->dev, "No interrupt base specified.\n");
 		return 0;
 	}
 
@@ -290,6 +312,8 @@ int max77803_irq_init(struct max77803_dev *max77803)
 	max77803->irq = gpio_to_irq(max77803->irq_gpio);
 	ret = gpio_request(max77803->irq_gpio, "if_pmic_irq");
 	if (ret) {
+		dev_err(max77803->dev, "%s: failed requesting gpio %d\n",
+			__func__, max77803->irq_gpio);
 		return ret;
 	}
 	gpio_direction_input(max77803->irq_gpio);
@@ -337,6 +361,7 @@ int max77803_irq_init(struct max77803_dev *max77803)
 	ret = max77803_read_reg(max77803->i2c, MAX77803_PMIC_REG_INTSRC_MASK,
 			  &i2c_data);
 	if (ret) {
+		dev_err(max77803->dev, "%s: fail to read muic reg\n", __func__);
 		return ret;
 	}
 
@@ -350,6 +375,8 @@ int max77803_irq_init(struct max77803_dev *max77803)
 				   "max77803-irq", max77803);
 
 	if (ret) {
+		dev_err(max77803->dev, "Failed to request IRQ %d: %d\n",
+			max77803->irq, ret);
 		return ret;
 	}
 

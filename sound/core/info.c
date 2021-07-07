@@ -89,7 +89,7 @@ static int resize_info_buffer(struct snd_info_buffer *buffer,
 	char *nbuf;
 
 	nsize = PAGE_ALIGN(nsize);
-	nbuf = krealloc(buffer->buffer, nsize, GFP_KERNEL | __GFP_ZERO);
+	nbuf = krealloc(buffer->buffer, nsize, GFP_KERNEL);
 	if (! nbuf)
 		return -ENOMEM;
 
@@ -692,7 +692,7 @@ int snd_info_card_free(struct snd_card *card)
  * snd_info_get_line - read one line from the procfs buffer
  * @buffer: the procfs buffer
  * @line: the buffer to store
- * @len: the max. buffer size
+ * @len: the max. buffer size - 1
  *
  * Reads one line from the buffer and stores the string.
  *
@@ -712,7 +712,7 @@ int snd_info_get_line(struct snd_info_buffer *buffer, char *line, int len)
 			buffer->stop = 1;
 		if (c == '\n')
 			break;
-		if (len > 1) {
+		if (len) {
 			len--;
 			*line++ = c;
 		}
