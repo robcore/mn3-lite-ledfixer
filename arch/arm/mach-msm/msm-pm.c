@@ -43,6 +43,10 @@
 #include "spm.h"
 #include "pm-boot.h"
 #include "clock.h"
+#ifdef CONFIG_SEC_DEBUG
+#include <mach/sec_debug.h>
+#endif
+
 #define CREATE_TRACE_POINTS
 #include <mach/trace_msm_low_power.h>
 
@@ -493,6 +497,9 @@ static int msm_pm_collapse(unsigned long unused)
 	if (cpu_count == num_online_cpus())
 		flag = msm_pm_get_l2_flush_flag();
 
+	pr_debug("cpu:%d cores_in_pc:%d L2 flag: %d\n",
+			cpu, cpu_count, flag);
+
 	/*
 	 * The scm_handoff_lock will be release by the secure monitor.
 	 * It is used to serialize power-collapses from this point on,
@@ -528,6 +535,10 @@ static int msm_pm_collapse(unsigned long unused)
 	return 0;
 }
 
+#ifdef CONFIG_SEC_PM_DEBUG
+extern int sec_print_masters_stats(void);
+#endif
+
 static bool __ref msm_pm_spm_power_collapse(
 	unsigned int cpu, bool from_idle, bool notify_rpm)
 {
@@ -551,10 +562,26 @@ static bool __ref msm_pm_spm_power_collapse(
 
 	msm_pm_boot_config_before_pc(cpu, virt_to_phys(entry));
 
+	if (MSM_PM_DEBUG_RESET_VECTOR & msm_pm_debug_mask)
+		pr_info("CPU%u: %s: program vector to %p\n",
+			cpu, __func__, entry);
+
 	msm_jtag_save_state();
 
 	collapsed = save_cpu_regs ?
 		!cpu_suspend(0, msm_pm_collapse) : msm_pm_pc_hotplug();
+
+
+//#ifdef CONFIG_SEC_PM_DEBUG
+#if 0
+	if(from_idle == false && cpu == 0 && sec_debug_is_enabled()){
+		sec_print_masters_stats();
+	}
+#endif
+
+#ifdef CONFIG_SEC_DEBUG
+	secdbg_sched_msg("-pc(%d)", collapsed);
+#endif
 
 	if (save_cpu_regs) {
 		spin_lock(&cpu_cnt_lock);
@@ -573,6 +600,10 @@ static bool __ref msm_pm_spm_power_collapse(
 
 	if (from_idle)
 		cpu_pm_exit();
+
+	if (MSM_PM_DEBUG_POWER_COLLAPSE & msm_pm_debug_mask)
+		pr_info("CPU%u: %s: msm_pm_collapse returned, collapsed %d\n",
+			cpu, __func__, collapsed);
 
 	ret = msm_spm_set_low_power_mode(MSM_SPM_MODE_CLOCK_GATING, false);
 	WARN_ON(ret);

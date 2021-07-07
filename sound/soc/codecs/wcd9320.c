@@ -1030,13 +1030,24 @@ TAIKO_A_RX_HPH_CHOP_CTL 0x1A5
 static void write_chopper(void)
 {
 
-    if (!hpwidget() || chopper_bypass) {
+    if (!hpwidget()) {
         mx_update_bits(TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20);
         mx_update_bits(TAIKO_A_RX_HPH_CHOP_CTL, 0x80, 0x00);
-    } else if (uhqa_mode) {
+        return;
+    }
+	if (chopper_bypass) {
+        mx_update_bits(TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20);
+        mx_update_bits(TAIKO_A_RX_HPH_CHOP_CTL, 0x80, 0x00);
+        return;
+    }
+
+    if (uhqa_mode) {
         mx_update_bits(TAIKO_A_RX_HPH_CHOP_CTL, 0x80, 0x80);
         mx_update_bits(TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x00);
-    } else {
+        return;
+    }
+
+    if (!hph_pa_enabled) {
         mx_update_bits(TAIKO_A_RX_HPH_CHOP_CTL, 0x80, 0x80);
         mx_update_bits(TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20);
     }
@@ -1625,7 +1636,7 @@ static enum wcd9xxx_buck_volt taiko_codec_get_buck_mv(
 			break;
 		}
 	}
-    pr_info("%s: Buck mV: %d\n", __func__, buck_volt);
+    pr_info("%s: Buck Voltage: %d\n", __func__, buck_volt);
 	return buck_volt;
 }
 
@@ -1646,7 +1657,7 @@ static int taiko_config_compander(struct snd_soc_dapm_widget *w,
 	enable_mask = (comp == COMPANDER_0 ? 0x02 : 0x03);
 	buck_mv = taiko_codec_get_buck_mv(codec);
 
-	pr_debug("%s: %s event %d compander %d, enabled? %d", __func__,
+	pr_info("%s: %s event %d compander %d, enabled? %d", __func__,
 		 w->name, event, comp, taiko->comp_enabled[comp]);
 	if (comp == COMPANDER_1 && hph_pa_enabled) {
         interpolator_enabled = false;
@@ -4254,10 +4265,10 @@ static int taiko_hph_pa_event(struct snd_soc_dapm_widget *w,
 		}
 
 		if (w->shift == 5) {
-			pr_debug("%s: hpwidget_left enabled\n", __func__);
+			pr_info("%s: hpwidget_left enabled\n", __func__);
             write_hdc_left(1);
 		} else if (w->shift == 4) {
-			pr_debug("%s: hpwidget_right enabled\n", __func__);
+			pr_info("%s: hpwidget_right enabled\n", __func__);
             write_hdc_right(1);
         }
         update_control_regs();
@@ -4277,10 +4288,10 @@ static int taiko_hph_pa_event(struct snd_soc_dapm_widget *w,
 		usleep_range(13000, 13000);
 //		pr_debug("%s: sleep 13000us after %s PA disable\n", __func__, w->name);
 		if (w->shift == 5) {
-			pr_debug("%s: hpwidget_left disabled\n", __func__);
+			pr_info("%s: hpwidget_left disabled\n", __func__);
             write_hdc_left(0);
 		} else if (w->shift == 4) {
-			pr_debug("%s: hpwidget_right disabled\n", __func__);
+			pr_info("%s: hpwidget_right disabled\n", __func__);
             write_hdc_right(0);
         }
 		/* Let MBHC module know PA turned off */
@@ -5278,7 +5289,6 @@ static int taiko_prepare(struct snd_pcm_substream *substream,
 
 	if (substream->stream) {
 		taiko_p->clsh_d.hs_perf_mode_enabled = false;
-        pr_debug("%s: uhqa_mode disabled by substream stream", __func__);
 		goto handleshit;
 	}
 
@@ -5297,22 +5307,28 @@ static int taiko_prepare(struct snd_pcm_substream *substream,
 			taiko_p->comp_enabled[COMPANDER_1]);
 
     if (chopper_bypass) {
-        taiko_p->clsh_d.hs_perf_mode_enabled = false;
-        pr_debug("%s: uhqa_mode disabled by chopper_bypass", __func__);
-        goto handleshit;
+        pr_info("%s: uhqa_mode disabled by chopper_bypass", __func__);
+        return 0;
     }
+
+	if (!taiko_p->comp_enabled[COMPANDER_1] || hph_pa_enabled) {
+		taiko_p->clsh_d.hs_perf_mode_enabled = false;
+		snd_soc_update_bits(codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20);
+		pr_info("%s: uhqa_mode disabled by hph_pa_enabled", __func__);
+		goto handleshit;
+	}
 
 	paths = snd_soc_dapm_codec_dai_get_playback_connected_widgets(dai, &wlist);
 
 	if (!paths) {
-		dev_dbg(dai->dev, "%s(): found no audio playback paths\n",
+		dev_err(dai->dev, "%s(): found no audio playback paths\n",
 			__func__);
         taiko_p->clsh_d.hs_perf_mode_enabled = false;
 		goto handleshit;
 	}
 
 	for (i = 0; i < wlist->num_widgets; i++) {
-		dev_dbg(dai->dev, " dai stream_name = %s, widget name = %s\n",
+		dev_info(dai->dev, " dai stream_name = %s, widget name = %s\n",
 			dai->driver->playback.stream_name, wlist->widgets[i]->name);
 
 		if (!strcmp(wlist->widgets[i]->name, "HPHL") ||
@@ -5325,26 +5341,30 @@ static int taiko_prepare(struct snd_pcm_substream *substream,
 	kfree(wlist);
 
 	if (!found_hs_pa) {
-		taiko_p->clsh_d.hs_perf_mode_enabled = false;
+        taiko_p->clsh_d.hs_perf_mode_enabled = false;
 		goto handleshit;
 	}
 
-	pr_debug("%s(): rate = %u. bit_width = %u.  hs compander_enabled = %u",
+	pr_info("%s(): rate = %u. bit_width = %u.  hs compander_enabled = %u",
 			__func__, taiko_p->dai[dai->id].rate,
 			taiko_p->dai[dai->id].bit_width,
 			taiko_p->comp_enabled[COMPANDER_1]);
 
+
 	if (uhqa_mode) {
 		taiko_p->clsh_d.hs_perf_mode_enabled = true;
-        pr_debug("%s: uhqa_mode enabled by user", __func__);
+    	snd_soc_update_bits(codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x00);
+        pr_info("%s: uhqa_mode enabled by user", __func__);
 	} else if (taiko_p->dai[dai->id].rate == 192000 ||
 		(taiko_p->dai[dai->id].rate == 96000 &&
 	    taiko_p->dai[dai->id].bit_width == 24)) {
 		taiko_p->clsh_d.hs_perf_mode_enabled = true;
-       	pr_debug("%s: uhqa_mode enabled by audio properties", __func__);
+   		snd_soc_update_bits(codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x00);
+       	pr_info("%s: uhqa_mode enabled by audio properties", __func__);
 	} else {
 		taiko_p->clsh_d.hs_perf_mode_enabled = false;
-		pr_debug("%s: uhqa_mode disabled", __func__);
+		snd_soc_update_bits(codec, TAIKO_A_RX_HPH_CHOP_CTL, 0x20, 0x20);
+		pr_info("%s: uhqa_mode disabled", __func__);
 	}
 handleshit:
 	update_control_regs();
@@ -5547,10 +5567,10 @@ static int taiko_set_interpolator_rate(struct snd_soc_dai *dai,
 
 				rx_fs_reg = TAIKO_A_CDC_RX1_B5_CTL + 8 * j;
 
-				pr_debug("%s: AIF_PB DAI(%d) connected to RX%u\n",
+				pr_info("%s: AIF_PB DAI(%d) connected to RX%u\n",
 					__func__, dai->id, j + 1);
 
-				pr_debug("%s: set RX%u sample rate",
+				pr_info("%s: set RX%u sample rate",
 					__func__, j + 1);
 
 				snd_soc_update_bits(codec, rx_fs_reg,
@@ -5724,7 +5744,7 @@ static int taiko_hw_params(struct snd_pcm_substream *substream,
 	u32 compander_fs;
 	int ret;
 
-	pr_debug("%s: dai_name = %s DAI-ID %x rate %d num_ch %d\n", __func__,
+	pr_info("%s: dai_name = %s DAI-ID %x rate %d num_ch %d\n", __func__,
 		 dai->name, dai->id, params_rate(params),
 		 params_channels(params));
 
@@ -5809,7 +5829,7 @@ static int taiko_hw_params(struct snd_pcm_substream *substream,
 			return ret;
 		}
 
-        pr_debug("%s: setting interpolator rate to %d\n", __func__,
+        pr_info("%s: setting interpolator rate to %d\n", __func__,
 				params_rate(params));
         
 		if (taiko->intf_type == WCD9XXX_INTERFACE_TYPE_I2C) {
@@ -6671,7 +6691,7 @@ static int taiko_codec_set_iir_gain(struct snd_soc_dapm_widget *w,
 		snd_soc_write(codec, TAIKO_A_CDC_IIR1_GAIN_B1_CTL, value);
 		break;
 	default:
-		pr_debug("%s: event = %d not expected\n", __func__, event);
+		pr_info("%s: event = %d not expected\n", __func__, event);
 		break;
 	}
 	return 0;
@@ -7861,7 +7881,7 @@ static int wcd9xxx_prepare_static_pa(struct wcd9xxx_mbhc *mbhc,
 					     reg_set_paon[i].mask,
 					     reg_set_paon[i].val, 0);
 	}
-	pr_debug("%s: PAs are prepared\n", __func__);
+	pr_info("%s: PAs are prepared\n", __func__);
 bypass:
     update_bias();
 	update_control_regs();
@@ -7882,7 +7902,7 @@ static int wcd9xxx_enable_static_pa(struct wcd9xxx_mbhc *mbhc, bool enable)
 				    enable ? 0x30 : 0x0);
 	/* Wait for wave gen time to avoid pop noise */
 	usleep_range(wg_time, wg_time + WCD9XXX_USLEEP_RANGE_MARGIN_US);
-	pr_debug("%s: PAs are %s as static mode (wg_time %d)\n", __func__,
+	pr_info("%s: PAs are %s as static mode (wg_time %d)\n", __func__,
 		 enable ? "enabled" : "disabled", wg_time);
 	return 0;
 }
@@ -8058,13 +8078,13 @@ static int taiko_post_reset_cb(struct wcd9xxx *wcd9xxx)
 	mutex_lock(&codec->mutex);
 
     if (codec->reg_def_copy) {
-        pr_debug("%s: Update ASOC cache", __func__);
+        pr_info("%s: Update ASOC cache", __func__);
         kfree(codec->reg_cache);
         codec->reg_cache = kmemdup(codec->reg_def_copy,
                                             codec->reg_size, GFP_KERNEL);
         if (!codec->reg_cache) {
             mutex_unlock(&codec->mutex);
-            pr_debug("%s: Cache update failed!\n", __func__);
+            pr_info("%s: Cache update failed!\n", __func__);
             return -ENOMEM;
         }
     }

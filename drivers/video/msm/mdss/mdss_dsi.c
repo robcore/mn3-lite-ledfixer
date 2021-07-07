@@ -1459,7 +1459,7 @@ static int mdss_dsi_event_handler(struct mdss_panel_data *pdata,
 				panel_data);
 	pr_debug("%s+:event=%d\n", __func__, event);
 
-	//MDSS_XLOG(event, arg, ctrl_pdata->ndx, 0x3333);
+	MDSS_XLOG(event, arg, ctrl_pdata->ndx, 0x3333);
 #if defined (CONFIG_FB_MSM_MDSS_DSI_DBG)
 	xlog(__func__, event, (int)arg, ctrl_pdata->ndx, 0, 0, 0x3333);
 #endif

@@ -57,19 +57,15 @@ busybox cat << CTAG
             { STitleBar:{
                 title:"General"
             }},
-            { SLiveLabel:{
-                refresh:1000,
-                action:"soundcontrol headphone_audio_active ClassAB"
-            }},
             { SCheckBox:{
-                label:"Class AB Switch",
-                description:"Operate as a class AB Amp instead of default Class H amp",
+                label:"High Perf Mode",
+                description:"Operate as a class AB Amp",
                 default:$(busybox cat /sys/kernel/sound_control/high_perf_mode),
                 action:"soundcontrol highperfmode"
             }},
             { SCheckBox:{
                 label:"ANC Delay",
-                description:"Adds delay in ANC and Class AB Modes",
+                description:"Adds delay in ANC and High Perf Modes",
                 default:$(busybox cat /sys/kernel/sound_control/anc_delay),
                 action:"soundcontrol anc_delay"
             }},
@@ -144,7 +140,7 @@ busybox cat << CTAG
             }},
             { SLiveLabel:{
                 refresh:1000,
-                action:"soundcontrol headphone_audio_active PowerAmp"
+                action:"soundcontrol headphone_audio_active"
             }},
             { SCheckBox:{
                 label:"Headphone Poweramp Switch",
@@ -268,7 +264,7 @@ busybox cat << CTAG
             }},
             { SLiveLabel:{
                 refresh:1000,
-                action:"soundcontrol headphone_audio_active RMS"
+                action:"soundcontrol headphone_audio_active"
             }},
             { SCheckBox:{
                 label:"Root Mean Squared Power Detector",
@@ -299,10 +295,6 @@ busybox cat << CTAG
                 step:1,
                 default:$(busybox cat /sys/kernel/sound_control/rms_meter_resamp_fact),
                 action:"soundcontrol rms_meter_resamp_fact"
-            }},
-            { SLiveLabel:{
-                refresh:1000,
-                action:"soundcontrol headphone_audio_active Compander"
             }},
             { SCheckBox:{
                 label:"Compander Gain Lock",

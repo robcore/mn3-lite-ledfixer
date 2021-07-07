@@ -1402,7 +1402,7 @@ static void __ref msm_therm_temp_log(struct work_struct *work)
 		}
 	}
 	schedule_delayed_work(&temp_log_work,
-				msecs_to_jiffies(5000)); //For every 5 seconds log the temperature values of all the msm thermistors.
+				HZ*5); //For every 5 seconds log the temperature values of all the msm thermistors.
 }
 
 static int __ref msm_thermal_cpu_callback(struct notifier_block *nfb,
@@ -3364,7 +3364,7 @@ static struct platform_driver msm_thermal_device_driver = {
 int __init msm_thermal_device_init(void)
 {
 	INIT_DELAYED_WORK(&temp_log_work, msm_therm_temp_log);
-	schedule_delayed_work(&temp_log_work, msecs_to_jiffies(2000));
+	schedule_delayed_work(&temp_log_work, HZ*2);
 
 	return platform_driver_register(&msm_thermal_device_driver);
 }

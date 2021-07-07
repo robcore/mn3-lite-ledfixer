@@ -390,7 +390,7 @@ static void sec_jack_set_type(struct sec_jack_info *hi, int jack_type)
 
 	hi->cur_jack_type = jack_type;
     secjack_state = hi->cur_jack_type;
-	pr_debug("%s : jack_type = %d\n", __func__, jack_type);
+	pr_info("%s : jack_type = %d\n", __func__, jack_type);
 	switch_set_state(&switch_jack_detection, jack_type);
 }
 

@@ -1673,11 +1673,14 @@ static void usb_bam_work(struct work_struct *w)
 				pipe_connect->bam_type &&
 			    pipe_iter->dir ==
 				PEER_PERIPHERAL_TO_USB &&
-				pipe_iter->enabled)
+				pipe_iter->enabled) {
+				pr_debug("%s: Register wakeup on pipe %x\n",
+					__func__, (int)pipe_iter);
 				__usb_bam_register_wake_cb(i,
 					pipe_iter->activity_notify,
 					pipe_iter->priv,
 					false);
+			}
 		}
 		spin_unlock(&usb_bam_lock);
 

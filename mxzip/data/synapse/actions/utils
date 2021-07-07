@@ -25,7 +25,6 @@ then
 elif [ "$1" = "flushtcp" ]
 then
     echo '1' > /proc/sys/net/ipv4/route/flush
-    echo '1' > /proc/sys/net/ipv6/route/flush
     echo "TCP Cache Flushed"
 fi
 

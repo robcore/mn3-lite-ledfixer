@@ -16,17 +16,17 @@ RAMDISKFOLDER="$RDIR/mxramdisk"
 ZIPFOLDER="$RDIR/mxzip"
 MXCONFIG="$RDIR/arch/arm/configs/mxconfig"
 MXNEWCFG="$MXCONFIG.new"
+QUICKYEAR="$(date | awk '{print $4}')"
+QUICKMONTHDAY="$(date | awk '{print $2$3}')"
 QUICKHOUR="$(date +%l | cut -d " " -f2)"
 QUICKMIN="$(date +%S)"
 QUICKAMPM="$(date +%p)"
-QUICKDMY="$(date +%d-%m-%Y)"
-QUICKTIME="$QUICKHOUR:$QUICKMIN-${QUICKAMPM}"
-QUICKDATE="$QUICKDMY-$QUICKTIME"
+QUICKTIME="$QUICKHOUR:$QUICKMIN${QUICKAMPM}"
+QUICKDATE="$QUICKYEAR-$QUICKMONTHDAY-$QUICKTIME"
 #CORECOUNT="$(grep processor /proc/cpuinfo | wc -l)"
-TOOLCHAIN="/opt/toolchains/arm-cortex_a15-linux-gnueabihf_5.3/bin/arm-cortex_a15-linux-gnueabihf-"
-#TOOLCHAIN="/opt/toolchains/gcc-linaro-7.5.0-2019.12-x86_64_arm-linux-gnueabihf/bin/arm-linux-gnueabihf-"
+#TOOLCHAIN="/opt/toolchains/arm-cortex_a15-linux-gnueabihf_5.3/bin/arm-cortex_a15-linux-gnueabihf-"
+TOOLCHAIN="/opt/toolchains/gcc-linaro-7.5.0-2019.12-x86_64_arm-linux-gnueabihf/bin/arm-linux-gnueabihf-"
 #TOOLCHAIN="/opt/arm-cortex_a15-linux-gnueabihf-linaro_4.9.4-2015.06/bin/arm-cortex_a15-linux-gnueabihf-"
-#TOOLCHAIN="/root/mx_toolchains/gcc-linaro-4.9.4-2017.01-x86_64_arm-linux-gnueabi/bin/arm-linux-gnueabi-"
 #TOOLCHAIN="/opt/toolchains/gcc-linaro-6.5.0-2018.12-x86_64_arm-linux-gnueabihf/bin/arm-linux-gnueabihf-"
 #TOOLCHAIN="/opt/toolchains/gcc-arm-9.2-2019.12-x86_64-arm-none-linux-gnueabihf/bin/arm-none-linux-gnueabihf-"
 #export ARCH="arm"
@@ -93,10 +93,9 @@ cleanupfail() {
 
 takeouttrash() {
 
-    rm "$RDIR/localversion" &> /dev/null
-	rm "$RDIR/.starttime" &> /dev/null
-	rm "$RDIR/.endtime" &> /dev/null
-	rm "$RDIR/mxtempusb" &> /dev/null
+	rm $RDIR/.starttime &> /dev/null
+	rm $RDIR/.endtime &> /dev/null
+	rm $RDIR/mxtempusb &> /dev/null
 
 	find . -type f \( -iname \*.rej \
 			-o -iname \*.orig \
@@ -369,7 +368,6 @@ handle_existing() {
 	fi
 	echo "Kernel version is: $MX_KERNEL_VERSION"
 	echo "--------------------------------"
-    echo "$MX_KERNEL_VERSION" > "$RDIR/localversion"
 
 }
 
@@ -377,8 +375,6 @@ rebuild() {
 
 	echo "Using last version. Mark$OLDVER will be removed."
 	MX_KERNEL_VERSION="machinexlite-Mark$OLDVER-hltetmo"
-    rm "$RDIR/localversion" &> /dev/null
-    echo "$MX_KERNEL_VERSION" > "$RDIR/localversion"
 	echo "Removing old zip files..."
 	rm -f "$RDIR/$MX_KERNEL_VERSION.zip"
 	echo "Kernel version is: $MX_KERNEL_VERSION"
@@ -390,10 +386,11 @@ build_new_config() {
 
 	echo "Creating kernel config..."
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
+	MX_KERNEL_VERSION="dummyconfigbuild"
 	mkdir -p "$BUILDIR" || warnandfail "Failed to make $BUILDIR directory!"
 	cat "$RDIR/arch/arm/configs/msm8974_sec_hlte_tmo_defconfig" "$RDIR/arch/arm/configs/msm8974_sec_defconfig" "$RDIR/arch/arm/configs/selinux_defconfig" > "$RDIR/arch/arm/configs/mxconfig"
 	cp "$MXCONFIG" "$BUILDIR/.config" || warnandfail "Config Copy Error!"
-	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -C "$RDIR" O="$BUILDIR" menuconfig
+	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -C "$RDIR" O="$BUILDIR" menuconfig
 
 }
 
@@ -401,9 +398,10 @@ build_menuconfig() {
 
 	echo "Creating kernel config..."
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
+	MX_KERNEL_VERSION="dummyconfigbuild"
 	mkdir -p "$BUILDIR" || warnandfail "Failed to make $BUILDIR directory!"
 	cp "$MXCONFIG" "$BUILDIR/.config" || warnandfail "Config Copy Error!"
-	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -C "$RDIR" O="$BUILDIR" menuconfig
+	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -C "$RDIR" O="$BUILDIR" menuconfig
 
 }
 
@@ -411,9 +409,10 @@ build_single_config() {
 
 	echo "Creating kernel config..."
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
+	MX_KERNEL_VERSION="buildingsingledriver"
 	mkdir -p "$BUILDIR" || warnandfail "Failed to make $BUILDIR directory!"
 	cp "$MXCONFIG" "$BUILDIR/.config" || warnandfail "Config Copy Error!"
-	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -C "$RDIR" O="$BUILDIR" oldconfig || warnandfail "make oldconfig Failed!"
+	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -C "$RDIR" O="$BUILDIR" oldconfig || warnandfail "make oldconfig Failed!"
 
 }
 
@@ -423,7 +422,7 @@ build_kernel_config() {
 	cd "$RDIR" || warnandfail "Failed to cd to $RDIR!"
 	mkdir -p "$BUILDIR" || warnandfail "Failed to make $BUILDIR directory!"
 	cp "$MXCONFIG" "$BUILDIR/.config" || warnandfail "Config Copy Error!"
-	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -C "$RDIR" O="$BUILDIR" oldconfig || warnandfail "make oldconfig Failed!"
+	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -C "$RDIR" O="$BUILDIR" oldconfig || warnandfail "make oldconfig Failed!"
 	getmxrecent
 
 }
@@ -431,7 +430,7 @@ build_kernel_config() {
 build_single_driver() {
 
 	echo "Building Single Driver..."
-	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -C "$RDIR" -S -s -j16 O="$BUILDIR/" "$1"
+	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -C "$RDIR" -S -s -j16 O="$BUILDIR/" "$1"
 
 }
 
@@ -443,7 +442,7 @@ build_kernel() {
 	#env
 	echo -n "$(date +%s)" > "$RDIR/.starttime"
 	echo "Starting build..."
-	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" -S -s -j16 -C "$RDIR" O="$BUILDIR" || warnandfail "Kernel Build failed!"
+	make ARCH="arm" CROSS_COMPILE="$TOOLCHAIN" LOCALVERSION="$MX_KERNEL_VERSION" -S -s -j16 -C "$RDIR" O="$BUILDIR" || warnandfail "Kernel Build failed!"
 
 }
 
@@ -479,7 +478,7 @@ build_boot_img() {
 
 	$RDIR/scripts/mkqcdtbootimg/mkqcdtbootimg --kernel "$KDIR/zImage" \
 		--ramdisk "$KDIR/ramdisk.cpio.gz" \
-        --dt_dir "$KDIR" \
+		--dt_dir "$KDIR" \
 		--cmdline "console=null androidboot.hardware=qcom user_debug=23 msm_rtb.filter=0x37 ehci-hcd.park=3" \
 		--base "0x00000000" \
 		--pagesize "2048" \
@@ -498,7 +497,7 @@ build_boot_img() {
 }
 
 ADBPUSHLOCATION="/sdcard/Download"
-MAGISKFILE="Magisk-v23.0.zip"
+MAGISKFILE="Magisk-v22.1.zip"
 
 create_zip() {
 
@@ -717,14 +716,12 @@ do
 
 	     -r|--rebuildme)
 			checkrecov
-            handle_existing
 			rebuild
 			build_all
 			break
 	    	;;
 
 	     -b|--bsd)
-            handle_existing
 			bsdwrapper "$extrargs"
 			break
 	    	;;
@@ -734,12 +731,10 @@ do
 	    	break
 	    	;;
 		 -nc|--newconfig)
-            handle_existing
 			build_new_config
 			break
 			;;
 		 -m|--menuconfig)
-            handle_existing
 			build_menuconfig
 			break
 			;;

@@ -43,8 +43,7 @@ scm_version()
 	fi
 
 	# Check for git and a git repo.
-	if test -z "$(git rev-parse --show-cdup 2>/dev/null)" &&
-	   head=`git rev-parse --verify --short HEAD 2>/dev/null`; then
+	if test -d .git && head=`git rev-parse --verify --short HEAD 2>/dev/null`; then
 
 		# If we are at a tagged commit (like "v2.6.30-rc6"), we ignore
 		# it, because this version is defined in the top level Makefile.
@@ -56,7 +55,6 @@ scm_version()
 				# If only the short version is requested,
 				# don't bother running further git commands
 				if $short; then
-					echo "+"
 					return
 				fi
 				printf '%s%s' -g "`git show-ref -s --abbrev --tags $atag 2>/dev/null`"
@@ -66,7 +64,6 @@ scm_version()
 			# If only the short version is requested, don't bother
 			# running further git commands
 			if $short; then
-				echo "+"
 				return
 			fi
 			# If we are past a tagged commit (like
@@ -76,9 +73,6 @@ scm_version()
 				tag="`git describe --abbrev=0 2>/dev/null`"
 				commit="`echo "$atag" | awk -F- '{printf("-%05d-%s", $(NF-1),$(NF))}'`"
 				printf '%s%s%s' -g "`git show-ref -s --abbrev --tags $tag 2>/dev/null`" $commit
-			# If we don't have a tag at all we print -g{commitish}.
-			else
-				printf '%s%s' -g $head
 			fi
 		fi
 
@@ -87,10 +81,8 @@ scm_version()
 			printf -- '-svn%s' "`git svn find-rev $head`"
 		fi
 
-		# Check for uncommitted changes
-		if git diff-index --name-only HEAD | grep -qv "^scripts/package"; then
-			printf '%s'
-		fi
+		# Update index only on r/w media
+		[ -w . ] && git update-index --refresh --unmerged > /dev/null
 
 		# All done with git
 		return
@@ -110,18 +102,12 @@ scm_version()
 			fi
 		fi
 
-		# Are there uncommitted changes?
-		# These are represented by + after the changeset id.
-		case "$hgid" in
-			*+|*+\ *) printf '%s' ;;
-		esac
-
 		# All done with mercurial
 		return
 	fi
 
 	# Check for svn and a svn repo.
-	if rev=`LANG= LC_ALL= LC_MESSAGES=C svn info 2>/dev/null | grep '^Last Changed Rev'`; then
+	if rev=`svn info 2>/dev/null | grep '^Last Changed Rev'`; then
 		rev=`echo $rev | awk '{print $NF}'`
 		printf -- '-svn%s' "$rev"
 
@@ -132,7 +118,7 @@ scm_version()
 
 collect_files()
 {
-	local file res=
+	local file res
 
 	for file; do
 		case "$file" in
@@ -158,7 +144,7 @@ fi
 if test -e include/config/auto.conf; then
 	. include/config/auto.conf
 else
-	echo "Error: kernelrelease not valid - run 'make prepare' to update it" >&2
+	echo "Error: kernelrelease not valid - run 'make prepare' to update it"
 	exit 1
 fi
 
@@ -180,9 +166,8 @@ else
 	# annotated or signed tagged state (as git describe only
 	# looks at signed or annotated tags - git tag -a/-s) and
 	# LOCALVERSION= is not specified
-	if test "${LOCALVERSION+set}" != "set"; then
+	if test "${CONFIG_LOCALVERSION+set}" != "set"; then
 		scm=$(scm_version --short)
-		res="$res"
 	fi
 fi
 

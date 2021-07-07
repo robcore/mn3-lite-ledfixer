@@ -36,16 +36,30 @@ enum {
 	MSM_SMEM_INFO = 1U << 1,
 };
 
-static int msm_smem_debug_mask = 0;
+static int msm_smem_debug_mask = MSM_SMEM_INFO;
 module_param_named(debug_mask, msm_smem_debug_mask,
 			int, S_IRUGO | S_IWUSR | S_IWGRP);
 static void *smem_ipc_log_ctx;
 #define NUM_LOG_PAGES 4
 
-#define IPC_LOG(x...) do { } while (0)
-#define LOG_ERR(x...) do { } while (0)
-#define SMEM_DBG(x...) do { } while (0)
-#define SMEM_INFO(x...) do { } while (0)
+#define IPC_LOG(x...) do {                                   \
+		if (smem_ipc_log_ctx)                        \
+			ipc_log_string(smem_ipc_log_ctx, x); \
+	} while (0)
+
+
+#define LOG_ERR(x...) do {  \
+		pr_err(x);  \
+		IPC_LOG(x); \
+	} while (0)
+#define SMEM_DBG(x...) do {                               \
+		if (msm_smem_debug_mask & MSM_SMEM_DEBUG) \
+			IPC_LOG(x);                       \
+	} while (0)
+#define SMEM_INFO(x...) do {                             \
+		if (msm_smem_debug_mask & MSM_SMEM_INFO) \
+			IPC_LOG(x);                      \
+	} while (0)
 
 #define SMEM_SPINLOCK_SMEM_ALLOC       "S:3"
 
@@ -1346,10 +1360,9 @@ static struct platform_driver msm_smem_driver = {
 	},
 };
 
-static bool registered;
-
 int __init msm_smem_init(void)
 {
+	static bool registered;
 	int rc;
 
 	if (registered)
@@ -1357,15 +1370,12 @@ int __init msm_smem_init(void)
 
 	registered = true;
 
-#if defined(CONFIG_MSM_IPC_LOGGING)
 	smem_ipc_log_ctx = ipc_log_context_create(NUM_LOG_PAGES, "smem", 0);
 	if (!smem_ipc_log_ctx) {
 		pr_err("%s: unable to create logging context\n", __func__);
 		msm_smem_debug_mask = 0;
 	}
-#else
-    msm_smem_debug_mask = 0;
-#endif
+
 	rc = init_smem_remote_spinlock();
 	if (rc) {
 		LOG_ERR("%s: remote spinlock init failed %d\n", __func__, rc);

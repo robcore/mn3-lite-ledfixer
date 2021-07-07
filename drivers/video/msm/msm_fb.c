@@ -44,6 +44,10 @@
 #include <linux/sw_sync.h>
 #include <linux/file.h>
 
+#ifdef CONFIG_SEC_DEBUG
+#include <mach/sec_debug.h>
+#endif
+
 #define MSM_FB_C
 #include "msm_fb.h"
 #include "mddihosti.h"
@@ -4196,6 +4200,15 @@ struct platform_device *msm_fb_add_device(struct platform_device *pdev)
 		fbi_list_index--;
 		return NULL;
 	}
+#ifdef CONFIG_SEC_DEBUG
+	if (fbi_list_index == 1) {
+		sec_getlog_supply_fbinfo((void *)(fbi->fix.smem_start),
+				ALIGN(fbi->var.xres, 32),
+				fbi->var.yres,
+				fbi->var.bits_per_pixel,
+				2);
+	}
+#endif
 
 	return this_dev;
 }

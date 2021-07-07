@@ -29,6 +29,9 @@
 #include <trace/events/irq.h>
 
 #include <asm/irq.h>
+#ifdef CONFIG_SEC_DEBUG
+#include <mach/sec_debug.h>
+#endif
 
 /*
    - No shared variables, all the data are CPU local.
@@ -242,8 +245,13 @@ restart:
 			kstat_incr_softirqs_this_cpu(vec_nr);
 
 			trace_softirq_entry(vec_nr);
-
+#ifdef CONFIG_SEC_DEBUG
+			secdbg_msg("softirq %pS entry", h->action);
+#endif
 			h->action(h);
+#ifdef CONFIG_SEC_DEBUG
+			secdbg_msg("softirq %pS exit", h->action);
+#endif
 			trace_softirq_exit(vec_nr);
 			if (unlikely(prev_count != preempt_count())) {
 				printk(KERN_ERR "huh, entered softirq %u %s %p"
@@ -343,6 +351,9 @@ void irq_exit(void)
 {
 	account_system_vtime(current);
 	trace_hardirq_exit();
+#ifdef CONFIG_SEC_DEBUG
+	secdbg_msg("hardirq exit");
+#endif
 
 	sub_preempt_count(IRQ_EXIT_OFFSET);
 	if (!in_interrupt() && local_softirq_pending())
@@ -420,6 +431,7 @@ void __tasklet_schedule(struct tasklet_struct *t)
 	raise_softirq_irqoff(TASKLET_SOFTIRQ);
 	local_irq_restore(flags);
 }
+
 EXPORT_SYMBOL(__tasklet_schedule);
 
 void __tasklet_hi_schedule(struct tasklet_struct *t)
@@ -433,6 +445,7 @@ void __tasklet_hi_schedule(struct tasklet_struct *t)
 	raise_softirq_irqoff(HI_SOFTIRQ);
 	local_irq_restore(flags);
 }
+
 EXPORT_SYMBOL(__tasklet_hi_schedule);
 
 void __tasklet_hi_schedule_first(struct tasklet_struct *t)
@@ -443,6 +456,7 @@ void __tasklet_hi_schedule_first(struct tasklet_struct *t)
 	__this_cpu_write(tasklet_hi_vec.head, t);
 	__raise_softirq_irqoff(HI_SOFTIRQ);
 }
+
 EXPORT_SYMBOL(__tasklet_hi_schedule_first);
 
 static void tasklet_action(struct softirq_action *a)
@@ -462,10 +476,15 @@ static void tasklet_action(struct softirq_action *a)
 
 		if (tasklet_trylock(t)) {
 			if (!atomic_read(&t->count)) {
-				if (!test_and_clear_bit(TASKLET_STATE_SCHED,
-							&t->state))
+				if (!test_and_clear_bit(TASKLET_STATE_SCHED, &t->state))
 					BUG();
+#ifdef CONFIG_SEC_DEBUG
+				sec_debug_irq_sched_log(-1, t->func, 3);
 				t->func(t->data);
+				sec_debug_irq_sched_log(-1, t->func, 4);
+#else
+				t->func(t->data);
+#endif
 				tasklet_unlock(t);
 				continue;
 			}
@@ -498,8 +517,7 @@ static void tasklet_hi_action(struct softirq_action *a)
 
 		if (tasklet_trylock(t)) {
 			if (!atomic_read(&t->count)) {
-				if (!test_and_clear_bit(TASKLET_STATE_SCHED,
-							&t->state))
+				if (!test_and_clear_bit(TASKLET_STATE_SCHED, &t->state))
 					BUG();
 				t->func(t->data);
 				tasklet_unlock(t);
@@ -517,6 +535,7 @@ static void tasklet_hi_action(struct softirq_action *a)
 	}
 }
 
+
 void tasklet_init(struct tasklet_struct *t,
 		  void (*func)(unsigned long), unsigned long data)
 {
@@ -526,12 +545,13 @@ void tasklet_init(struct tasklet_struct *t,
 	t->func = func;
 	t->data = data;
 }
+
 EXPORT_SYMBOL(tasklet_init);
 
 void tasklet_kill(struct tasklet_struct *t)
 {
 	if (in_interrupt())
-		pr_notice("Attempt to kill tasklet from interrupt\n");
+		printk("Attempt to kill tasklet from interrupt\n");
 
 	while (test_and_set_bit(TASKLET_STATE_SCHED, &t->state)) {
 		do {
@@ -541,6 +561,7 @@ void tasklet_kill(struct tasklet_struct *t)
 	tasklet_unlock_wait(t);
 	clear_bit(TASKLET_STATE_SCHED, &t->state);
 }
+
 EXPORT_SYMBOL(tasklet_kill);
 
 /*

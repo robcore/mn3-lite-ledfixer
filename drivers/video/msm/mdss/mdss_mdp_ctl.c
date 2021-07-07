@@ -2922,10 +2922,10 @@ static void mdss_mdp_xlog_mixer_reg(struct mdss_mdp_ctl *ctl)
 		off =  MDSS_MDP_REG_CTL_LAYER(i);
 		data[i] = mdss_mdp_ctl_read(ctl, off);
 	}
-	/*MDSS_XLOG(data[MDSS_MDP_INTF_LAYERMIXER0],
+	MDSS_XLOG(data[MDSS_MDP_INTF_LAYERMIXER0],
 		data[MDSS_MDP_INTF_LAYERMIXER1],
 		data[MDSS_MDP_INTF_LAYERMIXER2],
-		data[MDSS_MDP_INTF_LAYERMIXER3], off);*/
+		data[MDSS_MDP_INTF_LAYERMIXER3], off);
 }
 #if defined (CONFIG_FB_MSM_MDSS_DSI_DBG)
 void mdss_mdp_mixer_read(void)

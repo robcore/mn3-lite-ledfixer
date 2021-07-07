@@ -34,7 +34,6 @@
 #include <linux/list.h>
 #include <linux/kallsyms.h>
 #include <linux/proc_fs.h>
-#include <linux/export.h>
 
 #include <asm/exception.h>
 #include <asm/mach/arch.h>
@@ -123,22 +122,11 @@ void set_irq_flags(unsigned int irq, unsigned int iflags)
 	/* Order is clear bits in "clr" then set bits in "set" */
 	irq_modify_status(irq, clr, set & ~clr);
 }
-EXPORT_SYMBOL_GPL(set_irq_flags);
 
 void __init init_IRQ(void)
 {
 	machine_desc->init_irq();
 }
-
-#ifdef CONFIG_MULTI_IRQ_HANDLER
-void __init set_handle_irq(void (*handle_irq)(struct pt_regs *))
-{
-	if (handle_arch_irq)
-		return;
-
-	handle_arch_irq = handle_irq;
-}
-#endif
 
 #ifdef CONFIG_SPARSE_IRQ
 int __init arch_probe_nr_irqs(void)
@@ -172,7 +160,7 @@ static bool migrate_one_irq(struct irq_desc *desc)
 	c = irq_data_get_irq_chip(d);
 	if (!c->irq_set_affinity)
 		pr_debug("IRQ%u: unable to set affinity\n", d->irq);
-	else if (c->irq_set_affinity(d, affinity, false) == IRQ_SET_MASK_OK && ret)
+	else if (c->irq_set_affinity(d, affinity, true) == IRQ_SET_MASK_OK && ret)
 		cpumask_copy(d->affinity, affinity);
 
 	return ret;
@@ -202,8 +190,8 @@ void migrate_irqs(void)
 		raw_spin_unlock(&desc->lock);
 
 		if (affinity_broken && printk_ratelimit())
-			pr_warn("IRQ%u no longer affine to CPU%u\n",
-				i, smp_processor_id());
+			pr_warning("IRQ%u no longer affine to CPU%u\n", i,
+				smp_processor_id());
 	}
 
 	local_irq_restore(flags);

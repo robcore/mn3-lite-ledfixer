@@ -162,7 +162,7 @@ void mdss_xlog_tout_handler(const char *name, ...)
 	va_list args;
 	char *blk_name = NULL;
 
-	//if (!mdd->logd.xlog_enable)
+//	if (!mdd->logd.xlog_enable)
 		return;
 
 	va_start(args, name);
@@ -188,8 +188,8 @@ void mdss_xlog_tout_handler(const char *name, ...)
 	}
 	va_end(args);
 
-	//MDSS_XLOG(0xffff, 0xffff, 0xffff, 0xffff, 0xffff);
-	//mdss_xlog_dump();
+	MDSS_XLOG(0xffff, 0xffff, 0xffff, 0xffff, 0xffff);
+	mdss_xlog_dump();
 
 	if (dead && mdd->logd.panic_on_err)
 		panic(name);

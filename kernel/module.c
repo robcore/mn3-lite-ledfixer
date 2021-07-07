@@ -3380,6 +3380,9 @@ SYSCALL_DEFINE3(init_module, void __user *, umod,
 
 	blocking_notifier_call_chain(&module_notify_list,
 			MODULE_STATE_COMING, mod);
+#ifdef	CONFIG_TIMA_LKMAUTH_CODE_PROT
+    tima_mod_page_change_access(mod);
+#endif/*CONFIG_TIMA_LKMAUTH_CODE_PROT*/
 
 	/* Set RO and NX regions for core */
 	set_section_ro_nx(mod->module_core,

@@ -7352,7 +7352,7 @@ int dhd_os_wake_lock_timeout(dhd_pub_t *pub)
 	unsigned long flags;
 	int ret = 0;
 
-	if (dhd && (dhd->dhd_state & DHD_ATTACH_STATE_WAKELOCKS_INIT)) {
+	if (dhd) {
 		spin_lock_irqsave(&dhd->wakelock_spinlock, flags);
 		ret = dhd->wakelock_rx_timeout_enable > dhd->wakelock_ctrl_timeout_enable ?
 			dhd->wakelock_rx_timeout_enable : dhd->wakelock_ctrl_timeout_enable;
@@ -7386,7 +7386,7 @@ int dhd_os_wake_lock_rx_timeout_enable(dhd_pub_t *pub, int val)
 	dhd_info_t *dhd = (dhd_info_t *)(pub->info);
 	unsigned long flags;
 
-	if (dhd && (dhd->dhd_state & DHD_ATTACH_STATE_WAKELOCKS_INIT)) {
+	if (dhd) {
 		spin_lock_irqsave(&dhd->wakelock_spinlock, flags);
 		if (val > dhd->wakelock_rx_timeout_enable)
 			dhd->wakelock_rx_timeout_enable = val;
@@ -7400,7 +7400,7 @@ int dhd_os_wake_lock_ctrl_timeout_enable(dhd_pub_t *pub, int val)
 	dhd_info_t *dhd = (dhd_info_t *)(pub->info);
 	unsigned long flags;
 
-	if (dhd && (dhd->dhd_state & DHD_ATTACH_STATE_WAKELOCKS_INIT)) {
+	if (dhd) {
 		spin_lock_irqsave(&dhd->wakelock_spinlock, flags);
 		if (val > dhd->wakelock_ctrl_timeout_enable)
 			dhd->wakelock_ctrl_timeout_enable = val;
@@ -7414,7 +7414,7 @@ int dhd_os_wake_lock_ctrl_timeout_cancel(dhd_pub_t *pub)
 	dhd_info_t *dhd = (dhd_info_t *)(pub->info);
 	unsigned long flags;
 
-	if (dhd && (dhd->dhd_state & DHD_ATTACH_STATE_WAKELOCKS_INIT)) {
+	if (dhd) {
 		spin_lock_irqsave(&dhd->wakelock_spinlock, flags);
 		dhd->wakelock_ctrl_timeout_enable = 0;
 #ifdef CONFIG_HAS_WAKELOCK
@@ -7452,7 +7452,7 @@ int dhd_os_wake_lock(dhd_pub_t *pub)
 	unsigned long flags;
 	int ret = 0;
 
-	if (dhd && (dhd->dhd_state & DHD_ATTACH_STATE_WAKELOCKS_INIT)) {
+	if (dhd) {
 		spin_lock_irqsave(&dhd->wakelock_spinlock, flags);
 		if (dhd->wakelock_counter == 0 && !dhd->waive_wakelock) {
 #ifdef CONFIG_HAS_WAKELOCK
@@ -7485,7 +7485,7 @@ int dhd_os_wake_unlock(dhd_pub_t *pub)
 	int ret = 0;
 
 	dhd_os_wake_lock_timeout(pub);
-	if (dhd && (dhd->dhd_state & DHD_ATTACH_STATE_WAKELOCKS_INIT)) {
+	if (dhd) {
 		spin_lock_irqsave(&dhd->wakelock_spinlock, flags);
 		if (dhd->wakelock_counter > 0) {
 			dhd->wakelock_counter--;

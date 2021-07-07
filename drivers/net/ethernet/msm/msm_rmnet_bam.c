@@ -609,10 +609,6 @@ static int rmnet_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd)
 	int prev_mtu = dev->mtu;
 	int rc = 0;
 
-    /* Other USB devices */
-    if (cmd == 35585)
-        return -EINVAL;
-
 	/* Process IOCTL command */
 	switch (cmd) {
 	case RMNET_IOCTL_SET_LLP_ETHERNET:  /* Set Ethernet protocol   */
@@ -714,14 +710,13 @@ static int rmnet_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd)
 		break;
 
 	default:
-		pr_debug("[%s] error: rmnet_ioct called for unsupported cmd[%d]",
+		pr_err("[%s] error: rmnet_ioct called for unsupported cmd[%d]",
 			dev->name, cmd);
 		return -EINVAL;
 	}
 
 	DBG2("[%s] %s: cmd=0x%x opmode old=0x%08x new=0x%08x\n",
 		dev->name, __func__, cmd, old_opmode, p->operation_mode);
-
 	return rc;
 }
 

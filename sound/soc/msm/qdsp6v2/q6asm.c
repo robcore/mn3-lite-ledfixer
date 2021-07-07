@@ -1033,7 +1033,7 @@ int q6asm_audio_client_buf_alloc_contiguous(unsigned int dir,
 	if (!(ac) || ((dir != IN) && (dir != OUT)))
 		return -EINVAL;
 
-	pr_debug("%s: session[%d]bufsz[%d]bufcnt[%d]\n",
+	pr_info("%s: session[%d]bufsz[%d]bufcnt[%d]\n",
 			__func__, ac->session,
 			bufsz, bufcnt);
 
@@ -1041,7 +1041,7 @@ int q6asm_audio_client_buf_alloc_contiguous(unsigned int dir,
 		goto fail;
 
 	if (ac->port[dir].buf) {
-		pr_debug("%s: buffer already allocated\n", __func__);
+		pr_info("%s: buffer already allocated\n", __func__);
 		return 0;
 	}
 	mutex_lock(&ac->cmd_lock);
@@ -1788,7 +1788,7 @@ static int __q6asm_open_read(struct audio_client *ac,
 	open.mode_flags = 0x0;
 
 	//if (ac->perf_mode)
-    if (ac->perf_mode == LOW_LATENCY_PCM_MODE) 
+        if (ac->perf_mode == LOW_LATENCY_PCM_MODE) 
 		open.mode_flags |= ASM_LOW_LATENCY_TX_STREAM_SESSION << ASM_SHIFT_STREAM_PERF_MODE_FLAG_IN_OPEN_READ;
 	else
 		open.mode_flags |= ASM_LEGACY_STREAM_SESSION << ASM_SHIFT_STREAM_PERF_MODE_FLAG_IN_OPEN_READ;
@@ -1864,7 +1864,7 @@ static int __q6asm_open_write(struct audio_client *ac, uint32_t format,
 		pr_err("%s: APR handle NULL\n", __func__);
 		return -EINVAL;
 	}
-	pr_debug("%s: session[%d] wr_format[0x%x]", __func__, ac->session,
+	pr_info("%s: session[%d] wr_format[0x%x]", __func__, ac->session,
 		format);
 
 	q6asm_stream_add_hdr(ac, &open.hdr, sizeof(open), TRUE, stream_id);
@@ -1895,7 +1895,7 @@ static int __q6asm_open_write(struct audio_client *ac, uint32_t format,
 	/* source endpoint : matrix */
 	open.sink_endpointype = ASM_END_POINT_DEVICE_MATRIX;
 	open.bits_per_sample = bits_per_sample;
-	pr_debug("%s: session[%d] open.mode_flags:%x", __func__, ac->session,
+	pr_info("%s: session[%d] open.mode_flags:%x", __func__, ac->session,
 		open.mode_flags);
 	open.postprocopo_id = get_asm_topology();
 	if (open.postprocopo_id == 0)
@@ -2899,7 +2899,7 @@ static int __q6asm_media_format_block_multi_aac(struct audio_client *ac,
 	fmt.channel_config = cfg->ch_cfg;
 	fmt.sample_rate = cfg->sample_rate;
 
-	pr_debug("%s:format=%x cfg_size=%d aac-cfg=%x aot=%d ch=%d sr=%d\n",
+	pr_info("%s:format=%x cfg_size=%d aac-cfg=%x aot=%d ch=%d sr=%d\n",
 			__func__, fmt.aac_fmt_flag, fmt.fmt_blk.fmt_blk_size,
 			fmt.aac_fmt_flag,
 			fmt.audio_objype,
@@ -3467,7 +3467,7 @@ int q6asm_set_lrgain(struct audio_client *ac, int left_gain, int right_gain)
 		goto fail_cmd;
 	}
 
-    pr_debug("%s: Setting Gains. Left: %d Right:%d\n", __func__, left_gain, right_gain);
+    pr_info("%s: Setting Gains. Left: %d Right:%d\n", __func__, left_gain, right_gain);
 	sz = sizeof(struct asm_volume_ctrl_lr_chan_gain);
 	q6asm_add_hdr_async(ac, &lrgain.hdr, sz, TRUE);
 	atomic_set(&ac->cmd_state, 1);
@@ -3565,7 +3565,7 @@ int q6asm_set_volume(struct audio_client *ac, int volume)
 		goto fail_cmd;
 	}
 
-    pr_debug("%s: Setting Volume to: %d\n", __func__, volume);
+    pr_info("%s: Setting Volume to: %d\n", __func__, volume);
 
 	sz = sizeof(struct asm_volume_ctrl_master_gain);
 	q6asm_add_hdr_async(ac, &vol.hdr, sz, TRUE);
