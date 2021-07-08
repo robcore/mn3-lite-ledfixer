@@ -754,10 +754,10 @@ create_zip() {
 				echo "Successfully pushed $RDIR/$MX_KERNEL_VERSION.zip to $ADBPUSHLOCATION/$MX_KERNEL_VERSION.zip over ADB!"
 				echo "Installing $ADBPUSHLOCATION/$MX_KERNEL_VERSION.zip via open recovery script"
 				adb shell twrp install "$ADBPUSHLOCATION/$MX_KERNEL_VERSION.zip"
-                echo "Pushing Magisk to $ADBPUSHLOCATION/$MAGISKFILE"
-                adb push "$RDIR/$MAGISKFILE" "$ADBPUSHLOCATION"
-				echo "Installing $ADBPUSHLOCATION/$MAGISKFILE via open recovery script"
-				adb shell twrp install "$ADBPUSHLOCATION/$MAGISKFILE"
+                #echo "Pushing Magisk to $ADBPUSHLOCATION/$MAGISKFILE"
+                #adb push "$RDIR/$MAGISKFILE" "$ADBPUSHLOCATION"
+				#echo "Installing $ADBPUSHLOCATION/$MAGISKFILE via open recovery script"
+				#adb shell twrp install "$ADBPUSHLOCATION/$MAGISKFILE"
                 echo "Removing leftovers"
                 adb shell rm "/data/dalvik-cache/arm/dev@tmp@install@common@magisk.apk@classes.dex" &> /dev/null
                 adb shell rm "/data/dalvik-cache/arm/data@app@com.topjohnwu.magisk-1@base.apk@classes.dex" &> /dev/null
