@@ -2395,3 +2395,4 @@ static unsigned char eval_char_literal(const char *s)
 
 	return c;
 }
+
