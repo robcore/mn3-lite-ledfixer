@@ -28,12 +28,12 @@ RDIR="/root/mn3-lite-ledfixer"
 MXPREFIX="machinexlite-Mark"
 MXSUFFIX="-hltetmo-LTSTEST"
 
-RAMDISKFOLDER="$MXRD/ramdisk"
 ZIPFOLDER="$RDIR/mxzip"
 BUILDIR="$RDIR/build"
 LOGDIR="$RDIR/buildlogs"
 KDIR="$BUILDIR/arch/arm/boot"
 MXRD="$RDIR/mxrd"
+RAMDISKFOLDER="$MXRD/ramdisk"
 OLDCFG="$RDIR/oldconfigs"
 
 OLDVERFILE="$RDIR/.oldversion"
